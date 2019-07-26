@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="DUT_PPM_PowerMeter" Id="{3783744b-cd60-46f5-92b4-2295e50c15db}">
+    <Declaration><![CDATA[TYPE DUT_PPM_PowerMeter :
+STRUCT
+	{attribute 'pytmc' := '
+		pv: RAW
+		io: input
+	'}
+	fVoltage AT %I*: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: RAW_BUFFER
+		io: input
+	'}
+	fVoltageBuffer: ARRAY[0..999] OF LREAL;
+	fVoltagePartial: ARRAY[0..999] OF LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: MJ
+		io: input
+	'}
+	fCalibMJ: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: MJ_BUFFER
+		io: input
+	'}
+	fCalibMJBuffer: ARRAY[0..999] OF LREAL;
+	fCalibMJPartial: ARRAY[0..999] OF LREAL;
+	
+	iArraySize: UINT := 1000;
+	
+	{attribute 'pytmc' := '
+		pv: STC
+		io: input
+	'}
+	fThermoCouple AT %I*: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

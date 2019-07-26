@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
+  <DUT Name="DUT_L2SI_Flowmeter" Id="{f6d268ad-8090-446b-9b48-41e30e86e3c7}">
+    <Declaration><![CDATA[TYPE DUT_L2SI_Flowmeter :
+STRUCT
+	{attribute 'pytmc' := '
+		pv: RAW
+	'}
+	fRaw AT %I*: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: FLOW_RATE
+	'}
+	fFlowRate: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

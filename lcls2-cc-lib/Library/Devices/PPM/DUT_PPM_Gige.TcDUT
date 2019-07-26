@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="DUT_PPM_Gige" Id="{f1c66f1f-c425-4848-93a5-86e3d7b037d1}">
+    <Declaration><![CDATA[TYPE DUT_PPM_Gige :
+STRUCT
+	bGigePower AT %Q*: BOOL;
+	
+	{attribute 'pytmc' := '
+		pv: PWR:SET
+		io: output
+	'}
+	bGigePowerSet: BOOL;
+	
+	{attribute 'pytmc' := '
+		pv: PWR:GET
+		io: input
+	'}
+	bGigePowerGet: BOOL;
+	
+	fIlluminatorRaw AT %Q*: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CIL:SET
+		io: output
+	'}
+	fIlluminatorSet: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CIL:GET
+		io: input
+	'}
+	fIlluminatorGet: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

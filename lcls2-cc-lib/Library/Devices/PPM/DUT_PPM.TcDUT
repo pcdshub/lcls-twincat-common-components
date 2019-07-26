@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="DUT_PPM" Id="{f06f8092-7b61-4b55-b289-c90599f01c00}">
+    <Declaration><![CDATA[TYPE DUT_PPM :
+STRUCT
+	{attribute 'pytmc' := '
+		pv: PWR
+	'}
+	stPowerMeter: DUT_PPM_PowerMeter;
+	
+	{attribute 'pytmc' := '
+		pv: YAG:STC
+		io: input
+	'}
+	fYagThermoCouple AT %I*: LREAL;
+
+	{attribute 'pytmc' := '
+		pv: GIGE
+	'}
+	stGige: DUT_PPM_Gige;
+
+	{attribute 'pytmc' := '
+		PV: FLM
+	'}
+	stFlowMeter: DUT_L2SI_Flowmeter;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

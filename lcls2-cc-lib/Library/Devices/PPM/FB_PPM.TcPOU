@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
+VAR_IN_OUT
+	stYStage: DUT_MotionStage;
+END_VAR
+VAR
+	{attribute 'pytmc' := '
+		pv: PPM
+	'}
+	stPPM: DUT_PPM;
+	
+	fbYStage: FB_MotionStage;
+	iArrayIndex: UINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// TODO ADD STATE MOVES (POLISHED, FROSTED, POWER, OUT)
+fbYStage(stMotionStage:=stYStage);
+
+// TODO Power meter calibration
+stPPM.stPowerMeter.fCalibMJ := stPPM.stPowerMeter.fVoltage;
+
+// Accumulate value into the partial buffer
+stPPM.stPowerMeter.fVoltagePartial[iArrayIndex] := stPPM.stPowerMeter.fVoltage;
+stPPM.stPowerMeter.fCalibMJPartial[iArrayIndex] := stPPM.stPowerMeter.fCalibMJ;
+iArrayIndex := iArrayIndex + 1;
+
+// Update the full buffer and reset the index
+IF iArrayIndex >= stPPM.stPowerMeter.iArraySize THEN
+	iArrayIndex := 0;
+	stPPM.stPowerMeter.fVoltageBuffer := stPPM.stPowerMeter.fVoltagePartial;
+	stPPM.stPowerMeter.fCalibMJBuffer := stPPM.stPowerMeter.fCalibMJPartial;
+END_IF
+
+// Handle GigE and Illuminator PVs
+stPPM.stGige.bGigePowerGet := stPPM.stGige.bGigePower;
+stPPM.stGige.bGigePower := stPPM.stGige.bGigePowerSet;
+stPPM.stGige.fIlluminatorGet := stPPM.stGige.fIlluminatorRaw * 10;
+stPPM.stGige.fIlluminatorRaw := stPPM.stGige.fIlluminatorSet / 10;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PPM">
+      <LineId Id="14" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="88" Count="1" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="94" Count="1" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
