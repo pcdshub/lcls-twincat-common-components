@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_DataBuffer" Id="{71e79cdc-141e-4f61-9dd6-e0bb7afe79b9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DataBuffer
+VAR_INPUT
+	// The value to accumulate
+	fInput: LREAL;
+	// Skip cycles to slow down acquisition rate
+	iSkipCycles: UINT := 0;
+END_VAR
+VAR_IN_OUT
+	// A buffer to slowly fill with new values as they come in
+	arrPartialBuffer: ARRAY[*] OF LREAL;
+	// A buffer to update all at once when the partial buffer fills
+	arrOutputBuffer: ARRAY[*] OF LREAL;
+END_VAR
+VAR
+	bInit: BOOL := FALSE;
+	iArrayMin: DINT;
+	iArrayMax: DINT;
+	iArrayIndex: DINT;
+	iCopyIndex: DINT;
+	iCycleCount: ULINT := 0;
+	iCycleModulo: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT bInit THEN
+	bInit := TRUE;
+	iArrayMin := LOWER_BOUND(arrPartialBuffer, 1);
+	iArrayMax := UPPER_BOUND(arrOutputBuffer, 1);
+	iArrayIndex := iArrayMin;
+	iCycleModulo := iSkipCycles + 1;
+END_IF
+iCycleCount := iCycleCount + 1;
+IF iCycleCount MOD iCycleModulo = 0 THEN
+	arrPartialBuffer[iArrayIndex] := fInput;
+	iArrayIndex := iArrayIndex + 1;
+	IF iArrayIndex > iArrayMax THEN
+		iArrayIndex := iArrayMin;
+		FOR iCopyIndex := iArrayMin TO iArrayMax DO
+			arrOutputBuffer[iCopyIndex] := arrPartialBuffer[iCopyIndex];
+		END_FOR
+	END_IF
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_DataBuffer">
+      <LineId Id="42" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="36" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

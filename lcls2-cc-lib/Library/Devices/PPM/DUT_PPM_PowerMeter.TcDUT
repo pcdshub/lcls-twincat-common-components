@@ -4,13 +4,14 @@
     <Declaration><![CDATA[TYPE DUT_PPM_PowerMeter :
 STRUCT
 	{attribute 'pytmc' := '
-		pv: RAW
+		pv: VOLT
 		io: input
 	'}
-	fVoltage AT %I*: LREAL;
+	fVoltage: LREAL;
+	iVoltageINT AT %I*: INT;
 	
 	{attribute 'pytmc' := '
-		pv: RAW_BUFFER
+		pv: VOLT_BUFFER
 		io: input
 	'}
 	fVoltageBuffer: ARRAY[0..999] OF LREAL;
@@ -35,7 +36,7 @@ STRUCT
 		pv: STC
 		io: input
 	'}
-	fThermoCouple AT %I*: LREAL;
+	fThermoCouple AT %I*: INT;
 END_STRUCT
 END_TYPE
 ]]></Declaration>

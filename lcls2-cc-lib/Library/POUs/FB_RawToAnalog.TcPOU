@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_RawToAnalog" Id="{98817c2d-2670-42a6-be0a-6b1209bb15af}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_RawToAnalog
+VAR_INPUT
+	iRaw: INT;
+	iBits: UINT;
+	fMax: LREAL;
+	fMin: LREAL;
+END_VAR
+VAR_OUTPUT
+	fReal: LREAL;
+END_VAR
+VAR
+	fScale: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Converts the integer from an analog input terminal to a real unit value (e.g., volts)
+IF fScale = 0 AND fMax <> fMin THEN
+	fScale := EXPT(2, iBits) / (fMax - fMin);
+END_IF
+IF fScale <> 0 THEN
+	fReal := iRaw / fScale + fMin;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_RawToAnalog">
+      <LineId Id="9" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="36" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

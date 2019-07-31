@@ -12,51 +12,83 @@ VAR
 	stPPM: DUT_PPM;
 	
 	fbYStage: FB_MotionStage;
-	iArrayIndex: UINT;
+	fbVoltageBuffer: FB_DataBuffer;
+	fbMJBuffer: FB_DataBuffer;
+	fbGetPMVoltage: FB_RawToAnalog;
+	fbGetIllPercent: FB_RawToAnalog;
+	fbSetIllPercent: FB_AnalogToRaw;
+	bGigeInit: BOOL := FALSE;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// TODO ADD STATE MOVES (POLISHED, FROSTED, POWER, OUT)
 fbYStage(stMotionStage:=stYStage);
 
+// Convert the terminal's integer into a value in volts
+fbGetPMVoltage(
+	iRaw := stPPM.stPowerMeter.iVoltageINT,
+	iBits := 15,
+	fMax := 10,
+	fMin := 0,
+	fReal => stPPM.stPowerMeter.fVoltage);
+
 // TODO Power meter calibration
 stPPM.stPowerMeter.fCalibMJ := stPPM.stPowerMeter.fVoltage;
 
-// Accumulate value into the partial buffer
-stPPM.stPowerMeter.fVoltagePartial[iArrayIndex] := stPPM.stPowerMeter.fVoltage;
-stPPM.stPowerMeter.fCalibMJPartial[iArrayIndex] := stPPM.stPowerMeter.fCalibMJ;
-iArrayIndex := iArrayIndex + 1;
+// Buffer the full-rate Voltage and calibrated MJ values
+fbVoltageBuffer(
+	fInput := stPPM.stPowerMeter.fVoltage,
+	arrPartialBuffer := stPPM.stPowerMeter.fVoltagePartial,
+	arrOutputBuffer := stPPM.stPowerMeter.fVoltageBuffer);
+fbMJBuffer(
+	fInput := stPPM.stPowerMeter.fCalibMJ,
+	arrPartialBuffer := stPPM.stPowerMeter.fCalibMJPartial,
+	arrOutputBuffer := stPPM.stPowerMeter.fCalibMJBuffer);
 
-// Update the full buffer and reset the index
-IF iArrayIndex >= stPPM.stPowerMeter.iArraySize THEN
-	iArrayIndex := 0;
-	stPPM.stPowerMeter.fVoltageBuffer := stPPM.stPowerMeter.fVoltagePartial;
-	stPPM.stPowerMeter.fCalibMJBuffer := stPPM.stPowerMeter.fCalibMJPartial;
+// Turn the GigE on by default
+IF NOT bGigeInit THEN
+	stPPM.stGige.bGigePower := TRUE;
+	bGigeInit := TRUE;
 END_IF
 
-// Handle GigE and Illuminator PVs
-stPPM.stGige.bGigePowerGet := stPPM.stGige.bGigePower;
-stPPM.stGige.bGigePower := stPPM.stGige.bGigePowerSet;
-stPPM.stGige.fIlluminatorGet := stPPM.stGige.fIlluminatorRaw * 10;
-stPPM.stGige.fIlluminatorRaw := stPPM.stGige.fIlluminatorSet / 10;]]></ST>
+// Illuminator conversion to percentage
+fbSetIllPercent(
+	fReal:=stPPM.stGige.fIlluminatorPercent,
+	iBits:=15,
+	fMax:=100,
+	fMin:=0,
+	iRaw=>stPPM.stGige.iIlluminatorINT);
+fbGetIllPercent(
+	iRaw:=stPPM.stGige.iIlluminatorINT,
+	iBits:=15,
+	fMax:=100,
+	fMin:=0,
+	fReal=>stPPM.stGige.fIlluminatorPercent);
+]]></ST>
     </Implementation>
     <LineIds Name="FB_PPM">
       <LineId Id="14" Count="0" />
       <LineId Id="67" Count="0" />
+      <LineId Id="110" Count="0" />
       <LineId Id="69" Count="0" />
+      <LineId Id="128" Count="5" />
+      <LineId Id="112" Count="0" />
       <LineId Id="71" Count="0" />
       <LineId Id="74" Count="0" />
       <LineId Id="86" Count="0" />
-      <LineId Id="88" Count="1" />
-      <LineId Id="84" Count="1" />
-      <LineId Id="87" Count="0" />
-      <LineId Id="75" Count="1" />
-      <LineId Id="82" Count="1" />
-      <LineId Id="79" Count="0" />
-      <LineId Id="92" Count="1" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="149" Count="7" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="179" Count="0" />
       <LineId Id="96" Count="0" />
-      <LineId Id="94" Count="1" />
-      <LineId Id="97" Count="0" />
-      <LineId Id="9" Count="0" />
+      <LineId Id="174" Count="4" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="137" Count="5" />
+      <LineId Id="147" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>
