@@ -40,6 +40,9 @@
     <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\PPM\FB_PPM_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_AnalogToRaw.TcPOU">
       <SubType>Code</SubType>
     </Compile>
