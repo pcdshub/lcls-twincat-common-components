@@ -31,19 +31,13 @@
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Devices\PPM\DUT_PPM_Gige.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\PPM\DUT_PPM_PowerMeter.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\PPM\DUT_PPM.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DUTs\DUT_L2SI_Flowmeter.TcDUT">
+    <Compile Include="Devices\PPM\FB_PPM_Gige.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FB_AnalogToRaw.TcPOU">
@@ -52,7 +46,13 @@
     <Compile Include="POUs\FB_DataBuffer.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_L2SI_Flowmeter.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_RawToAnalog.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FB_ThermoCouple.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Version\Global_Version.TcGVL">

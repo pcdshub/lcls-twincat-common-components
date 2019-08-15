@@ -5,90 +5,54 @@
 VAR_IN_OUT
 	stYStage: DUT_MotionStage;
 END_VAR
+VAR_INPUT
+	fPolished: LREAL;
+	fFrosted: LREAL;
+	fPower: LREAL;
+	fOut: LREAL;
+END_VAR
 VAR
-	{attribute 'pytmc' := '
-		pv: PPM
-	'}
-	stPPM: DUT_PPM;
-	
 	fbYStage: FB_MotionStage;
-	fbVoltageBuffer: FB_DataBuffer;
-	fbMJBuffer: FB_DataBuffer;
-	fbGetPMVoltage: FB_RawToAnalog;
-	fbGetIllPercent: FB_RawToAnalog;
-	fbSetIllPercent: FB_AnalogToRaw;
-	bGigeInit: BOOL := FALSE;
+	
+	{attribute 'pytmc' := '
+		pv: STATES
+		io: i
+	'}
+	fbStates: FB_PPM_States;
+	
+	{attribute 'pytmc' := '
+		pv: SPM
+	'}
+	fbPowerMeter: FB_PPM_PowerMeter;
+	
+	{attribute 'pytmc' := '
+		pv: GIGE
+	'}
+	fbGige: FB_PPM_Gige;
+	
+	{attribute 'pytmc' :='
+		pv: SFM
+	'}
+	fbFlowMeter: FB_L2SI_Flowmeter;
+	
+	{attribute 'pytmc' := '
+		pv: YAG
+		io: input
+	'}
+	fbYagThermoCouple: FB_ThermoCouple;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// TODO ADD STATE MOVES (POLISHED, FROSTED, POWER, OUT)
-fbYStage(stMotionStage:=stYStage);
-
-// Convert the terminal's integer into a value in volts
-fbGetPMVoltage(
-	iRaw := stPPM.stPowerMeter.iVoltageINT,
-	iBits := 15,
-	fMax := 10,
-	fMin := 0,
-	fReal => stPPM.stPowerMeter.fVoltage);
-
-// TODO Power meter calibration
-stPPM.stPowerMeter.fCalibMJ := stPPM.stPowerMeter.fVoltage;
-
-// Buffer the full-rate Voltage and calibrated MJ values
-fbVoltageBuffer(
-	fInput := stPPM.stPowerMeter.fVoltage,
-	arrPartialBuffer := stPPM.stPowerMeter.fVoltagePartial,
-	arrOutputBuffer := stPPM.stPowerMeter.fVoltageBuffer);
-fbMJBuffer(
-	fInput := stPPM.stPowerMeter.fCalibMJ,
-	arrPartialBuffer := stPPM.stPowerMeter.fCalibMJPartial,
-	arrOutputBuffer := stPPM.stPowerMeter.fCalibMJBuffer);
-
-// Turn the GigE on by default
-IF NOT bGigeInit THEN
-	stPPM.stGige.bGigePower := TRUE;
-	bGigeInit := TRUE;
-END_IF
-
-// Illuminator conversion to percentage
-fbSetIllPercent(
-	fReal:=stPPM.stGige.fIlluminatorPercent,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
-	iRaw=>stPPM.stGige.iIlluminatorINT);
-fbGetIllPercent(
-	iRaw:=stPPM.stGige.iIlluminatorINT,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
-	fReal=>stPPM.stGige.fIlluminatorPercent);
-]]></ST>
+      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+fbStates(
+	stMotionStage:=stYStage,
+	fPolished:=fPolished,
+	fFrosted:=fFrosted,
+	fPower:=fPower,
+	fOut:=fOut);
+fbPowerMeter();
+fbGige();
+fbFlowMeter();
+fbYagThermoCouple();]]></ST>
     </Implementation>
-    <LineIds Name="FB_PPM">
-      <LineId Id="14" Count="0" />
-      <LineId Id="67" Count="0" />
-      <LineId Id="110" Count="0" />
-      <LineId Id="69" Count="0" />
-      <LineId Id="128" Count="5" />
-      <LineId Id="112" Count="0" />
-      <LineId Id="71" Count="0" />
-      <LineId Id="74" Count="0" />
-      <LineId Id="86" Count="0" />
-      <LineId Id="88" Count="0" />
-      <LineId Id="149" Count="7" />
-      <LineId Id="180" Count="0" />
-      <LineId Id="93" Count="0" />
-      <LineId Id="182" Count="0" />
-      <LineId Id="181" Count="0" />
-      <LineId Id="184" Count="0" />
-      <LineId Id="183" Count="0" />
-      <LineId Id="179" Count="0" />
-      <LineId Id="96" Count="0" />
-      <LineId Id="174" Count="4" />
-      <LineId Id="173" Count="0" />
-      <LineId Id="137" Count="5" />
-      <LineId Id="147" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>
