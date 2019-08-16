@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_XPIM_States" Id="{8c4640db-3bb7-4671-b4ea-e9d46c4b8221}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_States
+VAR_IN_OUT
+	stMotionStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+	fPolished: LREAL;
+	fFrosted: LREAL;
+	fReticle: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fSmallDelta: LREAL := 0.01;
+	fBigDelta: LREAL := 10;
+	fMaxVelocity: LREAL := 20;
+	fHighAccel: LREAL := 200;
+	fLowAccel: LREAL := 25;
+	
+	stPolished: DUT_PositionState;
+	stFrosted: DUT_PositionState;
+	stReticle: DUT_PositionState;
+	stOut: DUT_PositionState;
+
+	{attribute 'pytmc' := 'pv: POLISHED_YAG'}
+	fbGoPolished: FB_StatePTPMove;
+	{attribute 'pytmc' := 'pv: FROSTED_YAG'}
+	fbGoFrosted: FB_StatePTPMove;
+	{attribute 'pytmc' := 'pv: RETICLE'}
+	fbGoReticle: FB_StatePTPMove;
+	{attribute 'pytmc' := 'pv: OUT'}
+	fbGoOut: FB_StatePTPMove;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[stPolished.sName := 'Polished Yag';
+stPolished.fPosition := fPolished;
+stPolished.fDelta := fSmallDelta;
+stPolished.fVelocity := fMaxVelocity;
+stPolished.fAccel := fHighAccel;
+stPolished.fDecel := fHighAccel;
+
+stFrosted.sName := 'Frosted Yag';
+stFrosted.fPosition := fFrosted;
+stFrosted.fDelta := fSmallDelta;
+stFrosted.fVelocity := fMaxVelocity;
+stFrosted.fAccel := fHighAccel;
+stFrosted.fDecel := fHighAccel;
+
+stReticle.sName := 'Reticle';
+stReticle.fPosition := fReticle;
+stReticle.fDelta := fSmallDelta;
+stReticle.fVelocity := fMaxVelocity;
+stReticle.fAccel := fHighAccel;
+stReticle.fDecel := fHighAccel;
+
+stOut.sName := 'Out';
+stOut.fPosition := fOut;
+stOut.fDelta := fBigDelta;
+stOut.fVelocity := fMaxVelocity;
+stOut.fAccel := fHighAccel;
+stOut.fDecel := fLowAccel;
+
+fbGoPolished(
+	stPositionState:=stPolished,
+	bMPSOk:=TRUE,
+	bEPSOk:=TRUE,
+	stMotionStage:=stMotionStage);
+	
+fbGoFrosted(
+	stPositionState:=stFrosted,
+	bMPSOk:=TRUE,
+	bEPSOk:=TRUE,
+	stMotionStage:=stMotionStage);
+	
+fbGoReticle(
+	stPositionState:=stReticle,
+	bMPSOk:=TRUE,
+	bEPSOk:=TRUE,
+	stMotionStage:=stMotionStage);
+	
+fbGoOut(
+	stPositionState:=stOut,
+	bMPSOk:=TRUE,
+	bEPSOk:=TRUE,
+	stMotionStage:=stMotionStage);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
