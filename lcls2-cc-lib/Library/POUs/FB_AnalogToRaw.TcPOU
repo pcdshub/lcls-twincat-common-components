@@ -16,15 +16,15 @@ VAR
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// Converts a real unit value (e.g., volts) to the integer needed for an analog output terminal.
-IF fScale = 0 AND fMax <> fMin THEN
-	fScale := EXPT(2, iBits) / (fMax - fMin);
+IF fScale = 0 AND fMax > fMin THEN
+	fScale := (EXPT(2, iBits) - 1) / (fMax - fMin);
+END_IF
+IF fReal > fMax THEN
+	fReal := fMax;
+ELSIF fReal < fMin THEN
+	fReal := fMin;
 END_IF
 iRaw := LREAL_TO_INT((fReal - fMin) * fScale);]]></ST>
     </Implementation>
-    <LineIds Name="FB_AnalogToRaw">
-      <LineId Id="9" Count="0" />
-      <LineId Id="21" Count="2" />
-      <LineId Id="26" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>
