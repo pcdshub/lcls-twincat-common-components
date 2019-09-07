@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
+VAR_IN_OUT
+	stYStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+	fIn: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fbYStage: FB_MotionStage;
+	fbStates: FB_REF_States;
+	fbLaser: FB_REF_Laser;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+fbStates(
+	stMotionStage:=stYStage,
+	fIn:=fIn,
+	fOut:=fOut);
+fbLaser();]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
