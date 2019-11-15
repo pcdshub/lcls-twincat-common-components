@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
+  <DUT Name="ENUM_XPIM_Filters" Id="{bfdc46b8-f018-4652-86e1-1c12b2ad37bb}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE ENUM_XPIM_Filters :
+(
+	ENUM_XPIM_Filters_Unknown := 0,
+	ENUM_XPIM_Filters_50 := 1,
+	ENUM_XPIM_Filters_25 := 2,
+	ENUM_XPIM_Filters_10 := 3,
+	ENUM_XPIM_Filters_5 := 4,
+	ENUM_XPIM_Filters_1 := 5,
+	ENUM_XPIM_Filters_0 := 6
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

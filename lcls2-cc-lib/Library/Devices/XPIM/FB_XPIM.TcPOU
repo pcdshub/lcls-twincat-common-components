@@ -1,13 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
 	stYStage: DUT_MotionStage;
 	stZoomStage: DUT_MotionStage;
 	stFocusStage: DUT_MotionStage;
+	stEl6In: EL6inData22b;
+	stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
+	bZoomEndFwd AT %I*: BOOL;
+	bZoomEndBwd AT %I*: BOOL;
+	bFocusEndFwd AT %I*: BOOL;
+	bFocusEndBwd AT %I*: BOOL;
+	
 	fPolished: LREAL;
 	fFrosted: LREAL;
 	fReticle: LREAL;
@@ -42,6 +49,12 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+// No limit switch at the bottom
+stYStage.bLimitBackwardEnable := TRUE;
+stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 fbStates(
 	stMotionStage:=stYStage,
 	fPolished:=fPolished,
@@ -50,9 +63,21 @@ fbStates(
 	fOut:=fOut);
 fbZoom(stMotionStage:=stZoomStage);
 fbFocus(stMotionStage:=stFocusStage);
-fbFilterWheel(bExecute:=TRUE);
+fbFilterWheel(
+	bExecute:=TRUE,
+	stIn_El6:=stEl6In,
+	stOut_El6:=stEl6Out);
 fbOpal();
 fbFlowSwitch();]]></ST>
     </Implementation>
+    <LineIds Name="FB_XPIM">
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="97" Count="3" />
+      <LineId Id="3" Count="8" />
+      <LineId Id="146" Count="2" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>

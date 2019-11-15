@@ -54,6 +54,9 @@
     <Compile Include="Devices\REF\FB_REF_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
