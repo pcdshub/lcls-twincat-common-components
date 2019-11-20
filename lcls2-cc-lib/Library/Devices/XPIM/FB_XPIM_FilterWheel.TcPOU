@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
   <POU Name="FB_XPIM_FilterWheel" Id="{269d03b7-f105-4687-8d05-7c6607bee2e8}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
@@ -11,10 +11,6 @@ VAR_INPUT
 	'}
 	bResetError: BOOL;
 	
-	{attribute 'pytmc' := '
-		pv: POS
-		io: output
-	'}
 	nSetPos: USINT;
 END_VAR
 VAR_OUTPUT
@@ -29,13 +25,16 @@ VAR_OUTPUT
 	sLastError: STRING;
 	sErrorTS: STRING;
 END_VAR
+VAR_IN_OUT
+	stIn_EL6: EL6inData22B;
+	stOut_EL6: EL6outData22B;
+END_VAR
 VAR
 	{attribute 'pytmc' := '
 		pv: RAW
 	'}
 	fbCom: FB_EL6_COM;
-	stIn_EL6 AT %I*: EL6inData22B;
-	stOut_EL6 AT %Q*: EL6outData22B;
+
 	nStep: USINT;
 	sLastTestCmd: STRING;
 	bIsTest: BOOL;
@@ -135,5 +134,9 @@ IF NOT bError AND
 	nStep := 50;
 END_IF]]></ST>
     </Implementation>
+    <LineIds Name="FB_XPIM_FilterWheel">
+      <LineId Id="3" Count="89" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>
