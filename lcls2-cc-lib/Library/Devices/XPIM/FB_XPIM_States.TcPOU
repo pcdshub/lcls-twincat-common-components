@@ -6,8 +6,8 @@ VAR_IN_OUT
 	stMotionStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fPolished: LREAL;
-	fFrosted: LREAL;
+	fYag: LREAL;
+	fDiamond: LREAL;
 	fReticle: LREAL;
 	fOut: LREAL;
 END_VAR
@@ -18,15 +18,15 @@ VAR
 	fHighAccel: LREAL := 200;
 	fLowAccel: LREAL := 25;
 	
-	stPolished: DUT_PositionState;
-	stFrosted: DUT_PositionState;
+	stYag: DUT_PositionState;
+	stDiamond: DUT_PositionState;
 	stReticle: DUT_PositionState;
 	stOut: DUT_PositionState;
 
-	{attribute 'pytmc' := 'pv: POLISHED_YAG'}
-	fbGoPolished: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: FROSTED_YAG'}
-	fbGoFrosted: FB_StatePTPMove;
+	{attribute 'pytmc' := 'pv: YAG'}
+	fbGoYag: FB_StatePTPMove;
+	{attribute 'pytmc' := 'pv: DIAMOND'}
+	fbGoDiamond: FB_StatePTPMove;
 	{attribute 'pytmc' := 'pv: RETICLE'}
 	fbGoReticle: FB_StatePTPMove;
 	{attribute 'pytmc' := 'pv: OUT'}
@@ -34,19 +34,19 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[stPolished.sName := 'Polished Yag';
-stPolished.fPosition := fPolished;
-stPolished.fDelta := fSmallDelta;
-stPolished.fVelocity := fMaxVelocity;
-stPolished.fAccel := fHighAccel;
-stPolished.fDecel := fHighAccel;
+      <ST><![CDATA[stYag.sName := 'Yag';
+stYag.fPosition := fYag;
+stYag.fDelta := fSmallDelta;
+stYag.fVelocity := fMaxVelocity;
+stYag.fAccel := fHighAccel;
+stYag.fDecel := fHighAccel;
 
-stFrosted.sName := 'Frosted Yag';
-stFrosted.fPosition := fFrosted;
-stFrosted.fDelta := fSmallDelta;
-stFrosted.fVelocity := fMaxVelocity;
-stFrosted.fAccel := fHighAccel;
-stFrosted.fDecel := fHighAccel;
+stDiamond.sName := 'Diamond';
+stDiamond.fPosition := fDiamond;
+stDiamond.fDelta := fSmallDelta;
+stDiamond.fVelocity := fMaxVelocity;
+stDiamond.fAccel := fHighAccel;
+stDiamond.fDecel := fHighAccel;
 
 stReticle.sName := 'Reticle';
 stReticle.fPosition := fReticle;
@@ -62,28 +62,24 @@ stOut.fVelocity := fMaxVelocity;
 stOut.fAccel := fHighAccel;
 stOut.fDecel := fLowAccel;
 
-fbGoPolished(
-	stPositionState:=stPolished,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+fbGoYag(
+	stPositionState:=stYag,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
-fbGoFrosted(
-	stPositionState:=stFrosted,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+fbGoDiamond(
+	stPositionState:=stDiamond,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoReticle(
 	stPositionState:=stReticle,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoOut(
 	stPositionState:=stOut,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);]]></ST>
     </Implementation>
   </POU>
