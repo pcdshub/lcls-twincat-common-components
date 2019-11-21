@@ -15,7 +15,7 @@ VAR
 	fbYStage: FB_MotionStage;
 	
 	{attribute 'pytmc' := '
-		pv: STATES
+		pv: MMS:STATES
 		io: i
 	'}
 	fbStates: FB_PPM_States;

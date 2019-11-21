@@ -64,26 +64,22 @@ stOut.fDecel := fLowAccel;
 
 fbGoPolished(
 	stPositionState:=stPolished,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoFrosted(
 	stPositionState:=stFrosted,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoPower(
 	stPositionState:=stPower,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoOut(
 	stPositionState:=stOut,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);]]></ST>
     </Implementation>
   </POU>

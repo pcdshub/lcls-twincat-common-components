@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
@@ -15,8 +15,8 @@ VAR_INPUT
 	bFocusEndFwd AT %I*: BOOL;
 	bFocusEndBwd AT %I*: BOOL;
 	
-	fPolished: LREAL;
-	fFrosted: LREAL;
+	fYag: LREAL;
+	fDiamond: LREAL;
 	fReticle: LREAL;
 	fOut: LREAL;
 END_VAR
@@ -26,7 +26,7 @@ VAR
 	fbFocus: FB_MotionStage;
 	
 	{attribute 'pytmc' := '
-		pv: STATES
+		pv: MMS:STATES
 		io: io
 	'}
 	fbStates: FB_XPIM_States;
@@ -57,8 +57,8 @@ stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 fbStates(
 	stMotionStage:=stYStage,
-	fPolished:=fPolished,
-	fFrosted:=fFrosted,
+	fYag:=fYag,
+	fDiamond:=fDiamond,
 	fReticle:=fReticle,
 	fOut:=fOut);
 fbZoom(stMotionStage:=stZoomStage);
@@ -70,14 +70,5 @@ fbFilterWheel(
 fbOpal();
 fbFlowSwitch();]]></ST>
     </Implementation>
-    <LineIds Name="FB_XPIM">
-      <LineId Id="53" Count="0" />
-      <LineId Id="52" Count="0" />
-      <LineId Id="97" Count="3" />
-      <LineId Id="3" Count="8" />
-      <LineId Id="146" Count="2" />
-      <LineId Id="12" Count="1" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

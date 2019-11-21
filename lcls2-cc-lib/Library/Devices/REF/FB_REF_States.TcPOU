@@ -38,14 +38,12 @@ stOut.fDecel := fAccel;
 
 fbGoIn(
 	stPositionState:=stIn,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);
 	
 fbGoOut(
 	stPositionState:=stOut,
-	bMPSOk:=TRUE,
-	bEPSOk:=TRUE,
+	bMoveOk:=TRUE,
 	stMotionStage:=stMotionStage);]]></ST>
     </Implementation>
   </POU>
