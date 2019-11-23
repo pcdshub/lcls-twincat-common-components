@@ -1,0 +1,1458 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>PLC Project (1): Library &#8212; pcdshub/lcls2-cc-lib  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Library.tmc" href="Library.tmc.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="plc-project-1-library">
+<h1>PLC Project (1): Library<a class="headerlink" href="#plc-project-1-library" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Project</span> <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Library</span><span class="o">.</span><span class="n">plcproj</span>
+<span class="n">TMC</span> <span class="n">path</span><span class="p">:</span>     <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Library</span><span class="o">.</span><span class="n">tmc</span>
+<span class="n">AMS</span> <span class="n">ID</span><span class="p">:</span>       
+<span class="n">IP</span> <span class="n">Address</span><span class="p">:</span>    <span class="p">(</span><span class="o">*</span> <span class="n">based</span> <span class="n">on</span> <span class="n">AMS</span> <span class="n">ID</span><span class="p">)</span>
+<span class="n">Port</span><span class="p">:</span>         <span class="mi">851</span>
+
+<span class="n">Source</span> <span class="n">files</span><span class="p">:</span>
+    <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">2.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_Gige</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">3.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_PowerMeter</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">4.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_States</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">5.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">REF</span><span class="o">/</span><span class="n">FB_REF</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">6.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">REF</span><span class="o">/</span><span class="n">FB_REF_Laser</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">7.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">REF</span><span class="o">/</span><span class="n">FB_REF_States</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">8.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">ENUM_XPIM_Filters</span><span class="o">.</span><span class="n">TcDUT</span>
+    <span class="mf">9.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">10.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_FilterWheel</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">11.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_Opal</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">12.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_States</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">13.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_AnalogToRaw</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">14.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_DataBuffer</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">15.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_EL6_COM</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">16.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_L2SI_Flowmeter</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">17.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_RawToAnalog</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">18.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_ThermoCouple</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">19.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_XTES_Flowswitch</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">20.</span><span class="p">)</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">travis</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">pcdshub</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">lcls2</span><span class="o">-</span><span class="n">cc</span><span class="o">-</span><span class="n">lib</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Version</span><span class="o">/</span><span class="n">Global_Version</span><span class="o">.</span><span class="n">TcGVL</span>
+
+<span class="n">GVLs</span><span class="p">:</span>
+    <span class="mf">1.</span><span class="p">)</span> <span class="n">Global_Version</span>
+</pre></div>
+</div>
+<div class="section" id="devices-ppm-fb-ppm-tcpou-tcplcobject">
+<h2>Devices/PPM/FB_PPM.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ppm-declaration">
+<h3>FB_PPM: Declaration<a class="headerlink" href="#fb-ppm-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM
+VAR_IN_OUT
+	stYStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+	fPolished: LREAL;
+	fFrosted: LREAL;
+	fPower: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fbYStage: FB_MotionStage;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MMS:STATES
+		io: i
+	&#39;}
+	fbStates: FB_PPM_States;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: SPM
+	&#39;}
+	fbPowerMeter: FB_PPM_PowerMeter;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: GIGE
+	&#39;}
+	fbGige: FB_PPM_Gige;
+	
+	{attribute &#39;pytmc&#39; :=&#39;
+		pv: SFM
+	&#39;}
+	fbFlowMeter: FB_L2SI_Flowmeter;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: YAG
+		io: input
+	&#39;}
+	fbYagThermoCouple: FB_ThermoCouple;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ppm-st">
+<h3>FB_PPM: ST<a class="headerlink" href="#fb-ppm-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+<span class="n">fbStates</span><span class="p">(</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
+	<span class="n">fPolished</span><span class="o">:=</span><span class="n">fPolished</span><span class="p">,</span>
+	<span class="n">fFrosted</span><span class="o">:=</span><span class="n">fFrosted</span><span class="p">,</span>
+	<span class="n">fPower</span><span class="o">:=</span><span class="n">fPower</span><span class="p">,</span>
+	<span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
+<span class="n">fbPowerMeter</span><span class="p">();</span>
+<span class="n">fbGige</span><span class="p">();</span>
+<span class="n">fbFlowMeter</span><span class="p">();</span>
+<span class="n">fbYagThermoCouple</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ppm-fb-ppm-gige-tcpou-tcplcobject">
+<h2>Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-gige-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ppm-gige-declaration">
+<h3>FB_PPM_Gige: Declaration<a class="headerlink" href="#fb-ppm-gige-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_Gige
+VAR
+	iIlluminatorINT AT %Q*: INT;
+
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: PWR
+		ZNAM: OFF
+		ONAM: ON
+	&#39;}
+	bGigePower AT %Q*: BOOL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: CIL
+		EGU: %
+	&#39;}
+	fIlluminatorPercent: LREAL;
+		
+	fbGetIllPercent: FB_RawToAnalog;
+	fbSetIllPercent: FB_AnalogToRaw;
+	
+	bGigeInit: BOOL := FALSE;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ppm-gige-st">
+<h3>FB_PPM_Gige: ST<a class="headerlink" href="#fb-ppm-gige-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Turn</span> <span class="n">the</span> <span class="n">GigE</span> <span class="k">on</span> <span class="n">by</span> <span class="n">default</span>
+<span class="k">IF</span> <span class="k">NOT</span> <span class="n">bGigeInit</span> <span class="k">THEN</span>
+	<span class="n">bGigePower</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+	<span class="n">bGigeInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="o">//</span> <span class="n">Illuminator</span> <span class="n">conversion</span> <span class="k">to</span> <span class="n">percentage</span>
+<span class="n">fbSetIllPercent</span><span class="p">(</span>
+	<span class="n">fReal</span><span class="o">:=</span><span class="n">fIlluminatorPercent</span><span class="p">,</span>
+	<span class="n">iBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
+	<span class="n">fMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
+	<span class="n">fMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
+	<span class="n">iRaw</span><span class="o">=&gt;</span><span class="n">iIlluminatorINT</span><span class="p">);</span>
+<span class="n">fbGetIllPercent</span><span class="p">(</span>
+	<span class="n">iRaw</span><span class="o">:=</span><span class="n">iIlluminatorINT</span><span class="p">,</span>
+	<span class="n">iBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
+	<span class="n">fMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
+	<span class="n">fMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
+	<span class="n">fReal</span><span class="o">=&gt;</span><span class="n">fIlluminatorPercent</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject">
+<h2>Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ppm-powermeter-declaration">
+<h3>FB_PPM_PowerMeter: Declaration<a class="headerlink" href="#fb-ppm-powermeter-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_PowerMeter
+VAR
+	iVoltageINT AT %I*: INT;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: VOLT
+		io: input
+	&#39;}
+	fVoltage: LREAL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: VOLT_BUFFER
+		io: input
+	&#39;}
+	fVoltageBuffer: ARRAY[0..999] OF LREAL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MJ
+		io: input
+	&#39;}
+	fCalibMJ: LREAL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MJ_BUFFER
+		io: input
+	&#39;}
+	fCalibMJBuffer: ARRAY[0..999] OF LREAL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: STC
+		io: input
+	&#39;}
+	fbThermoCouple: FB_ThermoCouple;
+
+	fbGetPMVoltage: FB_RawToAnalog;
+	fbVoltageBuffer: FB_DataBuffer;
+	fbMJBuffer: FB_DataBuffer;
+	
+	fCalibMJPartial: ARRAY[0..999] OF LREAL;
+	fVoltagePartial: ARRAY[0..999] OF LREAL;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ppm-powermeter-st">
+<h3>FB_PPM_PowerMeter: ST<a class="headerlink" href="#fb-ppm-powermeter-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbThermoCouple</span><span class="p">();</span>
+
+<span class="o">//</span> <span class="n">Convert</span> <span class="n">the</span> <span class="n">terminal</span><span class="na">&#39;s</span> <span class="kt">integer</span> <span class="n">into</span> <span class="n">a</span> <span class="n">value</span> <span class="k">in</span> <span class="n">volts</span>
+<span class="n">fbGetPMVoltage</span><span class="p">(</span>
+	<span class="n">iRaw</span> <span class="o">:=</span> <span class="n">iVoltageINT</span><span class="p">,</span>
+	<span class="n">iBits</span> <span class="o">:=</span> <span class="mi">15</span><span class="p">,</span>
+	<span class="n">fMax</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">,</span>
+	<span class="n">fMin</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
+	<span class="n">fReal</span> <span class="o">=&gt;</span> <span class="n">fVoltage</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">TODO</span> <span class="n">Power</span> <span class="n">meter</span> <span class="n">calibration</span>
+<span class="n">fCalibMJ</span> <span class="o">:=</span> <span class="n">fVoltage</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="k">Buffer</span> <span class="n">the</span> <span class="n">full</span><span class="o">-</span><span class="n">rate</span> <span class="n">Voltage</span> <span class="k">and</span> <span class="n">calibrated</span> <span class="n">MJ</span> <span class="n">values</span>
+<span class="n">fbVoltageBuffer</span><span class="p">(</span>
+	<span class="n">fInput</span> <span class="o">:=</span> <span class="n">fVoltage</span><span class="p">,</span>
+	<span class="n">arrPartialBuffer</span> <span class="o">:=</span> <span class="n">fVoltagePartial</span><span class="p">,</span>
+	<span class="n">arrOutputBuffer</span> <span class="o">:=</span> <span class="n">fVoltageBuffer</span><span class="p">);</span>
+<span class="n">fbMJBuffer</span><span class="p">(</span>
+	<span class="n">fInput</span> <span class="o">:=</span> <span class="n">fCalibMJ</span><span class="p">,</span>
+	<span class="n">arrPartialBuffer</span> <span class="o">:=</span> <span class="n">fCalibMJPartial</span><span class="p">,</span>
+	<span class="n">arrOutputBuffer</span> <span class="o">:=</span> <span class="n">fCalibMJBuffer</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ppm-fb-ppm-states-tcpou-tcplcobject">
+<h2>Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-states-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ppm-states-declaration">
+<h3>FB_PPM_States: Declaration<a class="headerlink" href="#fb-ppm-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_States
+VAR_IN_OUT
+	stMotionStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+	fPolished: LREAL;
+	fFrosted: LREAL;
+	fPower: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fSmallDelta: LREAL := 0.01;
+	fBigDelta: LREAL := 10;
+	fMaxVelocity: LREAL := 65;
+	fHighAccel: LREAL := 200;
+	fLowAccel: LREAL := 25;
+	
+	stPolished: DUT_PositionState;
+	stFrosted: DUT_PositionState;
+	stPower: DUT_PositionState;
+	stOut: DUT_PositionState;
+
+	{attribute &#39;pytmc&#39; := &#39;pv: POLISHED_YAG&#39;}
+	fbGoPolished: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: FROSTED_YAG&#39;}
+	fbGoFrosted: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: POWER_METER&#39;}
+	fbGoPower: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: OUT&#39;}
+	fbGoOut: FB_StatePTPMove;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ppm-states-st">
+<h3>FB_PPM_States: ST<a class="headerlink" href="#fb-ppm-states-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">stPolished</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Polished</span> <span class="n">Yag</span><span class="p">&#39;;</span>
+<span class="n">stPolished</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fPolished</span><span class="p">;</span>
+<span class="n">stPolished</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stPolished</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stPolished</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stPolished</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Frosted</span> <span class="n">Yag</span><span class="p">&#39;;</span>
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fFrosted</span><span class="p">;</span>
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stFrosted</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stPower</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Power</span> <span class="n">Meter</span><span class="p">&#39;;</span>
+<span class="n">stPower</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fPower</span><span class="p">;</span>
+<span class="n">stPower</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stPower</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stPower</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stPower</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stOut</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Out</span><span class="p">&#39;;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fBigDelta</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fLowAccel</span><span class="p">;</span>
+
+<span class="n">fbGoPolished</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stPolished</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoFrosted</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stFrosted</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoPower</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stPower</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoOut</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ref-fb-ref-tcpou-tcplcobject">
+<h2>Devices/REF/FB_REF.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ref-fb-ref-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ref-declaration">
+<h3>FB_REF: Declaration<a class="headerlink" href="#fb-ref-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_REF</span>
+<span class="n">VAR_IN_OUT</span>
+	<span class="n">stYStage</span><span class="o">:</span> <span class="n">DUT_MotionStage</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_INPUT</span>
+	<span class="n">fIn</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="n">fOut</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">fbYStage</span><span class="o">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
+	<span class="n">fbStates</span><span class="o">:</span> <span class="n">FB_REF_States</span><span class="p">;</span>
+	<span class="n">fbLaser</span><span class="o">:</span> <span class="n">FB_REF_Laser</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ref-st">
+<h3>FB_REF: ST<a class="headerlink" href="#fb-ref-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+<span class="n">fbStates</span><span class="p">(</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
+	<span class="n">fIn</span><span class="o">:=</span><span class="n">fIn</span><span class="p">,</span>
+	<span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
+<span class="n">fbLaser</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ref-fb-ref-laser-tcpou-tcplcobject">
+<h2>Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ref-fb-ref-laser-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ref-laser-declaration">
+<h3>FB_REF_Laser: Declaration<a class="headerlink" href="#fb-ref-laser-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_REF_Laser</span>
+<span class="n">VAR_INPUT</span>
+	<span class="n">bShutdown</span><span class="o">:</span> <span class="n">BOOL</span><span class="p">;</span>
+	<span class="n">fLaserPercent</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">iShutdownINT</span> <span class="n">AT</span> <span class="o">%</span><span class="n">Q</span><span class="o">*:</span> <span class="n">INT</span><span class="p">;</span>
+	<span class="n">iLaserINT</span> <span class="n">AT</span> <span class="o">%</span><span class="n">Q</span><span class="o">*:</span> <span class="n">INT</span><span class="p">;</span>
+	
+	<span class="n">fbGetLasPercent</span><span class="o">:</span> <span class="n">FB_RawToAnalog</span><span class="p">;</span>
+	<span class="n">fbSetLasPercent</span><span class="o">:</span> <span class="n">FB_AnalogToRaw</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ref-laser-st">
+<h3>FB_REF_Laser: ST<a class="headerlink" href="#fb-ref-laser-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Send</span> <span class="mi">5</span><span class="n">V</span> <span class="k">to</span> <span class="n">suppress</span> <span class="n">laser</span>
+<span class="k">IF</span> <span class="n">bShutdown</span> <span class="k">THEN</span>
+	<span class="n">iShutdownINT</span> <span class="o">:=</span> <span class="n">LREAL_TO_INT</span><span class="p">(</span><span class="n">EXPT</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">14</span><span class="p">));</span>
+<span class="k">ELSE</span>
+	<span class="n">iShutdownINT</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="o">//</span> <span class="k">Use</span> <span class="mi">14</span> <span class="n">bits</span> <span class="n">instead</span> <span class="k">of</span> <span class="mi">15</span> <span class="k">to</span> <span class="n">limit</span> <span class="k">to</span> <span class="mi">0</span><span class="o">-</span><span class="mi">5</span><span class="n">V</span> <span class="n">instead</span> <span class="k">of</span> <span class="mi">10</span><span class="n">V</span>
+<span class="n">fbSetLasPercent</span><span class="p">(</span>
+	<span class="n">fReal</span><span class="o">:=</span><span class="n">fLaserPercent</span><span class="p">,</span>
+	<span class="n">iBits</span><span class="o">:=</span><span class="mi">14</span><span class="p">,</span>
+	<span class="n">fMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
+	<span class="n">fMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
+	<span class="n">iRaw</span><span class="o">=&gt;</span><span class="n">iLaserInt</span><span class="p">);</span>
+<span class="n">fbGetLasPercent</span><span class="p">(</span>
+	<span class="n">iRaw</span><span class="o">:=</span><span class="n">iLaserInt</span><span class="p">,</span>
+	<span class="n">iBits</span><span class="o">:=</span><span class="mi">14</span><span class="p">,</span>
+	<span class="n">fMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
+	<span class="n">fMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
+	<span class="n">fReal</span><span class="o">=&gt;</span><span class="n">fLaserPercent</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-ref-fb-ref-states-tcpou-tcplcobject">
+<h2>Devices/REF/FB_REF_States.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ref-fb-ref-states-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-ref-states-declaration">
+<h3>FB_REF_States: Declaration<a class="headerlink" href="#fb-ref-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_REF_States</span>
+<span class="n">VAR_IN_OUT</span>
+	<span class="n">stMotionStage</span><span class="o">:</span> <span class="n">DUT_MotionStage</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_INPUT</span>
+	<span class="n">fIn</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="n">fOut</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">fDelta</span><span class="o">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">01</span><span class="p">;</span>
+	<span class="n">fMaxVelocity</span><span class="o">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">65</span><span class="p">;</span>
+	<span class="n">fAccel</span><span class="o">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">25</span><span class="p">;</span>
+	
+	<span class="n">stIn</span><span class="o">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
+	<span class="n">stOut</span><span class="o">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
+	
+	<span class="n">fbGoOut</span><span class="o">:</span> <span class="n">FB_StatePTPMove</span><span class="p">;</span>
+	<span class="n">fbGoIn</span><span class="o">:</span> <span class="n">FB_StatePTPMove</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-ref-states-st">
+<h3>FB_REF_States: ST<a class="headerlink" href="#fb-ref-states-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">stIn</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;In</span><span class="p">&#39;;</span>
+<span class="n">stIn</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fIn</span><span class="p">;</span>
+<span class="n">stIn</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fDelta</span><span class="p">;</span>
+<span class="n">stIn</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stIn</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
+<span class="n">stIn</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
+
+<span class="n">stOut</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Out</span><span class="p">&#39;;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fDelta</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
+
+<span class="n">fbGoIn</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stIn</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoOut</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-xpim-enum-xpim-filters-tcdut-tcplcobject">
+<h2>Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)<a class="headerlink" href="#devices-xpim-enum-xpim-filters-tcdut-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="enum-xpim-filters-declaration">
+<h3>ENUM_XPIM_Filters: Declaration<a class="headerlink" href="#enum-xpim-filters-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
+{attribute &#39;strict&#39;}
+TYPE ENUM_XPIM_Filters :
+(
+	ENUM_XPIM_Filters_Unknown := 0,
+	ENUM_XPIM_Filters_50 := 1,
+	ENUM_XPIM_Filters_25 := 2,
+	ENUM_XPIM_Filters_10 := 3,
+	ENUM_XPIM_Filters_5 := 4,
+	ENUM_XPIM_Filters_1 := 5,
+	ENUM_XPIM_Filters_0 := 6
+);
+END_TYPE
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-xpim-fb-xpim-tcpou-tcplcobject">
+<h2>Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-xpim-declaration">
+<h3>FB_XPIM: Declaration<a class="headerlink" href="#fb-xpim-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM
+VAR_IN_OUT
+	stYStage: DUT_MotionStage;
+	stZoomStage: DUT_MotionStage;
+	stFocusStage: DUT_MotionStage;
+	stEl6In: EL6inData22b;
+	stEl6Out: EL6OutData22b;
+END_VAR
+VAR_INPUT
+	bZoomEndFwd AT %I*: BOOL;
+	bZoomEndBwd AT %I*: BOOL;
+	bFocusEndFwd AT %I*: BOOL;
+	bFocusEndBwd AT %I*: BOOL;
+	
+	fYag: LREAL;
+	fDiamond: LREAL;
+	fReticle: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fbYStage: FB_MotionStage;
+	fbZoom: FB_MotionStage;
+	fbFocus: FB_MotionStage;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MMS:STATES
+		io: io
+	&#39;}
+	fbStates: FB_XPIM_States;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MFW
+	&#39;}
+	fbFilterWheel: FB_XPIM_FilterWheel;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: CAM
+	&#39;}
+	fbOpal: FB_XPIM_Opal;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: SFW
+	&#39;}
+	fbFlowSwitch: FB_XTES_Flowswitch;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-xpim-st">
+<h3>FB_XPIM: ST<a class="headerlink" href="#fb-xpim-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+<span class="o">//</span> <span class="n">No</span> <span class="n">limit</span> <span class="n">switch</span> <span class="n">at</span> <span class="n">the</span> <span class="n">bottom</span>
+<span class="n">stYStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndFwd</span><span class="p">;</span>
+<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndBwd</span><span class="p">;</span>
+<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndFwd</span><span class="p">;</span>
+<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndBwd</span><span class="p">;</span>
+<span class="n">fbStates</span><span class="p">(</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
+	<span class="n">fYag</span><span class="o">:=</span><span class="n">fYag</span><span class="p">,</span>
+	<span class="n">fDiamond</span><span class="o">:=</span><span class="n">fDiamond</span><span class="p">,</span>
+	<span class="n">fReticle</span><span class="o">:=</span><span class="n">fReticle</span><span class="p">,</span>
+	<span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
+<span class="n">fbZoom</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stZoomStage</span><span class="p">);</span>
+<span class="n">fbFocus</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stFocusStage</span><span class="p">);</span>
+<span class="n">fbFilterWheel</span><span class="p">(</span>
+	<span class="n">bExecute</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stIn_El6</span><span class="o">:=</span><span class="n">stEl6In</span><span class="p">,</span>
+	<span class="n">stOut_El6</span><span class="o">:=</span><span class="n">stEl6Out</span><span class="p">);</span>
+<span class="n">fbOpal</span><span class="p">();</span>
+<span class="n">fbFlowSwitch</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject">
+<h2>Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-xpim-filterwheel-declaration">
+<h3>FB_XPIM_FilterWheel: Declaration<a class="headerlink" href="#fb-xpim-filterwheel-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_FilterWheel
+VAR_INPUT
+	bExecute: BOOL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR:RESET
+		io: output
+	&#39;}
+	bResetError: BOOL;
+	
+	nSetPos: USINT;
+END_VAR
+VAR_OUTPUT
+	nGetPos: USINT;
+	bBusy: BOOL;
+	bError: BOOL;
+	sError: STRING;
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR:MSG
+		io: input
+	&#39;}
+	sLastError: STRING;
+	sErrorTS: STRING;
+END_VAR
+VAR_IN_OUT
+	stIn_EL6: EL6inData22B;
+	stOut_EL6: EL6outData22B;
+END_VAR
+VAR
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: RAW
+	&#39;}
+	fbCom: FB_EL6_COM;
+
+	nStep: USINT;
+	sLastTestCmd: STRING;
+	bIsTest: BOOL;
+	fbGetTime: NT_GetTime;
+	bStopOnErr: BOOL;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-xpim-filterwheel-st">
+<h3>FB_XPIM_FilterWheel: ST<a class="headerlink" href="#fb-xpim-filterwheel-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>fbCom.sSendSuffix := &#39;$R&#39;;
+fbCom.sRecvSuffix := &#39;$R&#39;;
+
+IF bExecute AND nStep = 0 THEN
+	IF bResetError OR NOT bError THEN
+		nStep := 10;
+	END_IF
+ELSIF NOT bExecute THEN
+	nStep := 0;
+END_IF
+CASE nStep OF
+	0:
+		; // idle
+	10: 
+		// Get position
+		bIsTest := FALSE;
+		fbCom(sCmd:=&#39;pos?&#39;,
+			bSend:=TRUE,
+			stIn_EL6:=stIn_EL6,
+			stOut_EL6:=stOut_EL6);
+		nStep := nStep + 10;
+	20:
+		// Wait for response and set variables
+		fbCom(stIn_EL6:=stIn_EL6,
+			stOut_EL6:=stOut_EL6);
+		IF fbCom.bDone THEN
+			bError := FALSE;
+			sError := &#39;&#39;;
+			nGetPos := STRING_TO_USINT(fbCom.sResponse);
+			nSetPos := nGetPos;
+			nStep := nStep + 10;
+			IF nGetPos = 0 THEN
+				sError := &#39;Filter wheel in invalid state&#39;;
+				bStopOnErr := TRUE;
+				nStep := 50;
+			END_IF
+		END_IF
+	30:
+		// Wait for a move request
+		IF nSetPos &lt;&gt; nGetPos THEN
+			fbCom(sCmd:=CONCAT(&#39;pos=&#39;, USINT_TO_STRING(nSetPos)),
+				bSend:=TRUE,
+				stIn_EL6:=stIn_EL6,
+				stOut_EL6:=stOut_EL6);
+			nStep := nStep + 10;
+			bBusy := TRUE;	
+		END_IF
+	40:
+		fbCom(stIn_EL6:=stIn_EL6,
+			stOut_EL6:=stOut_EL6);
+		// Wait for move to be done
+		IF fbCom.bDone THEN
+			bBusy := FALSE;
+			nStep := 10;
+			// Handle setpoint error
+			IF fbCom.sResponse = &#39;Command error CMD_ARG_INVALID$N$R&#39; THEN
+				sError := &#39;Invalid set position&#39;;
+				nStep := 50;
+			END_IF
+		END_IF
+	50:
+		// Set sError and then jump here for standard handling
+		sLastError := sError;
+		bError := TRUE;
+		fbGetTime(NETID:=&#39;&#39;,
+			START:=TRUE);
+		nStep := nStep + 10;
+	60:
+		// Error handling continued
+		fbGetTime();
+		IF NOT fbGetTime.BUSY THEN
+			sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
+			fbGetTime.START := FALSE;
+			// set bStopOnErr to TRUE if it was a major error
+			IF bStopOnErr THEN
+				nStep := 0;
+			ELSE
+				nStep := 10;
+			END_IF
+			bStopOnErr := FALSE;
+		END_IF
+END_CASE
+// Check for inner comms errors, report to EPICS same way
+IF NOT bError AND
+	(fbCom.eRecvErrorID &lt;&gt; COMERROR_NOERROR
+	OR fbCom.eSendErrorID &lt;&gt; COMERROR_NOERROR
+	OR fbCom.eRecvErrorID &lt;&gt; COMERROR_NOERROR) THEN
+	sError := &#39;Serial Communication Error&#39;;
+	bStopOnErr := TRUE;
+	nStep := 50;
+END_IF
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-xpim-fb-xpim-opal-tcpou-tcplcobject">
+<h2>Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-opal-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-xpim-opal-declaration">
+<h3>FB_XPIM_Opal: Declaration<a class="headerlink" href="#fb-xpim-opal-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_Opal
+VAR
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: PWR
+		ZNAM: OFF
+		ONAM: ON
+	&#39;}
+	bOpalPower AT %Q*: BOOL;
+	
+	bOpalInit: BOOL := FALSE;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-xpim-opal-st">
+<h3>FB_XPIM_Opal: ST<a class="headerlink" href="#fb-xpim-opal-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Turn</span> <span class="n">the</span> <span class="n">Opal</span> <span class="k">on</span> <span class="n">by</span> <span class="n">default</span>
+<span class="k">IF</span> <span class="k">NOT</span> <span class="n">bOpalInit</span> <span class="k">THEN</span>
+	<span class="n">bOpalPower</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+	<span class="n">bOpalInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="devices-xpim-fb-xpim-states-tcpou-tcplcobject">
+<h2>Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-states-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-xpim-states-declaration">
+<h3>FB_XPIM_States: Declaration<a class="headerlink" href="#fb-xpim-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_States
+VAR_IN_OUT
+	stMotionStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+	fYag: LREAL;
+	fDiamond: LREAL;
+	fReticle: LREAL;
+	fOut: LREAL;
+END_VAR
+VAR
+	fSmallDelta: LREAL := 0.01;
+	fBigDelta: LREAL := 10;
+	fMaxVelocity: LREAL := 20;
+	fHighAccel: LREAL := 200;
+	fLowAccel: LREAL := 25;
+	
+	stYag: DUT_PositionState;
+	stDiamond: DUT_PositionState;
+	stReticle: DUT_PositionState;
+	stOut: DUT_PositionState;
+
+	{attribute &#39;pytmc&#39; := &#39;pv: YAG&#39;}
+	fbGoYag: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: DIAMOND&#39;}
+	fbGoDiamond: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: RETICLE&#39;}
+	fbGoReticle: FB_StatePTPMove;
+	{attribute &#39;pytmc&#39; := &#39;pv: OUT&#39;}
+	fbGoOut: FB_StatePTPMove;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-xpim-states-st">
+<h3>FB_XPIM_States: ST<a class="headerlink" href="#fb-xpim-states-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">stYag</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Yag</span><span class="p">&#39;;</span>
+<span class="n">stYag</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fYag</span><span class="p">;</span>
+<span class="n">stYag</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stYag</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stYag</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stYag</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Diamond</span><span class="p">&#39;;</span>
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fDiamond</span><span class="p">;</span>
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stDiamond</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stReticle</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Reticle</span><span class="p">&#39;;</span>
+<span class="n">stReticle</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fReticle</span><span class="p">;</span>
+<span class="n">stReticle</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fSmallDelta</span><span class="p">;</span>
+<span class="n">stReticle</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stReticle</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stReticle</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+
+<span class="n">stOut</span><span class="p">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Out</span><span class="p">&#39;;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fBigDelta</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fMaxVelocity</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
+<span class="n">stOut</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fLowAccel</span><span class="p">;</span>
+
+<span class="n">fbGoYag</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stYag</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoDiamond</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stDiamond</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoReticle</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stReticle</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+	
+<span class="n">fbGoOut</span><span class="p">(</span>
+	<span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span>
+	<span class="n">bMoveOk</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stMotionStage</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-analogtoraw-tcpou-tcplcobject">
+<h2>POUs/FB_AnalogToRaw.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-analogtoraw-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-analogtoraw-declaration">
+<h3>FB_AnalogToRaw: Declaration<a class="headerlink" href="#fb-analogtoraw-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_AnalogToRaw</span>
+<span class="n">VAR_INPUT</span>
+	<span class="n">fReal</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="n">iBits</span><span class="o">:</span> <span class="n">UINT</span><span class="p">;</span>
+	<span class="n">fMax</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="n">fMin</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+	<span class="n">iRaw</span><span class="o">:</span> <span class="n">INT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">fScale</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-analogtoraw-st">
+<h3>FB_AnalogToRaw: ST<a class="headerlink" href="#fb-analogtoraw-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Converts</span> <span class="n">a</span> <span class="n">real</span> <span class="n">unit</span> <span class="n">value</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">g</span><span class="p">.,</span> <span class="n">volts</span><span class="p">)</span> <span class="k">to</span> <span class="n">the</span> <span class="kt">integer</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">an</span> <span class="n">analog</span> <span class="n">output</span> <span class="n">terminal</span><span class="p">.</span>
+<span class="k">IF</span> <span class="n">fScale</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">fMax</span> <span class="o">&gt;</span> <span class="n">fMin</span> <span class="k">THEN</span>
+	<span class="n">fScale</span> <span class="o">:=</span> <span class="p">(</span><span class="n">EXPT</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">iBits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fMax</span> <span class="o">-</span> <span class="n">fMin</span><span class="p">);</span>
+<span class="n">END_IF</span>
+<span class="k">IF</span> <span class="n">fReal</span> <span class="o">&gt;</span> <span class="n">fMax</span> <span class="k">THEN</span>
+	<span class="n">fReal</span> <span class="o">:=</span> <span class="n">fMax</span><span class="p">;</span>
+<span class="k">ELSIF</span> <span class="n">fReal</span> <span class="o">&lt;</span> <span class="n">fMin</span> <span class="k">THEN</span>
+	<span class="n">fReal</span> <span class="o">:=</span> <span class="n">fMin</span><span class="p">;</span>
+<span class="n">END_IF</span>
+<span class="n">iRaw</span> <span class="o">:=</span> <span class="n">LREAL_TO_INT</span><span class="p">((</span><span class="n">fReal</span> <span class="o">-</span> <span class="n">fMin</span><span class="p">)</span> <span class="o">*</span> <span class="n">fScale</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-databuffer-tcpou-tcplcobject">
+<h2>POUs/FB_DataBuffer.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-databuffer-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-databuffer-declaration">
+<h3>FB_DataBuffer: Declaration<a class="headerlink" href="#fb-databuffer-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_DataBuffer</span>
+<span class="n">VAR_INPUT</span>
+	<span class="o">//</span> <span class="n">The</span> <span class="n">value</span> <span class="k">to</span> <span class="n">accumulate</span>
+	<span class="n">fInput</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="o">//</span> <span class="n">Skip</span> <span class="n">cycles</span> <span class="k">to</span> <span class="n">slow</span> <span class="n">down</span> <span class="n">acquisition</span> <span class="n">rate</span>
+	<span class="n">iSkipCycles</span><span class="o">:</span> <span class="n">UINT</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_IN_OUT</span>
+	<span class="o">//</span> <span class="n">A</span> <span class="k">buffer</span> <span class="k">to</span> <span class="n">slowly</span> <span class="n">fill</span> <span class="k">with</span> <span class="k">new</span> <span class="n">values</span> <span class="n">as</span> <span class="n">they</span> <span class="n">come</span> <span class="k">in</span>
+	<span class="n">arrPartialBuffer</span><span class="o">:</span> <span class="k">ARRAY</span><span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="k">OF</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="o">//</span> <span class="n">A</span> <span class="k">buffer</span> <span class="k">to</span> <span class="n">update</span> <span class="k">all</span> <span class="n">at</span> <span class="n">once</span> <span class="k">when</span> <span class="n">the</span> <span class="n">partial</span> <span class="k">buffer</span> <span class="n">fills</span>
+	<span class="n">arrOutputBuffer</span><span class="o">:</span> <span class="k">ARRAY</span><span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="k">OF</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">bInit</span><span class="o">:</span> <span class="n">BOOL</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+	<span class="n">iArrayMin</span><span class="o">:</span> <span class="n">DINT</span><span class="p">;</span>
+	<span class="n">iArrayMax</span><span class="o">:</span> <span class="n">DINT</span><span class="p">;</span>
+	<span class="n">iArrayIndex</span><span class="o">:</span> <span class="n">DINT</span><span class="p">;</span>
+	<span class="n">iCopyIndex</span><span class="o">:</span> <span class="n">DINT</span><span class="p">;</span>
+	<span class="n">iCycleCount</span><span class="o">:</span> <span class="n">ULINT</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="n">iCycleModulo</span><span class="o">:</span> <span class="n">UINT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-databuffer-st">
+<h3>FB_DataBuffer: ST<a class="headerlink" href="#fb-databuffer-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">IF</span> <span class="k">NOT</span> <span class="n">bInit</span> <span class="k">THEN</span>
+	<span class="n">bInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+	<span class="n">iArrayMin</span> <span class="o">:=</span> <span class="n">LOWER_BOUND</span><span class="p">(</span><span class="n">arrPartialBuffer</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+	<span class="n">iArrayMax</span> <span class="o">:=</span> <span class="n">UPPER_BOUND</span><span class="p">(</span><span class="n">arrOutputBuffer</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+	<span class="n">iArrayIndex</span> <span class="o">:=</span> <span class="n">iArrayMin</span><span class="p">;</span>
+	<span class="n">iCycleModulo</span> <span class="o">:=</span> <span class="n">iSkipCycles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="n">END_IF</span>
+<span class="n">iCycleCount</span> <span class="o">:=</span> <span class="n">iCycleCount</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">IF</span> <span class="n">iCycleCount</span> <span class="k">MOD</span> <span class="n">iCycleModulo</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">THEN</span>
+	<span class="n">arrPartialBuffer</span><span class="p">[</span><span class="n">iArrayIndex</span><span class="p">]</span> <span class="o">:=</span> <span class="n">fInput</span><span class="p">;</span>
+	<span class="n">iArrayIndex</span> <span class="o">:=</span> <span class="n">iArrayIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="k">IF</span> <span class="n">iArrayIndex</span> <span class="o">&gt;</span> <span class="n">iArrayMax</span> <span class="k">THEN</span>
+		<span class="n">iArrayIndex</span> <span class="o">:=</span> <span class="n">iArrayMin</span><span class="p">;</span>
+		<span class="k">FOR</span> <span class="n">iCopyIndex</span> <span class="o">:=</span> <span class="n">iArrayMin</span> <span class="k">TO</span> <span class="n">iArrayMax</span> <span class="n">DO</span>
+			<span class="n">arrOutputBuffer</span><span class="p">[</span><span class="n">iCopyIndex</span><span class="p">]</span> <span class="o">:=</span> <span class="n">arrPartialBuffer</span><span class="p">[</span><span class="n">iCopyIndex</span><span class="p">];</span>
+		<span class="n">END_FOR</span>
+	<span class="n">END_IF</span>
+<span class="n">END_IF</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-el6-com-tcpou-tcplcobject">
+<h2>POUs/FB_EL6_COM.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-el6-com-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-el6-com-declaration">
+<h3>FB_EL6_COM: Declaration<a class="headerlink" href="#fb-el6-com-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_EL6_COM
+VAR_INPUT
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: CMD
+		io: io
+	&#39;}
+	sCmd: STRING;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: SEND
+		io: io
+	&#39;}
+	bSend: BOOL;
+	
+	sSendPrefix: STRING;
+	sSendSuffix: STRING;
+	sRecvPrefix: STRING;
+	sRecvSuffix: STRING;
+	tTimeout: TIME := T#1S;
+END_VAR
+VAR_IN_OUT
+	stIn_EL6: EL6inData22B;
+	stOut_EL6: EL6outData22B;
+END_VAR
+VAR_OUTPUT
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: RESP
+		io: input
+	&#39;}
+	sResponse: STRING;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: DONE
+		io: input
+	&#39;}
+	bDone: BOOL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR:SER
+		io: input
+	&#39;}
+	eSerialLineErrorID: ComError_t;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR:SEND
+		io: input
+	&#39;}
+	eSendErrorID: ComError_t;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR:RECV
+		io: input
+	&#39;}
+	eRecvErrorID: ComError_t;
+END_VAR
+VAR
+	// Communication Buffers
+	TxBuffer: ComBuffer;
+	RxBuffer: ComBuffer;
+	fbClearComBuffer: ClearComBuffer;
+	
+	// Parameters for PLC -&gt; EL6
+	fbEL6Ctrl: SerialLineControl;
+	bEL6CtrlError: BOOL;
+	eEL6CtrlErrorID: ComError_t;
+	
+	// Parameters for EL6 -&gt; Serial Device
+	fbSend: SendString;
+	bSendBusy: BOOL;
+	eLastSendErrorID: ComError_t;
+	fbReceive: ReceiveString;
+	sReceivedString: STRING;
+	sLastReceivedString: STRING;
+	bStringReceived: BOOL;
+	bReceiveBusy: BOOL;
+	bReceiveError: BOOL;
+	eReceiveErrorID: ComError_t;
+	bReceiveTimeout: BOOL;
+	nReceiveCounter: UDINT;
+	nSendCounter: UDINT;
+	sStringToSend: STRING;
+	fbFormatString: FB_FormatString;
+	
+	// Parameters for state-machine implementation
+	nStep: INT := 0;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-el6-com-st">
+<h3>FB_EL6_COM: ST<a class="headerlink" href="#fb-el6-com-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbEL6Ctrl</span><span class="p">(</span>
+	<span class="n">Mode</span><span class="o">:=</span> <span class="n">SERIALLINEMODE_EL6_22B</span><span class="p">,</span> 
+	<span class="n">pComIn</span><span class="o">:=</span> <span class="n">ADR</span><span class="p">(</span><span class="n">stIn_EL6</span><span class="p">),</span> 
+	<span class="n">pComOut</span><span class="o">:=</span> <span class="n">ADR</span><span class="p">(</span><span class="n">stOut_EL6</span><span class="p">),</span> 
+	<span class="n">SizeComIn</span><span class="o">:=</span> <span class="n">UINT_TO_INT</span><span class="p">(</span><span class="n">SIZEOF</span><span class="p">(</span><span class="n">stIn_EL6</span><span class="p">)),</span> 
+	<span class="n">Error</span><span class="o">=&gt;</span> <span class="p">,</span> 
+	<span class="n">ErrorID</span><span class="o">=&gt;</span> <span class="n">eSerialLineErrorID</span><span class="p">,</span> 
+	<span class="n">TxBuffer</span><span class="o">:=</span> <span class="n">TxBuffer</span><span class="p">,</span> 
+	<span class="n">RxBuffer</span><span class="o">:=</span> <span class="n">RxBuffer</span> <span class="p">);</span>
+<span class="k">IF</span> <span class="n">fbEL6Ctrl</span><span class="p">.</span><span class="n">Error</span> <span class="k">THEN</span>
+	<span class="n">bEL6CtrlError</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+	<span class="n">eEL6CtrlErrorID</span> <span class="o">:=</span> <span class="n">fbEL6Ctrl</span><span class="p">.</span><span class="n">ErrorID</span><span class="p">;</span>
+<span class="n">END_IF</span>
+<span class="k">IF</span> <span class="n">bSend</span> <span class="k">THEN</span>
+	<span class="n">nStep</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">;</span>
+	<span class="n">bSend</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+	<span class="n">bDone</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+<span class="o">//</span> <span class="n">Attempt</span> <span class="n">at</span> <span class="n">solution</span> <span class="n">that</span> <span class="n">sends</span> <span class="n">one</span> <span class="n">command</span> <span class="n">at</span> <span class="n">a</span> <span class="kt">time</span><span class="p">,</span> <span class="k">not</span> <span class="k">on</span> <span class="k">constant</span> <span class="k">loop</span>
+<span class="k">CASE</span> <span class="n">nStep</span> <span class="k">OF</span>
+	<span class="mi">0</span><span class="o">:</span>
+		<span class="p">;</span> <span class="o">//</span> <span class="n">idle</span>
+	<span class="mi">10</span><span class="o">:</span>
+		<span class="o">//</span> <span class="n">Clear</span> <span class="n">buffers</span> <span class="k">in</span> <span class="k">case</span> <span class="n">any</span> <span class="n">lingering</span> <span class="n">data</span>
+		<span class="n">fbClearComBuffer</span><span class="p">(</span><span class="k">Buffer</span><span class="o">:=</span><span class="n">TxBuffer</span><span class="p">);</span>
+		<span class="n">fbClearComBuffer</span><span class="p">(</span><span class="k">Buffer</span><span class="o">:=</span><span class="n">RxBuffer</span><span class="p">);</span>
+		<span class="o">//</span> <span class="n">Prepare</span> <span class="kt">string</span> <span class="k">to</span> <span class="n">send</span>
+		<span class="n">sStringToSend</span> <span class="o">:=</span> <span class="n">CONCAT</span><span class="p">(</span><span class="n">sSendPrefix</span><span class="p">,</span> <span class="n">CONCAT</span><span class="p">(</span><span class="n">sCmd</span><span class="p">,</span> <span class="n">sSendSuffix</span><span class="p">));</span>
+		<span class="o">//</span> <span class="n">Send</span> <span class="kt">string</span>
+		<span class="n">fbSend</span><span class="p">(</span>	<span class="n">SendString</span><span class="o">:=</span> <span class="n">sStringToSend</span><span class="p">,</span>
+				<span class="n">TXbuffer</span><span class="o">:=</span> <span class="n">TxBuffer</span><span class="p">,</span>
+				<span class="n">Busy</span><span class="o">=&gt;</span> <span class="n">bSendBusy</span><span class="p">,</span>
+				<span class="n">Error</span><span class="o">=&gt;</span> <span class="n">eSendErrorID</span><span class="p">);</span>
+		<span class="k">IF</span> <span class="n">fbSend</span><span class="p">.</span><span class="n">Error</span> <span class="o">&lt;&gt;</span> <span class="n">COMERROR_NOERROR</span> <span class="k">THEN</span>
+			<span class="n">eLastSendErrorID</span> <span class="o">:=</span> <span class="n">fbSend</span><span class="p">.</span><span class="n">Error</span><span class="p">;</span>
+		<span class="k">ELSE</span>
+			<span class="n">nSendCounter</span> <span class="o">:=</span> <span class="n">nSendCounter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+		<span class="n">END_IF</span>
+		<span class="n">nStep</span> <span class="o">:=</span> <span class="n">nStep</span> <span class="o">+</span> <span class="mi">10</span><span class="p">;</span>
+	<span class="mi">20</span><span class="o">:</span>
+		<span class="o">//</span> <span class="n">Finish</span> <span class="n">sending</span> <span class="kt">String</span>
+		<span class="k">IF</span> <span class="n">fbSend</span><span class="p">.</span><span class="n">Busy</span> <span class="k">THEN</span>
+			<span class="n">fbSend</span><span class="p">(</span>	<span class="n">SendString</span><span class="o">:=</span> <span class="n">sStringToSend</span><span class="p">,</span>
+					<span class="n">TXbuffer</span><span class="o">:=</span> <span class="n">TxBuffer</span><span class="p">,</span>
+					<span class="n">Busy</span><span class="o">=&gt;</span> <span class="n">bSendBusy</span><span class="p">,</span>
+					<span class="n">Error</span><span class="o">=&gt;</span> <span class="n">eSendErrorID</span><span class="p">);</span>
+			<span class="k">IF</span> <span class="n">fbSend</span><span class="p">.</span><span class="n">Error</span> <span class="o">&lt;&gt;</span> <span class="n">COMERROR_NOERROR</span> <span class="k">THEN</span>
+				<span class="n">eLastSendErrorID</span> <span class="o">:=</span> <span class="n">fbSend</span><span class="p">.</span><span class="n">Error</span><span class="p">;</span>
+			<span class="k">ELSE</span>
+				<span class="n">nSendCounter</span> <span class="o">:=</span> <span class="n">nSendCounter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+			<span class="n">END_IF</span>
+		<span class="k">ELSE</span>
+			<span class="n">nStep</span> <span class="o">:=</span> <span class="n">nStep</span> <span class="o">+</span> <span class="mi">10</span><span class="p">;</span>
+		<span class="n">END_IF</span>
+	<span class="mi">30</span><span class="o">:</span>
+		<span class="o">//</span> <span class="n">Get</span> <span class="n">Reply</span>
+		<span class="n">fbReceive</span><span class="p">(</span>
+			<span class="n">Prefix</span><span class="o">:=</span> <span class="n">sRecvPrefix</span><span class="p">,</span>
+			<span class="n">Suffix</span><span class="o">:=</span> <span class="n">sRecvSuffix</span><span class="p">,</span>
+			<span class="n">Timeout</span><span class="o">:=</span> <span class="n">tTimeout</span><span class="p">,</span>
+			<span class="n">ReceivedString</span><span class="o">:=</span> <span class="n">sReceivedString</span><span class="p">,</span>
+			<span class="n">RXbuffer</span><span class="o">:=</span> <span class="n">RxBuffer</span><span class="p">,</span>
+			<span class="n">StringReceived</span><span class="o">=&gt;</span> <span class="n">bStringReceived</span><span class="p">,</span>
+			<span class="n">Busy</span><span class="o">=&gt;</span> <span class="n">bReceiveBusy</span><span class="p">,</span>
+			<span class="n">Error</span><span class="o">=&gt;</span> <span class="n">eRecvErrorID</span><span class="p">,</span>
+			<span class="n">RxTimeout</span><span class="o">=&gt;</span> <span class="n">bReceiveTimeout</span> <span class="p">);</span>
+		<span class="k">IF</span> <span class="n">fbReceive</span><span class="p">.</span><span class="n">Error</span> <span class="o">&lt;&gt;</span> <span class="n">COMERROR_NOERROR</span> <span class="k">THEN</span>
+			<span class="n">eReceiveErrorID</span> <span class="o">:=</span> <span class="n">fbReceive</span><span class="p">.</span><span class="n">Error</span><span class="p">;</span>
+		<span class="n">END_IF</span>
+		<span class="k">IF</span> <span class="n">bStringReceived</span> <span class="k">THEN</span>
+			<span class="n">nReceiveCounter</span> <span class="o">:=</span> <span class="n">nReceiveCounter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+			<span class="o">//</span> <span class="n">Check</span> <span class="k">for</span> <span class="n">response</span>
+			<span class="k">IF</span> <span class="n">FIND</span><span class="p">(</span><span class="n">sReceivedString</span><span class="p">,</span> <span class="n">sStringToSend</span><span class="p">)</span><span class="o">=</span><span class="mi">0</span> <span class="k">THEN</span>
+				<span class="n">sResponse</span> <span class="o">:=</span> <span class="n">sReceivedString</span><span class="p">;</span>
+				<span class="n">bDone</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+				<span class="n">nStep</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+			<span class="n">END_IF</span>
+		<span class="n">END_IF</span>
+<span class="n">END_CASE</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-l2si-flowmeter-tcpou-tcplcobject">
+<h2>POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-l2si-flowmeter-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-l2si-flowmeter-declaration">
+<h3>FB_L2SI_Flowmeter: Declaration<a class="headerlink" href="#fb-l2si-flowmeter-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_L2SI_Flowmeter
+VAR
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: MA
+		io: input
+	&#39;}
+	fRaw AT %I*: INT;
+
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: FLOW
+		io: input
+	&#39;}
+	fFlowRate: LREAL;
+END_VAR
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-rawtoanalog-tcpou-tcplcobject">
+<h2>POUs/FB_RawToAnalog.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-rawtoanalog-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-rawtoanalog-declaration">
+<h3>FB_RawToAnalog: Declaration<a class="headerlink" href="#fb-rawtoanalog-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_RawToAnalog</span>
+<span class="n">VAR_INPUT</span>
+	<span class="n">iRaw</span><span class="o">:</span> <span class="n">INT</span><span class="p">;</span>
+	<span class="n">iBits</span><span class="o">:</span> <span class="n">UINT</span><span class="p">;</span>
+	<span class="n">fMax</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+	<span class="n">fMin</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+	<span class="n">fReal</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+	<span class="n">fScale</span><span class="o">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-rawtoanalog-st">
+<h3>FB_RawToAnalog: ST<a class="headerlink" href="#fb-rawtoanalog-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Converts</span> <span class="n">the</span> <span class="kt">integer</span> <span class="n">from</span> <span class="n">an</span> <span class="n">analog</span> <span class="n">input</span> <span class="n">terminal</span> <span class="k">to</span> <span class="n">a</span> <span class="n">real</span> <span class="n">unit</span> <span class="n">value</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">g</span><span class="p">.,</span> <span class="n">volts</span><span class="p">)</span>
+<span class="k">IF</span> <span class="n">fScale</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">fMax</span> <span class="o">&gt;</span> <span class="n">fMin</span> <span class="k">THEN</span>
+	<span class="n">fScale</span> <span class="o">:=</span> <span class="p">(</span><span class="n">EXPT</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">iBits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">fMax</span> <span class="o">-</span> <span class="n">fMin</span><span class="p">);</span>
+<span class="n">END_IF</span>
+<span class="k">IF</span> <span class="n">fScale</span> <span class="o">&lt;&gt;</span> <span class="mi">0</span> <span class="k">THEN</span>
+	<span class="n">fReal</span> <span class="o">:=</span> <span class="n">iRaw</span> <span class="o">/</span> <span class="n">fScale</span> <span class="o">+</span> <span class="n">fMin</span><span class="p">;</span>
+<span class="n">END_IF</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-thermocouple-tcpou-tcplcobject">
+<h2>POUs/FB_ThermoCouple.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-thermocouple-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-thermocouple-declaration">
+<h3>FB_ThermoCouple: Declaration<a class="headerlink" href="#fb-thermocouple-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_ThermoCouple
+VAR_INPUT
+	iScale: INT := 10;
+END_VAR
+VAR_OUTPUT
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: TEMP
+		io: input
+	&#39;}
+	fTemp: LREAL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: CONN
+		io: input
+		ONAM: Connected
+		ZNAM: Disconnected
+	}
+	bConnected: BOOL;
+	
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: ERR
+		io: input
+	&#39;}
+	bError AT %I*: BOOL;
+	
+	bUnderrange AT %I*: BOOL;
+	bOverrange AT %I*: BOOL;
+END_VAR
+VAR
+	iRaw AT %I*: INT;
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="fb-thermocouple-st">
+<h3>FB_ThermoCouple: ST<a class="headerlink" href="#fb-thermocouple-st" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">bConnected</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="p">(</span><span class="n">bOverrange</span> <span class="k">AND</span> <span class="n">bError</span><span class="p">);</span>
+<span class="n">fTemp</span> <span class="o">:=</span> <span class="n">iRaw</span> <span class="o">/</span> <span class="n">iScale</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pous-fb-xtes-flowswitch-tcpou-tcplcobject">
+<h2>POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-xtes-flowswitch-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fb-xtes-flowswitch-declaration">
+<h3>FB_XTES_Flowswitch: Declaration<a class="headerlink" href="#fb-xtes-flowswitch-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XTES_Flowswitch
+VAR_OUTPUT
+	{attribute &#39;pytmc&#39; := &#39;
+		pv: FLOW
+		ZNAM: LOW
+		ONAM: OK
+	&#39;}
+	bFlowOk AT %I*: BOOL;
+END_VAR
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="version-global-version-tcgvl-tcplcobject">
+<h2>Version/Global_Version.TcGVL (TcPlcObject)<a class="headerlink" href="#version-global-version-tcgvl-tcplcobject" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="global-version-declaration">
+<h3>Global_Version: Declaration<a class="headerlink" href="#global-version-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;TcGenerated&#39;}
+// This function has been automatically generated from the project information.
+VAR_GLOBAL CONSTANT
+	{attribute &#39;const_non_replaced&#39;}
+	{attribute &#39;linkalways&#39;}
+	stLibVersion_lcls2_cc_lib : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, sVersion := &#39;0.0.0&#39;);
+END_VAR
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="symbols">
+<h2>Symbols<a class="headerlink" href="#symbols" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="boxes">
+<h2>Boxes<a class="headerlink" href="#boxes" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="nc-axes">
+<h2>NC axes<a class="headerlink" href="#nc-axes" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="links">
+<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="pragma-lint-results">
+<h2>Pragma lint results<a class="headerlink" href="#pragma-lint-results" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Linter</span> <span class="n">error</span><span class="p">:</span> 
+<span class="n">POUs</span><span class="o">/</span><span class="n">FB_ThermoCouple</span><span class="o">.</span><span class="n">TcPOU</span><span class="p">:</span><span class="n">line</span> <span class="mi">12</span><span class="p">:</span>     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="p">:</span><span class="o">=</span> <span class="s1">&#39;</span>
+    		<span class="n">pv</span><span class="p">:</span> <span class="n">CONN</span>
+    		<span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
+    		<span class="n">ONAM</span><span class="p">:</span> <span class="n">Connected</span>
+    		<span class="n">ZNAM</span><span class="p">:</span> <span class="n">Disconnected</span>
+    	<span class="p">}</span>
+<span class="n">INFO</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Total</span> <span class="n">pragmas</span> <span class="n">found</span><span class="p">:</span> <span class="mi">46</span> <span class="n">Total</span> <span class="n">linter</span> <span class="n">errors</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">PLC</span> <span class="n">Project</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">Library</span>
+<span class="o">========================</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">--------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_PPM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_Gige</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">-------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_PPM_Gige</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">2</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_PowerMeter</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">-------------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_PPM_PowerMeter</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">PPM</span><span class="o">/</span><span class="n">FB_PPM_States</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">---------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_PPM_States</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">ENUM_XPIM_Filters</span><span class="o">.</span><span class="n">TcDUT</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">--------------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">ENUM_XPIM_Filters</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">2</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">----------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XPIM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_FilterWheel</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">----------------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XPIM_FilterWheel</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_Opal</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">---------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XPIM_Opal</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">1</span> <span class="n">pragmas</span>
+
+
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_States</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">-----------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XPIM_States</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">pragmas</span>
+
+
+<span class="n">POUs</span><span class="o">/</span><span class="n">FB_EL6_COM</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">-----------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_EL6_COM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">7</span> <span class="n">pragmas</span>
+
+
+<span class="n">POUs</span><span class="o">/</span><span class="n">FB_L2SI_Flowmeter</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_L2SI_Flowmeter</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">2</span> <span class="n">pragmas</span>
+
+
+<span class="n">POUs</span><span class="o">/</span><span class="n">FB_ThermoCouple</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">----------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_ThermoCouple</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">pragmas</span>
+
+
+<span class="n">POUs</span><span class="o">/</span><span class="n">FB_XTES_Flowswitch</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">-------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">1</span> <span class="n">pragmas</span>
+
+
+<span class="n">Version</span><span class="o">/</span><span class="n">Global_Version</span><span class="o">.</span><span class="n">TcGVL</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">Global_Version</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">3</span> <span class="n">pragmas</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pcdshub/lcls2-cc-lib</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Library.tmc.html">Library.tmc</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PLC Project (1): Library</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-tcpou-tcplcobject">Devices/PPM/FB_PPM.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-gige-tcpou-tcplcobject">Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject">Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-states-tcpou-tcplcobject">Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ref-fb-ref-tcpou-tcplcobject">Devices/REF/FB_REF.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ref-fb-ref-laser-tcpou-tcplcobject">Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-ref-fb-ref-states-tcpou-tcplcobject">Devices/REF/FB_REF_States.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-enum-xpim-filters-tcdut-tcplcobject">Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-tcpou-tcplcobject">Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-opal-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-states-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-analogtoraw-tcpou-tcplcobject">POUs/FB_AnalogToRaw.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-databuffer-tcpou-tcplcobject">POUs/FB_DataBuffer.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-el6-com-tcpou-tcplcobject">POUs/FB_EL6_COM.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-l2si-flowmeter-tcpou-tcplcobject">POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-rawtoanalog-tcpou-tcplcobject">POUs/FB_RawToAnalog.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-thermocouple-tcpou-tcplcobject">POUs/FB_ThermoCouple.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pous-fb-xtes-flowswitch-tcpou-tcplcobject">POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-global-version-tcgvl-tcplcobject">Version/Global_Version.TcGVL (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#symbols">Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#boxes">Boxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nc-axes">NC axes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#links">Links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pragma-lint-results">Pragma lint results</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Library.tmc.html" title="previous chapter">Library.tmc</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, SLAC National Accelerator Laboratory.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/lcls2-cc-lib.tsproj.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
