@@ -49,6 +49,7 @@ fbStates(
 	fFrosted:=fFrosted,
 	fPower:=fPower,
 	fOut:=fOut);
+stYStage.bHardwareEnable := TRUE;
 fbPowerMeter();
 fbGige();
 fbFlowMeter();

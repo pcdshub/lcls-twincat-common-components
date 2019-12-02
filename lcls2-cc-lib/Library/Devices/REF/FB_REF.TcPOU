@@ -21,6 +21,7 @@ fbStates(
 	stMotionStage:=stYStage,
 	fIn:=fIn,
 	fOut:=fOut);
+stYStage.bHardwareEnable := TRUE;
 fbLaser();]]></ST>
     </Implementation>
   </POU>
