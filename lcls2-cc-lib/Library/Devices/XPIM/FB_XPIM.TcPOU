@@ -49,12 +49,20 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+// All stages have no STO
+stYStage.bHardwareEnable := TRUE;
+stZoomStage.bHardwareEnable := TRUE;
+stFocusStage.bHardwareEnable := TRUE;
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
+// Lens limits are normally open
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+// Home Lens to LLS
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
 fbStates(
 	stMotionStage:=stYStage,
 	fYag:=fYag,
