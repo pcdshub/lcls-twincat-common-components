@@ -121,6 +121,7 @@ END_VAR
 	<span class="n">fFrosted</span><span class="o">:=</span><span class="n">fFrosted</span><span class="p">,</span>
 	<span class="n">fPower</span><span class="o">:=</span><span class="n">fPower</span><span class="p">,</span>
 	<span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
+<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="n">fbPowerMeter</span><span class="p">();</span>
 <span class="n">fbGige</span><span class="p">();</span>
 <span class="n">fbFlowMeter</span><span class="p">();</span>
@@ -377,6 +378,7 @@ END_VAR
 	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
 	<span class="n">fIn</span><span class="o">:=</span><span class="n">fIn</span><span class="p">,</span>
 	<span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
+<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="n">fbLaser</span><span class="p">();</span>
 </pre></div>
 </div>
@@ -558,12 +560,20 @@ END_VAR
 <div class="section" id="fb-xpim-st">
 <h3>FB_XPIM: ST<a class="headerlink" href="#fb-xpim-st" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+<span class="o">//</span> <span class="k">All</span> <span class="n">stages</span> <span class="n">have</span> <span class="n">no</span> <span class="n">STO</span>
+<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="o">//</span> <span class="n">No</span> <span class="n">limit</span> <span class="n">switch</span> <span class="n">at</span> <span class="n">the</span> <span class="n">bottom</span>
 <span class="n">stYStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="o">//</span> <span class="n">Lens</span> <span class="n">limits</span> <span class="n">are</span> <span class="n">normally</span> <span class="k">open</span>
 <span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndFwd</span><span class="p">;</span>
 <span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndBwd</span><span class="p">;</span>
 <span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndFwd</span><span class="p">;</span>
 <span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndBwd</span><span class="p">;</span>
+<span class="o">//</span> <span class="n">Home</span> <span class="n">Lens</span> <span class="k">to</span> <span class="n">LLS</span>
+<span class="n">stZoomStage</span><span class="p">.</span><span class="n">nHomingMode</span> <span class="o">:=</span> <span class="n">ENUM_EpicsHomeCmd</span><span class="p">.</span><span class="n">EPICS_MOTOR_HOME_LLS</span><span class="p">;</span>
+<span class="n">stFocusStage</span><span class="p">.</span><span class="n">nHomingMode</span> <span class="o">:=</span> <span class="n">ENUM_EpicsHomeCmd</span><span class="p">.</span><span class="n">EPICS_MOTOR_HOME_LLS</span><span class="p">;</span>
 <span class="n">fbStates</span><span class="p">(</span>
 	<span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
 	<span class="n">fYag</span><span class="o">:=</span><span class="n">fYag</span><span class="p">,</span>
