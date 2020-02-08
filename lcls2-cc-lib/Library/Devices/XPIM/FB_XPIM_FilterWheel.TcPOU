@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM_FilterWheel" Id="{269d03b7-f105-4687-8d05-7c6607bee2e8}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
@@ -11,10 +11,18 @@ VAR_INPUT
 	'}
 	bResetError: BOOL;
 	
-	nSetPos: USINT;
+	{attribute 'pytmc' := '
+		pv: SET
+		io: io
+	'}
+	nSetPos: ENUM_XPIM_States;
 END_VAR
 VAR_OUTPUT
-	nGetPos: USINT;
+	{attribute 'pytmc' := '
+		pv: GET
+		io: i
+	'}
+	nGetPos: ENUM_XPIM_States;
 	bBusy: BOOL;
 	bError: BOOL;
 	sError: STRING;
@@ -82,7 +90,7 @@ CASE nStep OF
 	30:
 		// Wait for a move request
 		IF nSetPos <> nGetPos THEN
-			fbCom(sCmd:=CONCAT('pos=', USINT_TO_STRING(nSetPos)),
+			fbCom(sCmd:=CONCAT('pos=', INT_TO_STRING(nSetPos)),
 				bSend:=TRUE,
 				stIn_EL6:=stIn_EL6,
 				stOut_EL6:=stOut_EL6);
@@ -134,9 +142,5 @@ IF NOT bError AND
 	nStep := 50;
 END_IF]]></ST>
     </Implementation>
-    <LineIds Name="FB_XPIM_FilterWheel">
-      <LineId Id="3" Count="89" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

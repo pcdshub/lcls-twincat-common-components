@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
@@ -61,8 +61,8 @@ stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 // Home Lens to LLS
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
-stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 fbStates(
 	stMotionStage:=stYStage,
 	fYag:=fYag,

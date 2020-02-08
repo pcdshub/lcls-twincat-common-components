@@ -33,6 +33,9 @@
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Devices\PPM\ENUM_PPM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -51,10 +54,10 @@
     <Compile Include="Devices\REF\FB_REF_Laser.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\REF\FB_REF_States.TcPOU">
+    <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
+    <Compile Include="Devices\XPIM\ENUM_XPIM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM.TcPOU">
@@ -119,7 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <PlaceholderResolution Include="lcls-twincat-motion">
-      <Resolution>lcls-twincat-motion, * (SLAC)</Resolution>
+      <Resolution>lcls-twincat-motion, 0.0.0 (SLAC)</Resolution>
     </PlaceholderResolution>
   </ItemGroup>
   <ProjectExtensions>

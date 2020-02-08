@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR
@@ -16,6 +16,18 @@ VAR
 		io: input
 	'}
 	fVoltageBuffer: ARRAY[0..999] OF LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CALIB
+		io: input
+	'}
+	fCalibBase: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CALIB_BUFFER
+		io: input
+	'}
+	fCalibBaseBuffer: ARRAY[0..999] OF LREAL;
 	
 	{attribute 'pytmc' := '
 		pv: MJ
@@ -35,12 +47,32 @@ VAR
 	'}
 	fbThermoCouple: FB_ThermoCouple;
 
+	{attribute 'pytmc' := '
+		pv: CALIB:OFFSET
+		io: io
+	'}
+	fCalibRelOffset: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CALIB:RATIO
+		io: io
+	'}
+	fCalibRelRatio: LREAL;
+	
+	{attribute 'pytmc' := '
+		pv: CALIB:MJ_RATIO
+		io: io
+	'}
+	fCalibMJRatio: LREAL;
+	
 	fbGetPMVoltage: FB_RawToAnalog;
 	fbVoltageBuffer: FB_DataBuffer;
-	fbMJBuffer: FB_DataBuffer;
-	
-	fCalibMJPartial: ARRAY[0..999] OF LREAL;
+	fbCalibBaseBuffer: FB_DataBuffer;
+	fbCalibMJBuffer: FB_DataBuffer;
+
 	fVoltagePartial: ARRAY[0..999] OF LREAL;
+	fCalibBasePartial: ARRAY[0..999] OF LREAL;
+	fCalibMJPartial: ARRAY[0..999] OF LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -54,15 +86,20 @@ fbGetPMVoltage(
 	fMin := 0,
 	fReal => fVoltage);
 
-// TODO Power meter calibration
-fCalibMJ := fVoltage;
+// Power meter calibration
+fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
+fCalibMJ := fCalibBase * fCalibMJRatio;
 
 // Buffer the full-rate Voltage and calibrated MJ values
 fbVoltageBuffer(
 	fInput := fVoltage,
 	arrPartialBuffer := fVoltagePartial,
 	arrOutputBuffer := fVoltageBuffer);
-fbMJBuffer(
+fbCalibBaseBuffer(
+	fInput := fCalibBase,
+	arrPartialBuffer := fCalibBasePartial,
+	arrOutputBuffer := fCalibBaseBuffer);
+fbCalibMJBuffer(
 	fInput := fCalibMJ,
 	arrPartialBuffer := fCalibMJPartial,
 	arrOutputBuffer := fCalibMJBuffer);]]></ST>

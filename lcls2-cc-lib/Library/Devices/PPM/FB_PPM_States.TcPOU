@@ -1,86 +1,100 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_PPM_States" Id="{1eb578bc-c89e-4a7a-b190-99dc56373dc2}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_States
 VAR_IN_OUT
 	stMotionStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
+	bEnable: BOOL;
+	{attribute 'pytmc' := '
+		pv: SET
+		io: io
+	'}
+	enumSet: ENUM_PPM_states;
+	bStatesLock: BOOL;
+	fOut: LREAL;
+	fPower: LREAL;
 	fPolished: LREAL;
 	fFrosted: LREAL;
-	fPower: LREAL;
-	fOut: LREAL;
+END_VAR
+VAR_OUTPUT
+	bError: BOOL;
+	sErrorMessage: STRING;
+	bBusy: BOOL;
+	bDone: BOOL;
+	{attribute 'pytmc' := '
+		pv: GET
+		io: i
+	'}
+	enumGet: ENUM_PPM_States;
 END_VAR
 VAR
-	fSmallDelta: LREAL := 0.01;
-	fBigDelta: LREAL := 10;
-	fMaxVelocity: LREAL := 65;
-	fHighAccel: LREAL := 200;
-	fLowAccel: LREAL := 25;
+	bInit: BOOL;
+	arrStates: ARRAY[1..15] OF DUT_PositionState;
+	nIter: INT;
 	
-	stPolished: DUT_PositionState;
-	stFrosted: DUT_PositionState;
-	stPower: DUT_PositionState;
-	stOut: DUT_PositionState;
-
-	{attribute 'pytmc' := 'pv: POLISHED_YAG'}
-	fbGoPolished: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: FROSTED_YAG'}
-	fbGoFrosted: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: POWER_METER'}
-	fbGoPower: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: OUT'}
-	fbGoOut: FB_StatePTPMove;
+	{attribute 'pytmc' := '
+		pv:
+		io: io
+	'}
+	fbStateManager: FB_PositionStateManager;
+	
+	fbLockOut: FB_PositionStateLock;
+	fbLockPowerMeter: FB_PositionStateLock;
+	fbLockPolishedYag: FB_PositionStateLock;
+	fbLockFrostedYag: FB_PositionStateLock;
+END_VAR
+VAR CONSTANT
+	fInDelta: LREAL := 0.01;
+	fOutDelta: LREAL := 10;
+	fInVelocity: LREAL := 80;
+	fOutVelocity: LREAL := 65;
+	fAccel: LREAL := 200;
+	fOutDecel: LREAL := 25;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[stPolished.sName := 'Polished Yag';
-stPolished.fPosition := fPolished;
-stPolished.fDelta := fSmallDelta;
-stPolished.fVelocity := fMaxVelocity;
-stPolished.fAccel := fHighAccel;
-stPolished.fDecel := fHighAccel;
+      <ST><![CDATA[IF NOT bInit THEN
+	bInit := FALSE;
+	FOR nIter := 1 TO 4 DO
+		arrStates[nIter].fDelta := fInDelta;
+		arrStates[nIter].fVelocity := fInVelocity;
+		arrStates[nIter].fAccel := fAccel;
+		arrStates[nIter].fDecel := fAccel;
+		arrStates[nIter].bLocked := bStatesLock;
+		arrStates[nIter].bValid := TRUE;
+		// TODO implement PMPS instead of doing this
+		arrStates[nIter].bMoveOk := TRUE;
+	END_FOR
+	arrStates[1].sName := 'Out';
+	arrStates[1].fPosition := fOut;
+	arrStates[1].fDelta := fOutDelta;
+	arrStates[1].fVelocity := fOutVelocity;
+	arrStates[1].fDecel := fOutDecel;
+	arrStates[2].sName := 'PowerMeter';
+	arrStates[2].fPosition := fPower;
+	arrStates[3].sName := 'PolishedYag';
+	arrStates[3].fPosition := fPolished;
+	arrStates[4].sName := 'FrostedYag';
+	arrStates[4].fPosition := fFrosted;
+END_IF
 
-stFrosted.sName := 'Frosted Yag';
-stFrosted.fPosition := fFrosted;
-stFrosted.fDelta := fSmallDelta;
-stFrosted.fVelocity := fMaxVelocity;
-stFrosted.fAccel := fHighAccel;
-stFrosted.fDecel := fHighAccel;
+fbLockOut(stPositionState := arrStates[1]);
+fbLockPowerMeter(stPositionState := arrStates[2]);
+fbLockPolishedYag(stPositionState := arrStates[3]);
+fbLockFrostedYag(stPositionState := arrStates[4]);
 
-stPower.sName := 'Power Meter';
-stPower.fPosition := fPower;
-stPower.fDelta := fSmallDelta;
-stPower.fVelocity := fMaxVelocity;
-stPower.fAccel := fHighAccel;
-stPower.fDecel := fHighAccel;
-
-stOut.sName := 'Out';
-stOut.fPosition := fOut;
-stOut.fDelta := fBigDelta;
-stOut.fVelocity := fMaxVelocity;
-stOut.fAccel := fHighAccel;
-stOut.fDecel := fLowAccel;
-
-fbGoPolished(
-	stPositionState:=stPolished,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoFrosted(
-	stPositionState:=stFrosted,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoPower(
-	stPositionState:=stPower,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoOut(
-	stPositionState:=stOut,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);]]></ST>
+fbStateManager(
+	stMotionStage := stMotionStage,
+	arrStates := arrStates,
+	setState := enumSet,
+	bEnable := bEnable,
+	bError => bError,
+	sErrorMessage => sErrorMessage,
+	bBusy => bBusy,
+	bDone => bDone,
+	getState => enumGet);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
