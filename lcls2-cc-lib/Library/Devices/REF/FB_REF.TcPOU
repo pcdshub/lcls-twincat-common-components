@@ -46,7 +46,7 @@ END_VAR
 	stOut.bMoveOk := TRUE;
 
 	stIn.fPosition := fIn;
-	stIn.fDelta := 0.01;
+	stIn.fDelta := 0.1;
 	stIn.fVelocity := fVelo;
 	stIn.fAccel := fAccel;
 	stIn.fDecel := fAccel;

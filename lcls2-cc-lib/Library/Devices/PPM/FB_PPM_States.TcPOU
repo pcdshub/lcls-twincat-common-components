@@ -46,7 +46,7 @@ VAR
 	fbLockFrostedYag: FB_PositionStateLock;
 END_VAR
 VAR CONSTANT
-	fInDelta: LREAL := 0.01;
+	fInDelta: LREAL := 0.1;
 	fOutDelta: LREAL := 10;
 	fInVelocity: LREAL := 80;
 	fOutVelocity: LREAL := 65;
