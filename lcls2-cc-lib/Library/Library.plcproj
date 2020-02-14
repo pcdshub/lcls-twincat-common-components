@@ -72,22 +72,7 @@
     <Compile Include="Devices\XPIM\FB_XPIM_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_AnalogToRaw.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FB_DataBuffer.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FB_EL6_COM.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FB_L2SI_Flowmeter.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FB_RawToAnalog.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FB_ThermoCouple.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FB_XTES_Flowswitch.TcPOU">
@@ -103,6 +88,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PlaceholderReference Include="LCLS General">
+      <DefaultResolution>LCLS General, * (SLAC)</DefaultResolution>
+      <Namespace>LCLS_General</Namespace>
+    </PlaceholderReference>
     <PlaceholderReference Include="lcls-twincat-motion">
       <DefaultResolution>lcls-twincat-motion, * (SLAC)</DefaultResolution>
       <Namespace>lcls_twincat_motion</Namespace>
@@ -121,6 +110,9 @@
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
+    <PlaceholderResolution Include="LCLS General">
+      <Resolution>LCLS General, 0.0.0 (SLAC)</Resolution>
+    </PlaceholderResolution>
     <PlaceholderResolution Include="lcls-twincat-motion">
       <Resolution>lcls-twincat-motion, 0.0.0 (SLAC)</Resolution>
     </PlaceholderResolution>

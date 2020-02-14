@@ -18,8 +18,8 @@ VAR
 	'}
 	fIlluminatorPercent: LREAL;
 		
-	fbGetIllPercent: FB_RawToAnalog;
-	fbSetIllPercent: FB_AnalogToRaw;
+	fbGetIllPercent: FB_AnalogInput;
+	fbSetIllPercent: FB_AnalogOutput;
 	
 	bGigeInit: BOOL := FALSE;
 END_VAR
@@ -34,15 +34,17 @@ END_IF
 // Illuminator conversion to percentage
 fbSetIllPercent(
 	fReal:=fIlluminatorPercent,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
+	fSafeMax:=100,
+	fSafeMin:=0,
+	iTermBits:=15,
+	fTermMax:=100,
+	fTermMin:=0,
 	iRaw=>iIlluminatorINT);
 fbGetIllPercent(
 	iRaw:=iIlluminatorINT,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
+	iTermBits:=15,
+	fTermMax:=100,
+	fTermMin:=0,
 	fReal=>fIlluminatorPercent);]]></ST>
     </Implementation>
   </POU>

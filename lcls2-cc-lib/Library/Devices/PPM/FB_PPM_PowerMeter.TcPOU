@@ -15,7 +15,7 @@ VAR
 		pv: VOLT_BUFFER
 		io: input
 	'}
-	fVoltageBuffer: ARRAY[0..999] OF LREAL;
+	fVoltageBuffer: ARRAY[1..1000] OF LREAL;
 	
 	{attribute 'pytmc' := '
 		pv: CALIB
@@ -27,7 +27,7 @@ VAR
 		pv: CALIB_BUFFER
 		io: input
 	'}
-	fCalibBaseBuffer: ARRAY[0..999] OF LREAL;
+	fCalibBaseBuffer: ARRAY[1..1000] OF LREAL;
 	
 	{attribute 'pytmc' := '
 		pv: MJ
@@ -39,7 +39,7 @@ VAR
 		pv: MJ_BUFFER
 		io: input
 	'}
-	fCalibMJBuffer: ARRAY[0..999] OF LREAL;
+	fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 	
 	{attribute 'pytmc' := '
 		pv: STC
@@ -65,14 +65,10 @@ VAR
 	'}
 	fCalibMJRatio: LREAL;
 	
-	fbGetPMVoltage: FB_RawToAnalog;
-	fbVoltageBuffer: FB_DataBuffer;
-	fbCalibBaseBuffer: FB_DataBuffer;
-	fbCalibMJBuffer: FB_DataBuffer;
-
-	fVoltagePartial: ARRAY[0..999] OF LREAL;
-	fCalibBasePartial: ARRAY[0..999] OF LREAL;
-	fCalibMJPartial: ARRAY[0..999] OF LREAL;
+	fbGetPMVoltage: FB_AnalogInput;
+	fbVoltageBuffer: FB_LREALBuffer;
+	fbCalibBaseBuffer: FB_LREALBuffer;
+	fbCalibMJBuffer: FB_LREALBuffer;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -81,9 +77,9 @@ END_VAR
 // Convert the terminal's integer into a value in volts
 fbGetPMVoltage(
 	iRaw := iVoltageINT,
-	iBits := 15,
-	fMax := 10,
-	fMin := 0,
+	iTermBits := 15,
+	fTermMax := 10,
+	fTermMin := 0,
 	fReal => fVoltage);
 
 // Power meter calibration
@@ -92,17 +88,17 @@ fCalibMJ := fCalibBase * fCalibMJRatio;
 
 // Buffer the full-rate Voltage and calibrated MJ values
 fbVoltageBuffer(
+	bExecute := TRUE,
 	fInput := fVoltage,
-	arrPartialBuffer := fVoltagePartial,
-	arrOutputBuffer := fVoltageBuffer);
+	arrOutput => fVoltageBuffer);
 fbCalibBaseBuffer(
+	bExecute := TRUE,
 	fInput := fCalibBase,
-	arrPartialBuffer := fCalibBasePartial,
-	arrOutputBuffer := fCalibBaseBuffer);
+	arrOutput => fCalibBaseBuffer);
 fbCalibMJBuffer(
+	bExecute := TRUE,
 	fInput := fCalibMJ,
-	arrPartialBuffer := fCalibMJPartial,
-	arrOutputBuffer := fCalibMJBuffer);]]></ST>
+	arrOutput => fCalibMJBuffer);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

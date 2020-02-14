@@ -15,8 +15,8 @@ VAR
 	iShutdownINT AT %Q*: INT;
 	iLaserINT AT %Q*: INT;
 	
-	fbGetLasPercent: FB_RawToAnalog;
-	fbSetLasPercent: FB_AnalogToRaw;
+	fbGetLasPercent: FB_AnalogInput;
+	fbSetLasPercent: FB_AnalogOutput;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// Send 5V to suppress laser
@@ -26,18 +26,20 @@ ELSE
 	iShutdownINT := 0;
 END_IF
 
-// Use 14 bits instead of 15 to limit to 0-5V instead of 10V
+// Limit to 0-5V instead of 10V
 fbSetLasPercent(
 	fReal:=fLaserPercent,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
+	fSafeMax:=100,
+	fSafeMin:=0,
+	iTermBits:=15,
+	fTermMax:=200,
+	fTermMin:=0,
 	iRaw=>iLaserInt);
 fbGetLasPercent(
 	iRaw:=iLaserInt,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
+	iTermBits:=15,
+	fTermMax:=200,
+	fTermMin:=0,
 	fReal=>fLaserPercent);]]></ST>
     </Implementation>
   </POU>
