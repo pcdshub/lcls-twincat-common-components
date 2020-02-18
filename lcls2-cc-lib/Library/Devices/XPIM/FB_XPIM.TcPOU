@@ -1,50 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
-	stYStage: DUT_MotionStage;
-	stZoomStage: DUT_MotionStage;
-	stFocusStage: DUT_MotionStage;
-	stEl6In: EL6inData22b;
-	stEl6Out: EL6OutData22b;
+    stYStage: DUT_MotionStage;
+    stZoomStage: DUT_MotionStage;
+    stFocusStage: DUT_MotionStage;
+    stEl6In: EL6inData22b;
+    stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
-	bZoomEndFwd AT %I*: BOOL;
-	bZoomEndBwd AT %I*: BOOL;
-	bFocusEndFwd AT %I*: BOOL;
-	bFocusEndBwd AT %I*: BOOL;
-	
-	fYag: LREAL;
-	fDiamond: LREAL;
-	fReticle: LREAL;
-	fOut: LREAL;
+    bZoomEndFwd AT %I*: BOOL;
+    bZoomEndBwd AT %I*: BOOL;
+    bFocusEndFwd AT %I*: BOOL;
+    bFocusEndBwd AT %I*: BOOL;
+
+    fYag: LREAL;
+    fDiamond: LREAL;
+    fReticle: LREAL;
+    fOut: LREAL;
 END_VAR
 VAR
-	fbYStage: FB_MotionStage;
-	fbZoom: FB_MotionStage;
-	fbFocus: FB_MotionStage;
-	
-	{attribute 'pytmc' := '
-		pv: MMS:STATES
-		io: io
-	'}
-	fbStates: FB_XPIM_States;
-	
-	{attribute 'pytmc' := '
-		pv: MFW
-	'}
-	fbFilterWheel: FB_XPIM_FilterWheel;
-	
-	{attribute 'pytmc' := '
-		pv: CAM
-	'}
-	fbOpal: FB_XPIM_Opal;
-	
-	{attribute 'pytmc' := '
-		pv: SFW
-	'}
-	fbFlowSwitch: FB_XTES_Flowswitch;
+    fbYStage: FB_MotionStage;
+    fbZoom: FB_MotionStage;
+    fbFocus: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATES
+        io: io
+    '}
+    fbStates: FB_XPIM_States;
+
+    {attribute 'pytmc' := '
+        pv: MFW
+    '}
+    fbFilterWheel: FB_XPIM_FilterWheel;
+
+    {attribute 'pytmc' := '
+        pv: CAM
+    '}
+    fbOpal: FB_XPIM_Opal;
+
+    {attribute 'pytmc' := '
+        pv: SFW
+    '}
+    fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -61,20 +61,20 @@ stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 // Home Lens to LLS
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
-stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 fbStates(
-	stMotionStage:=stYStage,
-	fYag:=fYag,
-	fDiamond:=fDiamond,
-	fReticle:=fReticle,
-	fOut:=fOut);
+    stMotionStage:=stYStage,
+    fYag:=fYag,
+    fDiamond:=fDiamond,
+    fReticle:=fReticle,
+    fOut:=fOut);
 fbZoom(stMotionStage:=stZoomStage);
 fbFocus(stMotionStage:=stFocusStage);
 fbFilterWheel(
-	bExecute:=TRUE,
-	stIn_El6:=stEl6In,
-	stOut_El6:=stEl6Out);
+    bExecute:=TRUE,
+    stIn_El6:=stEl6In,
+    stOut_El6:=stEl6Out);
 fbOpal();
 fbFlowSwitch();]]></ST>
     </Implementation>

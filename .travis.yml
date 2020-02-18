@@ -1,12 +1,35 @@
-language: minimal
+language: python
+python: 3.7
 sudo: false
 
 env:
   global:
+    # Doctr deploy key for pcdshub/lcls2-cc-lib
     - secure: "OeuTu/RP3lno2L0KkpPBH7vpSd+Uwzhb13iBVE2xoWkoiJMoNoWLiwr97hpehwcSwFEJ7OFN+aK7urh2+zgRcf3ZA+gCFDSlhshVKK3AUl9w4d2vXFP7aFgZcDFO0nea0CHN0id73ZKMluk0aSjmR7z5XDgT0EYAyeob0BVNV9onuRBHoYek6uPV0aSe0JWe5+IQ5i0e+YSWz9w0dT+oIgDo13+m9D4BQNxLL5TutbSbAQNoRDfcColA19EbE3OgaakTwiX7VEbte8b4vEVL7nOAE86s9ZiSiAKRq2CMYeaNoGmwQumJo/Ul6N/KBOYkyXjPlwvkqcs3IwGqdnauhg+a+7i72PgI2DO5/w+p8X//7jNHnNKp+JmW6FhTtOzkgGaOi0KC++c50OaXMZbrICY+YfbFjcrGrvAlgw+UzKrM6f9/3XnnE6dynAfe5sjYZXg2ivhx7jjNY3Segm4b4PeawHJTwo1VlH8yxF2jB4nHpFXlL3vrNarbRHBc48J653MKjE9ucVziHEkOJt1G58c+3R6WgG3t8iVu7RfYomQQ9LdS4YZuENeAS1h64+c56e10yl0j9p34ThfXgy+94lai7t20QmF4QuoDRWwuUayvDY3Fos3Z827WfIsOuO/BHZBV8nzq6Zqa0Z6+izHvqoc6j2GXexlw6ZFMib+VQIQ="
 
+matrix:
+  include:
+    - name: Project summary
+      python: 3.7
+      env: TWINCAT_SUMMARY=1
+    - name: Pragma linting
+      python: 3.7
+      env: TWINCAT_PRAGMALINT=1
+    - name: Documentation building
+      python: 3.7
+      env: TWINCAT_BUILD_DOCS=1
+    - name: Twincat Style
+      python: 3.7
+      env: TWINCAT_STYLE=1
+
 install:
+  # Import the helper scripts
   - git clone --depth 1 git://github.com/pcdshub/pcds-ci-helpers.git
+  # Start the helper-script initialization + run based on environment variables
+  - source pcds-ci-helpers/travis/init.sh
 
 script:
-  - bash pcds-ci-helpers/travis/tc3_linter.sh
+  - |
+    if [ -n "${TWINCAT_STYLE}" ]; then
+      ./style/check_style.sh
+    fi

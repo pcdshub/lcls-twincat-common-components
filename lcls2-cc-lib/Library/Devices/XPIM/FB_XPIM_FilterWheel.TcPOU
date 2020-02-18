@@ -1,142 +1,146 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.14">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM_FilterWheel" Id="{269d03b7-f105-4687-8d05-7c6607bee2e8}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
-	bExecute: BOOL;
-	
-	{attribute 'pytmc' := '
-		pv: ERR:RESET
-		io: output
-	'}
-	bResetError: BOOL;
-	
-	nSetPos: USINT;
+    bExecute: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: ERR:RESET
+        io: output
+    '}
+    bResetError: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    nSetPos: ENUM_XPIM_States;
 END_VAR
 VAR_OUTPUT
-	nGetPos: USINT;
-	bBusy: BOOL;
-	bError: BOOL;
-	sError: STRING;
-	{attribute 'pytmc' := '
-		pv: ERR:MSG
-		io: input
-	'}
-	sLastError: STRING;
-	sErrorTS: STRING;
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    nGetPos: ENUM_XPIM_States;
+    bBusy: BOOL;
+    bError: BOOL;
+    sError: STRING;
+    {attribute 'pytmc' := '
+        pv: ERR:MSG
+        io: input
+    '}
+    sLastError: STRING;
+    sErrorTS: STRING;
 END_VAR
 VAR_IN_OUT
-	stIn_EL6: EL6inData22B;
-	stOut_EL6: EL6outData22B;
+    stIn_EL6: EL6inData22B;
+    stOut_EL6: EL6outData22B;
 END_VAR
 VAR
-	{attribute 'pytmc' := '
-		pv: RAW
-	'}
-	fbCom: FB_EL6_COM;
+    {attribute 'pytmc' := '
+        pv: RAW
+    '}
+    fbCom: FB_EL6_COM;
 
-	nStep: USINT;
-	sLastTestCmd: STRING;
-	bIsTest: BOOL;
-	fbGetTime: NT_GetTime;
-	bStopOnErr: BOOL;
+    nStep: USINT;
+    sLastTestCmd: STRING;
+    bIsTest: BOOL;
+    fbGetTime: NT_GetTime;
+    bStopOnErr: BOOL;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbCom.sSendSuffix := '$R';
 fbCom.sRecvSuffix := '$R';
 
 IF bExecute AND nStep = 0 THEN
-	IF bResetError OR NOT bError THEN
-		nStep := 10;
-	END_IF
+    IF bResetError OR NOT bError THEN
+        nStep := 10;
+    END_IF
 ELSIF NOT bExecute THEN
-	nStep := 0;
+    nStep := 0;
 END_IF
 CASE nStep OF
-	0:
-		; // idle
-	10: 
-		// Get position
-		bIsTest := FALSE;
-		fbCom(sCmd:='pos?',
-			bSend:=TRUE,
-			stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		nStep := nStep + 10;
-	20:
-		// Wait for response and set variables
-		fbCom(stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		IF fbCom.bDone THEN
-			bError := FALSE;
-			sError := '';
-			nGetPos := STRING_TO_USINT(fbCom.sResponse);
-			nSetPos := nGetPos;
-			nStep := nStep + 10;
-			IF nGetPos = 0 THEN
-				sError := 'Filter wheel in invalid state';
-				bStopOnErr := TRUE;
-				nStep := 50;
-			END_IF
-		END_IF
-	30:
-		// Wait for a move request
-		IF nSetPos <> nGetPos THEN
-			fbCom(sCmd:=CONCAT('pos=', USINT_TO_STRING(nSetPos)),
-				bSend:=TRUE,
-				stIn_EL6:=stIn_EL6,
-				stOut_EL6:=stOut_EL6);
-			nStep := nStep + 10;
-			bBusy := TRUE;	
-		END_IF
-	40:
-		fbCom(stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		// Wait for move to be done
-		IF fbCom.bDone THEN
-			bBusy := FALSE;
-			nStep := 10;
-			// Handle setpoint error
-			IF fbCom.sResponse = 'Command error CMD_ARG_INVALID$N$R' THEN
-				sError := 'Invalid set position';
-				nStep := 50;
-			END_IF
-		END_IF
-	50:
-		// Set sError and then jump here for standard handling
-		sLastError := sError;
-		bError := TRUE;
-		fbGetTime(NETID:='',
-			START:=TRUE);
-		nStep := nStep + 10;
-	60:
-		// Error handling continued
-		fbGetTime();
-		IF NOT fbGetTime.BUSY THEN
-			sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
-			fbGetTime.START := FALSE;
-			// set bStopOnErr to TRUE if it was a major error
-			IF bStopOnErr THEN
-				nStep := 0;
-			ELSE
-				nStep := 10;
-			END_IF
-			bStopOnErr := FALSE;
-		END_IF
+    0:
+        ; // idle
+    10:
+        // Get position
+        bIsTest := FALSE;
+        fbCom(sCmd:='pos?',
+            bSend:=TRUE,
+            stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        nStep := nStep + 10;
+    20:
+        // Wait for response and set variables
+        fbCom(stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        IF fbCom.bDone THEN
+            bError := FALSE;
+            sError := '';
+            nGetPos := STRING_TO_USINT(fbCom.sResponse);
+            nSetPos := nGetPos;
+            nStep := nStep + 10;
+            IF nGetPos = 0 THEN
+                sError := 'Filter wheel in invalid state';
+                bStopOnErr := TRUE;
+                nStep := 50;
+            END_IF
+        END_IF
+    30:
+        // Wait for a move request
+        IF nSetPos <> nGetPos THEN
+            fbCom(sCmd:=CONCAT('pos=', INT_TO_STRING(nSetPos)),
+                bSend:=TRUE,
+                stIn_EL6:=stIn_EL6,
+                stOut_EL6:=stOut_EL6);
+            nStep := nStep + 10;
+            bBusy := TRUE;
+        END_IF
+    40:
+        fbCom(stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        // Wait for move to be done
+        IF fbCom.bDone THEN
+            bBusy := FALSE;
+            nStep := 10;
+            // Handle setpoint error
+            IF fbCom.sResponse = 'Command error CMD_ARG_INVALID$N$R' THEN
+                sError := 'Invalid set position';
+                nStep := 50;
+            END_IF
+        END_IF
+    50:
+        // Set sError and then jump here for standard handling
+        sLastError := sError;
+        bError := TRUE;
+        fbGetTime(NETID:='',
+            START:=TRUE);
+        nStep := nStep + 10;
+    60:
+        // Error handling continued
+        fbGetTime();
+        IF NOT fbGetTime.BUSY THEN
+            sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
+            fbGetTime.START := FALSE;
+            // set bStopOnErr to TRUE if it was a major error
+            IF bStopOnErr THEN
+                nStep := 0;
+            ELSE
+                nStep := 10;
+            END_IF
+            bStopOnErr := FALSE;
+        END_IF
 END_CASE
 // Check for inner comms errors, report to EPICS same way
 IF NOT bError AND
-	(fbCom.eRecvErrorID <> COMERROR_NOERROR
-	OR fbCom.eSendErrorID <> COMERROR_NOERROR
-	OR fbCom.eRecvErrorID <> COMERROR_NOERROR) THEN
-	sError := 'Serial Communication Error';
-	bStopOnErr := TRUE;
-	nStep := 50;
+    (fbCom.eRecvErrorID <> COMERROR_NOERROR
+    OR fbCom.eSendErrorID <> COMERROR_NOERROR
+    OR fbCom.eRecvErrorID <> COMERROR_NOERROR) THEN
+    sError := 'Serial Communication Error';
+    bStopOnErr := TRUE;
+    nStep := 50;
 END_IF]]></ST>
     </Implementation>
-    <LineIds Name="FB_XPIM_FilterWheel">
-      <LineId Id="3" Count="89" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

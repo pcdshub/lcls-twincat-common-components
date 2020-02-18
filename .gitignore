@@ -1,29 +1,19 @@
-# Twincat ignores
+# From Confluence "Twincat 3 Git Setup and Best Practices
 _Boot
 _Libraries
 _CompileInfo
-*.sln
 *.suo
 *~
 *.tpy
 *.bak
 *.~u
+*.csv
+*.svd
+*.dbg
 TrialLicense.tclrs
 *.library
 *.tmcRefac
-*.dbg
-
-# EPICS ignores
-O.*
-archive
-autosave
-bin
-build
-db
-dbd
+.pytmc_build
 
 # Vim ignores
 *.swp
-
-# Output from scope ignores
-*.csv

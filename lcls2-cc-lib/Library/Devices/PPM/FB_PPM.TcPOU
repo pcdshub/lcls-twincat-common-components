@@ -1,55 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
-	stYStage: DUT_MotionStage;
+    stYStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fPolished: LREAL;
-	fFrosted: LREAL;
-	fPower: LREAL;
-	fOut: LREAL;
+    fOut: LREAL;
+    fPower: LREAL;
+    fPolished: LREAL;
+    fFrosted: LREAL;
 END_VAR
 VAR
-	fbYStage: FB_MotionStage;
-	
-	{attribute 'pytmc' := '
-		pv: MMS:STATES
-		io: i
-	'}
-	fbStates: FB_PPM_States;
-	
-	{attribute 'pytmc' := '
-		pv: SPM
-	'}
-	fbPowerMeter: FB_PPM_PowerMeter;
-	
-	{attribute 'pytmc' := '
-		pv: GIGE
-	'}
-	fbGige: FB_PPM_Gige;
-	
-	{attribute 'pytmc' :='
-		pv: SFM
-	'}
-	fbFlowMeter: FB_L2SI_Flowmeter;
-	
-	{attribute 'pytmc' := '
-		pv: YAG
-		io: input
-	'}
-	fbYagThermoCouple: FB_ThermoCouple;
+    fbYStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_PPM_States;
+
+    {attribute 'pytmc' := '
+        pv: SPM
+    '}
+    fbPowerMeter: FB_PPM_PowerMeter;
+
+    {attribute 'pytmc' := '
+        pv: CAM
+    '}
+    fbGige: FB_PPM_Gige;
+
+    {attribute 'pytmc' :='
+        pv: SFM
+    '}
+    fbFlowMeter: FB_L2SI_Flowmeter;
+
+    {attribute 'pytmc' := '
+        pv: YAG
+        io: input
+    '}
+    fbYagThermoCouple: FB_ThermoCouple;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
 fbStates(
-	stMotionStage:=stYStage,
-	fPolished:=fPolished,
-	fFrosted:=fFrosted,
-	fPower:=fPower,
-	fOut:=fOut);
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    fOut:=fOut,
+    fPower:=fPower,
+    fPolished:=fPolished,
+    fFrosted:=fFrosted);
 stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 fbPowerMeter();
 fbGige();
 fbFlowMeter();

@@ -1,39 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_REF_Laser" Id="{fe34aa45-49f5-4ca6-ae16-2db42771e34d}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REF_Laser
 VAR_INPUT
-	bShutdown: BOOL;
-	fLaserPercent: LREAL;
+    bShutdown: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: PCT
+        io: io
+    '}
+    fLaserPercent: LREAL;
 END_VAR
 VAR
-	iShutdownINT AT %Q*: INT;
-	iLaserINT AT %Q*: INT;
-	
-	fbGetLasPercent: FB_RawToAnalog;
-	fbSetLasPercent: FB_AnalogToRaw;
+    iShutdownINT AT %Q*: INT;
+    iLaserINT AT %Q*: INT;
+
+    fbGetLasPercent: FB_AnalogInput;
+    fbSetLasPercent: FB_AnalogOutput;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// Send 5V to suppress laser
 IF bShutdown THEN
-	iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
+    iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
 ELSE
-	iShutdownINT := 0;
+    iShutdownINT := 0;
 END_IF
 
-// Use 14 bits instead of 15 to limit to 0-5V instead of 10V
+// Limit to 0-5V instead of 10V
 fbSetLasPercent(
-	fReal:=fLaserPercent,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
-	iRaw=>iLaserInt);
+    fReal:=fLaserPercent,
+    fSafeMax:=100,
+    fSafeMin:=0,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    iRaw=>iLaserInt);
 fbGetLasPercent(
-	iRaw:=iLaserInt,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
-	fReal=>fLaserPercent);]]></ST>
+    iRaw:=iLaserInt,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    fReal=>fLaserPercent);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

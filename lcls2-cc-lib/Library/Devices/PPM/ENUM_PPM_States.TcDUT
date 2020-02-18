@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+  <DUT Name="ENUM_PPM_States" Id="{b72262a0-b857-458c-bac1-465658861dad}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+TYPE ENUM_PPM_States :
+(
+    Unknown := 0,
+    Out := 1,
+    PowerMeter := 2,
+    PolishedYag := 3,
+    FrostedYag := 4
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
