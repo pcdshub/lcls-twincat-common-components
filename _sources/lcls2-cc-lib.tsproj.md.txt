@@ -1,36 +1,52 @@
 PLC Project (1): Library
 ========================
 
-    Project path: /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Library.plcproj
-    TMC path:     /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Library.tmc
+    Project root: /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib
+    Project path: Library/Library.plcproj
+    TMC path:     Library/Library.tmc
     AMS ID:       
     IP Address:    (* based on AMS ID)
     Port:         851
 
     Source files:
-        1.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/PPM/FB_PPM.TcPOU
-        2.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/PPM/FB_PPM_Gige.TcPOU
-        3.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/PPM/FB_PPM_PowerMeter.TcPOU
-        4.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/PPM/FB_PPM_States.TcPOU
-        5.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/REF/FB_REF.TcPOU
-        6.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/REF/FB_REF_Laser.TcPOU
-        7.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/REF/FB_REF_States.TcPOU
-        8.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
-        9.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/XPIM/FB_XPIM.TcPOU
-        10.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
-        11.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
-        12.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Devices/XPIM/FB_XPIM_States.TcPOU
-        13.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_AnalogToRaw.TcPOU
-        14.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_DataBuffer.TcPOU
-        15.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_EL6_COM.TcPOU
-        16.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_L2SI_Flowmeter.TcPOU
-        17.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_RawToAnalog.TcPOU
-        18.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_ThermoCouple.TcPOU
-        19.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/POUs/FB_XTES_Flowswitch.TcPOU
-        20.) /home/travis/build/pcdshub/lcls2-cc-lib/lcls2-cc-lib/Library/Version/Global_Version.TcGVL
+        1.) Library/Devices/PPM/ENUM_PPM_States.TcDUT
+        2.) Library/Devices/PPM/FB_PPM.TcPOU
+        3.) Library/Devices/PPM/FB_PPM_Gige.TcPOU
+        4.) Library/Devices/PPM/FB_PPM_PowerMeter.TcPOU
+        5.) Library/Devices/PPM/FB_PPM_States.TcPOU
+        6.) Library/Devices/REF/FB_REF.TcPOU
+        7.) Library/Devices/REF/FB_REF_Laser.TcPOU
+        8.) Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
+        9.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
+        10.) Library/Devices/XPIM/FB_XPIM.TcPOU
+        11.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
+        12.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
+        13.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
+        14.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
+        15.) Library/POUs/FB_XTES_Flowswitch.TcPOU
+        16.) Library/Version/Global_Version.TcGVL
 
     GVLs:
         1.) Global_Version
+
+Devices/PPM/ENUM_PPM_States.TcDUT (TcPlcObject)
+-----------------------------------------------
+
+### ENUM_PPM_States: Declaration
+
+```vhdl
+{attribute 'qualified_only'}
+TYPE ENUM_PPM_States :
+(
+    Unknown := 0,
+    Out := 1,
+    PowerMeter := 2,
+    PolishedYag := 3,
+    FrostedYag := 4
+);
+END_TYPE
+```
+
 
 Devices/PPM/FB_PPM.TcPOU (TcPlcObject)
 --------------------------------------
@@ -40,43 +56,43 @@ Devices/PPM/FB_PPM.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
-	stYStage: DUT_MotionStage;
+    stYStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fPolished: LREAL;
-	fFrosted: LREAL;
-	fPower: LREAL;
-	fOut: LREAL;
+    fOut: LREAL;
+    fPower: LREAL;
+    fPolished: LREAL;
+    fFrosted: LREAL;
 END_VAR
 VAR
-	fbYStage: FB_MotionStage;
-	
-	{attribute 'pytmc' := '
-		pv: MMS:STATES
-		io: i
-	'}
-	fbStates: FB_PPM_States;
-	
-	{attribute 'pytmc' := '
-		pv: SPM
-	'}
-	fbPowerMeter: FB_PPM_PowerMeter;
-	
-	{attribute 'pytmc' := '
-		pv: GIGE
-	'}
-	fbGige: FB_PPM_Gige;
-	
-	{attribute 'pytmc' :='
-		pv: SFM
-	'}
-	fbFlowMeter: FB_L2SI_Flowmeter;
-	
-	{attribute 'pytmc' := '
-		pv: YAG
-		io: input
-	'}
-	fbYagThermoCouple: FB_ThermoCouple;
+    fbYStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_PPM_States;
+
+    {attribute 'pytmc' := '
+        pv: SPM
+    '}
+    fbPowerMeter: FB_PPM_PowerMeter;
+
+    {attribute 'pytmc' := '
+        pv: CAM
+    '}
+    fbGige: FB_PPM_Gige;
+
+    {attribute 'pytmc' :='
+        pv: SFM
+    '}
+    fbFlowMeter: FB_L2SI_Flowmeter;
+
+    {attribute 'pytmc' := '
+        pv: YAG
+        io: input
+    '}
+    fbYagThermoCouple: FB_ThermoCouple;
 END_VAR
 ```
 
@@ -85,12 +101,15 @@ END_VAR
 ```vhdl
 fbYStage(stMotionStage:=stYStage);
 fbStates(
-	stMotionStage:=stYStage,
-	fPolished:=fPolished,
-	fFrosted:=fFrosted,
-	fPower:=fPower,
-	fOut:=fOut);
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    fOut:=fOut,
+    fPower:=fPower,
+    fPolished:=fPolished,
+    fFrosted:=fFrosted);
 stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 fbPowerMeter();
 fbGige();
 fbFlowMeter();
@@ -106,25 +125,25 @@ Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_PPM_Gige
 VAR
-	iIlluminatorINT AT %Q*: INT;
+    iIlluminatorINT AT %Q*: INT;
 
-	{attribute 'pytmc' := '
-		pv: PWR
-		ZNAM: OFF
-		ONAM: ON
-	'}
-	bGigePower AT %Q*: BOOL;
-	
-	{attribute 'pytmc' := '
-		pv: CIL
-		EGU: %
-	'}
-	fIlluminatorPercent: LREAL;
-		
-	fbGetIllPercent: FB_RawToAnalog;
-	fbSetIllPercent: FB_AnalogToRaw;
-	
-	bGigeInit: BOOL := FALSE;
+    {attribute 'pytmc' := '
+        pv: PWR
+        ZNAM: OFF
+        ONAM: ON
+    '}
+    bGigePower AT %Q*: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: CIL:PCT
+        EGU: %
+    '}
+    fIlluminatorPercent: LREAL;
+
+    fbGetIllPercent: FB_AnalogInput;
+    fbSetIllPercent: FB_AnalogOutput;
+
+    bGigeInit: BOOL := FALSE;
 END_VAR
 ```
 
@@ -133,23 +152,25 @@ END_VAR
 ```vhdl
 // Turn the GigE on by default
 IF NOT bGigeInit THEN
-	bGigePower := TRUE;
-	bGigeInit := TRUE;
+    bGigePower := TRUE;
+    bGigeInit := TRUE;
 END_IF
 
 // Illuminator conversion to percentage
 fbSetIllPercent(
-	fReal:=fIlluminatorPercent,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
-	iRaw=>iIlluminatorINT);
+    fReal:=fIlluminatorPercent,
+    fSafeMax:=100,
+    fSafeMin:=0,
+    iTermBits:=15,
+    fTermMax:=100,
+    fTermMin:=0,
+    iRaw=>iIlluminatorINT);
 fbGetIllPercent(
-	iRaw:=iIlluminatorINT,
-	iBits:=15,
-	fMax:=100,
-	fMin:=0,
-	fReal=>fIlluminatorPercent);
+    iRaw:=iIlluminatorINT,
+    iTermBits:=15,
+    fTermMax:=100,
+    fTermMin:=0,
+    fReal=>fIlluminatorPercent);
 ```
 
 
@@ -161,44 +182,72 @@ Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR
-	iVoltageINT AT %I*: INT;
-	
-	{attribute 'pytmc' := '
-		pv: VOLT
-		io: input
-	'}
-	fVoltage: LREAL;
-	
-	{attribute 'pytmc' := '
-		pv: VOLT_BUFFER
-		io: input
-	'}
-	fVoltageBuffer: ARRAY[0..999] OF LREAL;
-	
-	{attribute 'pytmc' := '
-		pv: MJ
-		io: input
-	'}
-	fCalibMJ: LREAL;
-	
-	{attribute 'pytmc' := '
-		pv: MJ_BUFFER
-		io: input
-	'}
-	fCalibMJBuffer: ARRAY[0..999] OF LREAL;
-	
-	{attribute 'pytmc' := '
-		pv: STC
-		io: input
-	'}
-	fbThermoCouple: FB_ThermoCouple;
+    iVoltageINT AT %I*: INT;
 
-	fbGetPMVoltage: FB_RawToAnalog;
-	fbVoltageBuffer: FB_DataBuffer;
-	fbMJBuffer: FB_DataBuffer;
-	
-	fCalibMJPartial: ARRAY[0..999] OF LREAL;
-	fVoltagePartial: ARRAY[0..999] OF LREAL;
+    {attribute 'pytmc' := '
+        pv: VOLT
+        io: input
+    '}
+    fVoltage: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: VOLT_BUFFER
+        io: input
+    '}
+    fVoltageBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
+        pv: CALIB
+        io: input
+    '}
+    fCalibBase: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: CALIB_BUFFER
+        io: input
+    '}
+    fCalibBaseBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
+        pv: MJ
+        io: input
+    '}
+    fCalibMJ: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: MJ_BUFFER
+        io: input
+    '}
+    fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
+        pv: STC
+        io: input
+    '}
+    fbThermoCouple: FB_ThermoCouple;
+
+    {attribute 'pytmc' := '
+        pv: CALIB:OFFSET
+        io: io
+    '}
+    fCalibRelOffset: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: CALIB:RATIO
+        io: io
+    '}
+    fCalibRelRatio: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: CALIB:MJ_RATIO
+        io: io
+    '}
+    fCalibMJRatio: LREAL;
+
+    fbGetPMVoltage: FB_AnalogInput;
+    fbVoltageBuffer: FB_LREALBuffer;
+    fbCalibBaseBuffer: FB_LREALBuffer;
+    fbCalibMJBuffer: FB_LREALBuffer;
 END_VAR
 ```
 
@@ -209,24 +258,29 @@ fbThermoCouple();
 
 // Convert the terminal's integer into a value in volts
 fbGetPMVoltage(
-	iRaw := iVoltageINT,
-	iBits := 15,
-	fMax := 10,
-	fMin := 0,
-	fReal => fVoltage);
+    iRaw := iVoltageINT,
+    iTermBits := 15,
+    fTermMax := 10,
+    fTermMin := 0,
+    fReal => fVoltage);
 
-// TODO Power meter calibration
-fCalibMJ := fVoltage;
+// Power meter calibration
+fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
+fCalibMJ := fCalibBase * fCalibMJRatio;
 
 // Buffer the full-rate Voltage and calibrated MJ values
 fbVoltageBuffer(
-	fInput := fVoltage,
-	arrPartialBuffer := fVoltagePartial,
-	arrOutputBuffer := fVoltageBuffer);
-fbMJBuffer(
-	fInput := fCalibMJ,
-	arrPartialBuffer := fCalibMJPartial,
-	arrOutputBuffer := fCalibMJBuffer);
+    bExecute := TRUE,
+    fInput := fVoltage,
+    arrOutput => fVoltageBuffer);
+fbCalibBaseBuffer(
+    bExecute := TRUE,
+    fInput := fCalibBase,
+    arrOutput => fCalibBaseBuffer);
+fbCalibMJBuffer(
+    bExecute := TRUE,
+    fInput := fCalibMJ,
+    arrOutput => fCalibMJBuffer);
 ```
 
 
@@ -238,87 +292,101 @@ Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_PPM_States
 VAR_IN_OUT
-	stMotionStage: DUT_MotionStage;
+    stMotionStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fPolished: LREAL;
-	fFrosted: LREAL;
-	fPower: LREAL;
-	fOut: LREAL;
+    bEnable: BOOL;
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    enumSet: ENUM_PPM_states;
+    bStatesLock: BOOL;
+    fOut: LREAL;
+    fPower: LREAL;
+    fPolished: LREAL;
+    fFrosted: LREAL;
+END_VAR
+VAR_OUTPUT
+    bError: BOOL;
+    sErrorMessage: STRING;
+    bBusy: BOOL;
+    bDone: BOOL;
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    enumGet: ENUM_PPM_States;
 END_VAR
 VAR
-	fSmallDelta: LREAL := 0.01;
-	fBigDelta: LREAL := 10;
-	fMaxVelocity: LREAL := 65;
-	fHighAccel: LREAL := 200;
-	fLowAccel: LREAL := 25;
-	
-	stPolished: DUT_PositionState;
-	stFrosted: DUT_PositionState;
-	stPower: DUT_PositionState;
-	stOut: DUT_PositionState;
+    bInit: BOOL;
+    arrStates: ARRAY[1..15] OF DUT_PositionState;
+    nIter: INT;
 
-	{attribute 'pytmc' := 'pv: POLISHED_YAG'}
-	fbGoPolished: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: FROSTED_YAG'}
-	fbGoFrosted: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: POWER_METER'}
-	fbGoPower: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: OUT'}
-	fbGoOut: FB_StatePTPMove;
+    {attribute 'pytmc' := '
+        pv:
+        io: io
+    '}
+    fbStateManager: FB_PositionStateManager;
+
+    fbLockOut: FB_PositionStateLock;
+    fbLockPowerMeter: FB_PositionStateLock;
+    fbLockPolishedYag: FB_PositionStateLock;
+    fbLockFrostedYag: FB_PositionStateLock;
+END_VAR
+VAR CONSTANT
+    fInDelta: LREAL := 0.1;
+    fOutDelta: LREAL := 10;
+    fInVelocity: LREAL := 80;
+    fOutVelocity: LREAL := 65;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
 END_VAR
 ```
 
 ### FB_PPM_States: ST
 
 ```vhdl
-stPolished.sName := 'Polished Yag';
-stPolished.fPosition := fPolished;
-stPolished.fDelta := fSmallDelta;
-stPolished.fVelocity := fMaxVelocity;
-stPolished.fAccel := fHighAccel;
-stPolished.fDecel := fHighAccel;
+IF NOT bInit THEN
+    bInit := FALSE;
+    FOR nIter := 1 TO 4 DO
+        arrStates[nIter].fDelta := fInDelta;
+        arrStates[nIter].fVelocity := fInVelocity;
+        arrStates[nIter].fAccel := fAccel;
+        arrStates[nIter].fDecel := fAccel;
+        arrStates[nIter].bLocked := bStatesLock;
+        arrStates[nIter].bValid := TRUE;
+        // TODO implement PMPS instead of doing this
+        arrStates[nIter].bMoveOk := TRUE;
+    END_FOR
+    arrStates[1].sName := 'Out';
+    arrStates[1].fPosition := fOut;
+    arrStates[1].fDelta := fOutDelta;
+    arrStates[1].fVelocity := fOutVelocity;
+    arrStates[1].fDecel := fOutDecel;
+    arrStates[2].sName := 'PowerMeter';
+    arrStates[2].fPosition := fPower;
+    arrStates[3].sName := 'PolishedYag';
+    arrStates[3].fPosition := fPolished;
+    arrStates[4].sName := 'FrostedYag';
+    arrStates[4].fPosition := fFrosted;
+END_IF
 
-stFrosted.sName := 'Frosted Yag';
-stFrosted.fPosition := fFrosted;
-stFrosted.fDelta := fSmallDelta;
-stFrosted.fVelocity := fMaxVelocity;
-stFrosted.fAccel := fHighAccel;
-stFrosted.fDecel := fHighAccel;
+fbLockOut(stPositionState := arrStates[1]);
+fbLockPowerMeter(stPositionState := arrStates[2]);
+fbLockPolishedYag(stPositionState := arrStates[3]);
+fbLockFrostedYag(stPositionState := arrStates[4]);
 
-stPower.sName := 'Power Meter';
-stPower.fPosition := fPower;
-stPower.fDelta := fSmallDelta;
-stPower.fVelocity := fMaxVelocity;
-stPower.fAccel := fHighAccel;
-stPower.fDecel := fHighAccel;
-
-stOut.sName := 'Out';
-stOut.fPosition := fOut;
-stOut.fDelta := fBigDelta;
-stOut.fVelocity := fMaxVelocity;
-stOut.fAccel := fHighAccel;
-stOut.fDecel := fLowAccel;
-
-fbGoPolished(
-	stPositionState:=stPolished,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoFrosted(
-	stPositionState:=stFrosted,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoPower(
-	stPositionState:=stPower,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoOut(
-	stPositionState:=stOut,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
+fbStateManager(
+    stMotionStage := stMotionStage,
+    arrStates := arrStates,
+    setState := enumSet,
+    bEnable := bEnable,
+    bError => bError,
+    sErrorMessage => sErrorMessage,
+    bBusy => bBusy,
+    bDone => bDone,
+    getState => enumGet);
 ```
 
 
@@ -330,28 +398,69 @@ Devices/REF/FB_REF.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_REF
 VAR_IN_OUT
-	stYStage: DUT_MotionStage;
+    stYStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fIn: LREAL;
-	fOut: LREAL;
+    fIn: LREAL;
+    fOut: LREAL;
 END_VAR
 VAR
-	fbYStage: FB_MotionStage;
-	fbStates: FB_REF_States;
-	fbLaser: FB_REF_Laser;
+    fbYStage: FB_MotionStage;
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: io
+    '}
+    fbStates: FB_EpicsInOut;
+
+    {attribute 'pytmc' := '
+        pv: LAS
+        io: io
+    '}
+    fbLaser: FB_REF_Laser;
+
+    bInit: BOOL;
+    stOut: DUT_PositionState;
+    stIn: DUT_PositionState;
+END_VAR
+VAR CONSTANT
+    bStatesLock: BOOL;
+    fVelo: LREAL := 65;
+    fAccel: LREAL := 25;
 END_VAR
 ```
 
 ### FB_REF: ST
 
 ```vhdl
+IF NOT bInit THEN
+    bInit := TRUE;
+    stOut.fPosition := fOut;
+    stOut.fDelta := 10;
+    stOut.fVelocity := fVelo;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fAccel;
+    stOut.bLocked := bStatesLock;
+    stOut.bValid := TRUE;
+    stOut.bMoveOk := TRUE;
+
+    stIn.fPosition := fIn;
+    stIn.fDelta := 0.1;
+    stIn.fVelocity := fVelo;
+    stIn.fAccel := fAccel;
+    stIn.fDecel := fAccel;
+    stIn.bLocked := bStatesLock;
+    stIn.bValid := TRUE;
+    stIn.bMoveOk := TRUE;
+END_IF
+
 fbYStage(stMotionStage:=stYStage);
 fbStates(
-	stMotionStage:=stYStage,
-	fIn:=fIn,
-	fOut:=fOut);
+    stMotionStage:=stYStage,
+    stOut := stOut,
+    stIn := stIn);
 stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 fbLaser();
 ```
 
@@ -364,15 +473,20 @@ Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_REF_Laser
 VAR_INPUT
-	bShutdown: BOOL;
-	fLaserPercent: LREAL;
+    bShutdown: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: PCT
+        io: io
+    '}
+    fLaserPercent: LREAL;
 END_VAR
 VAR
-	iShutdownINT AT %Q*: INT;
-	iLaserINT AT %Q*: INT;
-	
-	fbGetLasPercent: FB_RawToAnalog;
-	fbSetLasPercent: FB_AnalogToRaw;
+    iShutdownINT AT %Q*: INT;
+    iLaserINT AT %Q*: INT;
+
+    fbGetLasPercent: FB_AnalogInput;
+    fbSetLasPercent: FB_AnalogOutput;
 END_VAR
 ```
 
@@ -381,80 +495,26 @@ END_VAR
 ```vhdl
 // Send 5V to suppress laser
 IF bShutdown THEN
-	iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
+    iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
 ELSE
-	iShutdownINT := 0;
+    iShutdownINT := 0;
 END_IF
 
-// Use 14 bits instead of 15 to limit to 0-5V instead of 10V
+// Limit to 0-5V instead of 10V
 fbSetLasPercent(
-	fReal:=fLaserPercent,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
-	iRaw=>iLaserInt);
+    fReal:=fLaserPercent,
+    fSafeMax:=100,
+    fSafeMin:=0,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    iRaw=>iLaserInt);
 fbGetLasPercent(
-	iRaw:=iLaserInt,
-	iBits:=14,
-	fMax:=100,
-	fMin:=0,
-	fReal=>fLaserPercent);
-```
-
-
-Devices/REF/FB_REF_States.TcPOU (TcPlcObject)
----------------------------------------------
-
-### FB_REF_States: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_REF_States
-VAR_IN_OUT
-	stMotionStage: DUT_MotionStage;
-END_VAR
-VAR_INPUT
-	fIn: LREAL;
-	fOut: LREAL;
-END_VAR
-VAR
-	fDelta: LREAL := 0.01;
-	fMaxVelocity: LREAL := 65;
-	fAccel: LREAL := 25;
-	
-	stIn: DUT_PositionState;
-	stOut: DUT_PositionState;
-	
-	fbGoOut: FB_StatePTPMove;
-	fbGoIn: FB_StatePTPMove;
-END_VAR
-```
-
-### FB_REF_States: ST
-
-```vhdl
-stIn.sName := 'In';
-stIn.fPosition := fIn;
-stIn.fDelta := fDelta;
-stIn.fVelocity := fMaxVelocity;
-stIn.fAccel := fAccel;
-stIn.fDecel := fAccel;
-
-stOut.sName := 'Out';
-stOut.fPosition := fOut;
-stOut.fDelta := fDelta;
-stOut.fVelocity := fMaxVelocity;
-stOut.fAccel := fAccel;
-stOut.fDecel := fAccel;
-
-fbGoIn(
-	stPositionState:=stIn,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoOut(
-	stPositionState:=stOut,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
+    iRaw:=iLaserInt,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    fReal=>fLaserPercent);
 ```
 
 
@@ -465,16 +525,34 @@ Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)
 
 ```vhdl
 {attribute 'qualified_only'}
-{attribute 'strict'}
 TYPE ENUM_XPIM_Filters :
 (
-	ENUM_XPIM_Filters_Unknown := 0,
-	ENUM_XPIM_Filters_50 := 1,
-	ENUM_XPIM_Filters_25 := 2,
-	ENUM_XPIM_Filters_10 := 3,
-	ENUM_XPIM_Filters_5 := 4,
-	ENUM_XPIM_Filters_1 := 5,
-	ENUM_XPIM_Filters_0 := 6
+    Unknown := 0,
+    T50 := 1,
+    T25 := 2,
+    T10 := 3,
+    T5 := 4,
+    T1 := 5,
+    T100 := 6
+);
+END_TYPE
+```
+
+
+Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)
+-------------------------------------------------
+
+### ENUM_XPIM_States: Declaration
+
+```vhdl
+{attribute 'qualified_only'}
+TYPE ENUM_XPIM_States :
+(
+    Unknown := 0,
+    Out := 1,
+    Yag := 2,
+    Diamond := 3,
+    Reticle := 4
 );
 END_TYPE
 ```
@@ -488,48 +566,48 @@ Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
-	stYStage: DUT_MotionStage;
-	stZoomStage: DUT_MotionStage;
-	stFocusStage: DUT_MotionStage;
-	stEl6In: EL6inData22b;
-	stEl6Out: EL6OutData22b;
+    stYStage: DUT_MotionStage;
+    stZoomStage: DUT_MotionStage;
+    stFocusStage: DUT_MotionStage;
+    stEl6In: EL6inData22b;
+    stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
-	bZoomEndFwd AT %I*: BOOL;
-	bZoomEndBwd AT %I*: BOOL;
-	bFocusEndFwd AT %I*: BOOL;
-	bFocusEndBwd AT %I*: BOOL;
-	
-	fYag: LREAL;
-	fDiamond: LREAL;
-	fReticle: LREAL;
-	fOut: LREAL;
+    bZoomEndFwd AT %I*: BOOL;
+    bZoomEndBwd AT %I*: BOOL;
+    bFocusEndFwd AT %I*: BOOL;
+    bFocusEndBwd AT %I*: BOOL;
+
+    fYag: LREAL;
+    fDiamond: LREAL;
+    fReticle: LREAL;
+    fOut: LREAL;
 END_VAR
 VAR
-	fbYStage: FB_MotionStage;
-	fbZoom: FB_MotionStage;
-	fbFocus: FB_MotionStage;
-	
-	{attribute 'pytmc' := '
-		pv: MMS:STATES
-		io: io
-	'}
-	fbStates: FB_XPIM_States;
-	
-	{attribute 'pytmc' := '
-		pv: MFW
-	'}
-	fbFilterWheel: FB_XPIM_FilterWheel;
-	
-	{attribute 'pytmc' := '
-		pv: CAM
-	'}
-	fbOpal: FB_XPIM_Opal;
-	
-	{attribute 'pytmc' := '
-		pv: SFW
-	'}
-	fbFlowSwitch: FB_XTES_Flowswitch;
+    fbYStage: FB_MotionStage;
+    fbZoom: FB_MotionStage;
+    fbFocus: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATES
+        io: io
+    '}
+    fbStates: FB_XPIM_States;
+
+    {attribute 'pytmc' := '
+        pv: MFW
+    '}
+    fbFilterWheel: FB_XPIM_FilterWheel;
+
+    {attribute 'pytmc' := '
+        pv: CAM
+    '}
+    fbOpal: FB_XPIM_Opal;
+
+    {attribute 'pytmc' := '
+        pv: SFW
+    '}
+    fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 ```
 
@@ -549,20 +627,20 @@ stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 // Home Lens to LLS
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
-stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.EPICS_MOTOR_HOME_LLS;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 fbStates(
-	stMotionStage:=stYStage,
-	fYag:=fYag,
-	fDiamond:=fDiamond,
-	fReticle:=fReticle,
-	fOut:=fOut);
+    stMotionStage:=stYStage,
+    fYag:=fYag,
+    fDiamond:=fDiamond,
+    fReticle:=fReticle,
+    fOut:=fOut);
 fbZoom(stMotionStage:=stZoomStage);
 fbFocus(stMotionStage:=stFocusStage);
 fbFilterWheel(
-	bExecute:=TRUE,
-	stIn_El6:=stEl6In,
-	stOut_El6:=stEl6Out);
+    bExecute:=TRUE,
+    stIn_El6:=stEl6In,
+    stOut_El6:=stEl6Out);
 fbOpal();
 fbFlowSwitch();
 ```
@@ -576,43 +654,51 @@ Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
-	bExecute: BOOL;
-	
-	{attribute 'pytmc' := '
-		pv: ERR:RESET
-		io: output
-	'}
-	bResetError: BOOL;
-	
-	nSetPos: USINT;
+    bExecute: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: ERR:RESET
+        io: output
+    '}
+    bResetError: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    nSetPos: ENUM_XPIM_States;
 END_VAR
 VAR_OUTPUT
-	nGetPos: USINT;
-	bBusy: BOOL;
-	bError: BOOL;
-	sError: STRING;
-	{attribute 'pytmc' := '
-		pv: ERR:MSG
-		io: input
-	'}
-	sLastError: STRING;
-	sErrorTS: STRING;
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    nGetPos: ENUM_XPIM_States;
+    bBusy: BOOL;
+    bError: BOOL;
+    sError: STRING;
+    {attribute 'pytmc' := '
+        pv: ERR:MSG
+        io: input
+    '}
+    sLastError: STRING;
+    sErrorTS: STRING;
 END_VAR
 VAR_IN_OUT
-	stIn_EL6: EL6inData22B;
-	stOut_EL6: EL6outData22B;
+    stIn_EL6: EL6inData22B;
+    stOut_EL6: EL6outData22B;
 END_VAR
 VAR
-	{attribute 'pytmc' := '
-		pv: RAW
-	'}
-	fbCom: FB_EL6_COM;
+    {attribute 'pytmc' := '
+        pv: RAW
+    '}
+    fbCom: FB_EL6_COM;
 
-	nStep: USINT;
-	sLastTestCmd: STRING;
-	bIsTest: BOOL;
-	fbGetTime: NT_GetTime;
-	bStopOnErr: BOOL;
+    nStep: USINT;
+    sLastTestCmd: STRING;
+    bIsTest: BOOL;
+    fbGetTime: NT_GetTime;
+    bStopOnErr: BOOL;
 END_VAR
 ```
 
@@ -623,92 +709,92 @@ fbCom.sSendSuffix := '$R';
 fbCom.sRecvSuffix := '$R';
 
 IF bExecute AND nStep = 0 THEN
-	IF bResetError OR NOT bError THEN
-		nStep := 10;
-	END_IF
+    IF bResetError OR NOT bError THEN
+        nStep := 10;
+    END_IF
 ELSIF NOT bExecute THEN
-	nStep := 0;
+    nStep := 0;
 END_IF
 CASE nStep OF
-	0:
-		; // idle
-	10: 
-		// Get position
-		bIsTest := FALSE;
-		fbCom(sCmd:='pos?',
-			bSend:=TRUE,
-			stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		nStep := nStep + 10;
-	20:
-		// Wait for response and set variables
-		fbCom(stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		IF fbCom.bDone THEN
-			bError := FALSE;
-			sError := '';
-			nGetPos := STRING_TO_USINT(fbCom.sResponse);
-			nSetPos := nGetPos;
-			nStep := nStep + 10;
-			IF nGetPos = 0 THEN
-				sError := 'Filter wheel in invalid state';
-				bStopOnErr := TRUE;
-				nStep := 50;
-			END_IF
-		END_IF
-	30:
-		// Wait for a move request
-		IF nSetPos <> nGetPos THEN
-			fbCom(sCmd:=CONCAT('pos=', USINT_TO_STRING(nSetPos)),
-				bSend:=TRUE,
-				stIn_EL6:=stIn_EL6,
-				stOut_EL6:=stOut_EL6);
-			nStep := nStep + 10;
-			bBusy := TRUE;	
-		END_IF
-	40:
-		fbCom(stIn_EL6:=stIn_EL6,
-			stOut_EL6:=stOut_EL6);
-		// Wait for move to be done
-		IF fbCom.bDone THEN
-			bBusy := FALSE;
-			nStep := 10;
-			// Handle setpoint error
-			IF fbCom.sResponse = 'Command error CMD_ARG_INVALID$N$R' THEN
-				sError := 'Invalid set position';
-				nStep := 50;
-			END_IF
-		END_IF
-	50:
-		// Set sError and then jump here for standard handling
-		sLastError := sError;
-		bError := TRUE;
-		fbGetTime(NETID:='',
-			START:=TRUE);
-		nStep := nStep + 10;
-	60:
-		// Error handling continued
-		fbGetTime();
-		IF NOT fbGetTime.BUSY THEN
-			sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
-			fbGetTime.START := FALSE;
-			// set bStopOnErr to TRUE if it was a major error
-			IF bStopOnErr THEN
-				nStep := 0;
-			ELSE
-				nStep := 10;
-			END_IF
-			bStopOnErr := FALSE;
-		END_IF
+    0:
+        ; // idle
+    10:
+        // Get position
+        bIsTest := FALSE;
+        fbCom(sCmd:='pos?',
+            bSend:=TRUE,
+            stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        nStep := nStep + 10;
+    20:
+        // Wait for response and set variables
+        fbCom(stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        IF fbCom.bDone THEN
+            bError := FALSE;
+            sError := '';
+            nGetPos := STRING_TO_USINT(fbCom.sResponse);
+            nSetPos := nGetPos;
+            nStep := nStep + 10;
+            IF nGetPos = 0 THEN
+                sError := 'Filter wheel in invalid state';
+                bStopOnErr := TRUE;
+                nStep := 50;
+            END_IF
+        END_IF
+    30:
+        // Wait for a move request
+        IF nSetPos <> nGetPos THEN
+            fbCom(sCmd:=CONCAT('pos=', INT_TO_STRING(nSetPos)),
+                bSend:=TRUE,
+                stIn_EL6:=stIn_EL6,
+                stOut_EL6:=stOut_EL6);
+            nStep := nStep + 10;
+            bBusy := TRUE;
+        END_IF
+    40:
+        fbCom(stIn_EL6:=stIn_EL6,
+            stOut_EL6:=stOut_EL6);
+        // Wait for move to be done
+        IF fbCom.bDone THEN
+            bBusy := FALSE;
+            nStep := 10;
+            // Handle setpoint error
+            IF fbCom.sResponse = 'Command error CMD_ARG_INVALID$N$R' THEN
+                sError := 'Invalid set position';
+                nStep := 50;
+            END_IF
+        END_IF
+    50:
+        // Set sError and then jump here for standard handling
+        sLastError := sError;
+        bError := TRUE;
+        fbGetTime(NETID:='',
+            START:=TRUE);
+        nStep := nStep + 10;
+    60:
+        // Error handling continued
+        fbGetTime();
+        IF NOT fbGetTime.BUSY THEN
+            sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
+            fbGetTime.START := FALSE;
+            // set bStopOnErr to TRUE if it was a major error
+            IF bStopOnErr THEN
+                nStep := 0;
+            ELSE
+                nStep := 10;
+            END_IF
+            bStopOnErr := FALSE;
+        END_IF
 END_CASE
 // Check for inner comms errors, report to EPICS same way
 IF NOT bError AND
-	(fbCom.eRecvErrorID <> COMERROR_NOERROR
-	OR fbCom.eSendErrorID <> COMERROR_NOERROR
-	OR fbCom.eRecvErrorID <> COMERROR_NOERROR) THEN
-	sError := 'Serial Communication Error';
-	bStopOnErr := TRUE;
-	nStep := 50;
+    (fbCom.eRecvErrorID <> COMERROR_NOERROR
+    OR fbCom.eSendErrorID <> COMERROR_NOERROR
+    OR fbCom.eRecvErrorID <> COMERROR_NOERROR) THEN
+    sError := 'Serial Communication Error';
+    bStopOnErr := TRUE;
+    nStep := 50;
 END_IF
 ```
 
@@ -721,14 +807,22 @@ Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_XPIM_Opal
 VAR
-	{attribute 'pytmc' := '
-		pv: PWR
-		ZNAM: OFF
-		ONAM: ON
-	'}
-	bOpalPower AT %Q*: BOOL;
-	
-	bOpalInit: BOOL := FALSE;
+    {attribute 'pytmc' := '
+        pv: PWR
+        io: io
+        ZNAM: OFF
+        ONAM: ON
+    '}
+    bOpalPower AT %Q*: BOOL;
+    bOpalInit: BOOL := FALSE;
+
+    {attribute 'pytmc' := '
+        pv: CIL:PWR
+        io: io
+        ZNAM: OFF
+        ONAM: ON
+    '}
+    bLedPower AT %Q*: BOOL;
 END_VAR
 ```
 
@@ -737,8 +831,8 @@ END_VAR
 ```vhdl
 // Turn the Opal on by default
 IF NOT bOpalInit THEN
-	bOpalPower := TRUE;
-	bOpalInit := TRUE;
+    bOpalPower := TRUE;
+    bOpalInit := TRUE;
 END_IF
 ```
 
@@ -751,357 +845,101 @@ Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_XPIM_States
 VAR_IN_OUT
-	stMotionStage: DUT_MotionStage;
+    stMotionStage: DUT_MotionStage;
 END_VAR
 VAR_INPUT
-	fYag: LREAL;
-	fDiamond: LREAL;
-	fReticle: LREAL;
-	fOut: LREAL;
+    bEnable: BOOL;
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    enumSet: ENUM_PPM_states;
+    bStatesLock: BOOL;
+    fOut: LREAL;
+    fYag: LREAL;
+    fDiamond: LREAL;
+    fReticle: LREAL;
+END_VAR
+VAR_OUTPUT
+    bError: BOOL;
+    sErrorMessage: STRING;
+    bBusy: BOOL;
+    bDone: BOOL;
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    enumGet: ENUM_XPIM_States;
 END_VAR
 VAR
-	fSmallDelta: LREAL := 0.01;
-	fBigDelta: LREAL := 10;
-	fMaxVelocity: LREAL := 20;
-	fHighAccel: LREAL := 200;
-	fLowAccel: LREAL := 25;
-	
-	stYag: DUT_PositionState;
-	stDiamond: DUT_PositionState;
-	stReticle: DUT_PositionState;
-	stOut: DUT_PositionState;
+    bInit: BOOL;
+    arrStates: ARRAY[1..15] OF DUT_PositionState;
+    nIter: INT;
 
-	{attribute 'pytmc' := 'pv: YAG'}
-	fbGoYag: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: DIAMOND'}
-	fbGoDiamond: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: RETICLE'}
-	fbGoReticle: FB_StatePTPMove;
-	{attribute 'pytmc' := 'pv: OUT'}
-	fbGoOut: FB_StatePTPMove;
+    {attribute 'pytmc' := '
+        pv:
+        io: io
+    '}
+    fbStateManager: FB_PositionStateManager;
+
+    fbLockOut: FB_PositionStateLock;
+    fbLockYag: FB_PositionStateLock;
+    fbLockDiamond: FB_PositionStateLock;
+    fbLockReticle: FB_PositionStateLock;
+END_VAR
+VAR CONSTANT
+    fInDelta: LREAL := 0.1;
+    fOutDelta: LREAL := 10;
+    fInVelocity: LREAL := 20;
+    fOutVelocity: LREAL := 20;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
 END_VAR
 ```
 
 ### FB_XPIM_States: ST
 
 ```vhdl
-stYag.sName := 'Yag';
-stYag.fPosition := fYag;
-stYag.fDelta := fSmallDelta;
-stYag.fVelocity := fMaxVelocity;
-stYag.fAccel := fHighAccel;
-stYag.fDecel := fHighAccel;
-
-stDiamond.sName := 'Diamond';
-stDiamond.fPosition := fDiamond;
-stDiamond.fDelta := fSmallDelta;
-stDiamond.fVelocity := fMaxVelocity;
-stDiamond.fAccel := fHighAccel;
-stDiamond.fDecel := fHighAccel;
-
-stReticle.sName := 'Reticle';
-stReticle.fPosition := fReticle;
-stReticle.fDelta := fSmallDelta;
-stReticle.fVelocity := fMaxVelocity;
-stReticle.fAccel := fHighAccel;
-stReticle.fDecel := fHighAccel;
-
-stOut.sName := 'Out';
-stOut.fPosition := fOut;
-stOut.fDelta := fBigDelta;
-stOut.fVelocity := fMaxVelocity;
-stOut.fAccel := fHighAccel;
-stOut.fDecel := fLowAccel;
-
-fbGoYag(
-	stPositionState:=stYag,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoDiamond(
-	stPositionState:=stDiamond,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoReticle(
-	stPositionState:=stReticle,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-	
-fbGoOut(
-	stPositionState:=stOut,
-	bMoveOk:=TRUE,
-	stMotionStage:=stMotionStage);
-```
-
-
-POUs/FB_AnalogToRaw.TcPOU (TcPlcObject)
----------------------------------------
-
-### FB_AnalogToRaw: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_AnalogToRaw
-VAR_INPUT
-	fReal: LREAL;
-	iBits: UINT;
-	fMax: LREAL;
-	fMin: LREAL;
-END_VAR
-VAR_OUTPUT
-	iRaw: INT;
-END_VAR
-VAR
-	fScale: LREAL;
-END_VAR
-```
-
-### FB_AnalogToRaw: ST
-
-```vhdl
-// Converts a real unit value (e.g., volts) to the integer needed for an analog output terminal.
-IF fScale = 0 AND fMax > fMin THEN
-	fScale := (EXPT(2, iBits) - 1) / (fMax - fMin);
-END_IF
-IF fReal > fMax THEN
-	fReal := fMax;
-ELSIF fReal < fMin THEN
-	fReal := fMin;
-END_IF
-iRaw := LREAL_TO_INT((fReal - fMin) * fScale);
-```
-
-
-POUs/FB_DataBuffer.TcPOU (TcPlcObject)
---------------------------------------
-
-### FB_DataBuffer: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_DataBuffer
-VAR_INPUT
-	// The value to accumulate
-	fInput: LREAL;
-	// Skip cycles to slow down acquisition rate
-	iSkipCycles: UINT := 0;
-END_VAR
-VAR_IN_OUT
-	// A buffer to slowly fill with new values as they come in
-	arrPartialBuffer: ARRAY[*] OF LREAL;
-	// A buffer to update all at once when the partial buffer fills
-	arrOutputBuffer: ARRAY[*] OF LREAL;
-END_VAR
-VAR
-	bInit: BOOL := FALSE;
-	iArrayMin: DINT;
-	iArrayMax: DINT;
-	iArrayIndex: DINT;
-	iCopyIndex: DINT;
-	iCycleCount: ULINT := 0;
-	iCycleModulo: UINT;
-END_VAR
-```
-
-### FB_DataBuffer: ST
-
-```vhdl
 IF NOT bInit THEN
-	bInit := TRUE;
-	iArrayMin := LOWER_BOUND(arrPartialBuffer, 1);
-	iArrayMax := UPPER_BOUND(arrOutputBuffer, 1);
-	iArrayIndex := iArrayMin;
-	iCycleModulo := iSkipCycles + 1;
+    bInit := FALSE;
+    FOR nIter := 1 TO 4 DO
+        arrStates[nIter].fDelta := fInDelta;
+        arrStates[nIter].fVelocity := fInVelocity;
+        arrStates[nIter].fAccel := fAccel;
+        arrStates[nIter].fDecel := fAccel;
+        arrStates[nIter].bLocked := bStatesLock;
+        arrStates[nIter].bValid := TRUE;
+        // TODO implement PMPS instead of doing this
+        arrStates[nIter].bMoveOk := TRUE;
+    END_FOR
+    arrStates[1].sName := 'Out';
+    arrStates[1].fPosition := fOut;
+    arrStates[1].fDelta := fOutDelta;
+    arrStates[1].fVelocity := fOutVelocity;
+    arrStates[1].fDecel := fOutDecel;
+    arrStates[2].sName := 'Yag';
+    arrStates[2].fPosition := fYag;
+    arrStates[3].sName := 'Diamond';
+    arrStates[3].fPosition := fDiamond;
+    arrStates[4].sName := 'Reticle';
+    arrStates[4].fPosition := fReticle;
 END_IF
-iCycleCount := iCycleCount + 1;
-IF iCycleCount MOD iCycleModulo = 0 THEN
-	arrPartialBuffer[iArrayIndex] := fInput;
-	iArrayIndex := iArrayIndex + 1;
-	IF iArrayIndex > iArrayMax THEN
-		iArrayIndex := iArrayMin;
-		FOR iCopyIndex := iArrayMin TO iArrayMax DO
-			arrOutputBuffer[iCopyIndex] := arrPartialBuffer[iCopyIndex];
-		END_FOR
-	END_IF
-END_IF
-```
 
+fbLockOut(stPositionState := arrStates[1]);
+fbLockYag(stPositionState := arrStates[2]);
+fbLockDiamond(stPositionState := arrStates[3]);
+fbLockReticle(stPositionState := arrStates[4]);
 
-POUs/FB_EL6_COM.TcPOU (TcPlcObject)
------------------------------------
-
-### FB_EL6_COM: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_EL6_COM
-VAR_INPUT
-	{attribute 'pytmc' := '
-		pv: CMD
-		io: io
-	'}
-	sCmd: STRING;
-	
-	{attribute 'pytmc' := '
-		pv: SEND
-		io: io
-	'}
-	bSend: BOOL;
-	
-	sSendPrefix: STRING;
-	sSendSuffix: STRING;
-	sRecvPrefix: STRING;
-	sRecvSuffix: STRING;
-	tTimeout: TIME := T#1S;
-END_VAR
-VAR_IN_OUT
-	stIn_EL6: EL6inData22B;
-	stOut_EL6: EL6outData22B;
-END_VAR
-VAR_OUTPUT
-	{attribute 'pytmc' := '
-		pv: RESP
-		io: input
-	'}
-	sResponse: STRING;
-	
-	{attribute 'pytmc' := '
-		pv: DONE
-		io: input
-	'}
-	bDone: BOOL;
-	
-	{attribute 'pytmc' := '
-		pv: ERR:SER
-		io: input
-	'}
-	eSerialLineErrorID: ComError_t;
-	
-	{attribute 'pytmc' := '
-		pv: ERR:SEND
-		io: input
-	'}
-	eSendErrorID: ComError_t;
-	
-	{attribute 'pytmc' := '
-		pv: ERR:RECV
-		io: input
-	'}
-	eRecvErrorID: ComError_t;
-END_VAR
-VAR
-	// Communication Buffers
-	TxBuffer: ComBuffer;
-	RxBuffer: ComBuffer;
-	fbClearComBuffer: ClearComBuffer;
-	
-	// Parameters for PLC -> EL6
-	fbEL6Ctrl: SerialLineControl;
-	bEL6CtrlError: BOOL;
-	eEL6CtrlErrorID: ComError_t;
-	
-	// Parameters for EL6 -> Serial Device
-	fbSend: SendString;
-	bSendBusy: BOOL;
-	eLastSendErrorID: ComError_t;
-	fbReceive: ReceiveString;
-	sReceivedString: STRING;
-	sLastReceivedString: STRING;
-	bStringReceived: BOOL;
-	bReceiveBusy: BOOL;
-	bReceiveError: BOOL;
-	eReceiveErrorID: ComError_t;
-	bReceiveTimeout: BOOL;
-	nReceiveCounter: UDINT;
-	nSendCounter: UDINT;
-	sStringToSend: STRING;
-	fbFormatString: FB_FormatString;
-	
-	// Parameters for state-machine implementation
-	nStep: INT := 0;
-END_VAR
-```
-
-### FB_EL6_COM: ST
-
-```vhdl
-fbEL6Ctrl(
-	Mode:= SERIALLINEMODE_EL6_22B, 
-	pComIn:= ADR(stIn_EL6), 
-	pComOut:= ADR(stOut_EL6), 
-	SizeComIn:= UINT_TO_INT(SIZEOF(stIn_EL6)), 
-	Error=> , 
-	ErrorID=> eSerialLineErrorID, 
-	TxBuffer:= TxBuffer, 
-	RxBuffer:= RxBuffer );
-IF fbEL6Ctrl.Error THEN
-	bEL6CtrlError := TRUE;
-	eEL6CtrlErrorID := fbEL6Ctrl.ErrorID;
-END_IF
-IF bSend THEN
-	nStep := 10;
-	bSend := FALSE;
-	bDone := FALSE;
-END_IF
-// Attempt at solution that sends one command at a time, not on constant loop
-CASE nStep OF
-	0:
-		; // idle
-	10:
-		// Clear buffers in case any lingering data
-		fbClearComBuffer(Buffer:=TxBuffer);
-		fbClearComBuffer(Buffer:=RxBuffer);
-		// Prepare string to send
-		sStringToSend := CONCAT(sSendPrefix, CONCAT(sCmd, sSendSuffix));
-		// Send string
-		fbSend(	SendString:= sStringToSend,
-				TXbuffer:= TxBuffer,
-				Busy=> bSendBusy,
-				Error=> eSendErrorID);
-		IF fbSend.Error <> COMERROR_NOERROR THEN
-			eLastSendErrorID := fbSend.Error;
-		ELSE
-			nSendCounter := nSendCounter + 1;
-		END_IF
-		nStep := nStep + 10;
-	20:
-		// Finish sending String
-		IF fbSend.Busy THEN
-			fbSend(	SendString:= sStringToSend,
-					TXbuffer:= TxBuffer,
-					Busy=> bSendBusy,
-					Error=> eSendErrorID);
-			IF fbSend.Error <> COMERROR_NOERROR THEN
-				eLastSendErrorID := fbSend.Error;
-			ELSE
-				nSendCounter := nSendCounter + 1;
-			END_IF
-		ELSE
-			nStep := nStep + 10;
-		END_IF
-	30:
-		// Get Reply
-		fbReceive(
-			Prefix:= sRecvPrefix,
-			Suffix:= sRecvSuffix,
-			Timeout:= tTimeout,
-			ReceivedString:= sReceivedString,
-			RXbuffer:= RxBuffer,
-			StringReceived=> bStringReceived,
-			Busy=> bReceiveBusy,
-			Error=> eRecvErrorID,
-			RxTimeout=> bReceiveTimeout );
-		IF fbReceive.Error <> COMERROR_NOERROR THEN
-			eReceiveErrorID := fbReceive.Error;
-		END_IF
-		IF bStringReceived THEN
-			nReceiveCounter := nReceiveCounter + 1;
-			// Check for response
-			IF FIND(sReceivedString, sStringToSend)=0 THEN
-				sResponse := sReceivedString;
-				bDone := TRUE;
-				nStep := 0;
-			END_IF
-		END_IF
-END_CASE
+fbStateManager(
+    stMotionStage := stMotionStage,
+    arrStates := arrStates,
+    setState := enumSet,
+    bEnable := bEnable,
+    bError => bError,
+    sErrorMessage => sErrorMessage,
+    bBusy => bBusy,
+    bDone => bDone,
+    getState => enumGet);
 ```
 
 
@@ -1113,99 +951,18 @@ POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_L2SI_Flowmeter
 VAR
-	{attribute 'pytmc' := '
-		pv: MA
-		io: input
-	'}
-	fRaw AT %I*: INT;
+    {attribute 'pytmc' := '
+        pv: MA
+        io: input
+    '}
+    fRaw AT %I*: INT;
 
-	{attribute 'pytmc' := '
-		pv: FLOW
-		io: input
-	'}
-	fFlowRate: LREAL;
+    {attribute 'pytmc' := '
+        pv: FLOW
+        io: input
+    '}
+    fFlowRate: LREAL;
 END_VAR
-```
-
-
-POUs/FB_RawToAnalog.TcPOU (TcPlcObject)
----------------------------------------
-
-### FB_RawToAnalog: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_RawToAnalog
-VAR_INPUT
-	iRaw: INT;
-	iBits: UINT;
-	fMax: LREAL;
-	fMin: LREAL;
-END_VAR
-VAR_OUTPUT
-	fReal: LREAL;
-END_VAR
-VAR
-	fScale: LREAL;
-END_VAR
-```
-
-### FB_RawToAnalog: ST
-
-```vhdl
-// Converts the integer from an analog input terminal to a real unit value (e.g., volts)
-IF fScale = 0 AND fMax > fMin THEN
-	fScale := (EXPT(2, iBits) - 1) / (fMax - fMin);
-END_IF
-IF fScale <> 0 THEN
-	fReal := iRaw / fScale + fMin;
-END_IF
-```
-
-
-POUs/FB_ThermoCouple.TcPOU (TcPlcObject)
-----------------------------------------
-
-### FB_ThermoCouple: Declaration
-
-```vhdl
-FUNCTION_BLOCK FB_ThermoCouple
-VAR_INPUT
-	iScale: INT := 10;
-END_VAR
-VAR_OUTPUT
-	{attribute 'pytmc' := '
-		pv: TEMP
-		io: input
-	'}
-	fTemp: LREAL;
-	
-	{attribute 'pytmc' := '
-		pv: CONN
-		io: input
-		ONAM: Connected
-		ZNAM: Disconnected
-	}
-	bConnected: BOOL;
-	
-	{attribute 'pytmc' := '
-		pv: ERR
-		io: input
-	'}
-	bError AT %I*: BOOL;
-	
-	bUnderrange AT %I*: BOOL;
-	bOverrange AT %I*: BOOL;
-END_VAR
-VAR
-	iRaw AT %I*: INT;
-END_VAR
-```
-
-### FB_ThermoCouple: ST
-
-```vhdl
-bConnected := NOT (bOverrange AND bError);
-fTemp := iRaw / iScale;
 ```
 
 
@@ -1217,12 +974,12 @@ POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)
 ```vhdl
 FUNCTION_BLOCK FB_XTES_Flowswitch
 VAR_OUTPUT
-	{attribute 'pytmc' := '
-		pv: FLOW
-		ZNAM: LOW
-		ONAM: OK
-	'}
-	bFlowOk AT %I*: BOOL;
+    {attribute 'pytmc' := '
+        pv: FLOW
+        ZNAM: LOW
+        ONAM: OK
+    '}
+    bFlowOk AT %I*: BOOL;
 END_VAR
 ```
 
@@ -1234,6 +991,7 @@ Version/Global_Version.TcGVL (TcPlcObject)
 
 ```vhdl
 {attribute 'TcGenerated'}
+{attribute 'no-analysis'}
 // This function has been automatically generated from the project information.
 VAR_GLOBAL CONSTANT
 	{attribute 'const_non_replaced'}
@@ -1260,16 +1018,15 @@ Links
 Pragma lint results
 -------------------
 ```
-ERROR:pytmc.bin.pragmalint:Linter error: 
-POUs/FB_ThermoCouple.TcPOU:line 12:     {attribute 'pytmc' := '
-    		pv: CONN
-    		io: input
-    		ONAM: Connected
-    		ZNAM: Disconnected
-    	}
-INFO:pytmc.bin.pragmalint:Total pragmas found: 46 Total linter errors: 1
+INFO:pytmc.bin.pragmalint:Total pragmas found: 47 Total linter errors: 0
 PLC Project (1): Library
 ========================
+
+
+Devices/PPM/ENUM_PPM_States.TcDUT (TcPlcObject)
+-----------------------------------------------
+
+    - ENUM_PPM_States: Declaration - 1 pragmas
 
 
 Devices/PPM/FB_PPM.TcPOU (TcPlcObject)
@@ -1287,19 +1044,37 @@ Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)
 Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)
 -------------------------------------------------
 
-    - FB_PPM_PowerMeter: Declaration - 5 pragmas
+    - FB_PPM_PowerMeter: Declaration - 10 pragmas
 
 
 Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)
 ---------------------------------------------
 
-    - FB_PPM_States: Declaration - 4 pragmas
+    - FB_PPM_States: Declaration - 3 pragmas
+
+
+Devices/REF/FB_REF.TcPOU (TcPlcObject)
+--------------------------------------
+
+    - FB_REF: Declaration - 2 pragmas
+
+
+Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)
+--------------------------------------------
+
+    - FB_REF_Laser: Declaration - 1 pragmas
 
 
 Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)
 --------------------------------------------------
 
-    - ENUM_XPIM_Filters: Declaration - 2 pragmas
+    - ENUM_XPIM_Filters: Declaration - 1 pragmas
+
+
+Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)
+-------------------------------------------------
+
+    - ENUM_XPIM_States: Declaration - 1 pragmas
 
 
 Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)
@@ -1311,37 +1086,25 @@ Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)
 Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)
 ----------------------------------------------------
 
-    - FB_XPIM_FilterWheel: Declaration - 3 pragmas
+    - FB_XPIM_FilterWheel: Declaration - 5 pragmas
 
 
 Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)
 ---------------------------------------------
 
-    - FB_XPIM_Opal: Declaration - 1 pragmas
+    - FB_XPIM_Opal: Declaration - 2 pragmas
 
 
 Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)
 -----------------------------------------------
 
-    - FB_XPIM_States: Declaration - 4 pragmas
-
-
-POUs/FB_EL6_COM.TcPOU (TcPlcObject)
------------------------------------
-
-    - FB_EL6_COM: Declaration - 7 pragmas
+    - FB_XPIM_States: Declaration - 3 pragmas
 
 
 POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)
 ------------------------------------------
 
     - FB_L2SI_Flowmeter: Declaration - 2 pragmas
-
-
-POUs/FB_ThermoCouple.TcPOU (TcPlcObject)
-----------------------------------------
-
-    - FB_ThermoCouple: Declaration - 3 pragmas
 
 
 POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)
@@ -1353,6 +1116,6 @@ POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)
 Version/Global_Version.TcGVL (TcPlcObject)
 ------------------------------------------
 
-    - Global_Version: Declaration - 3 pragmas
+    - Global_Version: Declaration - 4 pragmas
 
 ```
