@@ -4,11 +4,11 @@
     <Declaration><![CDATA[{attribute 'qualified_only'}
 TYPE ENUM_XPIM_States :
 (
-	Unknown := 0,
-	Out := 1,
-	Yag := 2,
-	Diamond := 3,
-	Reticle := 4
+    Unknown := 0,
+    Out := 1,
+    Yag := 2,
+    Diamond := 3,
+    Reticle := 4
 );
 END_TYPE
 ]]></Declaration>
