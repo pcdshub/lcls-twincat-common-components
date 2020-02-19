@@ -589,7 +589,7 @@ VAR
     fbFocus: FB_MotionStage;
 
     {attribute 'pytmc' := '
-        pv: MMS:STATES
+        pv: MMS:STATE
         io: io
     '}
     fbStates: FB_XPIM_States;
