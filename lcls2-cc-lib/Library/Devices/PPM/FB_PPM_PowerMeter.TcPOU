@@ -42,7 +42,7 @@ VAR
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute 'pytmc' := '
-        pv: STC
+        pv:
         io: input
     '}
     fbThermoCouple: FB_ThermoCouple;
