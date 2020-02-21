@@ -249,7 +249,7 @@ VAR
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute &#39;pytmc&#39; := &#39;
-        pv: STC
+        pv:
         io: input
     &#39;}
     fbThermoCouple: FB_ThermoCouple;
@@ -641,6 +641,10 @@ END_VAR
 <span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="n">stZoomStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="n">stFocusStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="o">//</span> <span class="n">No</span> <span class="n">PMPS</span> <span class="n">yet</span>
+<span class="n">stYStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="o">//</span> <span class="n">No</span> <span class="n">limit</span> <span class="n">switch</span> <span class="n">at</span> <span class="n">the</span> <span class="n">bottom</span>
 <span class="n">stYStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
 <span class="o">//</span> <span class="n">Lens</span> <span class="n">limits</span> <span class="n">are</span> <span class="n">normally</span> <span class="k">open</span>

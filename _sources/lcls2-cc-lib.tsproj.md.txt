@@ -221,7 +221,7 @@ VAR
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute 'pytmc' := '
-        pv: STC
+        pv:
         io: input
     '}
     fbThermoCouple: FB_ThermoCouple;
@@ -619,6 +619,10 @@ fbYStage(stMotionStage:=stYStage);
 stYStage.bHardwareEnable := TRUE;
 stZoomStage.bHardwareEnable := TRUE;
 stFocusStage.bHardwareEnable := TRUE;
+// No PMPS yet
+stYStage.bPowerSelf := TRUE;
+stZoomStage.bPowerSelf := TRUE;
+stFocusStage.bPowerSelf := TRUE;
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
 // Lens limits are normally open
