@@ -53,6 +53,10 @@ END_VAR
 stYStage.bHardwareEnable := TRUE;
 stZoomStage.bHardwareEnable := TRUE;
 stFocusStage.bHardwareEnable := TRUE;
+// No PMPS yet
+stYStage.bPowerSelf := TRUE;
+stZoomStage.bPowerSelf := TRUE;
+stFocusStage.bPowerSelf := TRUE;
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
 // Lens limits are normally open
