@@ -28,7 +28,7 @@ VAR
     stIn: DUT_PositionState;
 END_VAR
 VAR CONSTANT
-    bStatesLock: BOOL;
+    bStatesLock: BOOL := FALSE;
     fVelo: LREAL := 65;
     fAccel: LREAL := 25;
 END_VAR
