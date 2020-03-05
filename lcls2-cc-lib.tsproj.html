@@ -58,14 +58,27 @@
     <span class="mf">15.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_XTES_Flowswitch</span><span class="o">.</span><span class="n">TcPOU</span>
     <span class="mf">16.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Version</span><span class="o">/</span><span class="n">Global_Version</span><span class="o">.</span><span class="n">TcGVL</span>
 
+<span class="n">POUs</span><span class="p">:</span>
+    <span class="mf">1.</span><span class="p">)</span> <span class="n">FB_L2SI_Flowmeter</span>
+    <span class="mf">2.</span><span class="p">)</span> <span class="n">FB_PPM</span>
+    <span class="mf">3.</span><span class="p">)</span> <span class="n">FB_PPM_Gige</span>
+    <span class="mf">4.</span><span class="p">)</span> <span class="n">FB_PPM_PowerMeter</span>
+    <span class="mf">5.</span><span class="p">)</span> <span class="n">FB_PPM_States</span>
+    <span class="mf">6.</span><span class="p">)</span> <span class="n">FB_REF</span>
+    <span class="mf">7.</span><span class="p">)</span> <span class="n">FB_REF_Laser</span>
+    <span class="mf">8.</span><span class="p">)</span> <span class="n">FB_XPIM</span>
+    <span class="mf">9.</span><span class="p">)</span> <span class="n">FB_XPIM_FilterWheel</span>
+    <span class="mf">10.</span><span class="p">)</span> <span class="n">FB_XPIM_Opal</span>
+    <span class="mf">11.</span><span class="p">)</span> <span class="n">FB_XPIM_States</span>
+    <span class="mf">12.</span><span class="p">)</span> <span class="n">FB_XTES_Flowswitch</span>
+
 <span class="n">GVLs</span><span class="p">:</span>
     <span class="mf">1.</span><span class="p">)</span> <span class="n">Global_Version</span>
 </pre></div>
 </div>
-<div class="section" id="devices-ppm-enum-ppm-states-tcdut-tcplcobject">
-<h2>Devices/PPM/ENUM_PPM_States.TcDUT (TcPlcObject)<a class="headerlink" href="#devices-ppm-enum-ppm-states-tcdut-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="enum-ppm-states-declaration">
-<h3>ENUM_PPM_States: Declaration<a class="headerlink" href="#enum-ppm-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="dut-enum-ppm-states">
+<h2>DUT: ENUM_PPM_States<a class="headerlink" href="#dut-enum-ppm-states" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/PPM/ENUM_PPM_States.TcDUT</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
 TYPE ENUM_PPM_States :
 (
@@ -79,11 +92,80 @@ END_TYPE
 </pre></div>
 </div>
 </div>
+<div class="section" id="dut-enum-xpim-filters">
+<h2>DUT: ENUM_XPIM_Filters<a class="headerlink" href="#dut-enum-xpim-filters" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
+TYPE ENUM_XPIM_Filters :
+(
+    Unknown := 0,
+    T50 := 1,
+    T25 := 2,
+    T10 := 3,
+    T5 := 4,
+    T1 := 5,
+    T100 := 6
+);
+END_TYPE
+</pre></div>
 </div>
-<div class="section" id="devices-ppm-fb-ppm-tcpou-tcplcobject">
-<h2>Devices/PPM/FB_PPM.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ppm-declaration">
-<h3>FB_PPM: Declaration<a class="headerlink" href="#fb-ppm-declaration" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="dut-enum-xpim-states">
+<h2>DUT: ENUM_XPIM_States<a class="headerlink" href="#dut-enum-xpim-states" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/ENUM_XPIM_States.TcDUT</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
+TYPE ENUM_XPIM_States :
+(
+    Unknown := 0,
+    Out := 1,
+    Yag := 2,
+    Diamond := 3,
+    Reticle := 4
+);
+END_TYPE
+</pre></div>
+</div>
+</div>
+<div class="section" id="gvl-global-version">
+<h2>GVL: Global_Version<a class="headerlink" href="#gvl-global-version" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Version/Global_Version.TcGVL</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;TcGenerated&#39;}
+{attribute &#39;no-analysis&#39;}
+// This function has been automatically generated from the project information.
+VAR_GLOBAL CONSTANT
+	{attribute &#39;const_non_replaced&#39;}
+	{attribute &#39;linkalways&#39;}
+	stLibVersion_lcls2_cc_lib : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, sVersion := &#39;0.0.0&#39;);
+END_VAR
+</pre></div>
+</div>
+</div>
+<div class="section" id="pou-fb-l2si-flowmeter">
+<h2>POU: FB_L2SI_Flowmeter<a class="headerlink" href="#pou-fb-l2si-flowmeter" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/POUs/FB_L2SI_Flowmeter.TcPOU</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_L2SI_Flowmeter
+VAR
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: MA
+        io: input
+    &#39;}
+    fRaw AT %I*: INT;
+
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: FLOW
+        io: input
+    &#39;}
+    fFlowRate: LREAL;
+END_VAR
+
+
+END_FUNCTION_BLOCK
+</pre></div>
+</div>
+</div>
+<div class="section" id="pou-fb-ppm">
+<h2>POU: FB_PPM<a class="headerlink" href="#pou-fb-ppm" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/PPM/FB_PPM.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
@@ -124,34 +206,29 @@ VAR
     &#39;}
     fbYagThermoCouple: FB_ThermoCouple;
 END_VAR
+fbYStage(stMotionStage:=stYStage);
+fbStates(
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    fOut:=fOut,
+    fPower:=fPower,
+    fPolished:=fPolished,
+    fFrosted:=fFrosted);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+fbPowerMeter();
+fbGige();
+fbFlowMeter();
+fbYagThermoCouple();
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-ppm-st">
-<h3>FB_PPM: ST<a class="headerlink" href="#fb-ppm-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
-<span class="n">fbStates</span><span class="p">(</span>
-    <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
-    <span class="n">bEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">,</span>
-    <span class="n">fPower</span><span class="o">:=</span><span class="n">fPower</span><span class="p">,</span>
-    <span class="n">fPolished</span><span class="o">:=</span><span class="n">fPolished</span><span class="p">,</span>
-    <span class="n">fFrosted</span><span class="o">:=</span><span class="n">fFrosted</span><span class="p">);</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">nEnableMode</span> <span class="o">:=</span> <span class="n">ENUM_StageEnableMode</span><span class="p">.</span><span class="n">DURING_MOTION</span><span class="p">;</span>
-<span class="n">fbPowerMeter</span><span class="p">();</span>
-<span class="n">fbGige</span><span class="p">();</span>
-<span class="n">fbFlowMeter</span><span class="p">();</span>
-<span class="n">fbYagThermoCouple</span><span class="p">();</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-ppm-fb-ppm-gige-tcpou-tcplcobject">
-<h2>Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-gige-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ppm-gige-declaration">
-<h3>FB_PPM_Gige: Declaration<a class="headerlink" href="#fb-ppm-gige-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-ppm-gige">
+<h2>POU: FB_PPM_Gige<a class="headerlink" href="#pou-fb-ppm-gige" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/PPM/FB_PPM_Gige.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_Gige
 VAR
     iIlluminatorINT AT %Q*: INT;
@@ -174,40 +251,35 @@ VAR
 
     bGigeInit: BOOL := FALSE;
 END_VAR
-</pre></div>
-</div>
-</div>
-<div class="section" id="fb-ppm-gige-st">
-<h3>FB_PPM_Gige: ST<a class="headerlink" href="#fb-ppm-gige-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Turn</span> <span class="n">the</span> <span class="n">GigE</span> <span class="k">on</span> <span class="n">by</span> <span class="n">default</span>
-<span class="k">IF</span> <span class="k">NOT</span> <span class="n">bGigeInit</span> <span class="k">THEN</span>
-    <span class="n">bGigePower</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">bGigeInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">END_IF</span>
+// Turn the GigE on by default
+IF NOT bGigeInit THEN
+    bGigePower := TRUE;
+    bGigeInit := TRUE;
+END_IF
 
-<span class="o">//</span> <span class="n">Illuminator</span> <span class="n">conversion</span> <span class="k">to</span> <span class="n">percentage</span>
-<span class="n">fbSetIllPercent</span><span class="p">(</span>
-    <span class="n">fReal</span><span class="o">:=</span><span class="n">fIlluminatorPercent</span><span class="p">,</span>
-    <span class="n">fSafeMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">fSafeMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">iRaw</span><span class="o">=&gt;</span><span class="n">iIlluminatorINT</span><span class="p">);</span>
-<span class="n">fbGetIllPercent</span><span class="p">(</span>
-    <span class="n">iRaw</span><span class="o">:=</span><span class="n">iIlluminatorINT</span><span class="p">,</span>
-    <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">fReal</span><span class="o">=&gt;</span><span class="n">fIlluminatorPercent</span><span class="p">);</span>
+// Illuminator conversion to percentage
+fbSetIllPercent(
+    fReal:=fIlluminatorPercent,
+    fSafeMax:=100,
+    fSafeMin:=0,
+    iTermBits:=15,
+    fTermMax:=100,
+    fTermMin:=0,
+    iRaw=&gt;iIlluminatorINT);
+fbGetIllPercent(
+    iRaw:=iIlluminatorINT,
+    iTermBits:=15,
+    fTermMax:=100,
+    fTermMin:=0,
+    fReal=&gt;fIlluminatorPercent);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject">
-<h2>Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ppm-powermeter-declaration">
-<h3>FB_PPM_PowerMeter: Declaration<a class="headerlink" href="#fb-ppm-powermeter-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-ppm-powermeter">
+<h2>POU: FB_PPM_PowerMeter<a class="headerlink" href="#pou-fb-ppm-powermeter" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/PPM/FB_PPM_PowerMeter.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR
     iVoltageINT AT %I*: INT;
@@ -277,46 +349,41 @@ VAR
     fbCalibBaseBuffer: FB_LREALBuffer;
     fbCalibMJBuffer: FB_LREALBuffer;
 END_VAR
+fbThermoCouple();
+
+// Convert the terminal&#39;s integer into a value in volts
+fbGetPMVoltage(
+    iRaw := iVoltageINT,
+    iTermBits := 15,
+    fTermMax := 10,
+    fTermMin := 0,
+    fReal =&gt; fVoltage);
+
+// Power meter calibration
+fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
+fCalibMJ := fCalibBase * fCalibMJRatio;
+
+// Buffer the full-rate Voltage and calibrated MJ values
+fbVoltageBuffer(
+    bExecute := TRUE,
+    fInput := fVoltage,
+    arrOutput =&gt; fVoltageBuffer);
+fbCalibBaseBuffer(
+    bExecute := TRUE,
+    fInput := fCalibBase,
+    arrOutput =&gt; fCalibBaseBuffer);
+fbCalibMJBuffer(
+    bExecute := TRUE,
+    fInput := fCalibMJ,
+    arrOutput =&gt; fCalibMJBuffer);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-ppm-powermeter-st">
-<h3>FB_PPM_PowerMeter: ST<a class="headerlink" href="#fb-ppm-powermeter-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbThermoCouple</span><span class="p">();</span>
-
-<span class="o">//</span> <span class="n">Convert</span> <span class="n">the</span> <span class="n">terminal</span><span class="na">&#39;s</span> <span class="kt">integer</span> <span class="n">into</span> <span class="n">a</span> <span class="n">value</span> <span class="k">in</span> <span class="n">volts</span>
-<span class="n">fbGetPMVoltage</span><span class="p">(</span>
-    <span class="n">iRaw</span> <span class="o">:=</span> <span class="n">iVoltageINT</span><span class="p">,</span>
-    <span class="n">iTermBits</span> <span class="o">:=</span> <span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n">fTermMin</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">fReal</span> <span class="o">=&gt;</span> <span class="n">fVoltage</span><span class="p">);</span>
-
-<span class="o">//</span> <span class="n">Power</span> <span class="n">meter</span> <span class="n">calibration</span>
-<span class="n">fCalibBase</span> <span class="o">:=</span> <span class="p">(</span><span class="n">fVoltage</span> <span class="o">+</span> <span class="n">fCalibRelOffset</span><span class="p">)</span> <span class="o">*</span> <span class="n">fCalibRelRatio</span><span class="p">;</span>
-<span class="n">fCalibMJ</span> <span class="o">:=</span> <span class="n">fCalibBase</span> <span class="o">*</span> <span class="n">fCalibMJRatio</span><span class="p">;</span>
-
-<span class="o">//</span> <span class="k">Buffer</span> <span class="n">the</span> <span class="n">full</span><span class="o">-</span><span class="n">rate</span> <span class="n">Voltage</span> <span class="k">and</span> <span class="n">calibrated</span> <span class="n">MJ</span> <span class="n">values</span>
-<span class="n">fbVoltageBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fVoltage</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fVoltageBuffer</span><span class="p">);</span>
-<span class="n">fbCalibBaseBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fCalibBase</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fCalibBaseBuffer</span><span class="p">);</span>
-<span class="n">fbCalibMJBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fCalibMJ</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fCalibMJBuffer</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-ppm-fb-ppm-states-tcpou-tcplcobject">
-<h2>Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ppm-fb-ppm-states-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ppm-states-declaration">
-<h3>FB_PPM_States: Declaration<a class="headerlink" href="#fb-ppm-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-ppm-states">
+<h2>POU: FB_PPM_States<a class="headerlink" href="#pou-fb-ppm-states" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/PPM/FB_PPM_States.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_States
 VAR_IN_OUT
     stMotionStage: DUT_MotionStage;
@@ -369,59 +436,54 @@ VAR CONSTANT
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
+IF NOT bInit THEN
+    bInit := FALSE;
+    FOR nIter := 1 TO 4 DO
+        arrStates[nIter].fDelta := fInDelta;
+        arrStates[nIter].fVelocity := fInVelocity;
+        arrStates[nIter].fAccel := fAccel;
+        arrStates[nIter].fDecel := fAccel;
+        arrStates[nIter].bLocked := bStatesLock;
+        arrStates[nIter].bValid := TRUE;
+        // TODO implement PMPS instead of doing this
+        arrStates[nIter].bMoveOk := TRUE;
+    END_FOR
+    arrStates[1].sName := &#39;Out&#39;;
+    arrStates[1].fPosition := fOut;
+    arrStates[1].fDelta := fOutDelta;
+    arrStates[1].fVelocity := fOutVelocity;
+    arrStates[1].fDecel := fOutDecel;
+    arrStates[2].sName := &#39;PowerMeter&#39;;
+    arrStates[2].fPosition := fPower;
+    arrStates[3].sName := &#39;PolishedYag&#39;;
+    arrStates[3].fPosition := fPolished;
+    arrStates[4].sName := &#39;FrostedYag&#39;;
+    arrStates[4].fPosition := fFrosted;
+END_IF
+
+fbLockOut(stPositionState := arrStates[1]);
+fbLockPowerMeter(stPositionState := arrStates[2]);
+fbLockPolishedYag(stPositionState := arrStates[3]);
+fbLockFrostedYag(stPositionState := arrStates[4]);
+
+fbStateManager(
+    stMotionStage := stMotionStage,
+    arrStates := arrStates,
+    setState := enumSet,
+    bEnable := bEnable,
+    bError =&gt; bError,
+    sErrorMessage =&gt; sErrorMessage,
+    bBusy =&gt; bBusy,
+    bDone =&gt; bDone,
+    getState =&gt; enumGet);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-ppm-states-st">
-<h3>FB_PPM_States: ST<a class="headerlink" href="#fb-ppm-states-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">IF</span> <span class="k">NOT</span> <span class="n">bInit</span> <span class="k">THEN</span>
-    <span class="n">bInit</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
-    <span class="k">FOR</span> <span class="n">nIter</span> <span class="o">:=</span> <span class="mi">1</span> <span class="k">TO</span> <span class="mi">4</span> <span class="n">DO</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fInDelta</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fInVelocity</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bLocked</span> <span class="o">:=</span> <span class="n">bStatesLock</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bValid</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-        <span class="o">//</span> <span class="n">TODO</span> <span class="n">implement</span> <span class="n">PMPS</span> <span class="n">instead</span> <span class="k">of</span> <span class="n">doing</span> <span class="n">this</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bMoveOk</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">END_FOR</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Out</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fOutDelta</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fOutVelocity</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fOutDecel</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;PowerMeter</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fPower</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;PolishedYag</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fPolished</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;FrostedYag</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fFrosted</span><span class="p">;</span>
-<span class="n">END_IF</span>
-
-<span class="n">fbLockOut</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-<span class="n">fbLockPowerMeter</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
-<span class="n">fbLockPolishedYag</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
-<span class="n">fbLockFrostedYag</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">]);</span>
-
-<span class="n">fbStateManager</span><span class="p">(</span>
-    <span class="n">stMotionStage</span> <span class="o">:=</span> <span class="n">stMotionStage</span><span class="p">,</span>
-    <span class="n">arrStates</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">,</span>
-    <span class="n">setState</span> <span class="o">:=</span> <span class="n">enumSet</span><span class="p">,</span>
-    <span class="n">bEnable</span> <span class="o">:=</span> <span class="n">bEnable</span><span class="p">,</span>
-    <span class="n">bError</span> <span class="o">=&gt;</span> <span class="n">bError</span><span class="p">,</span>
-    <span class="n">sErrorMessage</span> <span class="o">=&gt;</span> <span class="n">sErrorMessage</span><span class="p">,</span>
-    <span class="n">bBusy</span> <span class="o">=&gt;</span> <span class="n">bBusy</span><span class="p">,</span>
-    <span class="n">bDone</span> <span class="o">=&gt;</span> <span class="n">bDone</span><span class="p">,</span>
-    <span class="n">getState</span> <span class="o">=&gt;</span> <span class="n">enumGet</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-ref-fb-ref-tcpou-tcplcobject">
-<h2>Devices/REF/FB_REF.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ref-fb-ref-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ref-declaration">
-<h3>FB_REF: Declaration<a class="headerlink" href="#fb-ref-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-ref">
+<h2>POU: FB_REF<a class="headerlink" href="#pou-fb-ref" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/REF/FB_REF.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_REF
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
@@ -453,49 +515,44 @@ VAR CONSTANT
     fVelo: LREAL := 65;
     fAccel: LREAL := 25;
 END_VAR
+IF NOT bInit THEN
+    bInit := TRUE;
+    stOut.fPosition := fOut;
+    stOut.fDelta := 10;
+    stOut.fVelocity := fVelo;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fAccel;
+    stOut.bLocked := bStatesLock;
+    stOut.bValid := TRUE;
+    stOut.bMoveOk := TRUE;
+
+    stIn.fPosition := fIn;
+    stIn.fDelta := 0.1;
+    stIn.fVelocity := fVelo;
+    stIn.fAccel := fAccel;
+    stIn.fDecel := fAccel;
+    stIn.bLocked := bStatesLock;
+    stIn.bValid := TRUE;
+    stIn.bMoveOk := TRUE;
+END_IF
+
+fbYStage(stMotionStage:=stYStage);
+fbStates(
+    stMotionStage:=stYStage,
+    stOut := stOut,
+    stIn := stIn);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+fbLaser();
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-ref-st">
-<h3>FB_REF: ST<a class="headerlink" href="#fb-ref-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">IF</span> <span class="k">NOT</span> <span class="n">bInit</span> <span class="k">THEN</span>
-    <span class="n">bInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fVelo</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">bLocked</span> <span class="o">:=</span> <span class="n">bStatesLock</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">bValid</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">stOut</span><span class="p">.</span><span class="n">bMoveOk</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-
-    <span class="n">stIn</span><span class="p">.</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fIn</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fVelo</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">bLocked</span> <span class="o">:=</span> <span class="n">bStatesLock</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">bValid</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">stIn</span><span class="p">.</span><span class="n">bMoveOk</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">END_IF</span>
-
-<span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
-<span class="n">fbStates</span><span class="p">(</span>
-    <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
-    <span class="n">stOut</span> <span class="o">:=</span> <span class="n">stOut</span><span class="p">,</span>
-    <span class="n">stIn</span> <span class="o">:=</span> <span class="n">stIn</span><span class="p">);</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">nEnableMode</span> <span class="o">:=</span> <span class="n">ENUM_StageEnableMode</span><span class="p">.</span><span class="n">DURING_MOTION</span><span class="p">;</span>
-<span class="n">fbLaser</span><span class="p">();</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-ref-fb-ref-laser-tcpou-tcplcobject">
-<h2>Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-ref-fb-ref-laser-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-ref-laser-declaration">
-<h3>FB_REF_Laser: Declaration<a class="headerlink" href="#fb-ref-laser-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-ref-laser">
+<h2>POU: FB_REF_Laser<a class="headerlink" href="#pou-fb-ref-laser" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/REF/FB_REF_Laser.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_REF_Laser
 VAR_INPUT
     bShutdown: BOOL;
@@ -513,79 +570,36 @@ VAR
     fbGetLasPercent: FB_AnalogInput;
     fbSetLasPercent: FB_AnalogOutput;
 END_VAR
-</pre></div>
-</div>
-</div>
-<div class="section" id="fb-ref-laser-st">
-<h3>FB_REF_Laser: ST<a class="headerlink" href="#fb-ref-laser-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Send</span> <span class="mi">5</span><span class="n">V</span> <span class="k">to</span> <span class="n">suppress</span> <span class="n">laser</span>
-<span class="k">IF</span> <span class="n">bShutdown</span> <span class="k">THEN</span>
-    <span class="n">iShutdownINT</span> <span class="o">:=</span> <span class="n">LREAL_TO_INT</span><span class="p">(</span><span class="n">EXPT</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">14</span><span class="p">));</span>
-<span class="k">ELSE</span>
-    <span class="n">iShutdownINT</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="n">END_IF</span>
+// Send 5V to suppress laser
+IF bShutdown THEN
+    iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
+ELSE
+    iShutdownINT := 0;
+END_IF
 
-<span class="o">//</span> <span class="n">Limit</span> <span class="k">to</span> <span class="mi">0</span><span class="o">-</span><span class="mi">5</span><span class="n">V</span> <span class="n">instead</span> <span class="k">of</span> <span class="mi">10</span><span class="n">V</span>
-<span class="n">fbSetLasPercent</span><span class="p">(</span>
-    <span class="n">fReal</span><span class="o">:=</span><span class="n">fLaserPercent</span><span class="p">,</span>
-    <span class="n">fSafeMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">fSafeMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">iRaw</span><span class="o">=&gt;</span><span class="n">iLaserInt</span><span class="p">);</span>
-<span class="n">fbGetLasPercent</span><span class="p">(</span>
-    <span class="n">iRaw</span><span class="o">:=</span><span class="n">iLaserInt</span><span class="p">,</span>
-    <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">fReal</span><span class="o">=&gt;</span><span class="n">fLaserPercent</span><span class="p">);</span>
+// Limit to 0-5V instead of 10V
+fbSetLasPercent(
+    fReal:=fLaserPercent,
+    fSafeMax:=100,
+    fSafeMin:=0,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    iRaw=&gt;iLaserInt);
+fbGetLasPercent(
+    iRaw:=iLaserInt,
+    iTermBits:=15,
+    fTermMax:=200,
+    fTermMin:=0,
+    fReal=&gt;fLaserPercent);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="devices-xpim-enum-xpim-filters-tcdut-tcplcobject">
-<h2>Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)<a class="headerlink" href="#devices-xpim-enum-xpim-filters-tcdut-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="enum-xpim-filters-declaration">
-<h3>ENUM_XPIM_Filters: Declaration<a class="headerlink" href="#enum-xpim-filters-declaration" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
-TYPE ENUM_XPIM_Filters :
-(
-    Unknown := 0,
-    T50 := 1,
-    T25 := 2,
-    T10 := 3,
-    T5 := 4,
-    T1 := 5,
-    T100 := 6
-);
-END_TYPE
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-xpim-enum-xpim-states-tcdut-tcplcobject">
-<h2>Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)<a class="headerlink" href="#devices-xpim-enum-xpim-states-tcdut-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="enum-xpim-states-declaration">
-<h3>ENUM_XPIM_States: Declaration<a class="headerlink" href="#enum-xpim-states-declaration" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;qualified_only&#39;}
-TYPE ENUM_XPIM_States :
-(
-    Unknown := 0,
-    Out := 1,
-    Yag := 2,
-    Diamond := 3,
-    Reticle := 4
-);
-END_TYPE
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-xpim-fb-xpim-tcpou-tcplcobject">
-<h2>Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-xpim-declaration">
-<h3>FB_XPIM: Declaration<a class="headerlink" href="#fb-xpim-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-xpim">
+<h2>POU: FB_XPIM<a class="headerlink" href="#pou-fb-xpim" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/FB_XPIM.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
@@ -631,52 +645,47 @@ VAR
     &#39;}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
+fbYStage(stMotionStage:=stYStage);
+// All stages have no STO
+stYStage.bHardwareEnable := TRUE;
+stZoomStage.bHardwareEnable := TRUE;
+stFocusStage.bHardwareEnable := TRUE;
+// No PMPS yet
+stYStage.bPowerSelf := TRUE;
+stZoomStage.bPowerSelf := TRUE;
+stFocusStage.bPowerSelf := TRUE;
+// No limit switch at the bottom
+stYStage.bLimitBackwardEnable := TRUE;
+// Lens limits are normally open
+stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+// Home Lens to LLS
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+fbStates(
+    stMotionStage:=stYStage,
+    fYag:=fYag,
+    fDiamond:=fDiamond,
+    fReticle:=fReticle,
+    fOut:=fOut);
+fbZoom(stMotionStage:=stZoomStage);
+fbFocus(stMotionStage:=stFocusStage);
+fbFilterWheel(
+    bExecute:=TRUE,
+    stIn_El6:=stEl6In,
+    stOut_El6:=stEl6Out);
+fbOpal();
+fbFlowSwitch();
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-xpim-st">
-<h3>FB_XPIM: ST<a class="headerlink" href="#fb-xpim-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
-<span class="o">//</span> <span class="k">All</span> <span class="n">stages</span> <span class="n">have</span> <span class="n">no</span> <span class="n">STO</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="o">//</span> <span class="n">No</span> <span class="n">PMPS</span> <span class="n">yet</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="o">//</span> <span class="n">No</span> <span class="n">limit</span> <span class="n">switch</span> <span class="n">at</span> <span class="n">the</span> <span class="n">bottom</span>
-<span class="n">stYStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="o">//</span> <span class="n">Lens</span> <span class="n">limits</span> <span class="n">are</span> <span class="n">normally</span> <span class="k">open</span>
-<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndFwd</span><span class="p">;</span>
-<span class="n">stZoomStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bZoomEndBwd</span><span class="p">;</span>
-<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndFwd</span><span class="p">;</span>
-<span class="n">stFocusStage</span><span class="p">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="k">NOT</span> <span class="n">bFocusEndBwd</span><span class="p">;</span>
-<span class="o">//</span> <span class="n">Home</span> <span class="n">Lens</span> <span class="k">to</span> <span class="n">LLS</span>
-<span class="n">stZoomStage</span><span class="p">.</span><span class="n">nHomingMode</span> <span class="o">:=</span> <span class="n">ENUM_EpicsHomeCmd</span><span class="p">.</span><span class="n">LOW_LIMIT</span><span class="p">;</span>
-<span class="n">stFocusStage</span><span class="p">.</span><span class="n">nHomingMode</span> <span class="o">:=</span> <span class="n">ENUM_EpicsHomeCmd</span><span class="p">.</span><span class="n">LOW_LIMIT</span><span class="p">;</span>
-<span class="n">fbStates</span><span class="p">(</span>
-    <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
-    <span class="n">fYag</span><span class="o">:=</span><span class="n">fYag</span><span class="p">,</span>
-    <span class="n">fDiamond</span><span class="o">:=</span><span class="n">fDiamond</span><span class="p">,</span>
-    <span class="n">fReticle</span><span class="o">:=</span><span class="n">fReticle</span><span class="p">,</span>
-    <span class="n">fOut</span><span class="o">:=</span><span class="n">fOut</span><span class="p">);</span>
-<span class="n">fbZoom</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stZoomStage</span><span class="p">);</span>
-<span class="n">fbFocus</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stFocusStage</span><span class="p">);</span>
-<span class="n">fbFilterWheel</span><span class="p">(</span>
-    <span class="n">bExecute</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">stIn_El6</span><span class="o">:=</span><span class="n">stEl6In</span><span class="p">,</span>
-    <span class="n">stOut_El6</span><span class="o">:=</span><span class="n">stEl6Out</span><span class="p">);</span>
-<span class="n">fbOpal</span><span class="p">();</span>
-<span class="n">fbFlowSwitch</span><span class="p">();</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject">
-<h2>Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-xpim-filterwheel-declaration">
-<h3>FB_XPIM_FilterWheel: Declaration<a class="headerlink" href="#fb-xpim-filterwheel-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-xpim-filterwheel">
+<h2>POU: FB_XPIM_FilterWheel<a class="headerlink" href="#pou-fb-xpim-filterwheel" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
     bExecute: BOOL;
@@ -725,12 +734,7 @@ VAR
     fbGetTime: NT_GetTime;
     bStopOnErr: BOOL;
 END_VAR
-</pre></div>
-</div>
-</div>
-<div class="section" id="fb-xpim-filterwheel-st">
-<h3>FB_XPIM_FilterWheel: ST<a class="headerlink" href="#fb-xpim-filterwheel-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>fbCom.sSendSuffix := &#39;$R&#39;;
+fbCom.sSendSuffix := &#39;$R&#39;;
 fbCom.sRecvSuffix := &#39;$R&#39;;
 
 IF bExecute AND nStep = 0 THEN
@@ -821,14 +825,14 @@ IF NOT bError AND
     bStopOnErr := TRUE;
     nStep := 50;
 END_IF
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="devices-xpim-fb-xpim-opal-tcpou-tcplcobject">
-<h2>Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-opal-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-xpim-opal-declaration">
-<h3>FB_XPIM_Opal: Declaration<a class="headerlink" href="#fb-xpim-opal-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-xpim-opal">
+<h2>POU: FB_XPIM_Opal<a class="headerlink" href="#pou-fb-xpim-opal" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/FB_XPIM_Opal.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_Opal
 VAR
     {attribute &#39;pytmc&#39; := &#39;
@@ -848,24 +852,19 @@ VAR
     &#39;}
     bLedPower AT %Q*: BOOL;
 END_VAR
+// Turn the Opal on by default
+IF NOT bOpalInit THEN
+    bOpalPower := TRUE;
+    bOpalInit := TRUE;
+END_IF
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-xpim-opal-st">
-<h3>FB_XPIM_Opal: ST<a class="headerlink" href="#fb-xpim-opal-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Turn</span> <span class="n">the</span> <span class="n">Opal</span> <span class="k">on</span> <span class="n">by</span> <span class="n">default</span>
-<span class="k">IF</span> <span class="k">NOT</span> <span class="n">bOpalInit</span> <span class="k">THEN</span>
-    <span class="n">bOpalPower</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">bOpalInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-<span class="n">END_IF</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="devices-xpim-fb-xpim-states-tcpou-tcplcobject">
-<h2>Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)<a class="headerlink" href="#devices-xpim-fb-xpim-states-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-xpim-states-declaration">
-<h3>FB_XPIM_States: Declaration<a class="headerlink" href="#fb-xpim-states-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-xpim-states">
+<h2>POU: FB_XPIM_States<a class="headerlink" href="#pou-fb-xpim-states" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/FB_XPIM_States.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_States
 VAR_IN_OUT
     stMotionStage: DUT_MotionStage;
@@ -918,81 +917,54 @@ VAR CONSTANT
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
+IF NOT bInit THEN
+    bInit := FALSE;
+    FOR nIter := 1 TO 4 DO
+        arrStates[nIter].fDelta := fInDelta;
+        arrStates[nIter].fVelocity := fInVelocity;
+        arrStates[nIter].fAccel := fAccel;
+        arrStates[nIter].fDecel := fAccel;
+        arrStates[nIter].bLocked := bStatesLock;
+        arrStates[nIter].bValid := TRUE;
+        // TODO implement PMPS instead of doing this
+        arrStates[nIter].bMoveOk := TRUE;
+    END_FOR
+    arrStates[1].sName := &#39;Out&#39;;
+    arrStates[1].fPosition := fOut;
+    arrStates[1].fDelta := fOutDelta;
+    arrStates[1].fVelocity := fOutVelocity;
+    arrStates[1].fDecel := fOutDecel;
+    arrStates[2].sName := &#39;Yag&#39;;
+    arrStates[2].fPosition := fYag;
+    arrStates[3].sName := &#39;Diamond&#39;;
+    arrStates[3].fPosition := fDiamond;
+    arrStates[4].sName := &#39;Reticle&#39;;
+    arrStates[4].fPosition := fReticle;
+END_IF
+
+fbLockOut(stPositionState := arrStates[1]);
+fbLockYag(stPositionState := arrStates[2]);
+fbLockDiamond(stPositionState := arrStates[3]);
+fbLockReticle(stPositionState := arrStates[4]);
+
+fbStateManager(
+    stMotionStage := stMotionStage,
+    arrStates := arrStates,
+    setState := enumSet,
+    bEnable := bEnable,
+    bError =&gt; bError,
+    sErrorMessage =&gt; sErrorMessage,
+    bBusy =&gt; bBusy,
+    bDone =&gt; bDone,
+    getState =&gt; enumGet);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
-<div class="section" id="fb-xpim-states-st">
-<h3>FB_XPIM_States: ST<a class="headerlink" href="#fb-xpim-states-st" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">IF</span> <span class="k">NOT</span> <span class="n">bInit</span> <span class="k">THEN</span>
-    <span class="n">bInit</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
-    <span class="k">FOR</span> <span class="n">nIter</span> <span class="o">:=</span> <span class="mi">1</span> <span class="k">TO</span> <span class="mi">4</span> <span class="n">DO</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fInDelta</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fInVelocity</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fAccel</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bLocked</span> <span class="o">:=</span> <span class="n">bStatesLock</span><span class="p">;</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bValid</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-        <span class="o">//</span> <span class="n">TODO</span> <span class="n">implement</span> <span class="n">PMPS</span> <span class="n">instead</span> <span class="k">of</span> <span class="n">doing</span> <span class="n">this</span>
-        <span class="n">arrStates</span><span class="p">[</span><span class="n">nIter</span><span class="p">].</span><span class="n">bMoveOk</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
-    <span class="n">END_FOR</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Out</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fOut</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fDelta</span> <span class="o">:=</span> <span class="n">fOutDelta</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fVelocity</span> <span class="o">:=</span> <span class="n">fOutVelocity</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fOutDecel</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Yag</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fYag</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Diamond</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fDiamond</span><span class="p">;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">sName</span> <span class="o">:=</span> <span class="na">&#39;Reticle</span><span class="p">&#39;;</span>
-    <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">fPosition</span> <span class="o">:=</span> <span class="n">fReticle</span><span class="p">;</span>
-<span class="n">END_IF</span>
-
-<span class="n">fbLockOut</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-<span class="n">fbLockYag</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
-<span class="n">fbLockDiamond</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
-<span class="n">fbLockReticle</span><span class="p">(</span><span class="n">stPositionState</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">[</span><span class="mi">4</span><span class="p">]);</span>
-
-<span class="n">fbStateManager</span><span class="p">(</span>
-    <span class="n">stMotionStage</span> <span class="o">:=</span> <span class="n">stMotionStage</span><span class="p">,</span>
-    <span class="n">arrStates</span> <span class="o">:=</span> <span class="n">arrStates</span><span class="p">,</span>
-    <span class="n">setState</span> <span class="o">:=</span> <span class="n">enumSet</span><span class="p">,</span>
-    <span class="n">bEnable</span> <span class="o">:=</span> <span class="n">bEnable</span><span class="p">,</span>
-    <span class="n">bError</span> <span class="o">=&gt;</span> <span class="n">bError</span><span class="p">,</span>
-    <span class="n">sErrorMessage</span> <span class="o">=&gt;</span> <span class="n">sErrorMessage</span><span class="p">,</span>
-    <span class="n">bBusy</span> <span class="o">=&gt;</span> <span class="n">bBusy</span><span class="p">,</span>
-    <span class="n">bDone</span> <span class="o">=&gt;</span> <span class="n">bDone</span><span class="p">,</span>
-    <span class="n">getState</span> <span class="o">=&gt;</span> <span class="n">enumGet</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="pous-fb-l2si-flowmeter-tcpou-tcplcobject">
-<h2>POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-l2si-flowmeter-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-l2si-flowmeter-declaration">
-<h3>FB_L2SI_Flowmeter: Declaration<a class="headerlink" href="#fb-l2si-flowmeter-declaration" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_L2SI_Flowmeter
-VAR
-    {attribute &#39;pytmc&#39; := &#39;
-        pv: MA
-        io: input
-    &#39;}
-    fRaw AT %I*: INT;
-
-    {attribute &#39;pytmc&#39; := &#39;
-        pv: FLOW
-        io: input
-    &#39;}
-    fFlowRate: LREAL;
-END_VAR
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="pous-fb-xtes-flowswitch-tcpou-tcplcobject">
-<h2>POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)<a class="headerlink" href="#pous-fb-xtes-flowswitch-tcpou-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="fb-xtes-flowswitch-declaration">
-<h3>FB_XTES_Flowswitch: Declaration<a class="headerlink" href="#fb-xtes-flowswitch-declaration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="pou-fb-xtes-flowswitch">
+<h2>POU: FB_XTES_Flowswitch<a class="headerlink" href="#pou-fb-xtes-flowswitch" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/POUs/FB_XTES_Flowswitch.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XTES_Flowswitch
 VAR_OUTPUT
     {attribute &#39;pytmc&#39; := &#39;
@@ -1002,24 +974,10 @@ VAR_OUTPUT
     &#39;}
     bFlowOk AT %I*: BOOL;
 END_VAR
+
+
+END_FUNCTION_BLOCK
 </pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="version-global-version-tcgvl-tcplcobject">
-<h2>Version/Global_Version.TcGVL (TcPlcObject)<a class="headerlink" href="#version-global-version-tcgvl-tcplcobject" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="global-version-declaration">
-<h3>Global_Version: Declaration<a class="headerlink" href="#global-version-declaration" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>{attribute &#39;TcGenerated&#39;}
-{attribute &#39;no-analysis&#39;}
-// This function has been automatically generated from the project information.
-VAR_GLOBAL CONSTANT
-	{attribute &#39;const_non_replaced&#39;}
-	{attribute &#39;linkalways&#39;}
-	stLibVersion_lcls2_cc_lib : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, sVersion := &#39;0.0.0&#39;);
-END_VAR
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="symbols">
@@ -1161,22 +1119,22 @@ END_VAR
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Library.tmc.html">Library.tmc</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">PLC Project (1): Library</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-enum-ppm-states-tcdut-tcplcobject">Devices/PPM/ENUM_PPM_States.TcDUT (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-tcpou-tcplcobject">Devices/PPM/FB_PPM.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-gige-tcpou-tcplcobject">Devices/PPM/FB_PPM_Gige.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-powermeter-tcpou-tcplcobject">Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ppm-fb-ppm-states-tcpou-tcplcobject">Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ref-fb-ref-tcpou-tcplcobject">Devices/REF/FB_REF.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-ref-fb-ref-laser-tcpou-tcplcobject">Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-enum-xpim-filters-tcdut-tcplcobject">Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-enum-xpim-states-tcdut-tcplcobject">Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-tcpou-tcplcobject">Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-filterwheel-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-opal-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#devices-xpim-fb-xpim-states-tcpou-tcplcobject">Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pous-fb-l2si-flowmeter-tcpou-tcplcobject">POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pous-fb-xtes-flowswitch-tcpou-tcplcobject">POUs/FB_XTES_Flowswitch.TcPOU (TcPlcObject)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#version-global-version-tcgvl-tcplcobject">Version/Global_Version.TcGVL (TcPlcObject)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dut-enum-ppm-states">DUT: ENUM_PPM_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dut-enum-xpim-filters">DUT: ENUM_XPIM_Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dut-enum-xpim-states">DUT: ENUM_XPIM_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gvl-global-version">GVL: Global_Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-l2si-flowmeter">POU: FB_L2SI_Flowmeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ppm">POU: FB_PPM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ppm-gige">POU: FB_PPM_Gige</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ppm-powermeter">POU: FB_PPM_PowerMeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ppm-states">POU: FB_PPM_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ref">POU: FB_REF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-ref-laser">POU: FB_REF_Laser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim">POU: FB_XPIM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-filterwheel">POU: FB_XPIM_FilterWheel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-opal">POU: FB_XPIM_Opal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-states">POU: FB_XPIM_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xtes-flowswitch">POU: FB_XTES_Flowswitch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#symbols">Symbols</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#boxes">Boxes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nc-axes">NC axes</a></li>
@@ -1220,7 +1178,7 @@ END_VAR
       &copy;2019, SLAC National Accelerator Laboratory.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
