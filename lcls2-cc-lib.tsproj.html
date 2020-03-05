@@ -511,7 +511,7 @@ VAR
     stIn: DUT_PositionState;
 END_VAR
 VAR CONSTANT
-    bStatesLock: BOOL;
+    bStatesLock: BOOL := FALSE;
     fVelo: LREAL := 65;
     fAccel: LREAL := 25;
 END_VAR
@@ -700,14 +700,14 @@ VAR_INPUT
         pv: SET
         io: io
     &#39;}
-    nSetPos: ENUM_XPIM_States;
+    nSetPos: ENUM_XPIM_Filters;
 END_VAR
 VAR_OUTPUT
     {attribute &#39;pytmc&#39; := &#39;
         pv: GET
         io: i
     &#39;}
-    nGetPos: ENUM_XPIM_States;
+    nGetPos: ENUM_XPIM_Filters;
     bBusy: BOOL;
     bError: BOOL;
     sError: STRING;
