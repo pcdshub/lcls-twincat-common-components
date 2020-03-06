@@ -887,7 +887,7 @@ VAR_INPUT
         pv: SET
         io: io
     '}
-    enumSet: ENUM_PPM_states;
+    enumSet: ENUM_XPIM_states;
     bStatesLock: BOOL;
     fOut: LREAL;
     fYag: LREAL;
