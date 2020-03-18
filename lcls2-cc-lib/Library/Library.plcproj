@@ -25,6 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Devices" />
+    <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
     <Folder Include="Devices\XPIM" />
     <Folder Include="Devices\PPM" />
@@ -52,6 +53,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF_Laser.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SLITS\FB_SLITS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SLITS\FB_SLITS_POWER.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
