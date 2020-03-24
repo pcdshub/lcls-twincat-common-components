@@ -16,15 +16,17 @@ PLC Project (1): Library
         5.) Library/Devices/PPM/FB_PPM_States.TcPOU
         6.) Library/Devices/REF/FB_REF.TcPOU
         7.) Library/Devices/REF/FB_REF_Laser.TcPOU
-        8.) Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
-        9.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
-        10.) Library/Devices/XPIM/FB_XPIM.TcPOU
-        11.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
-        12.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
-        13.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
-        14.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
-        15.) Library/POUs/FB_XTES_Flowswitch.TcPOU
-        16.) Library/Version/Global_Version.TcGVL
+        8.) Library/Devices/SLITS/FB_SLITS.TcPOU
+        9.) Library/Devices/SLITS/FB_SLITS_POWER.TcPOU
+        10.) Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
+        11.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
+        12.) Library/Devices/XPIM/FB_XPIM.TcPOU
+        13.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
+        14.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
+        15.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
+        16.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
+        17.) Library/POUs/FB_XTES_Flowswitch.TcPOU
+        18.) Library/Version/Global_Version.TcGVL
 
     POUs:
         1.) FB_L2SI_Flowmeter
@@ -34,11 +36,13 @@ PLC Project (1): Library
         5.) FB_PPM_States
         6.) FB_REF
         7.) FB_REF_Laser
-        8.) FB_XPIM
-        9.) FB_XPIM_FilterWheel
-        10.) FB_XPIM_Opal
-        11.) FB_XPIM_States
-        12.) FB_XTES_Flowswitch
+        8.) FB_SLITS
+        9.) FB_SLITS_POWER
+        10.) FB_XPIM
+        11.) FB_XPIM_FilterWheel
+        12.) FB_XPIM_Opal
+        13.) FB_XPIM_States
+        14.) FB_XTES_Flowswitch
 
     GVLs:
         1.) Global_Version
@@ -597,6 +601,370 @@ END_FUNCTION_BLOCK
 ```
 
 
+POU: FB_SLITS
+-------------
+
+File: Library/Devices/SLITS/FB_SLITS.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_SLITS
+
+
+END_FUNCTION_BLOCK
+ACTION ACT_BLOCK:
+
+END_ACTION
+ACTION ACT_CalculatePositions:
+
+END_ACTION
+```
+
+
+POU: FB_SLITS_POWER
+-------------------
+
+File: Library/Devices/SLITS/FB_SLITS_POWER.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
+VAR_IN_OUT
+    stTopBlade: DUT_MotionStage;
+    stBottomBlade: DUT_MotionStage;
+    stNorthBlade: DUT_MotionStage;
+    stSouthBlade: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+    {attribute 'pytmc' := '
+    pv: GO;
+    io: io;
+    field: ZNAM False
+    field: ONAM True
+    '}
+    bExecuteMotion:BOOL ;
+    {attribute 'pytmc' := '
+    pv: PMPS_OK;
+    io: i;
+    field: ZNAM False
+    field: ONAM True
+    '}
+    bMoveOk:BOOL;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+    fbTopBlade: FB_MotionStage;
+    fbBottomBlade: FB_MotionStage;
+    fbNorthBlade: FB_MotionStage;
+    fbSouthBlade: FB_MotionStage;
+    fPosTopBlade: LREAL;
+    fPosBottomBlade: LREAL;
+    fPosNorthBlade: LREAL;
+    fPosSouthBlade: LREAL;
+
+    (*Motion Parameters*)
+    fSmallDelta: LREAL := 0.01;
+    fBigDelta: LREAL := 10;
+    fMaxVelocity: LREAL := 0.2;
+    fHighAccel: LREAL := 0.8;
+    fLowAccel: LREAL := 0.1;
+
+    stTop: DUT_PositionState;
+    stBOTTOM: DUT_PositionState;
+    stNorth: DUT_PositionState;
+    stSouth: DUT_PositionState;
+
+    {attribute 'pytmc' := 'pv: TOP'}
+    fbTop: FB_StatePTPMove;
+    {attribute 'pytmc' := 'pv: BOTTOM'}
+    fbBottom: FB_StatePTPMove;
+    {attribute 'pytmc' := 'pv: NORTH'}
+    fbNorth: FB_StatePTPMove;
+    {attribute 'pytmc' := 'pv: SOUTH'}
+    fbSouth: FB_StatePTPMove;
+
+    (*EPICS pvs*)
+    {attribute 'pytmc' := '
+    pv: XWID_REQ;
+    io: io;
+    '}
+    rReqApertureSizeX : REAL;
+    {attribute 'pytmc' := '
+    pv: YWID_REQ;
+    io: io;
+    '}
+    rReqApertureSizeY : REAL;
+    {attribute 'pytmc' := '
+    pv: XCEN_REQ;
+    io: io;
+    '}
+    rReqCenterX: REAL;
+    {attribute 'pytmc' := '
+    pv: YCEN_REQ;
+    io: io;
+    '}
+    rReqCenterY: REAL;
+
+    {attribute 'pytmc' := '
+    pv: ACTUAL_XWIDTH;
+    io: io;
+    '}
+    rActApertureSizeX : REAL;
+
+    {attribute 'pytmc' := '
+    pv: ACTUAL_YWIDTH;
+    io: io;
+    '}
+    rActApertureSizeY : REAL;
+    {attribute 'pytmc' := '
+    pv: ACTUAL_XCENTER;
+    io: io;
+    '}
+    rActCenterX: REAL;
+    {attribute 'pytmc' := '
+    pv: ACTUAL_YCENTER;
+    io: io;
+    '}
+    rActCenterY: REAL;
+
+    {attribute 'pytmc' := '
+    pv: XCEN_SETZERO;
+    io: io;
+    '}
+    rSetCenterX: REAL;
+    {attribute 'pytmc' := '
+    pv: YCEN_SETZERO;
+    io: io;
+    '}
+    rSetCenterY: REAL;
+
+
+    {attribute 'pytmc' := '
+    pv: OPEN;
+    io: io;
+    field: ZNAM False
+    field: ONAM True
+    '}
+    bOpen: BOOL;
+
+    {attribute 'pytmc' := '
+    pv: CLOSE;
+    io: io;
+    field: ZNAM False
+    field: ONAM True
+    '}
+    bClose: BOOL;
+
+    {attribute 'pytmc' := '
+    pv: BLOCK;
+    io: io;
+    field: ZNAM False
+    field: ONAM True
+    '}
+    bBlock: BOOL;
+
+
+    {attribute 'pytmc' := '
+        pv: FSW
+    '}
+    fbFlowSwitch: FB_XTES_Flowswitch;
+
+
+    //RTDs
+    {attribute 'pytmc' := '
+        pv: TOP:RTD:01
+    '}
+    RTD_TOP_1: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: TOP:RTD:02
+    '}
+    RTD_TOP_2: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: BOTTOM:RTD:01
+    '}
+    RTD_Bottom_1: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: BOTTOM:RTD:02
+    '}
+    RTD_Bottom_2: FB_TempSensor;
+
+    {attribute 'pytmc' := '
+        pv: NORTH:RTD:01
+    '}
+    RTD_North_1: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: NORTH:RTD:02
+    '}
+    RTD_North_2: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: SOUTH:RTD:01
+    '}
+    RTD_South_1: FB_TempSensor;
+    {attribute 'pytmc' := '
+        pv: SOUTH:RTD:02
+    '}
+    RTD_South_2: FB_TempSensor;
+
+        //Local variables
+    bInit: BOOL :=true;
+    rTrig_Block: R_TRIG;
+    rTrig_Open: R_TRIG;
+    rTrig_Close: R_TRIG;
+
+    fPosBlock: LREAL;
+    fPosClose: LREAL;
+    fPosOpen: LREAL;
+
+
+END_VAR
+//  init the motion stages parameters
+IF ( bInit) THEN
+    stTopBlade.bHardwareEnable := TRUE;
+    stBottomBlade.bHardwareEnable := TRUE;
+    stNorthBlade.bHardwareEnable := TRUE;
+    stSouthBlade.bHardwareEnable := TRUE;
+    stTopBlade.bPowerSelf :=TRUE;
+    stBottomBlade.bPowerSelf :=TRUE;
+    stNorthBlade.bPowerSelf :=TRUE;
+    stSouthBlade.bPowerSelf :=TRUE;
+    stTopBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+    stBottomBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+    stNorthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+    stSouthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+END_IF
+
+
+// Instantiate Function block for all the blades
+fbTopBlade(stMotionStage:=stTopBlade);
+fbBottomBlade(stMotionStage:=stBottomBlade);
+fbNorthBlade(stMotionStage:=stNorthBlade);
+fbSouthBlade(stMotionStage:=stSouthBlade);
+
+//SET and GET the requested and Actual values
+ACT_CalculatePositions();
+//ACT_BLOCK();
+
+// PTP Motion for each blade
+stTop.sName := 'Top';
+stTop.fPosition := fPosTopBlade;
+stTop.fDelta := fSmallDelta;
+stTop.fVelocity := fMaxVelocity;
+stTop.fAccel := fHighAccel;
+stTop.fDecel := fHighAccel;
+
+stBOTTOM.sName := 'Bottom';
+stBOTTOM.fPosition := fPosBottomBlade;
+stBOTTOM.fDelta := fSmallDelta;
+stBOTTOM.fVelocity := fMaxVelocity;
+stBOTTOM.fAccel := fHighAccel;
+stBOTTOM.fDecel := fHighAccel;
+
+stNorth.sName := 'North';
+stNorth.fPosition := fPosNorthBlade;
+stNorth.fDelta := fSmallDelta;
+stNorth.fVelocity := fMaxVelocity;
+stNorth.fAccel := fHighAccel;
+stNorth.fDecel := fHighAccel;
+
+stSouth.sName := 'South';
+stSouth.fPosition := fPosSouthBlade;
+stSouth.fDelta := fSmallDelta;
+stSouth.fVelocity := fMaxVelocity;
+stSouth.fAccel := fHighAccel;
+stSouth.fDecel := fHighAccel;
+
+fbTop.bExecute := fbBottom.bExecute :=fbNorth.bExecute := fbSouth.bExecute := bExecuteMotion;
+
+fbTop(
+    stPositionState:=stTop,
+    bMoveOk:=bMoveOk,
+    stMotionStage:=stTopBlade);
+
+fbBottom(
+    stPositionState:=stBOTTOM,
+    bMoveOk:=bMoveOk,
+    stMotionStage:=stBottomBlade);
+
+fbNorth(
+    stPositionState:=stNorth,
+    bMoveOk:=bMoveOk,
+    stMotionStage:=stNorthBlade);
+
+fbSouth(
+    stPositionState:=stSouth,
+    bMoveOk:=bMoveOk,
+    stMotionStage:=stSouthBlade);
+
+
+////RTDs
+RTD_TOP_1();
+RTD_TOP_2();
+RTD_Bottom_1();
+RTD_Bottom_2();
+RTD_North_1();
+RTD_North_2();
+RTD_South_1();
+RTD_South_2();
+
+//Flow Switch
+fbFlowSwitch();
+
+END_FUNCTION_BLOCK
+ACTION ACT_BLOCK:
+rTrig_Block (CLK:= bBlock);
+rTrig_Open (CLK:= bOpen);
+rTrig_Close (CLK:= bClose);
+
+if (rTrig_Block.Q) THEN
+    //BLOCK
+
+    bBlock := false;
+END_IF
+
+if (rTrig_Open.Q) THEN
+
+
+    bOpen := false;
+END_IF
+
+if (rTrig_Close.Q) THEN
+
+
+    bClose := false;
+END_IF
+END_ACTION
+ACTION ACT_CalculatePositions:
+//Calculate requested Positions
+
+
+fPosTopBlade := (rReqApertureSizeY/2) + rReqCenterY;
+fPosBottomBlade := (-1*rReqApertureSizeY/2) + rReqCenterY;
+
+fPosNorthBlade := (rReqApertureSizeX/2) + rReqCenterX;
+fPosSouthBlade := (-1*rReqApertureSizeX/2) + rReqCenterX;
+
+
+//Calculate Actual Positions
+
+
+rActApertureSizeX := ABS(stNorthBlade.stAxisStatus.fActPosition - stSouthBlade.stAxisStatus.fActPosition);
+
+rActApertureSizeY := ABS(stTopBlade.stAxisStatus.fActPosition - stBottomBlade.stAxisStatus.fActPosition);
+
+rActCenterX := ((stNorthBlade.stAxisStatus.fActPosition + stSouthBlade.stAxisStatus.fActPosition)/2);
+
+rActCenterY := ((stTopBlade.stAxisStatus.fActPosition + stBottomBlade.stAxisStatus.fActPosition)/2);
+
+
+
+//ZERO BIAS
+
+// Set Y center to zero
+
+// Set X center to zero
+END_ACTION
+```
+
+
 POU: FB_XPIM
 ------------
 
@@ -1012,7 +1380,7 @@ Links
 Pragma lint results
 -------------------
 ```
-INFO:pytmc.bin.pragmalint:Total pragmas found: 47 Total linter errors: 0
+INFO:pytmc.bin.pragmalint:Total pragmas found: 75 Total linter errors: 0
 PLC Project (1): Library
 ========================
 
@@ -1057,6 +1425,12 @@ Devices/REF/FB_REF_Laser.TcPOU (TcPlcObject)
 --------------------------------------------
 
     - FB_REF_Laser: Declaration - 1 pragmas
+
+
+Devices/SLITS/FB_SLITS_POWER.TcPOU (TcPlcObject)
+------------------------------------------------
+
+    - FB_SLITS_POWER: Declaration - 28 pragmas
 
 
 Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)
