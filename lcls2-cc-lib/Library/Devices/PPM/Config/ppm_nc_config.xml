@@ -6,11 +6,11 @@
     <AxisParam>
       <Unit>mm</Unit>
       <Dynamic>
-        <Acceleration>200</Acceleration>
-        <Deceleration>200</Deceleration>
+        <Acceleration>1000</Acceleration>
+        <Deceleration>1000</Deceleration>
         <Jerk>500</Jerk>
-        <AccelerationMaximum>200</AccelerationMaximum>
-        <DecelerationMaximum>200</DecelerationMaximum>
+        <AccelerationMaximum>1000</AccelerationMaximum>
+        <DecelerationMaximum>1000</DecelerationMaximum>
         <DelayTime>0.004</DelayTime>
         <SetpointGeneratorType>1</SetpointGeneratorType>
         <OverrideType>3</OverrideType>
@@ -23,10 +23,10 @@
         <FastJerk>0</FastJerk>
       </Dynamic>
       <Velo>
-        <RefSearch>30</RefSearch>
-        <RefSync>30</RefSync>
-        <SlowManual>100</SlowManual>
-        <FastManual>600</FastManual>
+        <RefSearch>1</RefSearch>
+        <RefSync>1</RefSync>
+        <SlowManual>1</SlowManual>
+        <FastManual>10</FastManual>
         <Fast>2000</Fast>
         <Maximum>65</Maximum>
       </Velo>
