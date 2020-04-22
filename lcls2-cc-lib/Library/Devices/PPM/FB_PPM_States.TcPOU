@@ -48,10 +48,10 @@ END_VAR
 VAR CONSTANT
     fInDelta: LREAL := 0.1;
     fOutDelta: LREAL := 10;
-    fInVelocity: LREAL := 80;
+    fInVelocity: LREAL := 65;
     fOutVelocity: LREAL := 65;
-    fAccel: LREAL := 200;
-    fOutDecel: LREAL := 25;
+    fAccel: LREAL := 1000;
+    fOutDecel: LREAL := 1000;
 END_VAR
 ]]></Declaration>
     <Implementation>

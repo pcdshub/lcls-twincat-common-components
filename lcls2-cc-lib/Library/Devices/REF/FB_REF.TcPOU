@@ -30,7 +30,7 @@ END_VAR
 VAR CONSTANT
     bStatesLock: BOOL := FALSE;
     fVelo: LREAL := 65;
-    fAccel: LREAL := 25;
+    fAccel: LREAL := 1000;
 END_VAR
 ]]></Declaration>
     <Implementation>
