@@ -57,7 +57,7 @@ File: Library/Devices/PPM/ENUM_PPM_States.TcDUT
 TYPE ENUM_PPM_States :
 (
     Unknown := 0,
-    Out := 1,
+    OUT := 1,
     PowerMeter := 2,
     PolishedYag := 3,
     FrostedYag := 4
@@ -97,7 +97,7 @@ File: Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
 TYPE ENUM_XPIM_States :
 (
     Unknown := 0,
-    Out := 1,
+    OUT := 1,
     Yag := 2,
     Diamond := 3,
     Reticle := 4
