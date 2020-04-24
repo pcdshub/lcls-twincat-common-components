@@ -7,8 +7,8 @@ VAR
 
     {attribute 'pytmc' := '
         pv: PWR
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     '}
     bGigePower AT %Q*: BOOL;
 

@@ -5,8 +5,8 @@
 VAR_OUTPUT
     {attribute 'pytmc' := '
         pv: FLOW
-        ZNAM: LOW
-        ONAM: OK
+        field: ZNAM LOW
+        field: ONAM OK
     '}
     bFlowOk AT %I*: BOOL;
 END_VAR

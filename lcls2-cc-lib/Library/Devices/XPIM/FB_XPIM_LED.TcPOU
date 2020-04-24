@@ -6,8 +6,8 @@ VAR_INPUT
     {attribute 'pytmc' := '
         pv: PWR
         io: io
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     '}
     bLEDPower AT %Q*: BOOL;
 
