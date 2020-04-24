@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+  <POU Name="FB_XPIM_LED" Id="{1459dd05-d653-484a-8cdf-74137bcaece7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_LED
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: PWR
+        io: io
+        ZNAM: OFF
+        ONAM: ON
+    '}
+    bLEDPower AT %Q*: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: AUTO
+        io: io
+    '}
+    bLEDAuto: BOOL := TRUE;
+
+    {attribute 'pytmc' := '
+        pv: CLK:TIMEOUT
+        io: io
+        field: EGU min
+    '}
+    fLEDTimeOut: LREAL := 60;
+
+    enumXPIM: ENUM_XPIM_States;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: CLK:REMAINING
+        io: io
+        field: EGU min
+    '}
+    fLEDRemaining: LREAL;
+END_VAR
+VAR
+    tonLED: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// If configured, change the LED level automatically
+// LED is always (and only) useful at Reticle state
+IF bLEDAuto THEN
+    // Turn on the LED when we get to the Reticle
+    IF enumXPIM = ENUM_XPIM_States.Reticle THEN
+        bLEDPower := TRUE;
+    // Turn off the LED when we stop at any other state
+    ELSIF enumXPIM <> ENUM_XPIM_States.Unknown THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF
+
+// If configured, start a shutdown timer when LED goes high
+IF fLEDTimeOut <> 0 THEN;
+    tonLED(IN:=bLEDPower,
+           PT:=LREAL_TO_TIME(fLEDTimeOut * 60 * 1000));
+    fLEDRemaining := fLEDTimeOut - TIME_TO_LREAL(tonLED.ET) / 60 / 1000;
+
+    IF tonLED.Q THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

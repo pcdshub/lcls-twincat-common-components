@@ -42,6 +42,11 @@ VAR
     fbOpal: FB_XPIM_Opal;
 
     {attribute 'pytmc' := '
+        pv: CIL
+    '}
+    fbLED: FB_XPIM_LED;
+
+    {attribute 'pytmc' := '
         pv: SFW
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -80,6 +85,7 @@ fbFilterWheel(
     stIn_El6:=stEl6In,
     stOut_El6:=stEl6Out);
 fbOpal();
+fbLED(enumXPIM:=fbStates.enumGet);
 fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>
