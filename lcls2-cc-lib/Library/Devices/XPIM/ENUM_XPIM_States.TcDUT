@@ -5,7 +5,7 @@
 TYPE ENUM_XPIM_States :
 (
     Unknown := 0,
-    Out := 1,
+    OUT := 1,
     Yag := 2,
     Diamond := 3,
     Reticle := 4
