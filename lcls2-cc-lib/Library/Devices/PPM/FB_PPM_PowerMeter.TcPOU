@@ -8,12 +8,14 @@ VAR
     {attribute 'pytmc' := '
         pv: VOLT
         io: input
+        field: EGU mV
     '}
     fVoltage: LREAL;
 
     {attribute 'pytmc' := '
         pv: VOLT_BUFFER
         io: input
+        field: EGU mV
     '}
     fVoltageBuffer: ARRAY[1..1000] OF LREAL;
 
@@ -32,12 +34,14 @@ VAR
     {attribute 'pytmc' := '
         pv: MJ
         io: input
+        field: EGU mJ
     '}
     fCalibMJ: LREAL;
 
     {attribute 'pytmc' := '
         pv: MJ_BUFFER
         io: input
+        field: EGU mJ
     '}
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
@@ -74,11 +78,11 @@ END_VAR
     <Implementation>
       <ST><![CDATA[fbThermoCouple();
 
-// Convert the terminal's integer into a value in volts
+// Convert the terminal's integer into a value in millivolts
 fbGetPMVoltage(
     iRaw := iVoltageINT,
     iTermBits := 15,
-    fTermMax := 10,
+    fTermMax := 10000,
     fTermMin := 0,
     fReal => fVoltage);
 
