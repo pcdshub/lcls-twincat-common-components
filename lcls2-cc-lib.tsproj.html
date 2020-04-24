@@ -975,6 +975,18 @@ VAR_IN_OUT
     stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: CLZ:LOCK
+        io: io
+    &#39;}
+    bZoomLock: BOOL;
+
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: CLF:LOCK
+        io: io
+    &#39;}
+    bFocusLock: BOOL;
+
     bZoomEndFwd AT %I*: BOOL;
     bZoomEndBwd AT %I*: BOOL;
     bFocusEndFwd AT %I*: BOOL;
@@ -1011,37 +1023,45 @@ VAR
     &#39;}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
-fbYStage(stMotionStage:=stYStage);
-// All stages have no STO
+// All stages have no STO, but there is a user lock on the lens
 stYStage.bHardwareEnable := TRUE;
-stZoomStage.bHardwareEnable := TRUE;
-stFocusStage.bHardwareEnable := TRUE;
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+
 // No PMPS yet
 stYStage.bPowerSelf := TRUE;
 stZoomStage.bPowerSelf := TRUE;
 stFocusStage.bPowerSelf := TRUE;
+
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
+
 // Lens limits are normally open
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+
 // Home Lens to LLS
 stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+
+fbYStage(stMotionStage:=stYStage);
+fbZoom(stMotionStage:=stZoomStage);
+fbFocus(stMotionStage:=stFocusStage);
+
 fbStates(
     stMotionStage:=stYStage,
     fYag:=fYag,
     fDiamond:=fDiamond,
     fReticle:=fReticle,
     fOut:=fOut);
-fbZoom(stMotionStage:=stZoomStage);
-fbFocus(stMotionStage:=stFocusStage);
+
 fbFilterWheel(
     bExecute:=TRUE,
     stIn_El6:=stEl6In,
     stOut_El6:=stEl6Out);
+
 fbOpal();
 fbFlowSwitch();
 
@@ -1360,7 +1380,7 @@ END_FUNCTION_BLOCK
 </div>
 <div class="section" id="pragma-lint-results">
 <h2>Pragma lint results<a class="headerlink" href="#pragma-lint-results" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Total</span> <span class="n">pragmas</span> <span class="n">found</span><span class="p">:</span> <span class="mi">75</span> <span class="n">Total</span> <span class="n">linter</span> <span class="n">errors</span><span class="p">:</span> <span class="mi">0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Total</span> <span class="n">pragmas</span> <span class="n">found</span><span class="p">:</span> <span class="mi">77</span> <span class="n">Total</span> <span class="n">linter</span> <span class="n">errors</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">PLC</span> <span class="n">Project</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">Library</span>
 <span class="o">========================</span>
 
@@ -1428,7 +1448,7 @@ END_FUNCTION_BLOCK
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
 <span class="o">----------------------------------------</span>
 
-    <span class="o">-</span> <span class="n">FB_XPIM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">pragmas</span>
+    <span class="o">-</span> <span class="n">FB_XPIM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">6</span> <span class="n">pragmas</span>
 
 
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_FilterWheel</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>

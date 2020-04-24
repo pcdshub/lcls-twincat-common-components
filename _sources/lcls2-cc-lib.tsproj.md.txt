@@ -984,6 +984,18 @@ VAR_IN_OUT
     stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: CLZ:LOCK
+        io: io
+    '}
+    bZoomLock: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: CLF:LOCK
+        io: io
+    '}
+    bFocusLock: BOOL;
+
     bZoomEndFwd AT %I*: BOOL;
     bZoomEndBwd AT %I*: BOOL;
     bFocusEndFwd AT %I*: BOOL;
@@ -1020,37 +1032,45 @@ VAR
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
-fbYStage(stMotionStage:=stYStage);
-// All stages have no STO
+// All stages have no STO, but there is a user lock on the lens
 stYStage.bHardwareEnable := TRUE;
-stZoomStage.bHardwareEnable := TRUE;
-stFocusStage.bHardwareEnable := TRUE;
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+
 // No PMPS yet
 stYStage.bPowerSelf := TRUE;
 stZoomStage.bPowerSelf := TRUE;
 stFocusStage.bPowerSelf := TRUE;
+
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
+
 // Lens limits are normally open
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+
 // Home Lens to LLS
 stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+
+fbYStage(stMotionStage:=stYStage);
+fbZoom(stMotionStage:=stZoomStage);
+fbFocus(stMotionStage:=stFocusStage);
+
 fbStates(
     stMotionStage:=stYStage,
     fYag:=fYag,
     fDiamond:=fDiamond,
     fReticle:=fReticle,
     fOut:=fOut);
-fbZoom(stMotionStage:=stZoomStage);
-fbFocus(stMotionStage:=stFocusStage);
+
 fbFilterWheel(
     bExecute:=TRUE,
     stIn_El6:=stEl6In,
     stOut_El6:=stEl6Out);
+
 fbOpal();
 fbFlowSwitch();
 
@@ -1384,7 +1404,7 @@ Links
 Pragma lint results
 -------------------
 ```
-INFO:pytmc.bin.pragmalint:Total pragmas found: 75 Total linter errors: 0
+INFO:pytmc.bin.pragmalint:Total pragmas found: 77 Total linter errors: 0
 PLC Project (1): Library
 ========================
 
@@ -1452,7 +1472,7 @@ Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)
 Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)
 ----------------------------------------
 
-    - FB_XPIM: Declaration - 4 pragmas
+    - FB_XPIM: Declaration - 6 pragmas
 
 
 Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)
