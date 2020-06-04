@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+  <POU Name="FB_WFS" Id="{b93c1dd0-408a-4da2-8abc-d12d1ec483ab}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WFS
+VAR_IN_OUT
+    stYStage: DUT_MotionStage;
+    stZStage: DUT_MotionStage;
+END_VAR
+VAR_INPUT
+    fOut: LREAL;
+    fTarget1: LREAL;
+    fTarget2: LREAL;
+    fTarget3: LREAL;
+    fTarget4: LREAL;
+END_VAR
+VAR
+    fbYStage: FB_MotionStage;
+    fbZStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_WFS_States;
+
+    {attribute 'pytmc' := '
+        pv: STC:01
+        io: input
+    '}
+    fbThermoCouple1: FB_TempSensor;
+
+    {attribute 'pytmc' := '
+        pv: STC:02
+        io: input
+    '}
+    fbThermoCouple2: FB_TempSensor;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+fbZStage(stMotionStage:=stZStage);
+fbStates(
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    fOut:=fOut,
+    fTarget1:=fTarget1,
+    fTarget2:=fTarget2,
+    fTarget3:=fTarget3,
+    fTarget4:=fTarget4);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := TRUE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+stZStage.bLimitForwardEnable := TRUE;
+stZStage.bLimitBackwardEnable := TRUE;
+stZStage.bHardwareEnable := TRUE;
+stZStage.bPowerSelf := TRUE;
+stZStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+fbThermoCouple1();
+fbThermoCouple2();]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
