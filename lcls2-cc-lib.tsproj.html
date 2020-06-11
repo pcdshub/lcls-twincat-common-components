@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLC Project (1): Library &#8212; pcdshub/lcls2-cc-lib  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -54,11 +55,12 @@
     <span class="mf">11.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">ENUM_XPIM_States</span><span class="o">.</span><span class="n">TcDUT</span>
     <span class="mf">12.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM</span><span class="o">.</span><span class="n">TcPOU</span>
     <span class="mf">13.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_FilterWheel</span><span class="o">.</span><span class="n">TcPOU</span>
-    <span class="mf">14.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_Opal</span><span class="o">.</span><span class="n">TcPOU</span>
-    <span class="mf">15.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_States</span><span class="o">.</span><span class="n">TcPOU</span>
-    <span class="mf">16.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_L2SI_Flowmeter</span><span class="o">.</span><span class="n">TcPOU</span>
-    <span class="mf">17.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_XTES_Flowswitch</span><span class="o">.</span><span class="n">TcPOU</span>
-    <span class="mf">18.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Version</span><span class="o">/</span><span class="n">Global_Version</span><span class="o">.</span><span class="n">TcGVL</span>
+    <span class="mf">14.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_LED</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">15.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_Opal</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">16.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_States</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">17.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_L2SI_Flowmeter</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">18.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">POUs</span><span class="o">/</span><span class="n">FB_XTES_Flowswitch</span><span class="o">.</span><span class="n">TcPOU</span>
+    <span class="mf">19.</span><span class="p">)</span> <span class="n">Library</span><span class="o">/</span><span class="n">Version</span><span class="o">/</span><span class="n">Global_Version</span><span class="o">.</span><span class="n">TcGVL</span>
 
 <span class="n">POUs</span><span class="p">:</span>
     <span class="mf">1.</span><span class="p">)</span> <span class="n">FB_L2SI_Flowmeter</span>
@@ -72,9 +74,10 @@
     <span class="mf">9.</span><span class="p">)</span> <span class="n">FB_SLITS_POWER</span>
     <span class="mf">10.</span><span class="p">)</span> <span class="n">FB_XPIM</span>
     <span class="mf">11.</span><span class="p">)</span> <span class="n">FB_XPIM_FilterWheel</span>
-    <span class="mf">12.</span><span class="p">)</span> <span class="n">FB_XPIM_Opal</span>
-    <span class="mf">13.</span><span class="p">)</span> <span class="n">FB_XPIM_States</span>
-    <span class="mf">14.</span><span class="p">)</span> <span class="n">FB_XTES_Flowswitch</span>
+    <span class="mf">12.</span><span class="p">)</span> <span class="n">FB_XPIM_LED</span>
+    <span class="mf">13.</span><span class="p">)</span> <span class="n">FB_XPIM_Opal</span>
+    <span class="mf">14.</span><span class="p">)</span> <span class="n">FB_XPIM_States</span>
+    <span class="mf">15.</span><span class="p">)</span> <span class="n">FB_XTES_Flowswitch</span>
 
 <span class="n">GVLs</span><span class="p">:</span>
     <span class="mf">1.</span><span class="p">)</span> <span class="n">Global_Version</span>
@@ -239,8 +242,8 @@ VAR
 
     {attribute &#39;pytmc&#39; := &#39;
         pv: PWR
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     &#39;}
     bGigePower AT %Q*: BOOL;
 
@@ -1019,6 +1022,11 @@ VAR
     fbOpal: FB_XPIM_Opal;
 
     {attribute &#39;pytmc&#39; := &#39;
+        pv: CIL
+    &#39;}
+    fbLED: FB_XPIM_LED;
+
+    {attribute &#39;pytmc&#39; := &#39;
         pv: SFW
     &#39;}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -1063,6 +1071,7 @@ fbFilterWheel(
     stOut_El6:=stEl6Out);
 
 fbOpal();
+fbLED(enumXPIM:=fbStates.enumGet);
 fbFlowSwitch();
 
 END_FUNCTION_BLOCK
@@ -1216,27 +1225,89 @@ END_FUNCTION_BLOCK
 </pre></div>
 </div>
 </div>
+<div class="section" id="pou-fb-xpim-led">
+<h2>POU: FB_XPIM_LED<a class="headerlink" href="#pou-fb-xpim-led" title="Permalink to this headline">¶</a></h2>
+<p>File: Library/Devices/XPIM/FB_XPIM_LED.TcPOU</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_LED
+VAR_INPUT
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: PWR
+        io: io
+        field: ZNAM OFF
+        field: ONAM ON
+    &#39;}
+    bLEDPower AT %Q*: BOOL;
+
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: AUTO
+        io: io
+    &#39;}
+    bLEDAuto: BOOL := TRUE;
+
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: CLK:TIMEOUT
+        io: io
+        field: EGU min
+    &#39;}
+    fLEDTimeOut: LREAL := 10;
+
+    enumXPIM: ENUM_XPIM_States;
+END_VAR
+VAR_OUTPUT
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: CLK:REMAINING
+        io: io
+        field: EGU min
+    &#39;}
+    fLEDRemaining: LREAL;
+END_VAR
+VAR
+    tonLED: TON;
+    enumLastCycle: ENUM_XPIM_States := ENUM_XPIM_States.Unknown;
+END_VAR
+// If configured, change the LED level automatically
+// LED is always (and only) useful at Reticle state
+IF bLEDAuto AND enumXPIM &lt;&gt; enumLastCycle THEN
+    // Turn on the LED when we get to the Reticle
+    IF enumXPIM = ENUM_XPIM_States.Reticle THEN
+        bLEDPower := TRUE;
+    // Turn off the LED when we stop at any other state
+    ELSIF enumXPIM &lt;&gt; ENUM_XPIM_States.Unknown THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF
+enumLastCycle := enumXPIM;
+
+// If configured, start a shutdown timer when LED goes high
+IF fLEDTimeOut &lt;&gt; 0 THEN;
+    tonLED(IN:=bLEDPower,
+           PT:=LREAL_TO_TIME(fLEDTimeOut * 60 * 1000));
+    fLEDRemaining := fLEDTimeOut - TIME_TO_LREAL(tonLED.ET) / 60 / 1000;
+
+    IF tonLED.Q THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF
+
+END_FUNCTION_BLOCK
+</pre></div>
+</div>
+</div>
 <div class="section" id="pou-fb-xpim-opal">
 <h2>POU: FB_XPIM_Opal<a class="headerlink" href="#pou-fb-xpim-opal" title="Permalink to this headline">¶</a></h2>
 <p>File: Library/Devices/XPIM/FB_XPIM_Opal.TcPOU</p>
 <div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_XPIM_Opal
-VAR
+VAR_INPUT
     {attribute &#39;pytmc&#39; := &#39;
         pv: PWR
         io: io
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     &#39;}
     bOpalPower AT %Q*: BOOL;
+END_VAR
+VAR
     bOpalInit: BOOL := FALSE;
-
-    {attribute &#39;pytmc&#39; := &#39;
-        pv: CIL:PWR
-        io: io
-        ZNAM: OFF
-        ONAM: ON
-    &#39;}
-    bLedPower AT %Q*: BOOL;
 END_VAR
 // Turn the Opal on by default
 IF NOT bOpalInit THEN
@@ -1355,8 +1426,8 @@ END_FUNCTION_BLOCK
 VAR_OUTPUT
     {attribute &#39;pytmc&#39; := &#39;
         pv: FLOW
-        ZNAM: LOW
-        ONAM: OK
+        field: ZNAM LOW
+        field: ONAM OK
     &#39;}
     bFlowOk AT %I*: BOOL;
 END_VAR
@@ -1380,7 +1451,7 @@ END_FUNCTION_BLOCK
 </div>
 <div class="section" id="pragma-lint-results">
 <h2>Pragma lint results<a class="headerlink" href="#pragma-lint-results" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Total</span> <span class="n">pragmas</span> <span class="n">found</span><span class="p">:</span> <span class="mi">77</span> <span class="n">Total</span> <span class="n">linter</span> <span class="n">errors</span><span class="p">:</span> <span class="mi">0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span><span class="p">:</span><span class="n">pytmc</span><span class="o">.</span><span class="n">bin</span><span class="o">.</span><span class="n">pragmalint</span><span class="p">:</span><span class="n">Total</span> <span class="n">pragmas</span> <span class="n">found</span><span class="p">:</span> <span class="mi">81</span> <span class="n">Total</span> <span class="n">linter</span> <span class="n">errors</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">PLC</span> <span class="n">Project</span> <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">Library</span>
 <span class="o">========================</span>
 
@@ -1448,7 +1519,7 @@ END_FUNCTION_BLOCK
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
 <span class="o">----------------------------------------</span>
 
-    <span class="o">-</span> <span class="n">FB_XPIM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">6</span> <span class="n">pragmas</span>
+    <span class="o">-</span> <span class="n">FB_XPIM</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">7</span> <span class="n">pragmas</span>
 
 
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_FilterWheel</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
@@ -1457,10 +1528,16 @@ END_FUNCTION_BLOCK
     <span class="o">-</span> <span class="n">FB_XPIM_FilterWheel</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">5</span> <span class="n">pragmas</span>
 
 
+<span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_LED</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
+<span class="o">--------------------------------------------</span>
+
+    <span class="o">-</span> <span class="n">FB_XPIM_LED</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">4</span> <span class="n">pragmas</span>
+
+
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_Opal</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
 <span class="o">---------------------------------------------</span>
 
-    <span class="o">-</span> <span class="n">FB_XPIM_Opal</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">2</span> <span class="n">pragmas</span>
+    <span class="o">-</span> <span class="n">FB_XPIM_Opal</span><span class="p">:</span> <span class="n">Declaration</span> <span class="o">-</span> <span class="mi">1</span> <span class="n">pragmas</span>
 
 
 <span class="n">Devices</span><span class="o">/</span><span class="n">XPIM</span><span class="o">/</span><span class="n">FB_XPIM_States</span><span class="o">.</span><span class="n">TcPOU</span> <span class="p">(</span><span class="n">TcPlcObject</span><span class="p">)</span>
@@ -1526,6 +1603,7 @@ END_FUNCTION_BLOCK
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-slits-power">POU: FB_SLITS_POWER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim">POU: FB_XPIM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-filterwheel">POU: FB_XPIM_FilterWheel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-led">POU: FB_XPIM_LED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-opal">POU: FB_XPIM_Opal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-xpim-states">POU: FB_XPIM_States</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pou-fb-xtes-flowswitch">POU: FB_XTES_Flowswitch</a></li>
@@ -1572,7 +1650,7 @@ END_FUNCTION_BLOCK
       &copy;2019, SLAC National Accelerator Laboratory.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

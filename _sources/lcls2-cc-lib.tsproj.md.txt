@@ -22,11 +22,12 @@ PLC Project (1): Library
         11.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
         12.) Library/Devices/XPIM/FB_XPIM.TcPOU
         13.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
-        14.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
-        15.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
-        16.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
-        17.) Library/POUs/FB_XTES_Flowswitch.TcPOU
-        18.) Library/Version/Global_Version.TcGVL
+        14.) Library/Devices/XPIM/FB_XPIM_LED.TcPOU
+        15.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
+        16.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
+        17.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
+        18.) Library/POUs/FB_XTES_Flowswitch.TcPOU
+        19.) Library/Version/Global_Version.TcGVL
 
     POUs:
         1.) FB_L2SI_Flowmeter
@@ -40,9 +41,10 @@ PLC Project (1): Library
         9.) FB_SLITS_POWER
         10.) FB_XPIM
         11.) FB_XPIM_FilterWheel
-        12.) FB_XPIM_Opal
-        13.) FB_XPIM_States
-        14.) FB_XTES_Flowswitch
+        12.) FB_XPIM_LED
+        13.) FB_XPIM_Opal
+        14.) FB_XPIM_States
+        15.) FB_XTES_Flowswitch
 
     GVLs:
         1.) Global_Version
@@ -227,8 +229,8 @@ VAR
 
     {attribute 'pytmc' := '
         pv: PWR
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     '}
     bGigePower AT %Q*: BOOL;
 
@@ -1028,6 +1030,11 @@ VAR
     fbOpal: FB_XPIM_Opal;
 
     {attribute 'pytmc' := '
+        pv: CIL
+    '}
+    fbLED: FB_XPIM_LED;
+
+    {attribute 'pytmc' := '
         pv: SFW
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -1072,6 +1079,7 @@ fbFilterWheel(
     stOut_El6:=stEl6Out);
 
 fbOpal();
+fbLED(enumXPIM:=fbStates.enumGet);
 fbFlowSwitch();
 
 END_FUNCTION_BLOCK
@@ -1228,6 +1236,77 @@ END_FUNCTION_BLOCK
 ```
 
 
+POU: FB_XPIM_LED
+----------------
+
+File: Library/Devices/XPIM/FB_XPIM_LED.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_XPIM_LED
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: PWR
+        io: io
+        field: ZNAM OFF
+        field: ONAM ON
+    '}
+    bLEDPower AT %Q*: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: AUTO
+        io: io
+    '}
+    bLEDAuto: BOOL := TRUE;
+
+    {attribute 'pytmc' := '
+        pv: CLK:TIMEOUT
+        io: io
+        field: EGU min
+    '}
+    fLEDTimeOut: LREAL := 10;
+
+    enumXPIM: ENUM_XPIM_States;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: CLK:REMAINING
+        io: io
+        field: EGU min
+    '}
+    fLEDRemaining: LREAL;
+END_VAR
+VAR
+    tonLED: TON;
+    enumLastCycle: ENUM_XPIM_States := ENUM_XPIM_States.Unknown;
+END_VAR
+// If configured, change the LED level automatically
+// LED is always (and only) useful at Reticle state
+IF bLEDAuto AND enumXPIM <> enumLastCycle THEN
+    // Turn on the LED when we get to the Reticle
+    IF enumXPIM = ENUM_XPIM_States.Reticle THEN
+        bLEDPower := TRUE;
+    // Turn off the LED when we stop at any other state
+    ELSIF enumXPIM <> ENUM_XPIM_States.Unknown THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF
+enumLastCycle := enumXPIM;
+
+// If configured, start a shutdown timer when LED goes high
+IF fLEDTimeOut <> 0 THEN;
+    tonLED(IN:=bLEDPower,
+           PT:=LREAL_TO_TIME(fLEDTimeOut * 60 * 1000));
+    fLEDRemaining := fLEDTimeOut - TIME_TO_LREAL(tonLED.ET) / 60 / 1000;
+
+    IF tonLED.Q THEN
+        bLEDPower := FALSE;
+    END_IF
+END_IF
+
+END_FUNCTION_BLOCK
+```
+
+
 POU: FB_XPIM_Opal
 -----------------
 
@@ -1235,23 +1314,17 @@ File: Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
 
 ```vhdl
 FUNCTION_BLOCK FB_XPIM_Opal
-VAR
+VAR_INPUT
     {attribute 'pytmc' := '
         pv: PWR
         io: io
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     '}
     bOpalPower AT %Q*: BOOL;
+END_VAR
+VAR
     bOpalInit: BOOL := FALSE;
-
-    {attribute 'pytmc' := '
-        pv: CIL:PWR
-        io: io
-        ZNAM: OFF
-        ONAM: ON
-    '}
-    bLedPower AT %Q*: BOOL;
 END_VAR
 // Turn the Opal on by default
 IF NOT bOpalInit THEN
@@ -1376,8 +1449,8 @@ FUNCTION_BLOCK FB_XTES_Flowswitch
 VAR_OUTPUT
     {attribute 'pytmc' := '
         pv: FLOW
-        ZNAM: LOW
-        ONAM: OK
+        field: ZNAM LOW
+        field: ONAM OK
     '}
     bFlowOk AT %I*: BOOL;
 END_VAR
@@ -1404,7 +1477,7 @@ Links
 Pragma lint results
 -------------------
 ```
-INFO:pytmc.bin.pragmalint:Total pragmas found: 77 Total linter errors: 0
+INFO:pytmc.bin.pragmalint:Total pragmas found: 81 Total linter errors: 0
 PLC Project (1): Library
 ========================
 
@@ -1472,7 +1545,7 @@ Devices/XPIM/ENUM_XPIM_States.TcDUT (TcPlcObject)
 Devices/XPIM/FB_XPIM.TcPOU (TcPlcObject)
 ----------------------------------------
 
-    - FB_XPIM: Declaration - 6 pragmas
+    - FB_XPIM: Declaration - 7 pragmas
 
 
 Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)
@@ -1481,10 +1554,16 @@ Devices/XPIM/FB_XPIM_FilterWheel.TcPOU (TcPlcObject)
     - FB_XPIM_FilterWheel: Declaration - 5 pragmas
 
 
+Devices/XPIM/FB_XPIM_LED.TcPOU (TcPlcObject)
+--------------------------------------------
+
+    - FB_XPIM_LED: Declaration - 4 pragmas
+
+
 Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)
 ---------------------------------------------
 
-    - FB_XPIM_Opal: Declaration - 2 pragmas
+    - FB_XPIM_Opal: Declaration - 1 pragmas
 
 
 Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)
