@@ -470,7 +470,7 @@ VAR CONSTANT
     fOutDecel: LREAL := 25;
 END_VAR
 IF NOT bInit THEN
-    bInit := FALSE;
+    bInit := TRUE;
     FOR nIter := 1 TO 4 DO
         arrStates[nIter].fDelta := fInDelta;
         arrStates[nIter].fVelocity := fInVelocity;
@@ -1564,7 +1564,7 @@ VAR CONSTANT
     fOutDecel: LREAL := 25;
 END_VAR
 IF NOT bInit THEN
-    bInit := FALSE;
+    bInit := TRUE;
     FOR nIter := 1 TO 4 DO
         arrStates[nIter].fDelta := fInDelta;
         arrStates[nIter].fVelocity := fInVelocity;
