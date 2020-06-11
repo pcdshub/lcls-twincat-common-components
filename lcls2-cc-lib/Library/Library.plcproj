@@ -73,6 +73,9 @@
     <Compile Include="Devices\XPIM\FB_XPIM_FilterWheel.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\XPIM\FB_XPIM_LED.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM_Opal.TcPOU">
       <SubType>Code</SubType>
     </Compile>

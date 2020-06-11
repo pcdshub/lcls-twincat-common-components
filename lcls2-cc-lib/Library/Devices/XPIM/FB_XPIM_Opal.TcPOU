@@ -2,23 +2,17 @@
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM_Opal" Id="{b1b890b6-3afe-4a18-b0c8-85c6c6d77f08}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_Opal
-VAR
+VAR_INPUT
     {attribute 'pytmc' := '
         pv: PWR
         io: io
-        ZNAM: OFF
-        ONAM: ON
+        field: ZNAM OFF
+        field: ONAM ON
     '}
     bOpalPower AT %Q*: BOOL;
+END_VAR
+VAR
     bOpalInit: BOOL := FALSE;
-
-    {attribute 'pytmc' := '
-        pv: CIL:PWR
-        io: io
-        ZNAM: OFF
-        ONAM: ON
-    '}
-    bLedPower AT %Q*: BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
