@@ -22,7 +22,7 @@ VAR_INPUT
         io: io
         field: EGU min
     '}
-    fLEDTimeOut: LREAL := 60;
+    fLEDTimeOut: LREAL := 10;
 
     enumXPIM: ENUM_XPIM_States;
 END_VAR
