@@ -25,6 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Devices" />
+    <Folder Include="Devices\WFS" />
     <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
     <Folder Include="Devices\XPIM" />
@@ -59,6 +60,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\SLITS\FB_SLITS_POWER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\WFS\ENUM_WFS_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\WFS\FB_WFS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\WFS\FB_WFS_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
