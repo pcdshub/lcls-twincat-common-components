@@ -36,12 +36,13 @@ VAR_OUTPUT
 END_VAR
 VAR
     tonLED: TON;
+    enumLastCycle: ENUM_XPIM_States := ENUM_XPIM_States.Unknown;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// If configured, change the LED level automatically
 // LED is always (and only) useful at Reticle state
-IF bLEDAuto THEN
+IF bLEDAuto AND enumXPIM <> enumLastCycle THEN
     // Turn on the LED when we get to the Reticle
     IF enumXPIM = ENUM_XPIM_States.Reticle THEN
         bLEDPower := TRUE;
@@ -50,6 +51,7 @@ IF bLEDAuto THEN
         bLEDPower := FALSE;
     END_IF
 END_IF
+enumLastCycle := enumXPIM;
 
 // If configured, start a shutdown timer when LED goes high
 IF fLEDTimeOut <> 0 THEN;
