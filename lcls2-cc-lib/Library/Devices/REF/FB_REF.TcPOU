@@ -4,10 +4,13 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fIn: LREAL;
-    fOut: LREAL;
+    stIn: DUT_PositionState;
+    stOut: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -15,7 +18,7 @@ VAR
         pv: MMS:STATE
         io: io
     '}
-    fbStates: FB_EpicsInOut;
+    fbStates: FB_PositionStateInOut_WithPMPS;
 
     {attribute 'pytmc' := '
         pv: LAS
@@ -24,45 +27,47 @@ VAR
     fbLaser: FB_REF_Laser;
 
     bInit: BOOL;
-    stOut: DUT_PositionState;
-    stIn: DUT_PositionState;
 END_VAR
 VAR CONSTANT
     bStatesLock: BOOL := FALSE;
-    fVelo: LREAL := 65;
-    fAccel: LREAL := 25;
+    fVelo: LREAL := 10;
+    fAccel: LREAL := 10;
+    fDelta: LREAL := 2;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[IF NOT bInit THEN
     bInit := TRUE;
-    stOut.fPosition := fOut;
-    stOut.fDelta := 10;
+
+    stOut.fDelta := fDelta;
     stOut.fVelocity := fVelo;
     stOut.fAccel := fAccel;
     stOut.fDecel := fAccel;
     stOut.bLocked := bStatesLock;
-    stOut.bValid := TRUE;
     stOut.bMoveOk := TRUE;
 
-    stIn.fPosition := fIn;
-    stIn.fDelta := 0.1;
+    stIn.fDelta := fDelta;
     stIn.fVelocity := fVelo;
     stIn.fAccel := fAccel;
     stIn.fDecel := fAccel;
     stIn.bLocked := bStatesLock;
-    stIn.bValid := TRUE;
     stIn.bMoveOk := TRUE;
 END_IF
 
 fbYStage(stMotionStage:=stYStage);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
 fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
     stMotionStage:=stYStage,
+    bEnable:=TRUE,
     stOut := stOut,
     stIn := stIn);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
-stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
 fbLaser();]]></ST>
     </Implementation>
   </POU>

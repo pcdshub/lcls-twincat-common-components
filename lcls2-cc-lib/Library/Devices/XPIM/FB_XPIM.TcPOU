@@ -8,6 +8,8 @@ VAR_IN_OUT
     stFocusStage: DUT_MotionStage;
     stEl6In: EL6inData22b;
     stEl6Out: EL6OutData22b;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
     {attribute 'pytmc' := '
@@ -27,10 +29,12 @@ VAR_INPUT
     bFocusEndFwd AT %I*: BOOL;
     bFocusEndBwd AT %I*: BOOL;
 
-    fYag: LREAL;
-    fDiamond: LREAL;
-    fReticle: LREAL;
-    fOut: LREAL;
+    stOut: DUT_PositionState;
+    stYag: DUT_PositionState;
+    stDiamond: DUT_PositionState;
+    stReticle: DUT_PositionState;
+
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -65,39 +69,51 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// All stages have no STO, but there is a user lock on the lens
+      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
 stYStage.bHardwareEnable := TRUE;
-stZoomStage.bHardwareEnable := NOT bZoomLock;
-stFocusStage.bHardwareEnable := NOT bFocusLock;
-
-// No PMPS yet
-stYStage.bPowerSelf := TRUE;
-stZoomStage.bPowerSelf := TRUE;
-stFocusStage.bPowerSelf := TRUE;
-
+stYStage.bPowerSelf := FALSE;
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
 
-// Lens limits are normally open
+// Extra lock on lens + lens limits are normally open
+fbZoom(stMotionStage:=stZoomStage);
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stZoomStage.bPowerSelf := TRUE;
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+
+fbFocus(stMotionStage:=stFocusStage);
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+stFocusStage.bPowerSelf := TRUE;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
-
-// Home Lens to LLS
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 
-fbYStage(stMotionStage:=stYStage);
-fbZoom(stMotionStage:=stZoomStage);
-fbFocus(stMotionStage:=stFocusStage);
+// Set special error message for lens lock
+IF stZoomStage.bExecute AND bZoomLock THEN
+    IF NOT stZoomStage.bError THEN
+        stZoomStage.bError := TRUE;
+    END_IF
+    stZoomStage.sCustomErrorMessage := 'Zoom lens is locked!';
+END_IF
+IF stFocusStage.bExecute AND bFocusLock THEN
+    IF NOT stFocusStage.bError THEN
+        stFocusStage.bError := TRUE;
+    END_IF
+    stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
+END_IF
 
 fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
     stMotionStage:=stYStage,
-    fYag:=fYag,
-    fDiamond:=fDiamond,
-    fReticle:=fReticle,
-    fOut:=fOut);
+    bEnable:=TRUE,
+    stOut:=stOut,
+    stYag:=stYag,
+    stDiamond:=stDiamond,
+    stReticle:=stReticle);
 
 fbFilterWheel(
     bExecute:=TRUE,

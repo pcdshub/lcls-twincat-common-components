@@ -1,29 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_WFS_States" Id="{fc548a7a-4779-4c1d-9e47-13bb07421648}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_WFS_States
-VAR_IN_OUT
-    stMotionStage: DUT_MotionStage;
-END_VAR
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WFS_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT
-    bEnable: BOOL;
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     enumSet: ENUM_WFS_states;
+
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+
     bStatesLock: BOOL;
-    fOut: LREAL;
-    fTarget1: LREAL;
-    fTarget2: LREAL;
-    fTarget3: LREAL;
-    fTarget4: LREAL;
 END_VAR
 VAR_OUTPUT
-    bError: BOOL;
-    sErrorMessage: STRING;
-    bBusy: BOOL;
-    bDone: BOOL;
     {attribute 'pytmc' := '
         pv: GET
         io: i
@@ -31,25 +25,11 @@ VAR_OUTPUT
     enumGet: ENUM_WFS_States;
 END_VAR
 VAR
-    bInit: BOOL;
-    arrStates: ARRAY[1..15] OF DUT_PositionState;
-    nIter: INT;
-
-    {attribute 'pytmc' := '
-        pv:
-        io: io
-    '}
-    fbStateManager: FB_PositionStateManager;
-
-    fbLockOut: FB_PositionStateLock;
-    fbLockTarget1: FB_PositionStateLock;
-    fbLockTarget2: FB_PositionStateLock;
-    fbLockTarget3: FB_PositionStateLock;
-    fbLockTarget4: FB_PositionStateLock;
+    bWFSInit: BOOL;
 END_VAR
 VAR CONSTANT
-    fInDelta: LREAL := 0.1;
-    fOutDelta: LREAL := 10;
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
     fInVelocity: LREAL := 5;
     fOutVelocity: LREAL := 5;
     fAccel: LREAL := 200;
@@ -57,49 +37,49 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT bInit THEN
-    bInit := TRUE;
-    FOR nIter := 1 TO 5 DO
-        arrStates[nIter].fDelta := fInDelta;
-        arrStates[nIter].fVelocity := fInVelocity;
-        arrStates[nIter].fAccel := fAccel;
-        arrStates[nIter].fDecel := fAccel;
-        arrStates[nIter].bLocked := bStatesLock;
-        arrStates[nIter].bValid := TRUE;
-        // TODO implement PMPS instead of doing this
-        arrStates[nIter].bMoveOk := TRUE;
-    END_FOR
-    arrStates[1].sName := 'Out';
-    arrStates[1].fPosition := fOut;
-    arrStates[1].fDelta := fOutDelta;
-    arrStates[1].fVelocity := fOutVelocity;
-    arrStates[1].fDecel := fOutDecel;
-    arrStates[2].sName := 'Target1';
-    arrStates[2].fPosition := fTarget1;
-    arrStates[3].sName := 'Target2';
-    arrStates[3].fPosition := fTarget2;
-    arrStates[4].sName := 'Target3';
-    arrStates[4].fPosition := fTarget3;
-    arrStates[5].sName := 'Target4';
-    arrStates[5].fPosition := fTarget4;
+      <ST><![CDATA[IF NOT bWFSInit THEN
+    bWFSInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stTarget1.sName := 'TARGET1';
+    stTarget1.fVelocity := fInVelocity;
+    stTarget1.fDelta := fInDelta;
+    stTarget1.fAccel := fAccel;
+    stTarget1.fDecel := fAccel;
+    stTarget1.bMoveOk := TRUE;
+
+    stTarget2.sName := 'TARGET2';
+    stTarget2.fVelocity := fInVelocity;
+    stTarget2.fDelta := fInDelta;
+    stTarget2.fAccel := fAccel;
+    stTarget2.fDecel := fAccel;
+    stTarget2.bMoveOk := TRUE;
+
+    stTarget3.sName := 'TARGET3';
+    stTarget3.fVelocity := fInVelocity;
+    stTarget3.fDelta := fInDelta;
+    stTarget3.fAccel := fAccel;
+    stTarget3.fDecel := fAccel;
+    stTarget3.bMoveOk := TRUE;
+
+    stTarget4.sName := 'TARGET4';
+    stTarget4.fVelocity := fInVelocity;
+    stTarget4.fDelta := fInDelta;
+    stTarget4.fAccel := fAccel;
+    stTarget4.fDecel := fAccel;
+    stTarget4.bMoveOk := TRUE;
 END_IF
 
-fbLockOut(stPositionState := arrStates[1]);
-fbLockTarget1(stPositionState := arrStates[2]);
-fbLockTarget2(stPositionState := arrStates[3]);
-fbLockTarget3(stPositionState := arrStates[4]);
-fbLockTarget4(stPositionState := arrStates[4]);
-
-fbStateManager(
-    stMotionStage := stMotionStage,
-    arrStates := arrStates,
-    setState := enumSet,
-    bEnable := bEnable,
-    bError => bError,
-    sErrorMessage => sErrorMessage,
-    bBusy => bBusy,
-    bDone => bDone,
-    getState => enumGet);]]></ST>
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
