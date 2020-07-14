@@ -15,12 +15,16 @@ VAR_INPUT
     {attribute 'pytmc' := '
         pv: CLZ:LOCK
         io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
     '}
     bZoomLock: BOOL;
 
     {attribute 'pytmc' := '
         pv: CLF:LOCK
         io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
     '}
     bFocusLock: BOOL;
 
