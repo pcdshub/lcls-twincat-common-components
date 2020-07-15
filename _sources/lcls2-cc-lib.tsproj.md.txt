@@ -65,9 +65,9 @@ TYPE ENUM_PPM_States :
 (
     Unknown := 0,
     OUT := 1,
-    PowerMeter := 2,
-    PolishedYag := 3,
-    FrostedYag := 4
+    POWERMETER := 2,
+    YAG1 := 3,
+    YAG2 := 4
 );
 END_TYPE
 ```
@@ -125,9 +125,9 @@ TYPE ENUM_XPIM_States :
 (
     Unknown := 0,
     OUT := 1,
-    Yag := 2,
-    Diamond := 3,
-    Reticle := 4
+    YAG := 2,
+    DIAMOND := 3,
+    RETICLE := 4
 );
 END_TYPE
 ```
@@ -185,12 +185,15 @@ File: Library/Devices/PPM/FB_PPM.TcPOU
 FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fOut: LREAL;
-    fPower: LREAL;
-    fPolished: LREAL;
-    fFrosted: LREAL;
+    stOut: DUT_PositionState;
+    stPower: DUT_PositionState;
+    stYag1: DUT_PositionState;
+    stYag2: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -223,16 +226,21 @@ VAR
     fbYagThermoCouple: FB_ThermoCouple;
 END_VAR
 fbYStage(stMotionStage:=stYStage);
-fbStates(
-    stMotionStage:=stYStage,
-    bEnable := TRUE,
-    fOut:=fOut,
-    fPower:=fPower,
-    fPolished:=fPolished,
-    fFrosted:=fFrosted);
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
 stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    stMotionStage:=stYStage,
+    bEnable:=TRUE,
+    stOut:=stOut,
+    stPower:=stPower,
+    stYag1:=stYag1,
+    stYag2:=stYag2);
+
 fbPowerMeter();
 fbGige();
 fbFlowMeter();
@@ -413,28 +421,22 @@ POU: FB_PPM_States
 File: Library/Devices/PPM/FB_PPM_States.TcPOU
 
 ```vhdl
-FUNCTION_BLOCK FB_PPM_States
-VAR_IN_OUT
-    stMotionStage: DUT_MotionStage;
-END_VAR
+FUNCTION_BLOCK FB_PPM_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT
-    bEnable: BOOL;
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     enumSet: ENUM_PPM_states;
+
+    stOut: DUT_PositionState;
+    stPower: DUT_PositionState;
+    stYag1: DUT_PositionState;
+    stYag2: DUT_PositionState;
+
     bStatesLock: BOOL;
-    fOut: LREAL;
-    fPower: LREAL;
-    fPolished: LREAL;
-    fFrosted: LREAL;
 END_VAR
 VAR_OUTPUT
-    bError: BOOL;
-    sErrorMessage: STRING;
-    bBusy: BOOL;
-    bDone: BOOL;
     {attribute 'pytmc' := '
         pv: GET
         io: i
@@ -442,69 +444,57 @@ VAR_OUTPUT
     enumGet: ENUM_PPM_States;
 END_VAR
 VAR
-    bInit: BOOL;
-    arrStates: ARRAY[1..15] OF DUT_PositionState;
-    nIter: INT;
-
-    {attribute 'pytmc' := '
-        pv:
-        io: io
-    '}
-    fbStateManager: FB_PositionStateManager;
-
-    fbLockOut: FB_PositionStateLock;
-    fbLockPowerMeter: FB_PositionStateLock;
-    fbLockPolishedYag: FB_PositionStateLock;
-    fbLockFrostedYag: FB_PositionStateLock;
+    bPPMInit: BOOL;
 END_VAR
 VAR CONSTANT
-    fInDelta: LREAL := 0.1;
-    fOutDelta: LREAL := 10;
-    fInVelocity: LREAL := 80;
-    fOutVelocity: LREAL := 65;
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
-IF NOT bInit THEN
-    bInit := TRUE;
-    FOR nIter := 1 TO 4 DO
-        arrStates[nIter].fDelta := fInDelta;
-        arrStates[nIter].fVelocity := fInVelocity;
-        arrStates[nIter].fAccel := fAccel;
-        arrStates[nIter].fDecel := fAccel;
-        arrStates[nIter].bLocked := bStatesLock;
-        arrStates[nIter].bValid := TRUE;
-        // TODO implement PMPS instead of doing this
-        arrStates[nIter].bMoveOk := TRUE;
-    END_FOR
-    arrStates[1].sName := 'Out';
-    arrStates[1].fPosition := fOut;
-    arrStates[1].fDelta := fOutDelta;
-    arrStates[1].fVelocity := fOutVelocity;
-    arrStates[1].fDecel := fOutDecel;
-    arrStates[2].sName := 'PowerMeter';
-    arrStates[2].fPosition := fPower;
-    arrStates[3].sName := 'PolishedYag';
-    arrStates[3].fPosition := fPolished;
-    arrStates[4].sName := 'FrostedYag';
-    arrStates[4].fPosition := fFrosted;
+IF NOT bPPMInit THEN
+    bPPMInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stPower.sName := 'POWERMETER';
+    stPower.fVelocity := fInVelocity;
+    stPower.fDelta := fInDelta;
+    stPower.fAccel := fAccel;
+    stPower.fDecel := fAccel;
+    stPower.bMoveOk := TRUE;
+
+    stYag1.sName := 'YAG1';
+    stYag1.fVelocity := fInVelocity;
+    stYag1.fDelta := fInDelta;
+    stYag1.fAccel := fAccel;
+    stYag1.fDecel := fAccel;
+    stYag1.bMoveOk := TRUE;
+
+    stYag2.sName := 'YAG2';
+    stYag2.fVelocity := fInVelocity;
+    stYag2.fDelta := fInDelta;
+    stYag2.fAccel := fAccel;
+    stYag2.fDecel := fAccel;
+    stYag2.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stPower;
+    arrStates[3] := stYag1;
+    arrStates[4] := stYag2;
 END_IF
 
-fbLockOut(stPositionState := arrStates[1]);
-fbLockPowerMeter(stPositionState := arrStates[2]);
-fbLockPolishedYag(stPositionState := arrStates[3]);
-fbLockFrostedYag(stPositionState := arrStates[4]);
-
-fbStateManager(
-    stMotionStage := stMotionStage,
-    arrStates := arrStates,
-    setState := enumSet,
-    bEnable := bEnable,
-    bError => bError,
-    sErrorMessage => sErrorMessage,
-    bBusy => bBusy,
-    bDone => bDone,
-    getState => enumGet);
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;
 
 END_FUNCTION_BLOCK
 ```
@@ -519,10 +509,13 @@ File: Library/Devices/REF/FB_REF.TcPOU
 FUNCTION_BLOCK FB_REF
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fIn: LREAL;
-    fOut: LREAL;
+    stIn: DUT_PositionState;
+    stOut: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -530,7 +523,7 @@ VAR
         pv: MMS:STATE
         io: io
     '}
-    fbStates: FB_EpicsInOut;
+    fbStates: FB_PositionStateInOut_WithPMPS;
 
     {attribute 'pytmc' := '
         pv: LAS
@@ -539,43 +532,45 @@ VAR
     fbLaser: FB_REF_Laser;
 
     bInit: BOOL;
-    stOut: DUT_PositionState;
-    stIn: DUT_PositionState;
 END_VAR
 VAR CONSTANT
     bStatesLock: BOOL := FALSE;
-    fVelo: LREAL := 65;
-    fAccel: LREAL := 25;
+    fVelo: LREAL := 10;
+    fAccel: LREAL := 10;
+    fDelta: LREAL := 2;
 END_VAR
 IF NOT bInit THEN
     bInit := TRUE;
-    stOut.fPosition := fOut;
-    stOut.fDelta := 10;
+
+    stOut.fDelta := fDelta;
     stOut.fVelocity := fVelo;
     stOut.fAccel := fAccel;
     stOut.fDecel := fAccel;
     stOut.bLocked := bStatesLock;
-    stOut.bValid := TRUE;
     stOut.bMoveOk := TRUE;
 
-    stIn.fPosition := fIn;
-    stIn.fDelta := 0.1;
+    stIn.fDelta := fDelta;
     stIn.fVelocity := fVelo;
     stIn.fAccel := fAccel;
     stIn.fDecel := fAccel;
     stIn.bLocked := bStatesLock;
-    stIn.bValid := TRUE;
     stIn.bMoveOk := TRUE;
 END_IF
 
 fbYStage(stMotionStage:=stYStage);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
 fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
     stMotionStage:=stYStage,
+    bEnable:=TRUE,
     stOut := stOut,
     stIn := stIn);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
-stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
 fbLaser();
 
 END_FUNCTION_BLOCK
@@ -1006,13 +1001,16 @@ FUNCTION_BLOCK FB_WFS
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
     stZStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fOut: LREAL;
-    fTarget1: LREAL;
-    fTarget2: LREAL;
-    fTarget3: LREAL;
-    fTarget4: LREAL;
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -1037,23 +1035,29 @@ VAR
     fbThermoCouple2: FB_TempSensor;
 END_VAR
 fbYStage(stMotionStage:=stYStage);
-fbZStage(stMotionStage:=stZStage);
-fbStates(
-    stMotionStage:=stYStage,
-    bEnable := TRUE,
-    fOut:=fOut,
-    fTarget1:=fTarget1,
-    fTarget2:=fTarget2,
-    fTarget3:=fTarget3,
-    fTarget4:=fTarget4);
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
 stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbZStage(stMotionStage:=stZStage);
 stZStage.bLimitForwardEnable := TRUE;
 stZStage.bLimitBackwardEnable := TRUE;
 stZStage.bHardwareEnable := TRUE;
 stZStage.bPowerSelf := TRUE;
 stZStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    stOut:=stOut,
+    stTarget1:=stTarget1,
+    stTarget2:=stTarget2,
+    stTarget3:=stTarget3,
+    stTarget4:=stTarget4);
+
 fbThermoCouple1();
 fbThermoCouple2();
 
@@ -1067,29 +1071,23 @@ POU: FB_WFS_States
 File: Library/Devices/WFS/FB_WFS_States.TcPOU
 
 ```vhdl
-FUNCTION_BLOCK FB_WFS_States
-VAR_IN_OUT
-    stMotionStage: DUT_MotionStage;
-END_VAR
+FUNCTION_BLOCK FB_WFS_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT
-    bEnable: BOOL;
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     enumSet: ENUM_WFS_states;
+
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+
     bStatesLock: BOOL;
-    fOut: LREAL;
-    fTarget1: LREAL;
-    fTarget2: LREAL;
-    fTarget3: LREAL;
-    fTarget4: LREAL;
 END_VAR
 VAR_OUTPUT
-    bError: BOOL;
-    sErrorMessage: STRING;
-    bBusy: BOOL;
-    bDone: BOOL;
     {attribute 'pytmc' := '
         pv: GET
         io: i
@@ -1097,73 +1095,65 @@ VAR_OUTPUT
     enumGet: ENUM_WFS_States;
 END_VAR
 VAR
-    bInit: BOOL;
-    arrStates: ARRAY[1..15] OF DUT_PositionState;
-    nIter: INT;
-
-    {attribute 'pytmc' := '
-        pv:
-        io: io
-    '}
-    fbStateManager: FB_PositionStateManager;
-
-    fbLockOut: FB_PositionStateLock;
-    fbLockTarget1: FB_PositionStateLock;
-    fbLockTarget2: FB_PositionStateLock;
-    fbLockTarget3: FB_PositionStateLock;
-    fbLockTarget4: FB_PositionStateLock;
+    bWFSInit: BOOL;
 END_VAR
 VAR CONSTANT
-    fInDelta: LREAL := 0.1;
-    fOutDelta: LREAL := 10;
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
     fInVelocity: LREAL := 5;
     fOutVelocity: LREAL := 5;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
-IF NOT bInit THEN
-    bInit := TRUE;
-    FOR nIter := 1 TO 5 DO
-        arrStates[nIter].fDelta := fInDelta;
-        arrStates[nIter].fVelocity := fInVelocity;
-        arrStates[nIter].fAccel := fAccel;
-        arrStates[nIter].fDecel := fAccel;
-        arrStates[nIter].bLocked := bStatesLock;
-        arrStates[nIter].bValid := TRUE;
-        // TODO implement PMPS instead of doing this
-        arrStates[nIter].bMoveOk := TRUE;
-    END_FOR
-    arrStates[1].sName := 'Out';
-    arrStates[1].fPosition := fOut;
-    arrStates[1].fDelta := fOutDelta;
-    arrStates[1].fVelocity := fOutVelocity;
-    arrStates[1].fDecel := fOutDecel;
-    arrStates[2].sName := 'Target1';
-    arrStates[2].fPosition := fTarget1;
-    arrStates[3].sName := 'Target2';
-    arrStates[3].fPosition := fTarget2;
-    arrStates[4].sName := 'Target3';
-    arrStates[4].fPosition := fTarget3;
-    arrStates[5].sName := 'Target4';
-    arrStates[5].fPosition := fTarget4;
+IF NOT bWFSInit THEN
+    bWFSInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stTarget1.sName := 'TARGET1';
+    stTarget1.fVelocity := fInVelocity;
+    stTarget1.fDelta := fInDelta;
+    stTarget1.fAccel := fAccel;
+    stTarget1.fDecel := fAccel;
+    stTarget1.bMoveOk := TRUE;
+
+    stTarget2.sName := 'TARGET2';
+    stTarget2.fVelocity := fInVelocity;
+    stTarget2.fDelta := fInDelta;
+    stTarget2.fAccel := fAccel;
+    stTarget2.fDecel := fAccel;
+    stTarget2.bMoveOk := TRUE;
+
+    stTarget3.sName := 'TARGET3';
+    stTarget3.fVelocity := fInVelocity;
+    stTarget3.fDelta := fInDelta;
+    stTarget3.fAccel := fAccel;
+    stTarget3.fDecel := fAccel;
+    stTarget3.bMoveOk := TRUE;
+
+    stTarget4.sName := 'TARGET4';
+    stTarget4.fVelocity := fInVelocity;
+    stTarget4.fDelta := fInDelta;
+    stTarget4.fAccel := fAccel;
+    stTarget4.fDecel := fAccel;
+    stTarget4.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stTarget1;
+    arrStates[3] := stTarget2;
+    arrStates[4] := stTarget3;
+    arrStates[5] := stTarget4;
 END_IF
 
-fbLockOut(stPositionState := arrStates[1]);
-fbLockTarget1(stPositionState := arrStates[2]);
-fbLockTarget2(stPositionState := arrStates[3]);
-fbLockTarget3(stPositionState := arrStates[4]);
-fbLockTarget4(stPositionState := arrStates[4]);
-
-fbStateManager(
-    stMotionStage := stMotionStage,
-    arrStates := arrStates,
-    setState := enumSet,
-    bEnable := bEnable,
-    bError => bError,
-    sErrorMessage => sErrorMessage,
-    bBusy => bBusy,
-    bDone => bDone,
-    getState => enumGet);
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;
 
 END_FUNCTION_BLOCK
 ```
@@ -1182,17 +1172,23 @@ VAR_IN_OUT
     stFocusStage: DUT_MotionStage;
     stEl6In: EL6inData22b;
     stEl6Out: EL6OutData22b;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
     {attribute 'pytmc' := '
         pv: CLZ:LOCK
         io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
     '}
     bZoomLock: BOOL;
 
     {attribute 'pytmc' := '
         pv: CLF:LOCK
         io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
     '}
     bFocusLock: BOOL;
 
@@ -1201,10 +1197,12 @@ VAR_INPUT
     bFocusEndFwd AT %I*: BOOL;
     bFocusEndBwd AT %I*: BOOL;
 
-    fYag: LREAL;
-    fDiamond: LREAL;
-    fReticle: LREAL;
-    fOut: LREAL;
+    stOut: DUT_PositionState;
+    stYag: DUT_PositionState;
+    stDiamond: DUT_PositionState;
+    stReticle: DUT_PositionState;
+
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -1237,39 +1235,51 @@ VAR
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
-// All stages have no STO, but there is a user lock on the lens
+fbYStage(stMotionStage:=stYStage);
 stYStage.bHardwareEnable := TRUE;
-stZoomStage.bHardwareEnable := NOT bZoomLock;
-stFocusStage.bHardwareEnable := NOT bFocusLock;
-
-// No PMPS yet
-stYStage.bPowerSelf := TRUE;
-stZoomStage.bPowerSelf := TRUE;
-stFocusStage.bPowerSelf := TRUE;
-
+stYStage.bPowerSelf := FALSE;
 // No limit switch at the bottom
 stYStage.bLimitBackwardEnable := TRUE;
 
-// Lens limits are normally open
+// Extra lock on lens + lens limits are normally open
+fbZoom(stMotionStage:=stZoomStage);
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stZoomStage.bPowerSelf := TRUE;
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+
+fbFocus(stMotionStage:=stFocusStage);
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+stFocusStage.bPowerSelf := TRUE;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
-
-// Home Lens to LLS
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
 
-fbYStage(stMotionStage:=stYStage);
-fbZoom(stMotionStage:=stZoomStage);
-fbFocus(stMotionStage:=stFocusStage);
+// Set special error message for lens lock
+IF stZoomStage.bExecute AND bZoomLock THEN
+    IF NOT stZoomStage.bError THEN
+        stZoomStage.bError := TRUE;
+    END_IF
+    stZoomStage.sCustomErrorMessage := 'Zoom lens is locked!';
+END_IF
+IF stFocusStage.bExecute AND bFocusLock THEN
+    IF NOT stFocusStage.bError THEN
+        stFocusStage.bError := TRUE;
+    END_IF
+    stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
+END_IF
 
 fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
     stMotionStage:=stYStage,
-    fYag:=fYag,
-    fDiamond:=fDiamond,
-    fReticle:=fReticle,
-    fOut:=fOut);
+    bEnable:=TRUE,
+    stOut:=stOut,
+    stYag:=stYag,
+    stDiamond:=stDiamond,
+    stReticle:=stReticle);
 
 fbFilterWheel(
     bExecute:=TRUE,
@@ -1540,28 +1550,22 @@ POU: FB_XPIM_States
 File: Library/Devices/XPIM/FB_XPIM_States.TcPOU
 
 ```vhdl
-FUNCTION_BLOCK FB_XPIM_States
-VAR_IN_OUT
-    stMotionStage: DUT_MotionStage;
-END_VAR
+FUNCTION_BLOCK FB_XPIM_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT
-    bEnable: BOOL;
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     enumSet: ENUM_XPIM_states;
+
+    stOut: DUT_PositionState;
+    stYag: DUT_PositionState;
+    stDiamond: DUT_PositionState;
+    stReticle: DUT_PositionState;
+
     bStatesLock: BOOL;
-    fOut: LREAL;
-    fYag: LREAL;
-    fDiamond: LREAL;
-    fReticle: LREAL;
 END_VAR
 VAR_OUTPUT
-    bError: BOOL;
-    sErrorMessage: STRING;
-    bBusy: BOOL;
-    bDone: BOOL;
     {attribute 'pytmc' := '
         pv: GET
         io: i
@@ -1569,69 +1573,57 @@ VAR_OUTPUT
     enumGet: ENUM_XPIM_States;
 END_VAR
 VAR
-    bInit: BOOL;
-    arrStates: ARRAY[1..15] OF DUT_PositionState;
-    nIter: INT;
-
-    {attribute 'pytmc' := '
-        pv:
-        io: io
-    '}
-    fbStateManager: FB_PositionStateManager;
-
-    fbLockOut: FB_PositionStateLock;
-    fbLockYag: FB_PositionStateLock;
-    fbLockDiamond: FB_PositionStateLock;
-    fbLockReticle: FB_PositionStateLock;
+    bXPIMInit: BOOL;
 END_VAR
 VAR CONSTANT
-    fInDelta: LREAL := 0.1;
-    fOutDelta: LREAL := 10;
-    fInVelocity: LREAL := 20;
-    fOutVelocity: LREAL := 20;
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
-IF NOT bInit THEN
-    bInit := TRUE;
-    FOR nIter := 1 TO 4 DO
-        arrStates[nIter].fDelta := fInDelta;
-        arrStates[nIter].fVelocity := fInVelocity;
-        arrStates[nIter].fAccel := fAccel;
-        arrStates[nIter].fDecel := fAccel;
-        arrStates[nIter].bLocked := bStatesLock;
-        arrStates[nIter].bValid := TRUE;
-        // TODO implement PMPS instead of doing this
-        arrStates[nIter].bMoveOk := TRUE;
-    END_FOR
-    arrStates[1].sName := 'Out';
-    arrStates[1].fPosition := fOut;
-    arrStates[1].fDelta := fOutDelta;
-    arrStates[1].fVelocity := fOutVelocity;
-    arrStates[1].fDecel := fOutDecel;
-    arrStates[2].sName := 'Yag';
-    arrStates[2].fPosition := fYag;
-    arrStates[3].sName := 'Diamond';
-    arrStates[3].fPosition := fDiamond;
-    arrStates[4].sName := 'Reticle';
-    arrStates[4].fPosition := fReticle;
+IF NOT bXPIMInit THEN
+    bXPIMInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stYag.sName := 'YAG';
+    stYag.fVelocity := fInVelocity;
+    stYag.fDelta := fInDelta;
+    stYag.fAccel := fAccel;
+    stYag.fDecel := fAccel;
+    stYag.bMoveOk := TRUE;
+
+    stDiamond.sName := 'DIAMOND';
+    stDiamond.fVelocity := fInVelocity;
+    stDiamond.fDelta := fInDelta;
+    stDiamond.fAccel := fAccel;
+    stDiamond.fDecel := fAccel;
+    stDiamond.bMoveOk := TRUE;
+
+    stReticle.sName := 'RETICLE';
+    stReticle.fVelocity := fInVelocity;
+    stReticle.fDelta := fInDelta;
+    stReticle.fAccel := fAccel;
+    stReticle.fDecel := fAccel;
+    stReticle.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stYag;
+    arrStates[3] := stDiamond;
+    arrStates[4] := stReticle;
 END_IF
 
-fbLockOut(stPositionState := arrStates[1]);
-fbLockYag(stPositionState := arrStates[2]);
-fbLockDiamond(stPositionState := arrStates[3]);
-fbLockReticle(stPositionState := arrStates[4]);
-
-fbStateManager(
-    stMotionStage := stMotionStage,
-    arrStates := arrStates,
-    setState := enumSet,
-    bEnable := bEnable,
-    bError => bError,
-    sErrorMessage => sErrorMessage,
-    bBusy => bBusy,
-    bDone => bDone,
-    getState => enumGet);
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;
 
 END_FUNCTION_BLOCK
 ```
@@ -1675,7 +1667,7 @@ Links
 Pragma lint results
 -------------------
 ```
-INFO:pytmc.bin.pragmalint:Total pragmas found: 88 Total linter errors: 0
+INFO:pytmc.bin.pragmalint:Total pragmas found: 85 Total linter errors: 0
 PLC Project (1): Library
 ========================
 
@@ -1707,7 +1699,7 @@ Devices/PPM/FB_PPM_PowerMeter.TcPOU (TcPlcObject)
 Devices/PPM/FB_PPM_States.TcPOU (TcPlcObject)
 ---------------------------------------------
 
-    - FB_PPM_States: Declaration - 3 pragmas
+    - FB_PPM_States: Declaration - 2 pragmas
 
 
 Devices/REF/FB_REF.TcPOU (TcPlcObject)
@@ -1743,7 +1735,7 @@ Devices/WFS/FB_WFS.TcPOU (TcPlcObject)
 Devices/WFS/FB_WFS_States.TcPOU (TcPlcObject)
 ---------------------------------------------
 
-    - FB_WFS_States: Declaration - 3 pragmas
+    - FB_WFS_States: Declaration - 2 pragmas
 
 
 Devices/XPIM/ENUM_XPIM_Filters.TcDUT (TcPlcObject)
@@ -1785,7 +1777,7 @@ Devices/XPIM/FB_XPIM_Opal.TcPOU (TcPlcObject)
 Devices/XPIM/FB_XPIM_States.TcPOU (TcPlcObject)
 -----------------------------------------------
 
-    - FB_XPIM_States: Declaration - 3 pragmas
+    - FB_XPIM_States: Declaration - 2 pragmas
 
 
 POUs/FB_L2SI_Flowmeter.TcPOU (TcPlcObject)
