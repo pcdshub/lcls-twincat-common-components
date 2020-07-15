@@ -74,7 +74,7 @@ END_VAR
     stTarget4.fAccel := fAccel;
     stTarget4.fDecel := fAccel;
     stTarget4.bMoveOk := TRUE;
-    
+
     arrStates[1] := stOut;
     arrStates[2] := stTarget1;
     arrStates[3] := stTarget2;
