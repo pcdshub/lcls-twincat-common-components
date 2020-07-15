@@ -6,9 +6,9 @@ TYPE ENUM_PPM_States :
 (
     Unknown := 0,
     OUT := 1,
-    PowerMeter := 2,
-    PolishedYag := 3,
-    FrostedYag := 4
+    POWERMETER := 2,
+    YAG1 := 3,
+    YAG2 := 4
 );
 END_TYPE]]></Declaration>
   </DUT>

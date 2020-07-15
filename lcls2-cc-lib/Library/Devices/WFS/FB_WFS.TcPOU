@@ -5,13 +5,16 @@
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
     stZStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fOut: LREAL;
-    fTarget1: LREAL;
-    fTarget2: LREAL;
-    fTarget3: LREAL;
-    fTarget4: LREAL;
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -38,23 +41,29 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-fbZStage(stMotionStage:=stZStage);
-fbStates(
-    stMotionStage:=stYStage,
-    bEnable := TRUE,
-    fOut:=fOut,
-    fTarget1:=fTarget1,
-    fTarget2:=fTarget2,
-    fTarget3:=fTarget3,
-    fTarget4:=fTarget4);
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
 stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbZStage(stMotionStage:=stZStage);
 stZStage.bLimitForwardEnable := TRUE;
 stZStage.bLimitBackwardEnable := TRUE;
 stZStage.bHardwareEnable := TRUE;
 stZStage.bPowerSelf := TRUE;
 stZStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    stOut:=stOut,
+    stTarget1:=stTarget1,
+    stTarget2:=stTarget2,
+    stTarget3:=stTarget3,
+    stTarget4:=stTarget4);
+
 fbThermoCouple1();
 fbThermoCouple2();]]></ST>
     </Implementation>

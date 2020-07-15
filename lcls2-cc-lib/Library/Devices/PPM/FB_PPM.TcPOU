@@ -4,12 +4,15 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
-    fOut: LREAL;
-    fPower: LREAL;
-    fPolished: LREAL;
-    fFrosted: LREAL;
+    stOut: DUT_PositionState;
+    stPower: DUT_PositionState;
+    stYag1: DUT_PositionState;
+    stYag2: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -43,16 +46,21 @@ VAR
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-fbStates(
-    stMotionStage:=stYStage,
-    bEnable := TRUE,
-    fOut:=fOut,
-    fPower:=fPower,
-    fPolished:=fPolished,
-    fFrosted:=fFrosted);
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
 stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    stMotionStage:=stYStage,
+    bEnable:=TRUE,
+    stOut:=stOut,
+    stPower:=stPower,
+    stYag1:=stYag1,
+    stYag2:=stYag2);
+
 fbPowerMeter();
 fbGige();
 fbFlowMeter();

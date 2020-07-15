@@ -1,28 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_XPIM_States" Id="{8c4640db-3bb7-4671-b4ea-e9d46c4b8221}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_States
-VAR_IN_OUT
-    stMotionStage: DUT_MotionStage;
-END_VAR
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT
-    bEnable: BOOL;
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     enumSet: ENUM_XPIM_states;
+
+    stOut: DUT_PositionState;
+    stYag: DUT_PositionState;
+    stDiamond: DUT_PositionState;
+    stReticle: DUT_PositionState;
+
     bStatesLock: BOOL;
-    fOut: LREAL;
-    fYag: LREAL;
-    fDiamond: LREAL;
-    fReticle: LREAL;
 END_VAR
 VAR_OUTPUT
-    bError: BOOL;
-    sErrorMessage: STRING;
-    bBusy: BOOL;
-    bDone: BOOL;
     {attribute 'pytmc' := '
         pv: GET
         io: i
@@ -30,71 +24,59 @@ VAR_OUTPUT
     enumGet: ENUM_XPIM_States;
 END_VAR
 VAR
-    bInit: BOOL;
-    arrStates: ARRAY[1..15] OF DUT_PositionState;
-    nIter: INT;
-
-    {attribute 'pytmc' := '
-        pv:
-        io: io
-    '}
-    fbStateManager: FB_PositionStateManager;
-
-    fbLockOut: FB_PositionStateLock;
-    fbLockYag: FB_PositionStateLock;
-    fbLockDiamond: FB_PositionStateLock;
-    fbLockReticle: FB_PositionStateLock;
+    bXPIMInit: BOOL;
 END_VAR
 VAR CONSTANT
-    fInDelta: LREAL := 0.1;
-    fOutDelta: LREAL := 10;
-    fInVelocity: LREAL := 20;
-    fOutVelocity: LREAL := 20;
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT bInit THEN
-    bInit := TRUE;
-    FOR nIter := 1 TO 4 DO
-        arrStates[nIter].fDelta := fInDelta;
-        arrStates[nIter].fVelocity := fInVelocity;
-        arrStates[nIter].fAccel := fAccel;
-        arrStates[nIter].fDecel := fAccel;
-        arrStates[nIter].bLocked := bStatesLock;
-        arrStates[nIter].bValid := TRUE;
-        // TODO implement PMPS instead of doing this
-        arrStates[nIter].bMoveOk := TRUE;
-    END_FOR
-    arrStates[1].sName := 'Out';
-    arrStates[1].fPosition := fOut;
-    arrStates[1].fDelta := fOutDelta;
-    arrStates[1].fVelocity := fOutVelocity;
-    arrStates[1].fDecel := fOutDecel;
-    arrStates[2].sName := 'Yag';
-    arrStates[2].fPosition := fYag;
-    arrStates[3].sName := 'Diamond';
-    arrStates[3].fPosition := fDiamond;
-    arrStates[4].sName := 'Reticle';
-    arrStates[4].fPosition := fReticle;
+      <ST><![CDATA[IF NOT bXPIMInit THEN
+    bXPIMInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stYag.sName := 'YAG';
+    stYag.fVelocity := fInVelocity;
+    stYag.fDelta := fInDelta;
+    stYag.fAccel := fAccel;
+    stYag.fDecel := fAccel;
+    stYag.bMoveOk := TRUE;
+
+    stDiamond.sName := 'DIAMOND';
+    stDiamond.fVelocity := fInVelocity;
+    stDiamond.fDelta := fInDelta;
+    stDiamond.fAccel := fAccel;
+    stDiamond.fDecel := fAccel;
+    stDiamond.bMoveOk := TRUE;
+
+    stReticle.sName := 'RETICLE';
+    stReticle.fVelocity := fInVelocity;
+    stReticle.fDelta := fInDelta;
+    stReticle.fAccel := fAccel;
+    stReticle.fDecel := fAccel;
+    stReticle.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stYag;
+    arrStates[3] := stDiamond;
+    arrStates[4] := stReticle;
 END_IF
 
-fbLockOut(stPositionState := arrStates[1]);
-fbLockYag(stPositionState := arrStates[2]);
-fbLockDiamond(stPositionState := arrStates[3]);
-fbLockReticle(stPositionState := arrStates[4]);
-
-fbStateManager(
-    stMotionStage := stMotionStage,
-    arrStates := arrStates,
-    setState := enumSet,
-    bEnable := bEnable,
-    bError => bError,
-    sErrorMessage => sErrorMessage,
-    bBusy => bBusy,
-    bDone => bDone,
-    getState => enumGet);]]></ST>
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

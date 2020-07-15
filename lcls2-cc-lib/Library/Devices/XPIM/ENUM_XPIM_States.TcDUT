@@ -6,9 +6,9 @@ TYPE ENUM_XPIM_States :
 (
     Unknown := 0,
     OUT := 1,
-    Yag := 2,
-    Diamond := 3,
-    Reticle := 4
+    YAG := 2,
+    DIAMOND := 3,
+    RETICLE := 4
 );
 END_TYPE
 ]]></Declaration>
