@@ -194,6 +194,7 @@ VAR_INPUT
     stYag1: DUT_PositionState;
     stYag2: DUT_PositionState;
     nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -234,6 +235,7 @@ fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
     nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     bEnable:=TRUE,
     stOut:=stOut,
@@ -516,6 +518,7 @@ VAR_INPUT
     stIn: DUT_PositionState;
     stOut: DUT_PositionState;
     nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -566,6 +569,7 @@ fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
     nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     bEnable:=TRUE,
     stOut := stOut,
@@ -1011,6 +1015,7 @@ VAR_INPUT
     stTarget3: DUT_PositionState;
     stTarget4: DUT_PositionState;
     nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -1050,6 +1055,7 @@ fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
     nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     bEnable := TRUE,
     stOut:=stOut,
@@ -1203,6 +1209,7 @@ VAR_INPUT
     stReticle: DUT_PositionState;
 
     nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -1274,6 +1281,7 @@ fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
     nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     bEnable:=TRUE,
     stOut:=stOut,
