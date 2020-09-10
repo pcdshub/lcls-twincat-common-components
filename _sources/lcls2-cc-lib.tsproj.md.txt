@@ -87,7 +87,8 @@ TYPE ENUM_WFS_States :
     TARGET1 := 2,
     TARGET2 := 3,
     TARGET3 := 4,
-    TARGET4 := 5
+    TARGET4 := 5,
+    TARGET5 := 6
 );
 END_TYPE
 ```
@@ -1014,6 +1015,7 @@ VAR_INPUT
     stTarget2: DUT_PositionState;
     stTarget3: DUT_PositionState;
     stTarget4: DUT_PositionState;
+    stTarget5: DUT_PositionState;
     nTransitionAssertionID: UDINT;
     nUnknownAssertionID: UDINT;
 END_VAR
@@ -1062,7 +1064,8 @@ fbStates(
     stTarget1:=stTarget1,
     stTarget2:=stTarget2,
     stTarget3:=stTarget3,
-    stTarget4:=stTarget4);
+    stTarget4:=stTarget4,
+    stTarget5:=stTarget5);
 
 fbThermoCouple1();
 fbThermoCouple2();
@@ -1090,6 +1093,7 @@ VAR_INPUT
     stTarget2: DUT_PositionState;
     stTarget3: DUT_PositionState;
     stTarget4: DUT_PositionState;
+    stTarget5: DUT_PositionState;
 
     bStatesLock: BOOL;
 END_VAR
@@ -1149,11 +1153,19 @@ IF NOT bWFSInit THEN
     stTarget4.fDecel := fAccel;
     stTarget4.bMoveOk := TRUE;
 
+    stTarget5.sName := 'TARGET5';
+    stTarget5.fVelocity := fInVelocity;
+    stTarget5.fDelta := fInDelta;
+    stTarget5.fAccel := fAccel;
+    stTarget5.fDecel := fAccel;
+    stTarget5.bMoveOk := TRUE;
+
     arrStates[1] := stOut;
     arrStates[2] := stTarget1;
     arrStates[3] := stTarget2;
     arrStates[4] := stTarget3;
     arrStates[5] := stTarget4;
+    arrStates[6] := stTarget5;
 END_IF
 
 setState := enumSet;
