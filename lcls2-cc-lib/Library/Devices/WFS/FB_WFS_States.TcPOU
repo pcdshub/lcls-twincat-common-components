@@ -14,6 +14,7 @@ VAR_INPUT
     stTarget2: DUT_PositionState;
     stTarget3: DUT_PositionState;
     stTarget4: DUT_PositionState;
+    stTarget5: DUT_PositionState;
 
     bStatesLock: BOOL;
 END_VAR
@@ -75,11 +76,19 @@ END_VAR
     stTarget4.fDecel := fAccel;
     stTarget4.bMoveOk := TRUE;
 
+    stTarget5.sName := 'TARGET5';
+    stTarget5.fVelocity := fInVelocity;
+    stTarget5.fDelta := fInDelta;
+    stTarget5.fAccel := fAccel;
+    stTarget5.fDecel := fAccel;
+    stTarget5.bMoveOk := TRUE;
+
     arrStates[1] := stOut;
     arrStates[2] := stTarget1;
     arrStates[3] := stTarget2;
     arrStates[4] := stTarget3;
     arrStates[5] := stTarget4;
+    arrStates[6] := stTarget5;
 END_IF
 
 setState := enumSet;

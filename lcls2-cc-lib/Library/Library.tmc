@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TcModuleClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2009/05/TcModuleClass" Hash="{3C3EEFEE-2F12-F011-A43B-1B46D8CD33C1}" GeneratedBy="TwinCAT XAE Plc">
+<TcModuleClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2009/05/TcModuleClass" Hash="{4E92CB83-FD1C-0678-8AE5-9153415A8D01}" GeneratedBy="TwinCAT XAE Plc">
   <DataTypes>
     <DataType>
       <Name GUID="{18071995-0000-0000-0000-000000000041}" TcBaseType="true" HideSubItems="true" CName="AmsNetId">AMSNETID</Name>
@@ -153,6 +153,11 @@
         <Enum>5</Enum>
         <Comment>Sample delivery system</Comment>
       </EnumInfo>
+      <EnumInfo>
+        <Text>OPTICS</Text>
+        <Enum>6</Enum>
+        <Comment>Optics control system</Comment>
+      </EnumInfo>
     </DataType>
     <DataType>
       <Name Namespace="LCLS_General.Tc3_EventLogger">I_ArgumentsChangeListener</Name>
@@ -215,31 +220,31 @@
         <Name>bBusy</Name>
         <Type>BOOL</Type>
         <BitSize>8</BitSize>
-        <GetCodeOffs>1156400</GetCodeOffs>
+        <GetCodeOffs>1141240</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>bError</Name>
         <Type>BOOL</Type>
         <BitSize>8</BitSize>
-        <GetCodeOffs>1156464</GetCodeOffs>
+        <GetCodeOffs>1141304</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>hrErrorCode</Name>
         <Type GUID="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
         <BitSize>32</BitSize>
-        <GetCodeOffs>1156480</GetCodeOffs>
+        <GetCodeOffs>1141320</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>nStringSize</Name>
         <Type>UDINT</Type>
         <BitSize>32</BitSize>
-        <GetCodeOffs>1156448</GetCodeOffs>
+        <GetCodeOffs>1141288</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>sResult</Name>
         <Type>STRING(255)</Type>
         <BitSize>2048</BitSize>
-        <GetCodeOffs>1156472</GetCodeOffs>
+        <GetCodeOffs>1141312</GetCodeOffs>
       </PropertyItem>
       <Method>
         <Name RpcEnable="plc" VTableIndex="0">__getbBusy</Name>
@@ -1410,15 +1415,15 @@
         <Name>nId</Name>
         <Type>UDINT</Type>
         <BitSize>32</BitSize>
-        <GetCodeOffs>1156280</GetCodeOffs>
-        <SetCodeOffs>1156328</SetCodeOffs>
+        <GetCodeOffs>1141120</GetCodeOffs>
+        <SetCodeOffs>1141168</SetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>sName</Name>
         <Type>STRING(255)</Type>
         <BitSize>2048</BitSize>
-        <GetCodeOffs>1156360</GetCodeOffs>
-        <SetCodeOffs>1156384</SetCodeOffs>
+        <GetCodeOffs>1141200</GetCodeOffs>
+        <SetCodeOffs>1141224</SetCodeOffs>
       </PropertyItem>
       <Method>
         <Name RpcEnable="plc" VTableIndex="9">__setbCutInstancePathByLastInst</Name>
@@ -1681,31 +1686,31 @@
         <Name>eSeverity</Name>
         <Type GUID="{B57D3F4A-0836-49B0-81C3-BED5F4817EC9}">TcEventSeverity</Type>
         <BitSize>16</BitSize>
-        <GetCodeOffs>1156576</GetCodeOffs>
+        <GetCodeOffs>1141416</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>ipSourceInfo</Name>
         <Type Namespace="LCLS_General.Tc3_EventLogger">I_TcSourceInfo</Type>
         <BitSize>64</BitSize>
-        <GetCodeOffs>1156536</GetCodeOffs>
+        <GetCodeOffs>1141376</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>nEventId</Name>
         <Type>UDINT</Type>
         <BitSize>32</BitSize>
-        <GetCodeOffs>1156704</GetCodeOffs>
+        <GetCodeOffs>1141544</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>sEventClassName</Name>
         <Type>STRING(255)</Type>
         <BitSize>2048</BitSize>
-        <GetCodeOffs>1156624</GetCodeOffs>
+        <GetCodeOffs>1141464</GetCodeOffs>
       </PropertyItem>
       <PropertyItem>
         <Name>sEventText</Name>
         <Type>STRING(255)</Type>
         <BitSize>2048</BitSize>
-        <GetCodeOffs>1156712</GetCodeOffs>
+        <GetCodeOffs>1141552</GetCodeOffs>
       </PropertyItem>
       <Method>
         <Name>EqualsToEventClass</Name>
@@ -2269,7 +2274,7 @@
         <Name>nTimeSent</Name>
         <Type>ULINT</Type>
         <BitSize>64</BitSize>
-        <GetCodeOffs>1156760</GetCodeOffs>
+        <GetCodeOffs>1141600</GetCodeOffs>
       </PropertyItem>
       <Method>
         <Name>SetJsonAttribute</Name>
@@ -2445,8 +2450,117 @@
       </Properties>
     </DataType>
     <DataType>
+      <Name Namespace="Tc2_Standard">F_TRIG</Name>
+      <Comment>
+	Falling Edge detection.
+</Comment>
+      <BitSize>96</BitSize>
+      <SubItem>
+        <Name>CLK</Name>
+        <Type>BOOL</Type>
+        <Comment> signal to detect </Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>64</BitOffs>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>Q</Name>
+        <Type>BOOL</Type>
+        <Comment> falling edge at signal detected </Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>72</BitOffs>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Output</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>M</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>80</BitOffs>
+        <Default>
+          <Value>1</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>conditionalshow</Name>
+          </Property>
+        </Properties>
+      </SubItem>
+      <Properties>
+        <Property>
+          <Name>PouType</Name>
+          <Value>FunctionBlock</Value>
+        </Property>
+        <Property>
+          <Name>conditionalshow_all_locals</Name>
+        </Property>
+      </Properties>
+    </DataType>
+    <DataType>
+      <Name Namespace="Tc2_Standard">R_TRIG</Name>
+      <Comment>
+	Rising Edge detection.
+</Comment>
+      <BitSize>96</BitSize>
+      <SubItem>
+        <Name>CLK</Name>
+        <Type>BOOL</Type>
+        <Comment> Signal to detect </Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>64</BitOffs>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>Q</Name>
+        <Type>BOOL</Type>
+        <Comment> rising edge at signal detected </Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>72</BitOffs>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Output</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>M</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>80</BitOffs>
+        <Properties>
+          <Property>
+            <Name>conditionalshow</Name>
+          </Property>
+        </Properties>
+      </SubItem>
+      <Properties>
+        <Property>
+          <Name>PouType</Name>
+          <Value>FunctionBlock</Value>
+        </Property>
+        <Property>
+          <Name>conditionalshow_all_locals</Name>
+        </Property>
+      </Properties>
+    </DataType>
+    <DataType>
       <Name Namespace="LCLS_General">FB_LogMessage</Name>
-      <BitSize>129472</BitSize>
+      <BitSize>130240</BitSize>
       <SubItem>
         <Name>sMsg</Name>
         <Type Namespace="LCLS_General.Tc2_System">T_MaxString</Type>
@@ -2505,10 +2619,90 @@
         </Properties>
       </SubItem>
       <SubItem>
+        <Name>nMinTimeViolationAcceptable</Name>
+        <Type>INT</Type>
+        <Comment> How many times the min. time can be violated before the CB trips</Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>58160</BitOffs>
+        <Default>
+          <Value>5</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nLocalTripThreshold</Name>
+        <Type>TIME</Type>
+        <Comment> Minimum time between calls allowed, pairs with nMinTimeViolationAcceptable</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>58176</BitOffs>
+        <Default>
+          <Value>1</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nTrickleTripThreshold</Name>
+        <Type>TIME</Type>
+        <Comment> Trickle trip, activated by global threshold, should be &gt;&gt; LocalTripThreshold</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>58208</BitOffs>
+        <Default>
+          <Value>100</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nTripResetPeriod</Name>
+        <Type>TIME</Type>
+        <Comment> Time for auto-reset</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>58240</BitOffs>
+        <Default>
+          <Value>600000</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bEnableAutoReset</Name>
+        <Type>BOOL</Type>
+        <Comment>Enable circuit breaker auto-reset (true by default)</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>58272</BitOffs>
+        <Default>
+          <Value>1</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Input</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
         <Name>bInitialized</Name>
         <Type>BOOL</Type>
         <BitSize>8</BitSize>
-        <BitOffs>58152</BitOffs>
+        <BitOffs>58280</BitOffs>
         <Default>
           <Value>0</Value>
         </Default>
@@ -2517,7 +2711,7 @@
         <Name>bInitFailed</Name>
         <Type>BOOL</Type>
         <BitSize>8</BitSize>
-        <BitOffs>58160</BitOffs>
+        <BitOffs>58288</BitOffs>
         <Default>
           <Value>0</Value>
         </Default>
@@ -2526,13 +2720,13 @@
         <Name>sSubsystemSource</Name>
         <Type>STRING(80)</Type>
         <BitSize>648</BitSize>
-        <BitOffs>58168</BitOffs>
+        <BitOffs>58296</BitOffs>
       </SubItem>
       <SubItem>
         <Name>fbMessage</Name>
         <Type Namespace="LCLS_General.Tc3_EventLogger" ReferenceTo="true">FB_TcMessage</Type>
         <BitSize>64</BitSize>
-        <BitOffs>58816</BitOffs>
+        <BitOffs>58944</BitOffs>
       </SubItem>
       <SubItem>
         <Name>fbMessages</Name>
@@ -2542,46 +2736,55 @@
           <Elements>5</Elements>
         </ArrayInfo>
         <BitSize>61440</BitSize>
-        <BitOffs>58880</BitOffs>
+        <BitOffs>59008</BitOffs>
       </SubItem>
       <SubItem>
         <Name>fbSource</Name>
         <Type Namespace="LCLS_General.Tc3_EventLogger">FB_TcSourceInfo</Type>
         <BitSize>6912</BitSize>
-        <BitOffs>120320</BitOffs>
+        <BitOffs>120448</BitOffs>
       </SubItem>
       <SubItem>
         <Name>ipResultMessage</Name>
         <Type Namespace="LCLS_General.Tc3_EventLogger">I_TcMessage</Type>
         <BitSize>64</BitSize>
-        <BitOffs>127232</BitOffs>
+        <BitOffs>127360</BitOffs>
       </SubItem>
       <SubItem>
         <Name>hr</Name>
         <Type GUID="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
         <BitSize>32</BitSize>
-        <BitOffs>127296</BitOffs>
+        <BitOffs>127424</BitOffs>
       </SubItem>
       <SubItem>
         <Name>hrLastInternalError</Name>
         <Type GUID="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
         <BitSize>32</BitSize>
-        <BitOffs>127328</BitOffs>
+        <BitOffs>127456</BitOffs>
       </SubItem>
       <SubItem>
         <Name>eTraceLevel</Name>
         <Type GUID="{B57D3F4A-0836-49B0-81C3-BED5F4817EC9}">TcEventSeverity</Type>
         <BitSize>16</BitSize>
-        <BitOffs>127360</BitOffs>
+        <BitOffs>127488</BitOffs>
         <Default>
           <Value>0</Value>
+        </Default>
+      </SubItem>
+      <SubItem>
+        <Name>bFirstCall</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>127504</BitOffs>
+        <Default>
+          <Value>1</Value>
         </Default>
       </SubItem>
       <SubItem>
         <Name>sPath</Name>
         <Type Namespace="LCLS_General.Tc2_System">T_MaxString</Type>
         <BitSize>2048</BitSize>
-        <BitOffs>127376</BitOffs>
+        <BitOffs>127512</BitOffs>
         <Properties>
           <Property>
             <Name>instance-path</Name>
@@ -2591,6 +2794,109 @@
           </Property>
         </Properties>
       </SubItem>
+      <SubItem>
+        <Name>nTotalEvents</Name>
+        <Type>UINT</Type>
+        <Comment>////////////////////////////</Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>129568</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>nTimesViolated</Name>
+        <Type>INT</Type>
+        <BitSize>16</BitSize>
+        <BitOffs>129584</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>LastCallTime</Name>
+        <Type>ULINT</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>129600</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>CurrentCallTime</Name>
+        <Type>ULINT</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>129664</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>DeltaSinceLastCall</Name>
+        <Type>ULINT</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>129728</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>WhenTripsCleared</Name>
+        <Type>ULINT</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>129792</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>ftTrippedReleased</Name>
+        <Type Namespace="Tc2_Standard">F_TRIG</Type>
+        <BitSize>96</BitSize>
+        <BitOffs>129856</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>bLocalTrickleTripped</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>129952</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>bLocalTripped</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>129960</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>bTripped</Name>
+        <Type>BOOL</Type>
+        <Comment> Won't emit messages if true</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>129968</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+            pv: Tripped
+            io: i
+            field: DESC Log message FB tripped
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bResetBreaker</Name>
+        <Type>BOOL</Type>
+        <BitSize>8</BitSize>
+        <BitOffs>129976</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+            pv: Reset
+            io: o
+            field: DESC Rising-edge reset of trip
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>rtResetBreaker</Name>
+        <Type Namespace="Tc2_Standard">R_TRIG</Type>
+        <BitSize>96</BitSize>
+        <BitOffs>129984</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>rtTripped</Name>
+        <Type Namespace="Tc2_Standard">R_TRIG</Type>
+        <BitSize>96</BitSize>
+        <BitOffs>130112</BitOffs>
+      </SubItem>
+      <Action>
+        <Name>CircuitBreaker</Name>
+      </Action>
       <Properties>
         <Property>
           <Name>PouType</Name>
@@ -3065,483 +3371,7 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name GUID="{D01709AA-9B4A-464A-B4D1-4BF476CFE7DE}">ST_PMPS_Attenuator_IO</Name>
-      <BitSize>32</BitSize>
-      <SubItem>
-        <Name>nTran</Name>
-        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
-        <BitSize>16</BitSize>
-        <BitOffs>0</BitOffs>
-      </SubItem>
-      <SubItem>
-        <Name>xAttOK</Name>
-        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
-        <BitSize>16</BitSize>
-        <BitOffs>16</BitOffs>
-      </SubItem>
-      <Hides>
-        <Hide GUID="{76269EAC-36F0-4513-B811-3725FD02409A}"/>
-        <Hide GUID="{E96BEA56-6301-4A6A-BF6A-F08340C87594}"/>
-        <Hide GUID="{FE32F9A9-7E7A-413D-8D77-0C99C34D8CD9}"/>
-      </Hides>
-    </DataType>
-    <DataType>
-      <Name Namespace="PMPS">ST_PMPS_Attenuator</Name>
-      <BitSize>32</BitSize>
-      <ExtendsType GUID="{D01709AA-9B4A-464A-B4D1-4BF476CFE7DE}">ST_PMPS_Attenuator_IO</ExtendsType>
-    </DataType>
-    <DataType>
-      <Name GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Name>
-      <BitSize>96</BitSize>
-      <SubItem>
-        <Name>Width</Name>
-        <Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
-        <Comment> distance between horizontal slits (x)</Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>0</BitOffs>
-        <Properties>
-          <Property>
-            <Name>plcAttribute_pytmc</Name>
-            <Value>pv: Width
-            io: i
-            field: EGU mm</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>Height</Name>
-        <Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
-        <Comment> distance between vertical slits (y)</Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>32</BitOffs>
-        <Properties>
-          <Property>
-            <Name>plcAttribute_pytmc</Name>
-            <Value>pv: Height
-            io: i
-            field: EGU mm</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>xOK</Name>
-        <Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
-        <Comment> status of aperture, false if error or in motion</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>64</BitOffs>
-        <Properties>
-          <Property>
-            <Name>plcAttribute_pytmc</Name>
-            <Value>pv: OK
-        io: i</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-    </DataType>
-    <DataType>
-      <Name Namespace="PMPS">ST_PMPS_Aperture</Name>
-      <BitSize>96</BitSize>
-      <ExtendsType GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</ExtendsType>
-    </DataType>
-    <DataType>
-      <Name Namespace="PMPS">ST_BeamParams</Name>
-      <BitSize>1216</BitSize>
-      <SubItem>
-        <Name>nTran</Name>
-        <Type>UINT</Type>
-        <Comment>  Requested pre-optic attenuation %  </Comment>
-        <BitSize>16</BitSize>
-        <BitOffs>0</BitOffs>
-        <Default>
-          <Value>100</Value>
-        </Default>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: Transmission
-            io: i
-            field: EGU %
-        </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>nRate</Name>
-        <Type>UDINT</Type>
-        <Comment> Pulse-rate </Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>32</BitOffs>
-        <Default>
-          <Value>120</Value>
-        </Default>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: Rate
-            io: i
-            field: EGU Hz
-        </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fPP_mJ</Name>
-        <Type>REAL</Type>
-        <Comment> Per pulse max energy (mJ) </Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>64</BitOffs>
-        <Default>
-          <Value>20</Value>
-        </Default>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: PulseEnergy
-            io: i
-            field: EGU mJ
-            field: DESC This beam parameter is non-op for now.
-        </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>neVRange</Name>
-        <Type>WORD</Type>
-        <Comment> Photon energy ranges </Comment>
-        <BitSize>16</BitSize>
-        <BitOffs>96</BitOffs>
-        <Default>
-          <Value>65535</Value>
-        </Default>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: PhotonEnergyRanges
-            io: i
-            field: EGU eV</Value>
-          </Property>
-          <Property>
-            <Name>displaymode</Name>
-            <Value>binary</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>astAttenuators</Name>
-        <Type Namespace="PMPS">ST_PMPS_Attenuator</Type>
-        <ArrayInfo>
-          <LBound>1</LBound>
-          <Elements>16</Elements>
-        </ArrayInfo>
-        <Comment> Beamline attenuators </Comment>
-        <BitSize>512</BitSize>
-        <BitOffs>112</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: AuxAtt
-        io: i</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>aStoppers</Name>
-        <Type>BOOL</Type>
-        <ArrayInfo>
-          <LBound>1</LBound>
-          <Elements>16</Elements>
-        </ArrayInfo>
-        <Comment> Stoppers </Comment>
-        <BitSize>128</BitSize>
-        <BitOffs>624</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: ST
-        io: i</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>astApertures</Name>
-        <Type Namespace="PMPS">ST_PMPS_Aperture</Type>
-        <ArrayInfo>
-          <LBound>1</LBound>
-          <Elements>4</Elements>
-        </ArrayInfo>
-        <Comment> Apertures </Comment>
-        <BitSize>384</BitSize>
-        <BitOffs>768</BitOffs>
-      </SubItem>
-      <SubItem>
-        <Name>xValidToggle</Name>
-        <Type>BOOL</Type>
-        <Comment> Toggle for watchdog</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1152</BitOffs>
-      </SubItem>
-      <SubItem>
-        <Name>xValid</Name>
-        <Type>BOOL</Type>
-        <Comment> Beam parameter set is valid (if readback), or acknowledged (if request)</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1160</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: Valid
-        io: i</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>nCohortInt</Name>
-        <Type>UDINT</Type>
-        <Comment> Cohort index. Identifies which cohort this BP set was included in arbitration</Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>1184</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>pv: Cohort
-        io: i
-            field: DESC Cohort inc on each arb cycle
-        </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-    </DataType>
-    <DataType>
-      <Name Namespace="lcls_twincat_motion">DUT_PositionState</Name>
-      <BitSize>2432</BitSize>
-      <SubItem>
-        <Name>sName</Name>
-        <Type>STRING(80)</Type>
-        <Comment> Name as queried via the NAME PV in EPICS</Comment>
-        <BitSize>648</BitSize>
-        <BitOffs>0</BitOffs>
-        <Default>
-          <String>Invalid</String>
-        </Default>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: NAME
-        io: input
-        field: DESC Name of this position state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fPosition</Name>
-        <Type>LREAL</Type>
-        <Comment> Position associated with this state</Comment>
-        <BitSize>64</BitSize>
-        <BitOffs>704</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: SETPOINT
-        io: io
-        field: DESC Axis position associated with this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>nEncoderCount</Name>
-        <Type>UDINT</Type>
-        <BitSize>32</BitSize>
-        <BitOffs>768</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: ENCODER
-        io: i
-        field: DESC Encoder count associated with this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fDelta</Name>
-        <Type>LREAL</Type>
-        <Comment> Maximum allowable deviation from fPosition while at the state</Comment>
-        <BitSize>64</BitSize>
-        <BitOffs>832</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: DELTA
-        io: io
-        field: DRVL 0.0
-        field: DESC Max deviation from position at this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fVelocity</Name>
-        <Type>LREAL</Type>
-        <Comment> Speed at which to move to this state</Comment>
-        <BitSize>64</BitSize>
-        <BitOffs>896</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: VELO
-        io: io
-        field: DESC Speed at which to move to this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fAccel</Name>
-        <Type>LREAL</Type>
-        <Comment> (optional) Acceleration to use for moves to this state</Comment>
-        <BitSize>64</BitSize>
-        <BitOffs>960</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: ACCL
-        io: io
-        field: DESC Acceleration to use for moves to this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>fDecel</Name>
-        <Type>LREAL</Type>
-        <Comment> (optional) Deceleration to use for moves to this state</Comment>
-        <BitSize>64</BitSize>
-        <BitOffs>1024</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: DCCL
-        io: io
-        field: DESC Deceleration to use for moves to this state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>bMoveOk</Name>
-        <Type>BOOL</Type>
-        <Comment> Safety parameter. This must be set to TRUE by the PLC program to allow moves to this state. This is expected to change as conditions change.</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1088</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: MOVE_OK
-        io: i
-        field: ZNAM FALSE
-        field: ONAM TRUE
-        field: DESC TRUE if the move would be safe
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>bLocked</Name>
-        <Type>BOOL</Type>
-        <Comment> Signifies to FB_PositionStateLock that this state should be immutable</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1096</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: LOCKED
-        io: i
-        field: ZNAM FALSE
-        field: ONAM TRUE
-        field: DESC TRUE if state is immutable
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>bValid</Name>
-        <Type>BOOL</Type>
-        <Comment> Set this to TRUE when you make your state. This defaults to FALSE so that uninitialized states can never be moved to</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1104</BitOffs>
-        <Properties>
-          <Property>
-            <Name>pytmc</Name>
-            <Value>
-        pv: VALID
-        io: i
-        field: ZNAM FALSE
-        field: ONAM TRUE
-        field: DESC TRUE if this is a real state
-    </Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>bUseRawCounts</Name>
-        <Type>BOOL</Type>
-        <Comment> Set this to TRUE when you want to use the raw encoder counts to define the state</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1112</BitOffs>
-      </SubItem>
-      <SubItem>
-        <Name>bUpdated</Name>
-        <Type>BOOL</Type>
-        <Comment> Is set to TRUE by FB_PositionStateInternal when called</Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>1120</BitOffs>
-      </SubItem>
-      <SubItem>
-        <Name>stBeamParams</Name>
-        <Type Namespace="PMPS">ST_BeamParams</Type>
-        <Comment> Beam parameters associated with this state</Comment>
-        <BitSize>1216</BitSize>
-        <BitOffs>1152</BitOffs>
-        <Default>
-          <SubItem>
-            <Name>.nTran</Name>
-            <Value>0</Value>
-          </SubItem>
-          <SubItem>
-            <Name>.fPP_mJ</Name>
-            <Value>0</Value>
-          </SubItem>
-          <SubItem>
-            <Name>.neVRange</Name>
-            <Value>0</Value>
-          </SubItem>
-          <SubItem>
-            <Name>.nRate</Name>
-            <Value>0</Value>
-          </SubItem>
-        </Default>
-      </SubItem>
-      <SubItem>
-        <Name>nRequestAssertionID</Name>
-        <Type>UDINT</Type>
-        <Comment> Transition ID associated with this state</Comment>
-        <BitSize>32</BitSize>
-        <BitOffs>2368</BitOffs>
-      </SubItem>
-    </DataType>
-    <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">I_TestResultFormatter</Name>
+      <Name Namespace="LCLS_General.TcUnit">I_TestResultFormatter</Name>
       <BitSize>64</BitSize>
       <ExtendsType GUID="{18071995-0000-0000-0000-000000000018}">PVOID</ExtendsType>
       <Method>
@@ -3658,14 +3488,14 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_ADSTestResultFormatter</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_ADSTestResultFormatter</Name>
       <Comment>
     This function block reports the results from the tests using the built-in ADSLOGSTR functionality
     provided by the Tc2_System library. This sends the result using ADS, which is consumed by the error list
     of Visual Studio.
 </Comment>
       <BitSize>448</BitSize>
-      <Implements Namespace="lcls_twincat_motion.PMPS.TcUnit">I_TestResultFormatter</Implements>
+      <Implements Namespace="LCLS_General.TcUnit">I_TestResultFormatter</Implements>
       <SubItem>
         <Name>ADSDelayTimer</Name>
         <Type Namespace="Tc2_Standard">TON</Type>
@@ -3747,7 +3577,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_TcUnitRunner</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_TcUnitRunner</Name>
       <Comment>
     This function block is responsible for holding track of the tests and executing them.
 </Comment>
@@ -3763,13 +3593,13 @@
       </SubItem>
       <SubItem>
         <Name>ADSTestResultFormatter</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_ADSTestResultFormatter</Type>
+        <Type Namespace="LCLS_General.TcUnit">FB_ADSTestResultFormatter</Type>
         <BitSize>448</BitSize>
         <BitOffs>128</BitOffs>
       </SubItem>
       <SubItem>
         <Name>TestResultPrinter</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">I_TestResultFormatter</Type>
+        <Type Namespace="LCLS_General.TcUnit">I_TestResultFormatter</Type>
         <BitSize>64</BitSize>
         <BitOffs>576</BitOffs>
       </SubItem>
@@ -4053,7 +3883,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AnyComparator</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_AnyComparator</Name>
       <Comment>
     This FB compares two instances of any object type and returns whether they
     are the same type, size and value or not. This is necessary for two reasons:
@@ -4693,7 +4523,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_Test</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_Test</Name>
       <Comment>
     This function block holds all data that defines a test.
 </Comment>
@@ -4755,60 +4585,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="Tc2_Standard">R_TRIG</Name>
-      <Comment>
-	Rising Edge detection.
-</Comment>
-      <BitSize>96</BitSize>
-      <SubItem>
-        <Name>CLK</Name>
-        <Type>BOOL</Type>
-        <Comment> Signal to detect </Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>64</BitOffs>
-        <Properties>
-          <Property>
-            <Name>ItemType</Name>
-            <Value>Input</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>Q</Name>
-        <Type>BOOL</Type>
-        <Comment> rising edge at signal detected </Comment>
-        <BitSize>8</BitSize>
-        <BitOffs>72</BitOffs>
-        <Properties>
-          <Property>
-            <Name>ItemType</Name>
-            <Value>Output</Value>
-          </Property>
-        </Properties>
-      </SubItem>
-      <SubItem>
-        <Name>M</Name>
-        <Type>BOOL</Type>
-        <BitSize>8</BitSize>
-        <BitOffs>80</BitOffs>
-        <Properties>
-          <Property>
-            <Name>conditionalshow</Name>
-          </Property>
-        </Properties>
-      </SubItem>
-      <Properties>
-        <Property>
-          <Name>PouType</Name>
-          <Value>FunctionBlock</Value>
-        </Property>
-        <Property>
-          <Name>conditionalshow_all_locals</Name>
-        </Property>
-      </Properties>
-    </DataType>
-    <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">U_ExpectedOrActual</Name>
+      <Name Namespace="LCLS_General.TcUnit">U_ExpectedOrActual</Name>
       <BitSize>2048</BitSize>
       <SubItem>
         <Name>boolExpectedOrActual</Name>
@@ -4950,17 +4727,17 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertResult</Name>
+      <Name Namespace="LCLS_General.TcUnit">ST_AssertResult</Name>
       <BitSize>8192</BitSize>
       <SubItem>
         <Name>Expected</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">U_ExpectedOrActual</Type>
+        <Type Namespace="LCLS_General.TcUnit">U_ExpectedOrActual</Type>
         <BitSize>2048</BitSize>
         <BitOffs>0</BitOffs>
       </SubItem>
       <SubItem>
         <Name>Actual</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">U_ExpectedOrActual</Type>
+        <Type Namespace="LCLS_General.TcUnit">U_ExpectedOrActual</Type>
         <BitSize>2048</BitSize>
         <BitOffs>2048</BitOffs>
       </SubItem>
@@ -4978,11 +4755,11 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertResultInstances</Name>
+      <Name Namespace="LCLS_General.TcUnit">ST_AssertResultInstances</Name>
       <BitSize>8256</BitSize>
       <SubItem>
         <Name>AssertResult</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertResult</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertResult</Type>
         <BitSize>8192</BitSize>
         <BitOffs>0</BitOffs>
       </SubItem>
@@ -5002,7 +4779,7 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AssertResultStatic</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_AssertResultStatic</Name>
       <Comment>
     This function block is responsible for keeping track of which asserts that have been made. The reason we need to
     keep track of these is because if the user does the same assert twice (because of running a test suite over several
@@ -5016,7 +4793,7 @@
       <BitSize>8224448</BitSize>
       <SubItem>
         <Name>AssertResults</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertResult</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertResult</Type>
         <ArrayInfo>
           <LBound>1</LBound>
           <Elements>500</Elements>
@@ -5041,7 +4818,7 @@
       </SubItem>
       <SubItem>
         <Name>AssertResultInstances</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertResultInstances</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertResultInstances</Type>
         <ArrayInfo>
           <LBound>1</LBound>
           <Elements>500</Elements>
@@ -5397,7 +5174,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Name>
+      <Name Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Name>
       <BitSize>16</BitSize>
       <BaseType>INT</BaseType>
       <EnumInfo>
@@ -5562,7 +5339,7 @@
       </EnumInfo>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertArrayResult</Name>
+      <Name Namespace="LCLS_General.TcUnit">ST_AssertArrayResult</Name>
       <BitSize>4224</BitSize>
       <SubItem>
         <Name>ExpectedsSize</Name>
@@ -5573,7 +5350,7 @@
       </SubItem>
       <SubItem>
         <Name>ExpectedsTypeClass</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+        <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
         <Comment> The data type of the expecteds-array</Comment>
         <BitSize>16</BitSize>
         <BitOffs>32</BitOffs>
@@ -5587,7 +5364,7 @@
       </SubItem>
       <SubItem>
         <Name>ActualsTypeClass</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+        <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
         <Comment> The data type of the actuals-array</Comment>
         <BitSize>16</BitSize>
         <BitOffs>96</BitOffs>
@@ -5606,11 +5383,11 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertArrayResultInstances</Name>
+      <Name Namespace="LCLS_General.TcUnit">ST_AssertArrayResultInstances</Name>
       <BitSize>4256</BitSize>
       <SubItem>
         <Name>AssertArrayResult</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertArrayResult</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertArrayResult</Type>
         <BitSize>4224</BitSize>
         <BitOffs>0</BitOffs>
       </SubItem>
@@ -5630,7 +5407,7 @@
       </SubItem>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AssertArrayResultStatic</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_AssertArrayResultStatic</Name>
       <Comment>
     This function block is responsible for keeping track of which array-asserts that have been made.
     The reason we need to keep track of these is because if the user does the same assert twice
@@ -5646,7 +5423,7 @@
       <BitSize>4240448</BitSize>
       <SubItem>
         <Name>AssertArrayResults</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertArrayResult</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertArrayResult</Type>
         <ArrayInfo>
           <LBound>1</LBound>
           <Elements>500</Elements>
@@ -5671,7 +5448,7 @@
       </SubItem>
       <SubItem>
         <Name>AssertArrayResultInstances</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_AssertArrayResultInstances</Type>
+        <Type Namespace="LCLS_General.TcUnit">ST_AssertArrayResultInstances</Type>
         <ArrayInfo>
           <LBound>1</LBound>
           <Elements>500</Elements>
@@ -5700,7 +5477,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5710,7 +5487,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5738,7 +5515,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5748,7 +5525,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5778,7 +5555,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5788,7 +5565,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5818,7 +5595,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5828,7 +5605,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5856,7 +5633,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5866,7 +5643,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5953,7 +5730,7 @@
         </Parameter>
         <Parameter>
           <Name>ExpectedsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5963,7 +5740,7 @@
         </Parameter>
         <Parameter>
           <Name>ActualsTypeClass</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit.IBaseLibrary">TypeClass</Type>
+          <Type Namespace="LCLS_General.TcUnit.IBaseLibrary">TypeClass</Type>
           <BitSize>16</BitSize>
         </Parameter>
         <Parameter>
@@ -5985,7 +5762,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">I_AssertMessageFormatter</Name>
+      <Name Namespace="LCLS_General.TcUnit">I_AssertMessageFormatter</Name>
       <BitSize>64</BitSize>
       <ExtendsType GUID="{18071995-0000-0000-0000-000000000018}">PVOID</ExtendsType>
       <Method>
@@ -6013,7 +5790,7 @@
       </Method>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AdjustAssertFailureMessageToMax252CharLength</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_AdjustAssertFailureMessageToMax252CharLength</Name>
       <Comment>
     This function block is responsible for making sure that the asserted test instance path and test message are not
     loo long. The total printed message can not be more than 252 characters long.
@@ -6110,14 +5887,14 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_ADSAssertMessageFormatter</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_ADSAssertMessageFormatter</Name>
       <Comment>
     This function block is responsible for printing the results of the assertions using the built-in
     ADSLOGSTR functionality provided by the Tc2_System library. This sends the result using ADS, which
     is consumed by the error list of Visual Studio.
 </Comment>
       <BitSize>128</BitSize>
-      <Implements Namespace="lcls_twincat_motion.PMPS.TcUnit">I_AssertMessageFormatter</Implements>
+      <Implements Namespace="LCLS_General.TcUnit">I_AssertMessageFormatter</Implements>
       <Method>
         <Name>LogAssertFailure</Name>
         <Parameter>
@@ -6142,7 +5919,7 @@
         </Parameter>
         <Local>
           <Name>AdjustAssertFailureMessageToMax252CharLength</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AdjustAssertFailureMessageToMax252CharLength</Type>
+          <Type Namespace="LCLS_General.TcUnit">FB_AdjustAssertFailureMessageToMax252CharLength</Type>
           <BitSize>11616</BitSize>
         </Local>
         <Local>
@@ -6179,7 +5956,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_TestSuite</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_TestSuite</Name>
       <Comment> This function block is responsible for holding the internal state of the test suite.
    Every test suite can have one or more tests, and every test can do one or more asserts.
    It's also responsible for providing all the assert-methods for asserting different data types.
@@ -6217,7 +5994,7 @@
       </SubItem>
       <SubItem>
         <Name>Tests</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_Test</Type>
+        <Type Namespace="LCLS_General.TcUnit">FB_Test</Type>
         <ArrayInfo>
           <LBound>1</LBound>
           <Elements>100</Elements>
@@ -6247,25 +6024,25 @@
       </SubItem>
       <SubItem>
         <Name>AssertResults</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AssertResultStatic</Type>
+        <Type Namespace="LCLS_General.TcUnit">FB_AssertResultStatic</Type>
         <BitSize>8224448</BitSize>
         <BitOffs>229632</BitOffs>
       </SubItem>
       <SubItem>
         <Name>AssertArrayResult</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AssertArrayResultStatic</Type>
+        <Type Namespace="LCLS_General.TcUnit">FB_AssertArrayResultStatic</Type>
         <BitSize>4240448</BitSize>
         <BitOffs>8454080</BitOffs>
       </SubItem>
       <SubItem>
         <Name>ADSAssertMessageFormatter</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_ADSAssertMessageFormatter</Type>
+        <Type Namespace="LCLS_General.TcUnit">FB_ADSAssertMessageFormatter</Type>
         <BitSize>128</BitSize>
         <BitOffs>12694528</BitOffs>
       </SubItem>
       <SubItem>
         <Name>AssertMessageFormatter</Name>
-        <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">I_AssertMessageFormatter</Type>
+        <Type Namespace="LCLS_General.TcUnit">I_AssertMessageFormatter</Type>
         <BitSize>64</BitSize>
         <BitOffs>12694656</BitOffs>
       </SubItem>
@@ -7017,7 +6794,7 @@
         </Local>
         <Local>
           <Name>AnyComparator</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_AnyComparator</Type>
+          <Type Namespace="LCLS_General.TcUnit">FB_AnyComparator</Type>
           <BitSize>384</BitSize>
         </Local>
         <Local>
@@ -9646,7 +9423,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_ADSLogStringMessage</Name>
+      <Name Namespace="LCLS_General.TcUnit">ST_ADSLogStringMessage</Name>
       <BitSize>4096</BitSize>
       <SubItem>
         <Name>MsgFmtStr</Name>
@@ -9909,7 +9686,7 @@
       </Properties>
     </DataType>
     <DataType>
-      <Name Namespace="lcls_twincat_motion.PMPS.TcUnit">FB_ADSLogStringMessageFifoQueue</Name>
+      <Name Namespace="LCLS_General.TcUnit">FB_ADSLogStringMessageFifoQueue</Name>
       <Comment> This function block is responsible for making sure that the ADSLOGSTR-messages to the ADS-router are transmitted
    cyclically and not in a burst. The reason this is necessary is because that if too many messages are sent at the
    same time some get lost and are never printed to the error list output
@@ -10005,7 +9782,7 @@
         </Parameter>
         <Local>
           <Name>AdsLogStringMessage</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_ADSLogStringMessage</Type>
+          <Type Namespace="LCLS_General.TcUnit">ST_ADSLogStringMessage</Type>
           <BitSize>4096</BitSize>
         </Local>
       </Method>
@@ -10013,7 +9790,7 @@
         <Name>GetLog</Name>
         <Parameter>
           <Name>AdsLogStringMessage</Name>
-          <Type Namespace="lcls_twincat_motion.PMPS.TcUnit">ST_ADSLogStringMessage</Type>
+          <Type Namespace="LCLS_General.TcUnit">ST_ADSLogStringMessage</Type>
           <BitSize>4096</BitSize>
           <Properties>
             <Property>
@@ -10039,6 +9816,1018 @@
         <Property>
           <Name>PouType</Name>
           <Value>FunctionBlock</Value>
+        </Property>
+      </Properties>
+    </DataType>
+    <DataType>
+      <Name GUID="{D01709AA-9B4A-464A-B4D1-4BF476CFE7DE}">ST_PMPS_Attenuator_IO</Name>
+      <BitSize>32</BitSize>
+      <SubItem>
+        <Name>nTran</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+        <BitSize>16</BitSize>
+        <BitOffs>0</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>xAttOK</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+        <BitSize>16</BitSize>
+        <BitOffs>16</BitOffs>
+      </SubItem>
+      <Hides>
+        <Hide GUID="{76269EAC-36F0-4513-B811-3725FD02409A}"/>
+        <Hide GUID="{E96BEA56-6301-4A6A-BF6A-F08340C87594}"/>
+        <Hide GUID="{FE32F9A9-7E7A-413D-8D77-0C99C34D8CD9}"/>
+      </Hides>
+    </DataType>
+    <DataType>
+      <Name Namespace="PMPS">ST_PMPS_Attenuator</Name>
+      <BitSize>32</BitSize>
+      <ExtendsType GUID="{D01709AA-9B4A-464A-B4D1-4BF476CFE7DE}">ST_PMPS_Attenuator_IO</ExtendsType>
+    </DataType>
+    <DataType>
+      <Name GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Name>
+      <BitSize>96</BitSize>
+      <SubItem>
+        <Name>Width</Name>
+        <Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+        <Comment> distance between horizontal slits (x)</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>0</BitOffs>
+        <Properties>
+          <Property>
+            <Name>plcAttribute_pytmc</Name>
+            <Value>pv: Width
+            io: i
+            field: EGU mm</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>Height</Name>
+        <Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+        <Comment> distance between vertical slits (y)</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>32</BitOffs>
+        <Properties>
+          <Property>
+            <Name>plcAttribute_pytmc</Name>
+            <Value>pv: Height
+            io: i
+            field: EGU mm</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>xOK</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
+        <Comment> status of aperture, false if error or in motion</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>64</BitOffs>
+        <Properties>
+          <Property>
+            <Name>plcAttribute_pytmc</Name>
+            <Value>pv: OK
+        io: i</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+    </DataType>
+    <DataType>
+      <Name Namespace="PMPS">ST_PMPS_Aperture</Name>
+      <BitSize>96</BitSize>
+      <ExtendsType GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</ExtendsType>
+    </DataType>
+    <DataType>
+      <Name Namespace="PMPS">ST_BeamParams</Name>
+      <BitSize>1216</BitSize>
+      <SubItem>
+        <Name>nTran</Name>
+        <Type>UINT</Type>
+        <Comment>  Requested pre-optic attenuation %  </Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>0</BitOffs>
+        <Default>
+          <Value>100</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: Transmission
+            io: i
+            field: EGU %
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nRate</Name>
+        <Type>UDINT</Type>
+        <Comment> Pulse-rate </Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>32</BitOffs>
+        <Default>
+          <Value>120</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: Rate
+            io: i
+            field: EGU Hz
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fPP_mJ</Name>
+        <Type>REAL</Type>
+        <Comment> Per pulse max energy (mJ) </Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>64</BitOffs>
+        <Default>
+          <Value>20</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: PulseEnergy
+            io: i
+            field: EGU mJ
+            field: DESC This beam parameter is non-op for now.
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>neVRange</Name>
+        <Type>WORD</Type>
+        <Comment> Photon energy ranges </Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>96</BitOffs>
+        <Default>
+          <Value>65535</Value>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: PhotonEnergyRanges
+            io: i
+            field: EGU eV</Value>
+          </Property>
+          <Property>
+            <Name>displaymode</Name>
+            <Value>binary</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>astAttenuators</Name>
+        <Type Namespace="PMPS">ST_PMPS_Attenuator</Type>
+        <ArrayInfo>
+          <LBound>1</LBound>
+          <Elements>16</Elements>
+        </ArrayInfo>
+        <Comment> Beamline attenuators </Comment>
+        <BitSize>512</BitSize>
+        <BitOffs>112</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: AuxAtt
+        io: i</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>aStoppers</Name>
+        <Type>BOOL</Type>
+        <ArrayInfo>
+          <LBound>1</LBound>
+          <Elements>16</Elements>
+        </ArrayInfo>
+        <Comment> Stoppers </Comment>
+        <BitSize>128</BitSize>
+        <BitOffs>624</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: ST
+        io: i</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>astApertures</Name>
+        <Type Namespace="PMPS">ST_PMPS_Aperture</Type>
+        <ArrayInfo>
+          <LBound>1</LBound>
+          <Elements>4</Elements>
+        </ArrayInfo>
+        <Comment> Apertures </Comment>
+        <BitSize>384</BitSize>
+        <BitOffs>768</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>xValidToggle</Name>
+        <Type>BOOL</Type>
+        <Comment> Toggle for watchdog</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1152</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>xValid</Name>
+        <Type>BOOL</Type>
+        <Comment> Beam parameter set is valid (if readback), or acknowledged (if request)</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1160</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: Valid
+        io: i</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nCohortInt</Name>
+        <Type>UDINT</Type>
+        <Comment> Cohort index. Identifies which cohort this BP set was included in arbitration</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>1184</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>pv: Cohort
+        io: i
+            field: DESC Cohort inc on each arb cycle
+        </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+    </DataType>
+    <DataType>
+      <Name Namespace="lcls_twincat_motion">DUT_PositionState</Name>
+      <BitSize>2432</BitSize>
+      <SubItem>
+        <Name>sName</Name>
+        <Type>STRING(80)</Type>
+        <Comment> Name as queried via the NAME PV in EPICS</Comment>
+        <BitSize>648</BitSize>
+        <BitOffs>0</BitOffs>
+        <Default>
+          <String>Invalid</String>
+        </Default>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: NAME
+        io: input
+        field: DESC Name of this position state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fPosition</Name>
+        <Type>LREAL</Type>
+        <Comment> Position associated with this state</Comment>
+        <BitSize>64</BitSize>
+        <BitOffs>704</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: SETPOINT
+        io: io
+        field: DESC Axis position associated with this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>nEncoderCount</Name>
+        <Type>UDINT</Type>
+        <BitSize>32</BitSize>
+        <BitOffs>768</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: ENCODER
+        io: i
+        field: DESC Encoder count associated with this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fDelta</Name>
+        <Type>LREAL</Type>
+        <Comment> Maximum allowable deviation from fPosition while at the state</Comment>
+        <BitSize>64</BitSize>
+        <BitOffs>832</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: DELTA
+        io: io
+        field: DRVL 0.0
+        field: DESC Max deviation from position at this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fVelocity</Name>
+        <Type>LREAL</Type>
+        <Comment> Speed at which to move to this state</Comment>
+        <BitSize>64</BitSize>
+        <BitOffs>896</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: VELO
+        io: io
+        field: DESC Speed at which to move to this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fAccel</Name>
+        <Type>LREAL</Type>
+        <Comment> (optional) Acceleration to use for moves to this state</Comment>
+        <BitSize>64</BitSize>
+        <BitOffs>960</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: ACCL
+        io: io
+        field: DESC Acceleration to use for moves to this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>fDecel</Name>
+        <Type>LREAL</Type>
+        <Comment> (optional) Deceleration to use for moves to this state</Comment>
+        <BitSize>64</BitSize>
+        <BitOffs>1024</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: DCCL
+        io: io
+        field: DESC Deceleration to use for moves to this state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bMoveOk</Name>
+        <Type>BOOL</Type>
+        <Comment> Safety parameter. This must be set to TRUE by the PLC program to allow moves to this state. This is expected to change as conditions change.</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1088</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: MOVE_OK
+        io: i
+        field: ZNAM FALSE
+        field: ONAM TRUE
+        field: DESC TRUE if the move would be safe
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bLocked</Name>
+        <Type>BOOL</Type>
+        <Comment> Signifies to FB_PositionStateLock that this state should be immutable</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1096</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: LOCKED
+        io: i
+        field: ZNAM FALSE
+        field: ONAM TRUE
+        field: DESC TRUE if state is immutable
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bValid</Name>
+        <Type>BOOL</Type>
+        <Comment> Set this to TRUE when you make your state. This defaults to FALSE so that uninitialized states can never be moved to</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1104</BitOffs>
+        <Properties>
+          <Property>
+            <Name>pytmc</Name>
+            <Value>
+        pv: VALID
+        io: i
+        field: ZNAM FALSE
+        field: ONAM TRUE
+        field: DESC TRUE if this is a real state
+    </Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>bUseRawCounts</Name>
+        <Type>BOOL</Type>
+        <Comment> Set this to TRUE when you want to use the raw encoder counts to define the state</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1112</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>bUpdated</Name>
+        <Type>BOOL</Type>
+        <Comment> Is set to TRUE by FB_PositionStateInternal when called</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>1120</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>stBeamParams</Name>
+        <Type Namespace="PMPS">ST_BeamParams</Type>
+        <Comment> Beam parameters associated with this state</Comment>
+        <BitSize>1216</BitSize>
+        <BitOffs>1152</BitOffs>
+        <Default>
+          <SubItem>
+            <Name>.nTran</Name>
+            <Value>0</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.fPP_mJ</Name>
+            <Value>0</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.neVRange</Name>
+            <Value>0</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.nRate</Name>
+            <Value>0</Value>
+          </SubItem>
+        </Default>
+      </SubItem>
+      <SubItem>
+        <Name>nRequestAssertionID</Name>
+        <Type>UDINT</Type>
+        <Comment> Transition ID associated with this state</Comment>
+        <BitSize>32</BitSize>
+        <BitOffs>2368</BitOffs>
+      </SubItem>
+    </DataType>
+    <DataType>
+      <Name Namespace="PMPS">PE_Ranges</Name>
+      <Comment> Does nothing other than set the gvl for photon energy bitmask to one of two constants, K or L.
+ Workaround for compile defines not fully working for libraries at the time of writing this.
+ Otherwise I would have just used the compile define in the GVL declaration.</Comment>
+      <BitSize>64</BitSize>
+      <Properties>
+        <Property>
+          <Name>PouType</Name>
+          <Value>FunctionBlock</Value>
+        </Property>
+      </Properties>
+    </DataType>
+    <DataType>
+      <Name Namespace="LCLS_General.Tc3_JsonXml">FB_JsonSaxWriter</Name>
+      <Comment> | Provides the functionality to create a JSON document.
+ | Steps of documentation creation:
+ | 1. StartObject() to start a new object in the document.
+ | 2. Add several keys/values via AddKeyString() and the other methods.
+ | 3. EndObject() to finish object.
+ | 4. GetDocument() in order to get the full document as string.
+ | 5. ResetDocument() if a new document should be created with the same SaxWriter instance.</Comment>
+      <BitSize>384</BitSize>
+      <SubItem>
+        <Name>initStatus</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000019}">HRESULT</Type>
+        <BitSize>32</BitSize>
+        <BitOffs>64</BitOffs>
+        <Properties>
+          <Property>
+            <Name>ItemType</Name>
+            <Value>Output</Value>
+          </Property>
+        </Properties>
+      </SubItem>
+      <SubItem>
+        <Name>ipWriter</Name>
+        <Type GUID="{E695C12A-2D9A-408E-B9B2-508D7CE3AF9A}">ITcJsonSaxWriter</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>128</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>ipWriter2</Name>
+        <Type GUID="{472183F9-5D09-4D8C-92FD-E0524EF658BF}">ITcJsonSaxWriter2</Type>
+        <BitSize>64</BitSize>
+        <BitOffs>192</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>CLSID_TcJsonSaxWriter</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000024}">CLSID</Type>
+        <BitSize>128</BitSize>
+        <BitOffs>256</BitOffs>
+        <Default>
+          <SubItem>
+            <Name>.Data1</Name>
+            <Value>3870298264</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data2</Name>
+            <Value>56256</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data3</Name>
+            <Value>17669</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[0]</Name>
+            <Value>158</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[1]</Name>
+            <Value>60</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[2]</Name>
+            <Value>93</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[3]</Name>
+            <Value>248</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[4]</Name>
+            <Value>70</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[5]</Name>
+            <Value>150</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[6]</Name>
+            <Value>7</Value>
+          </SubItem>
+          <SubItem>
+            <Name>.Data4[7]</Name>
+            <Value>196</Value>
+          </SubItem>
+        </Default>
+      </SubItem>
+      <Method>
+        <Name>AddKeyNumber</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddString</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddKeyFileTime</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type GUID="{18071995-0000-0000-0000-000000000046}">FILETIME</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>IsComplete</Name>
+        <ReturnType>BOOL</ReturnType>
+        <ReturnBitSize>8</ReturnBitSize>
+      </Method>
+      <Method>
+        <Name>AddUdint</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>UDINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddHexBinary</Name>
+        <Parameter>
+          <Name>pBytes</Name>
+          <Type PointerTo="1">BYTE</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+        <Parameter>
+          <Name>nBytes</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddLint</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>LINT</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddLreal</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>LREAL</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddKey</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>ResetDocument</Name>
+      </Method>
+      <Method>
+        <Name>AddKeyLreal</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type>LREAL</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>StartObject</Name>
+      </Method>
+      <Method>
+        <Name>GetDocumentLength</Name>
+        <ReturnType>UDINT</ReturnType>
+        <ReturnBitSize>32</ReturnBitSize>
+        <Local>
+          <Name>n</Name>
+          <Type>UDINT</Type>
+          <BitSize>32</BitSize>
+        </Local>
+        <Local>
+          <Name>p</Name>
+          <Type PointerTo="1">STRING(80)</Type>
+          <BitSize>64</BitSize>
+        </Local>
+      </Method>
+      <Method>
+        <Name>AddKeyDcTime</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type GUID="{18071995-0000-0000-0000-000000000047}">DCTIME</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddDateTime</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>DATE_AND_TIME</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddRawObject</Name>
+        <Parameter>
+          <Name>rawJson</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>SetMaxDecimalPlaces</Name>
+        <Parameter>
+          <Name>decimalPlaces</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name RpcEnable="plc" VTableIndex="0">__get_ipWriter</Name>
+        <ReturnType GUID="{E695C12A-2D9A-408E-B9B2-508D7CE3AF9A}" RpcDirection="out">ITcJsonSaxWriter</ReturnType>
+        <ReturnBitSize>64</ReturnBitSize>
+        <Local>
+          <Name>_ipWriter</Name>
+          <Type GUID="{E695C12A-2D9A-408E-B9B2-508D7CE3AF9A}">ITcJsonSaxWriter</Type>
+          <BitSize>64</BitSize>
+        </Local>
+        <Properties>
+          <Property>
+            <Name>property</Name>
+          </Property>
+        </Properties>
+      </Method>
+      <Method>
+        <Name>AddKeyBool</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type>BOOL</Type>
+          <BitSize>8</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>GetDocument</Name>
+        <ReturnType>STRING(255)</ReturnType>
+        <ReturnBitSize>2048</ReturnBitSize>
+        <Local>
+          <Name>p</Name>
+          <Type PointerTo="1">SINT</Type>
+          <BitSize>64</BitSize>
+        </Local>
+        <Local>
+          <Name>n</Name>
+          <Type>UDINT</Type>
+          <BitSize>32</BitSize>
+        </Local>
+      </Method>
+      <Method>
+        <Name>AddDint</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddRawArray</Name>
+        <ReturnType>BOOL</ReturnType>
+        <ReturnBitSize>8</ReturnBitSize>
+        <Parameter>
+          <Name>rawJson</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddKeyString</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>CopyDocument</Name>
+        <ReturnType>UDINT</ReturnType>
+        <ReturnBitSize>32</ReturnBitSize>
+        <Parameter>
+          <Name>pDoc</Name>
+          <Comment> target string buffer where the document should be copied to</Comment>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>nDoc</Name>
+          <Comment> size in bytes of the target string buffer</Comment>
+          <Type>UDINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddUlint</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>ULINT</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>GetMaxDecimalPlaces</Name>
+        <ReturnType>DINT</ReturnType>
+        <ReturnBitSize>32</ReturnBitSize>
+        <Local>
+          <Name>dp</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Local>
+      </Method>
+      <Method>
+        <Name>AddFileTime</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type GUID="{18071995-0000-0000-0000-000000000046}">FILETIME</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddNull</Name>
+      </Method>
+      <Method>
+        <Name>AddKeyDateTime</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+        <Parameter>
+          <Name>value</Name>
+          <Type>DATE_AND_TIME</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddBool</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>BOOL</Type>
+          <BitSize>8</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddBase64</Name>
+        <Parameter>
+          <Name>pBytes</Name>
+          <Type PointerTo="1">BYTE</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+        <Parameter>
+          <Name>nBytes</Name>
+          <Type>DINT</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddDcTime</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type GUID="{18071995-0000-0000-0000-000000000047}">DCTIME</Type>
+          <BitSize>64</BitSize>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>AddKeyNull</Name>
+        <Parameter>
+          <Name>key</Name>
+          <Type ReferenceTo="true">STRING(80)</Type>
+          <BitSize>64</BitSize>
+          <Properties>
+            <Property>
+              <Name>ItemType</Name>
+              <Value>InOut</Value>
+            </Property>
+          </Properties>
+        </Parameter>
+      </Method>
+      <Method>
+        <Name>EndArray</Name>
+      </Method>
+      <Method>
+        <Name>EndObject</Name>
+      </Method>
+      <Method>
+        <Name>StartArray</Name>
+      </Method>
+      <Method>
+        <Name>AddReal</Name>
+        <Parameter>
+          <Name>value</Name>
+          <Type>REAL</Type>
+          <BitSize>32</BitSize>
+        </Parameter>
+      </Method>
+      <Properties>
+        <Property>
+          <Name>PouType</Name>
+          <Value>FunctionBlock</Value>
+        </Property>
+        <Property>
+          <Name>no_explicit_call</Name>
+          <Value>do not call this POU directly</Value>
         </Property>
       </Properties>
     </DataType>
@@ -12303,15 +13092,15 @@
         </Property>
         <Property>
           <Name>ChangeDate</Name>
-          <Value>2020-07-15T10:33:01</Value>
+          <Value>2020-09-10T12:00:24</Value>
         </Property>
         <Property>
           <Name>GeneratedCodeSize</Name>
-          <Value>503808</Value>
+          <Value>516096</Value>
         </Property>
         <Property>
           <Name>GlobalDataSize</Name>
-          <Value>647168</Value>
+          <Value>634880</Value>
         </Property>
       </Properties>
     </Module>

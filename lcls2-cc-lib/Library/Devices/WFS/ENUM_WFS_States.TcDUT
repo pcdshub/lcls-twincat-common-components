@@ -9,7 +9,8 @@ TYPE ENUM_WFS_States :
     TARGET1 := 2,
     TARGET2 := 3,
     TARGET3 := 4,
-    TARGET4 := 5
+    TARGET4 := 5,
+    TARGET5 := 6
 );
 END_TYPE
 ]]></Declaration>
