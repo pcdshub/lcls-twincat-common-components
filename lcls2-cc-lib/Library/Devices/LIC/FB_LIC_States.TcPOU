@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+  <POU Name="FB_LIC_States" Id="{6d12e2a8-5b7d-4adc-906c-abafee34ee0b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LIC_States EXTENDS FB_PositionStateBase_WithPMPS
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    enumSet: ENUM_LIC_states;
+
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+
+    bStatesLock: BOOL;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    enumGet: ENUM_LIC_States;
+END_VAR
+VAR
+    bLICInit: BOOL;
+END_VAR
+VAR CONSTANT
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT bLICInit THEN
+    bLICInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stTarget1.sName := 'TARGET1';
+    stTarget1.fVelocity := fInVelocity;
+    stTarget1.fDelta := fInDelta;
+    stTarget1.fAccel := fAccel;
+    stTarget1.fDecel := fAccel;
+    stTarget1.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stTarget1;
+END_IF
+
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -25,6 +25,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Devices" />
+    <Folder Include="Devices\LIC" />
+    <Folder Include="Devices\ATM" />
     <Folder Include="Devices\WFS" />
     <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
@@ -35,6 +37,24 @@
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Devices\ATM\ENUM_ATM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\ATM\FB_ATM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\ATM\FB_ATM_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\ENUM_LIC_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\PPM\ENUM_PPM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -112,10 +132,6 @@
       <DefaultResolution>LCLS General, * (SLAC)</DefaultResolution>
       <Namespace>LCLS_General</Namespace>
     </PlaceholderReference>
-    <PlaceholderReference Include="lcls-twincat-motion">
-      <DefaultResolution>lcls-twincat-motion, * (SLAC)</DefaultResolution>
-      <Namespace>lcls_twincat_motion</Namespace>
-    </PlaceholderReference>
     <PlaceholderReference Include="PMPS">
       <DefaultResolution>PMPS, * (SLAC - LCLS)</DefaultResolution>
       <Namespace>PMPS</Namespace>
@@ -137,12 +153,14 @@
     <PlaceholderResolution Include="LCLS General">
       <Resolution>LCLS General, * (SLAC)</Resolution>
     </PlaceholderResolution>
-    <PlaceholderResolution Include="lcls-twincat-motion">
-      <Resolution>lcls-twincat-motion, * (SLAC)</Resolution>
-    </PlaceholderResolution>
     <PlaceholderResolution Include="PMPS">
       <Resolution>PMPS, * (SLAC - LCLS)</Resolution>
     </PlaceholderResolution>
+  </ItemGroup>
+  <ItemGroup>
+    <LibraryReference Include="lcls-twincat-motion,1.3.2,SLAC">
+      <Namespace>lcls_twincat_motion</Namespace>
+    </LibraryReference>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>
