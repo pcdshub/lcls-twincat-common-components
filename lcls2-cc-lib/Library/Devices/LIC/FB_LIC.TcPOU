@@ -20,7 +20,7 @@ VAR
         pv: MMS:STATE
         io: i
     '}
-    fbStates: FB_WFS_States;
+    fbStates: FB_LIC_States;
 END_VAR
 ]]></Declaration>
     <Implementation>
