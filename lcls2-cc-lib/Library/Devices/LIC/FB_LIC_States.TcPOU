@@ -10,6 +10,8 @@ VAR_INPUT
     enumSet: ENUM_LIC_states;
 
     stOut: DUT_PositionState;
+    stMirror1: DUT_PositionState;
+    stMirror2: DUT_PositionState;
     stTarget1: DUT_PositionState;
 
     bStatesLock: BOOL;
@@ -43,8 +45,22 @@ END_VAR
     stOut.fAccel := fAccel;
     stOut.fDecel := fOutDecel;
     stOut.bMoveOk := TRUE;
-
-    stTarget1.sName := 'TARGET1';
+    
+    stMirror1.sName := 'MIRROR1';
+    stMirror1.fVelocity := fInVelocity;
+    stMirror1.fDelta := fInDelta;
+    stMirror1.fAccel := fAccel;
+    stMirror1.fDecel := fAccel;
+    stMirror1.bMoveOk := TRUE;
+    
+    stMirror2.sName := 'MIRROR2';
+    stMirror2.fVelocity := fInVelocity;
+    stMirror2.fDelta := fInDelta;
+    stMirror2.fAccel := fAccel;
+    stMirror2.fDecel := fAccel;
+    stMirror2.bMoveOk := TRUE;
+    
+    stTarget1.sName := 'TARGET';
     stTarget1.fVelocity := fInVelocity;
     stTarget1.fDelta := fInDelta;
     stTarget1.fAccel := fAccel;
@@ -52,7 +68,9 @@ END_VAR
     stTarget1.bMoveOk := TRUE;
 
     arrStates[1] := stOut;
-    arrStates[2] := stTarget1;
+    arrStates[2] := stMirror1;
+    arrStates[3] := stMirror2;
+    arrStates[4] := stTarget1;
 END_IF
 
 setState := enumSet;

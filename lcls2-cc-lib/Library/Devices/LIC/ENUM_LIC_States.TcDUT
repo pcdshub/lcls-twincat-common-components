@@ -6,7 +6,9 @@ TYPE ENUM_LIC_States :
 (
     Unknown := 0,
     OUT := 1,
-    IN := 2
+    MIRROR1 := 2,
+    MIRROR2 := 3,
+    TARGET := 4
 );
 END_TYPE
 ]]></Declaration>

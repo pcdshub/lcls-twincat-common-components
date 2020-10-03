@@ -9,6 +9,8 @@ VAR_IN_OUT
 END_VAR
 VAR_INPUT
     stOut: DUT_PositionState;
+    stMirror1: DUT_PositionState;
+    stMirror2: DUT_PositionState;
     stTarget1: DUT_PositionState;
     nTransitionAssertionID: UDINT;
     nUnknownAssertionID: UDINT;
@@ -37,6 +39,8 @@ fbStates(
     stMotionStage:=stYStage,
     bEnable := TRUE,
     stOut:=stOut,
+    stMirror1:=stMirror1,
+    stMirror2:=stMirror2,
     stTarget1:=stTarget1);]]></ST>
     </Implementation>
   </POU>
