@@ -9,50 +9,100 @@ PLC Project (1): Library
     Port:         851
 
     Source files:
-        1.) Library/Devices/PPM/ENUM_PPM_States.TcDUT
-        2.) Library/Devices/PPM/FB_PPM.TcPOU
-        3.) Library/Devices/PPM/FB_PPM_Gige.TcPOU
-        4.) Library/Devices/PPM/FB_PPM_PowerMeter.TcPOU
-        5.) Library/Devices/PPM/FB_PPM_States.TcPOU
-        6.) Library/Devices/REF/FB_REF.TcPOU
-        7.) Library/Devices/REF/FB_REF_Laser.TcPOU
-        8.) Library/Devices/SLITS/FB_SLITS.TcPOU
-        9.) Library/Devices/SLITS/FB_SLITS_POWER.TcPOU
-        10.) Library/Devices/WFS/ENUM_WFS_States.TcDUT
-        11.) Library/Devices/WFS/FB_WFS.TcPOU
-        12.) Library/Devices/WFS/FB_WFS_States.TcPOU
-        13.) Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
-        14.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
-        15.) Library/Devices/XPIM/FB_XPIM.TcPOU
-        16.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
-        17.) Library/Devices/XPIM/FB_XPIM_LED.TcPOU
-        18.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
-        19.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
-        20.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
-        21.) Library/POUs/FB_XTES_Flowswitch.TcPOU
-        22.) Library/Version/Global_Version.TcGVL
+        1.) Library/Devices/ATM/ENUM_ATM_States.TcDUT
+        2.) Library/Devices/ATM/FB_ATM.TcPOU
+        3.) Library/Devices/ATM/FB_ATM_States.TcPOU
+        4.) Library/Devices/LIC/ENUM_LIC_States.TcDUT
+        5.) Library/Devices/LIC/FB_LIC.TcPOU
+        6.) Library/Devices/LIC/FB_LIC_States.TcPOU
+        7.) Library/Devices/PPM/ENUM_PPM_States.TcDUT
+        8.) Library/Devices/PPM/FB_PPM.TcPOU
+        9.) Library/Devices/PPM/FB_PPM_Gige.TcPOU
+        10.) Library/Devices/PPM/FB_PPM_PowerMeter.TcPOU
+        11.) Library/Devices/PPM/FB_PPM_States.TcPOU
+        12.) Library/Devices/REF/FB_REF.TcPOU
+        13.) Library/Devices/REF/FB_REF_Laser.TcPOU
+        14.) Library/Devices/SLITS/FB_SLITS.TcPOU
+        15.) Library/Devices/SLITS/FB_SLITS_POWER.TcPOU
+        16.) Library/Devices/WFS/ENUM_WFS_States.TcDUT
+        17.) Library/Devices/WFS/FB_WFS.TcPOU
+        18.) Library/Devices/WFS/FB_WFS_States.TcPOU
+        19.) Library/Devices/XPIM/ENUM_XPIM_Filters.TcDUT
+        20.) Library/Devices/XPIM/ENUM_XPIM_States.TcDUT
+        21.) Library/Devices/XPIM/FB_XPIM.TcPOU
+        22.) Library/Devices/XPIM/FB_XPIM_FilterWheel.TcPOU
+        23.) Library/Devices/XPIM/FB_XPIM_LED.TcPOU
+        24.) Library/Devices/XPIM/FB_XPIM_Opal.TcPOU
+        25.) Library/Devices/XPIM/FB_XPIM_States.TcPOU
+        26.) Library/POUs/FB_L2SI_Flowmeter.TcPOU
+        27.) Library/POUs/FB_XTES_Flowswitch.TcPOU
+        28.) Library/Version/Global_Version.TcGVL
 
     POUs:
-        1.) FB_L2SI_Flowmeter
-        2.) FB_PPM
-        3.) FB_PPM_Gige
-        4.) FB_PPM_PowerMeter
-        5.) FB_PPM_States
-        6.) FB_REF
-        7.) FB_REF_Laser
-        8.) FB_SLITS
-        9.) FB_SLITS_POWER
-        10.) FB_WFS
-        11.) FB_WFS_States
-        12.) FB_XPIM
-        13.) FB_XPIM_FilterWheel
-        14.) FB_XPIM_LED
-        15.) FB_XPIM_Opal
-        16.) FB_XPIM_States
-        17.) FB_XTES_Flowswitch
+        1.) FB_ATM
+        2.) FB_ATM_States
+        3.) FB_L2SI_Flowmeter
+        4.) FB_LIC
+        5.) FB_LIC_States
+        6.) FB_PPM
+        7.) FB_PPM_Gige
+        8.) FB_PPM_PowerMeter
+        9.) FB_PPM_States
+        10.) FB_REF
+        11.) FB_REF_Laser
+        12.) FB_SLITS
+        13.) FB_SLITS_POWER
+        14.) FB_WFS
+        15.) FB_WFS_States
+        16.) FB_XPIM
+        17.) FB_XPIM_FilterWheel
+        18.) FB_XPIM_LED
+        19.) FB_XPIM_Opal
+        20.) FB_XPIM_States
+        21.) FB_XTES_Flowswitch
 
     GVLs:
         1.) Global_Version
+
+DUT: ENUM_ATM_States
+--------------------
+
+File: Library/Devices/ATM/ENUM_ATM_States.TcDUT
+
+```vhdl
+{attribute 'qualified_only'}
+TYPE ENUM_ATM_States :
+(
+    Unknown := 0,
+    OUT := 1,
+    TARGET1 := 2,
+    TARGET2 := 3,
+    TARGET3 := 4,
+    TARGET4 := 5,
+    TARGET5 := 6
+);
+END_TYPE
+```
+
+
+DUT: ENUM_LIC_States
+--------------------
+
+File: Library/Devices/LIC/ENUM_LIC_States.TcDUT
+
+```vhdl
+{attribute 'qualified_only'}
+TYPE ENUM_LIC_States :
+(
+    Unknown := 0,
+    OUT := 1,
+    MIRROR1 := 2,
+    MIRROR2 := 3,
+    TARGET := 4
+);
+END_TYPE
+```
+
 
 DUT: ENUM_PPM_States
 --------------------
@@ -151,6 +201,180 @@ END_VAR
 ```
 
 
+POU: FB_ATM
+-----------
+
+File: Library/Devices/ATM/FB_ATM.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_ATM
+VAR_IN_OUT
+    stYStage: DUT_MotionStage;
+    stXStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR_INPUT
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+    stTarget5: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
+END_VAR
+VAR
+    fbYStage: FB_MotionStage;
+    fbXStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_ATM_States;
+
+    {attribute 'pytmc' := '
+        pv: STC:01
+        io: input
+    '}
+    fbThermoCouple1: FB_TempSensor;
+END_VAR
+fbYStage(stMotionStage:=stYStage);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbXStage(stMotionStage:=stXStage);
+stXStage.bLimitForwardEnable := TRUE;
+stXStage.bLimitBackwardEnable := TRUE;
+stXStage.bHardwareEnable := TRUE;
+stXStage.bPowerSelf := TRUE;
+stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    stOut:=stOut,
+    stTarget1:=stTarget1,
+    stTarget2:=stTarget2,
+    stTarget3:=stTarget3,
+    stTarget4:=stTarget4,
+    stTarget5:=stTarget5);
+
+fbThermoCouple1();
+
+END_FUNCTION_BLOCK
+```
+
+
+POU: FB_ATM_States
+------------------
+
+File: Library/Devices/ATM/FB_ATM_States.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_ATM_States EXTENDS FB_PositionStateBase_WithPMPS
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    enumSet: ENUM_ATM_states;
+
+    stOut: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    stTarget2: DUT_PositionState;
+    stTarget3: DUT_PositionState;
+    stTarget4: DUT_PositionState;
+    stTarget5: DUT_PositionState;
+
+    bStatesLock: BOOL;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    enumGet: ENUM_ATM_States;
+END_VAR
+VAR
+    bATMInit: BOOL;
+END_VAR
+VAR CONSTANT
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR
+IF NOT bATMInit THEN
+    bATMInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stTarget1.sName := 'TARGET1';
+    stTarget1.fVelocity := fInVelocity;
+    stTarget1.fDelta := fInDelta;
+    stTarget1.fAccel := fAccel;
+    stTarget1.fDecel := fAccel;
+    stTarget1.bMoveOk := TRUE;
+
+    stTarget2.sName := 'TARGET2';
+    stTarget2.fVelocity := fInVelocity;
+    stTarget2.fDelta := fInDelta;
+    stTarget2.fAccel := fAccel;
+    stTarget2.fDecel := fAccel;
+    stTarget2.bMoveOk := TRUE;
+
+    stTarget3.sName := 'TARGET3';
+    stTarget3.fVelocity := fInVelocity;
+    stTarget3.fDelta := fInDelta;
+    stTarget3.fAccel := fAccel;
+    stTarget3.fDecel := fAccel;
+    stTarget3.bMoveOk := TRUE;
+
+    stTarget4.sName := 'TARGET4';
+    stTarget4.fVelocity := fInVelocity;
+    stTarget4.fDelta := fInDelta;
+    stTarget4.fAccel := fAccel;
+    stTarget4.fDecel := fAccel;
+    stTarget4.bMoveOk := TRUE;
+
+    stTarget5.sName := 'TARGET5';
+    stTarget5.fVelocity := fInVelocity;
+    stTarget5.fDelta := fInDelta;
+    stTarget5.fAccel := fAccel;
+    stTarget5.fDecel := fAccel;
+    stTarget5.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stTarget1;
+    arrStates[3] := stTarget2;
+    arrStates[4] := stTarget3;
+    arrStates[5] := stTarget4;
+    arrStates[6] := stTarget5;
+END_IF
+
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;
+
+END_FUNCTION_BLOCK
+```
+
+
 POU: FB_L2SI_Flowmeter
 ----------------------
 
@@ -172,6 +396,141 @@ VAR
     fFlowRate: LREAL;
 END_VAR
 
+
+END_FUNCTION_BLOCK
+```
+
+
+POU: FB_LIC
+-----------
+
+File: Library/Devices/LIC/FB_LIC.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_LIC
+VAR_IN_OUT
+    stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR_INPUT
+    stOut: DUT_PositionState;
+    stMirror1: DUT_PositionState;
+    stMirror2: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
+END_VAR
+VAR
+    fbYStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_LIC_States;
+END_VAR
+fbYStage(stMotionStage:=stYStage);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    stOut:=stOut,
+    stMirror1:=stMirror1,
+    stMirror2:=stMirror2,
+    stTarget1:=stTarget1);
+
+END_FUNCTION_BLOCK
+```
+
+
+POU: FB_LIC_States
+------------------
+
+File: Library/Devices/LIC/FB_LIC_States.TcPOU
+
+```vhdl
+FUNCTION_BLOCK FB_LIC_States EXTENDS FB_PositionStateBase_WithPMPS
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    enumSet: ENUM_LIC_states;
+
+    stOut: DUT_PositionState;
+    stMirror1: DUT_PositionState;
+    stMirror2: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+
+    bStatesLock: BOOL;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    enumGet: ENUM_LIC_States;
+END_VAR
+VAR
+    bLICInit: BOOL;
+END_VAR
+VAR CONSTANT
+    fInDelta: LREAL := 2;
+    fOutDelta: LREAL := 2;
+    fInVelocity: LREAL := 5;
+    fOutVelocity: LREAL := 5;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR
+IF NOT bLICInit THEN
+    bLICInit := TRUE;
+
+    stOut.sName := 'OUT';
+    stOut.fVelocity := fOutVelocity;
+    stOut.fDelta := fOutDelta;
+    stOut.fAccel := fAccel;
+    stOut.fDecel := fOutDecel;
+    stOut.bMoveOk := TRUE;
+
+    stMirror1.sName := 'MIRROR1';
+    stMirror1.fVelocity := fInVelocity;
+    stMirror1.fDelta := fInDelta;
+    stMirror1.fAccel := fAccel;
+    stMirror1.fDecel := fAccel;
+    stMirror1.bMoveOk := TRUE;
+
+    stMirror2.sName := 'MIRROR2';
+    stMirror2.fVelocity := fInVelocity;
+    stMirror2.fDelta := fInDelta;
+    stMirror2.fAccel := fAccel;
+    stMirror2.fDecel := fAccel;
+    stMirror2.bMoveOk := TRUE;
+
+    stTarget1.sName := 'TARGET';
+    stTarget1.fVelocity := fInVelocity;
+    stTarget1.fDelta := fInDelta;
+    stTarget1.fAccel := fAccel;
+    stTarget1.fDecel := fAccel;
+    stTarget1.bMoveOk := TRUE;
+
+    arrStates[1] := stOut;
+    arrStates[2] := stMirror1;
+    arrStates[3] := stMirror2;
+    arrStates[4] := stTarget1;
+END_IF
+
+setState := enumSet;
+Exec();
+enumGet := getState;
+enumSet := setState;
 
 END_FUNCTION_BLOCK
 ```
@@ -1687,9 +2046,45 @@ Links
 Pragma lint results
 -------------------
 ```
-INFO:pytmc.bin.pragmalint:Total pragmas found: 85 Total linter errors: 0
+INFO:pytmc.bin.pragmalint:Total pragmas found: 94 Total linter errors: 0
 PLC Project (1): Library
 ========================
+
+
+Devices/ATM/ENUM_ATM_States.TcDUT (TcPlcObject)
+-----------------------------------------------
+
+    - ENUM_ATM_States: Declaration - 1 pragmas
+
+
+Devices/ATM/FB_ATM.TcPOU (TcPlcObject)
+--------------------------------------
+
+    - FB_ATM: Declaration - 2 pragmas
+
+
+Devices/ATM/FB_ATM_States.TcPOU (TcPlcObject)
+---------------------------------------------
+
+    - FB_ATM_States: Declaration - 2 pragmas
+
+
+Devices/LIC/ENUM_LIC_States.TcDUT (TcPlcObject)
+-----------------------------------------------
+
+    - ENUM_LIC_States: Declaration - 1 pragmas
+
+
+Devices/LIC/FB_LIC.TcPOU (TcPlcObject)
+--------------------------------------
+
+    - FB_LIC: Declaration - 1 pragmas
+
+
+Devices/LIC/FB_LIC_States.TcPOU (TcPlcObject)
+---------------------------------------------
+
+    - FB_LIC_States: Declaration - 2 pragmas
 
 
 Devices/PPM/ENUM_PPM_States.TcDUT (TcPlcObject)
