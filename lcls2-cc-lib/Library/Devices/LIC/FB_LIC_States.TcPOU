@@ -45,21 +45,21 @@ END_VAR
     stOut.fAccel := fAccel;
     stOut.fDecel := fOutDecel;
     stOut.bMoveOk := TRUE;
-    
+
     stMirror1.sName := 'MIRROR1';
     stMirror1.fVelocity := fInVelocity;
     stMirror1.fDelta := fInDelta;
     stMirror1.fAccel := fAccel;
     stMirror1.fDecel := fAccel;
     stMirror1.bMoveOk := TRUE;
-    
+
     stMirror2.sName := 'MIRROR2';
     stMirror2.fVelocity := fInVelocity;
     stMirror2.fDelta := fInDelta;
     stMirror2.fAccel := fAccel;
     stMirror2.fDecel := fAccel;
     stMirror2.bMoveOk := TRUE;
-    
+
     stTarget1.sName := 'TARGET';
     stTarget1.fVelocity := fInVelocity;
     stTarget1.fDelta := fInDelta;
