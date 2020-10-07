@@ -25,6 +25,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Devices" />
+    <Folder Include="Devices\LIC" />
+    <Folder Include="Devices\ATM" />
     <Folder Include="Devices\WFS" />
     <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
@@ -35,6 +37,24 @@
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Devices\ATM\ENUM_ATM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\ATM\FB_ATM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\ATM\FB_ATM_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\ENUM_LIC_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\PPM\ENUM_PPM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>

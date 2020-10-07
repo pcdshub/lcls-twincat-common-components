@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+  <POU Name="FB_LIC" Id="{c48154b5-8669-4368-9217-42352a16b40e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LIC
+VAR_IN_OUT
+    stYStage: DUT_MotionStage;
+    fbArbiter: FB_Arbiter;
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR_INPUT
+    stOut: DUT_PositionState;
+    stMirror1: DUT_PositionState;
+    stMirror2: DUT_PositionState;
+    stTarget1: DUT_PositionState;
+    nTransitionAssertionID: UDINT;
+    nUnknownAssertionID: UDINT;
+END_VAR
+VAR
+    fbYStage: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv: MMS:STATE
+        io: i
+    '}
+    fbStates: FB_LIC_States;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+fbStates(
+    fbArbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO,
+    nTransitionAssertionID:=nTransitionAssertionID,
+    nUnknownAssertionID:=nUnknownAssertionID,
+    stMotionStage:=stYStage,
+    bEnable := TRUE,
+    stOut:=stOut,
+    stMirror1:=stMirror1,
+    stMirror2:=stMirror2,
+    stTarget1:=stTarget1);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
