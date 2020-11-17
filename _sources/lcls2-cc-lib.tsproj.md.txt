@@ -1626,6 +1626,7 @@ stZoomStage.bPowerSelf := TRUE;
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stZoomStage.fHomePosition := 0;
 
 fbFocus(stMotionStage:=stFocusStage);
 stFocusStage.bHardwareEnable := NOT bFocusLock;
@@ -1633,6 +1634,7 @@ stFocusStage.bPowerSelf := TRUE;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.fHomePosition := 0;
 
 // Set special error message for lens lock
 IF stZoomStage.bExecute AND bZoomLock THEN

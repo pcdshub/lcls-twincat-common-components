@@ -6,8 +6,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PLC Project (1): Library &#8212; pcdshub/lcls2-cc-lib  documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
@@ -1591,6 +1591,7 @@ stZoomStage.bPowerSelf := TRUE;
 stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
 stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
 stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stZoomStage.fHomePosition := 0;
 
 fbFocus(stMotionStage:=stFocusStage);
 stFocusStage.bHardwareEnable := NOT bFocusLock;
@@ -1598,6 +1599,7 @@ stFocusStage.bPowerSelf := TRUE;
 stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
 stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
 stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.fHomePosition := 0;
 
 // Set special error message for lens lock
 IF stZoomStage.bExecute AND bZoomLock THEN
@@ -2255,7 +2257,7 @@ END_FUNCTION_BLOCK
       &copy;2020, SLAC National Accelerator Laboratory.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
