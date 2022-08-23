@@ -29,8 +29,8 @@ END_VAR
 VAR CONSTANT
     fInDelta: LREAL := 2;
     fOutDelta: LREAL := 2;
-    fInVelocity: LREAL := 5;
-    fOutVelocity: LREAL := 5;
+    fInVelocity: LREAL := 1;
+    fOutVelocity: LREAL := 1;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
