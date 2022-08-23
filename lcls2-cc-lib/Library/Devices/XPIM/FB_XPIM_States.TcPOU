@@ -24,13 +24,14 @@ VAR_OUTPUT
     enumGet: ENUM_XPIM_States;
 END_VAR
 VAR
+    fbStateDefaults: FB_PositionState_Defaults;
     bXPIMInit: BOOL;
 END_VAR
 VAR CONSTANT
     fInDelta: LREAL := 2;
     fOutDelta: LREAL := 2;
-    fInVelocity: LREAL := 5;
-    fOutVelocity: LREAL := 5;
+    fInVelocity: LREAL := 1;
+    fOutVelocity: LREAL := 1;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
@@ -40,31 +41,43 @@ END_VAR
     bXPIMInit := TRUE;
 
     stOut.sName := 'OUT';
-    stOut.fVelocity := fOutVelocity;
-    stOut.fDelta := fOutDelta;
-    stOut.fAccel := fAccel;
-    stOut.fDecel := fOutDecel;
+    fbStateDefaults(
+        stPositionState:=stOut,
+        fVeloDefault:=fOutVelocity,
+        fDeltaDefault:=fOutDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fOutDecel,
+    );
     stOut.bMoveOk := TRUE;
 
     stYag.sName := 'YAG';
-    stYag.fVelocity := fInVelocity;
-    stYag.fDelta := fInDelta;
-    stYag.fAccel := fAccel;
-    stYag.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stYag,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stYag.bMoveOk := TRUE;
 
     stDiamond.sName := 'DIAMOND';
-    stDiamond.fVelocity := fInVelocity;
-    stDiamond.fDelta := fInDelta;
-    stDiamond.fAccel := fAccel;
-    stDiamond.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stDiamond,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stDiamond.bMoveOk := TRUE;
 
     stReticle.sName := 'RETICLE';
-    stReticle.fVelocity := fInVelocity;
-    stReticle.fDelta := fInDelta;
-    stReticle.fAccel := fAccel;
-    stReticle.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stReticle,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stReticle.bMoveOk := TRUE;
 
     arrStates[1] := stOut;

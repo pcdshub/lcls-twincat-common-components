@@ -24,6 +24,7 @@ VAR_OUTPUT
     enumGet: ENUM_PPM_States;
 END_VAR
 VAR
+    fbStateDefaults: FB_PositionState_Defaults;
     bPPMInit: BOOL;
 END_VAR
 VAR CONSTANT
@@ -42,63 +43,43 @@ END_VAR
     bPPMInit := TRUE;
 
     stOut.sName := 'OUT';
-    IF stOut.fVelocity = 0 THEN
-        stOut.fVelocity := fOutVelocity;
-	END_IF
-    IF stOut.fDelta = 0 THEN
-        stOut.fDelta := fOutDelta;
-	END_IF
-    IF stOut.fAccel = 0 THEN
-        stOut.fAccel := fAccel;
-	END_IF
-    IF stOut.fDecel = 0 THEN
-        stOut.fDecel := fOutDecel;
-	END_IF
+    fbStateDefaults(
+        stPositionState:=stOut,
+        fVeloDefault:=fOutVelocity,
+        fDeltaDefault:=fOutDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fOutDecel,
+    );
     stOut.bMoveOk := TRUE;
 
     stPower.sName := 'POWERMETER';
-    IF stPower.fVelocity = 0 THEN
-        stPower.fVelocity := fInVelocity;
-	END_IF
-    IF stPower.fDelta = 0 THEN
-        stPower.fDelta := fInDelta;
-	END_IF
-    IF stPower.fAccel = 0 THEN
-        stPower.fAccel := fAccel;        
-	END_IF
-    IF stPower.fDecel = 0 THEN
-        stPower.fDecel := fAccel;        
-	END_IF
+    fbStateDefaults(
+        stPositionState:=stPower,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stPower.bMoveOk := TRUE;
 
     stYag1.sName := 'YAG1';
-    IF stYag1.fVelocity = 0 THEN
-        stYag1.fVelocity := fInVelocity;
-	END_IF
-    IF stYag1.fDelta = 0 THEN
-        stYag1.fDelta := fInDelta;
-	END_IF
-    IF stYag1.fAccel = 0 THEN
-        stYag1.fAccel := fAccel;
-	END_IF
-    IF stYag1.fDecel = 0 THEN
-        stYag1.fDecel := fAccel;
-	END_IF
+    fbStateDefaults(
+        stPositionState:=stYag1,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stYag1.bMoveOk := TRUE;
 
     stYag2.sName := 'YAG2';
-    IF stYag2.fVelocity = 0 THEN
-        stYag2.fVelocity := fInVelocity;
-	END_IF
-    IF stYag2.fDelta = 0 THEN
-        stYag2.fDelta := fInDelta;
-	END_IF
-    IF stYag2.fAccel = 0 THEN
-        stYag2.fAccel := fAccel;
-	END_IF
-    IF stYag2.fDecel = 0 THEN
-        stYag2.fDecel := fAccel;
-	END_IF
+    fbStateDefaults(
+        stPositionState:=stYag2,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stYag2.bMoveOk := TRUE;
 
     arrStates[1] := stOut;

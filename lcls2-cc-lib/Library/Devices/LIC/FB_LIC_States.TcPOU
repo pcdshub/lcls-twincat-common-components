@@ -24,13 +24,14 @@ VAR_OUTPUT
     enumGet: ENUM_LIC_States;
 END_VAR
 VAR
+    fbStateDefaults: FB_PositionState_Defaults;
     bLICInit: BOOL;
 END_VAR
 VAR CONSTANT
     fInDelta: LREAL := 2;
     fOutDelta: LREAL := 2;
-    fInVelocity: LREAL := 5;
-    fOutVelocity: LREAL := 5;
+    fInVelocity: LREAL := 1;
+    fOutVelocity: LREAL := 1;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
@@ -40,31 +41,43 @@ END_VAR
     bLICInit := TRUE;
 
     stOut.sName := 'OUT';
-    stOut.fVelocity := fOutVelocity;
-    stOut.fDelta := fOutDelta;
-    stOut.fAccel := fAccel;
-    stOut.fDecel := fOutDecel;
+    fbStateDefaults(
+        stPositionState:=stOut,
+        fVeloDefault:=fOutVelocity,
+        fDeltaDefault:=fOutDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fOutDecel,
+    );
     stOut.bMoveOk := TRUE;
 
     stMirror1.sName := 'MIRROR1';
-    stMirror1.fVelocity := fInVelocity;
-    stMirror1.fDelta := fInDelta;
-    stMirror1.fAccel := fAccel;
-    stMirror1.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stMirror1,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stMirror1.bMoveOk := TRUE;
 
     stMirror2.sName := 'MIRROR2';
-    stMirror2.fVelocity := fInVelocity;
-    stMirror2.fDelta := fInDelta;
-    stMirror2.fAccel := fAccel;
-    stMirror2.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stMirror2,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stMirror2.bMoveOk := TRUE;
 
     stTarget1.sName := 'TARGET';
-    stTarget1.fVelocity := fInVelocity;
-    stTarget1.fDelta := fInDelta;
-    stTarget1.fAccel := fAccel;
-    stTarget1.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stTarget1,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stTarget1.bMoveOk := TRUE;
 
     arrStates[1] := stOut;
