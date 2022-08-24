@@ -24,13 +24,16 @@ VAR_OUTPUT
     enumGet: ENUM_PPM_States;
 END_VAR
 VAR
+    fbStateDefaults: FB_PositionState_Defaults;
     bPPMInit: BOOL;
 END_VAR
 VAR CONSTANT
+    // These are the default values
+    // Set values on states prior to passing in for non-default values
     fInDelta: LREAL := 2;
     fOutDelta: LREAL := 2;
-    fInVelocity: LREAL := 5;
-    fOutVelocity: LREAL := 5;
+    fInVelocity: LREAL := 1;
+    fOutVelocity: LREAL := 1;
     fAccel: LREAL := 200;
     fOutDecel: LREAL := 25;
 END_VAR
@@ -40,31 +43,43 @@ END_VAR
     bPPMInit := TRUE;
 
     stOut.sName := 'OUT';
-    stOut.fVelocity := fOutVelocity;
-    stOut.fDelta := fOutDelta;
-    stOut.fAccel := fAccel;
-    stOut.fDecel := fOutDecel;
+    fbStateDefaults(
+        stPositionState:=stOut,
+        fVeloDefault:=fOutVelocity,
+        fDeltaDefault:=fOutDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fOutDecel,
+    );
     stOut.bMoveOk := TRUE;
 
     stPower.sName := 'POWERMETER';
-    stPower.fVelocity := fInVelocity;
-    stPower.fDelta := fInDelta;
-    stPower.fAccel := fAccel;
-    stPower.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stPower,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stPower.bMoveOk := TRUE;
 
     stYag1.sName := 'YAG1';
-    stYag1.fVelocity := fInVelocity;
-    stYag1.fDelta := fInDelta;
-    stYag1.fAccel := fAccel;
-    stYag1.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stYag1,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stYag1.bMoveOk := TRUE;
 
     stYag2.sName := 'YAG2';
-    stYag2.fVelocity := fInVelocity;
-    stYag2.fDelta := fInDelta;
-    stYag2.fAccel := fAccel;
-    stYag2.fDecel := fAccel;
+    fbStateDefaults(
+        stPositionState:=stYag2,
+        fVeloDefault:=fInVelocity,
+        fDeltaDefault:=fInDelta,
+        fAccelDefault:=fAccel,
+        fDecelDefault:=fAccel,
+    );
     stYag2.bMoveOk := TRUE;
 
     arrStates[1] := stOut;
