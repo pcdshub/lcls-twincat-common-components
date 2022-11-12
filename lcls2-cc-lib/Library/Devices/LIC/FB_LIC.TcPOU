@@ -12,6 +12,7 @@ VAR_INPUT
     stMirror1: DUT_PositionState;
     stMirror2: DUT_PositionState;
     stTarget1: DUT_PositionState;
+    sPmpsDeviceName: STRING;
     nTransitionAssertionID: UDINT;
     nUnknownAssertionID: UDINT;
 END_VAR
@@ -37,6 +38,7 @@ fbStates(
     nTransitionAssertionID:=nTransitionAssertionID,
     nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
+    sPmpsDeviceName:=sPmpsDeviceName,
     bEnable := TRUE,
     stOut:=stOut,
     stMirror1:=stMirror1,

@@ -12,6 +12,7 @@ VAR_INPUT
     stPower: DUT_PositionState;
     stYag1: DUT_PositionState;
     stYag2: DUT_PositionState;
+    sPmpsDeviceName: STRING;
     nTransitionAssertionID: UDINT;
     nUnknownAssertionID: UDINT;
 END_VAR
@@ -57,6 +58,7 @@ fbStates(
     nTransitionAssertionID:=nTransitionAssertionID,
     nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
+    sPmpsDeviceName:=sPmpsDeviceName,
     bEnable:=TRUE,
     stOut:=stOut,
     stPower:=stPower,

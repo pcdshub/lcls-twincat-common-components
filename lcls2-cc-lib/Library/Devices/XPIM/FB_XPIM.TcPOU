@@ -38,6 +38,8 @@ VAR_INPUT
     stDiamond: DUT_PositionState;
     stReticle: DUT_PositionState;
 
+    sPmpsDeviceName: STRING;
+
     nTransitionAssertionID: UDINT;
     nUnknownAssertionID: UDINT;
 END_VAR
@@ -117,6 +119,7 @@ fbStates(
     nTransitionAssertionID:=nTransitionAssertionID,
     nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
+    sPmpsDeviceName:=sPmpsDeviceName,
     bEnable:=TRUE,
     stOut:=stOut,
     stYag:=stYag,
