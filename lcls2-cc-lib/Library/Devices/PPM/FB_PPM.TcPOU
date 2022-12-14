@@ -13,8 +13,7 @@ VAR_INPUT
     stYag1: DUT_PositionState;
     stYag2: DUT_PositionState;
     sPmpsDeviceName: STRING;
-    nTransitionAssertionID: UDINT;
-    nUnknownAssertionID: UDINT;
+    sTransitionKey: STRING;
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -55,10 +54,9 @@ stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
-    nTransitionAssertionID:=nTransitionAssertionID,
-    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     sPmpsDeviceName:=sPmpsDeviceName,
+    sTransitionKey:=sTransitionKey,
     bEnable:=TRUE,
     stOut:=stOut,
     stPower:=stPower,
