@@ -51,8 +51,6 @@ stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 fbStates(
     fbArbiter:=fbArbiter,
     fbFFHWO:=fbFFHWO,
-    nTransitionAssertionID:=nTransitionAssertionID,
-    nUnknownAssertionID:=nUnknownAssertionID,
     stMotionStage:=stYStage,
     sPmpsDeviceName:=sPmpsDeviceName,
     sTransitionKey:=sTransitionKey,
