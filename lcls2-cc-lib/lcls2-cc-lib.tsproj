@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4020.56">
-	<Project ProjectGUID="{AB70FBBB-83F0-4609-9FD5-DF42CB839A31}" Target64Bit="true" ShowHideConfigurations="#x106">
-		<Plc>
-			<Project File="Library.xti"/>
-		</Plc>
-	</Project>
-</TcSmProject>

@@ -15,10 +15,11 @@
     <Implicit_Jitter_Distribution>{4604432a-6eee-489d-ba4c-0a908a6f435f}</Implicit_Jitter_Distribution>
     <LibraryReferences>{78c19189-384c-4a07-a84d-94cfbb123508}</LibraryReferences>
     <CombineIds>false</CombineIds>
-    <Title>lcls2-cc-lib</Title>
+    <Title>lcls-twincat-common-components</Title>
     <Released>true</Released>
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
+    <WriteProductVersion>false</WriteProductVersion>
     <!--    <OutputType>Exe</OutputType>
     <RootNamespace>MyApplication</RootNamespace>
     <AssemblyName>MyApplication</AssemblyName>-->

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="ENUM_ATM_States" Id="{39e72780-ebe1-47a1-93c3-70f8a4ded457}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 TYPE ENUM_ATM_States :

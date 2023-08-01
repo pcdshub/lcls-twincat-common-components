@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_WFS_States" Id="{fc548a7a-4779-4c1d-9e47-13bb07421648}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_WFS_States EXTENDS FB_PositionStateBase_WithPMPS
 VAR_INPUT

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REF_Laser" Id="{fe34aa45-49f5-4ca6-ae16-2db42771e34d}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REF_Laser
 VAR_INPUT

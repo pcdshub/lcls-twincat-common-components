@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="ENUM_XPIM_Filters" Id="{bfdc46b8-f018-4652-86e1-1c12b2ad37bb}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 TYPE ENUM_XPIM_Filters :

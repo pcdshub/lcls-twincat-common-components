@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# TcXaeShell Solution File, Format Version 11.00
+VisualStudioVersion = 15.0.28307.1300
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "lcls2-cc-lib", "lcls2-cc-lib\lcls2-cc-lib.tsproj", "{AB70FBBB-83F0-4609-9FD5-DF42CB839A31}"
+Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "lcls-twincat-common-components", "lcls2-cc-lib\lcls-twincat-common-components.tsproj", "{AB70FBBB-83F0-4609-9FD5-DF42CB839A31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
