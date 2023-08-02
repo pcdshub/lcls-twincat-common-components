@@ -3,7 +3,7 @@
   <POU Name="FB_PositionState_Defaults" Id="{5f326ffa-3869-4f51-b9bc-bdf476cd3f65}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PositionState_Defaults
 VAR_IN_OUT
-    stPositionState: DUT_PositionState;
+    stPositionState: ST_PositionState;
 END_VAR
 VAR_INPUT
     fVeloDefault: LREAL;

@@ -4,25 +4,44 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
     stYStage: DUT_MotionStage;
-    fbArbiter: FB_Arbiter;
     fbFFHWO: FB_HardwareFFOutput;
-END_VAR
-VAR_INPUT
+    fbArbiter: FB_Arbiter;
     stOut: DUT_PositionState;
     stPower: DUT_PositionState;
     stYag1: DUT_PositionState;
     stYag2: DUT_PositionState;
-    sPmpsDeviceName: STRING;
+END_VAR
+VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_PPM_States;
+    bEnableMotion: BOOL;
+    bEnableBeamParams: BOOL;
+    bEnablePositionLimits: BOOL;
+    sDeviceName: STRING;
     sTransitionKey: STRING;
 END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_PPM_States;
+    stDbStateParams: ST_DbStateParams;
+END_VAR
 VAR
+    bInit: BOOL;
+
     fbYStage: FB_MotionStage;
 
     {attribute 'pytmc' := '
-        pv: MMS:STATE
+        pv: MMS
         io: i
     '}
-    fbStates: FB_PPM_States;
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
     {attribute 'pytmc' := '
         pv: SPM
@@ -46,22 +65,41 @@ VAR
     fbYagThermoCouple: FB_ThermoCouple;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
-stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+END_IF
+
+fbYStage(stMotionStage:=stYStage);
+
+astPositionState[E_PPM_States.OUT] := stOut;
+astPositionState[E_PPM_States.POWERMETER] := stPower;
+astPositionState[E_PPM_States.YAG1] := stYag1;
+astPositionState[E_PPM_States.YAG2] := stYag2;
 
 fbStates(
-    fbArbiter:=fbArbiter,
-    fbFFHWO:=fbFFHWO,
     stMotionStage:=stYStage,
-    sPmpsDeviceName:=sPmpsDeviceName,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
     sTransitionKey:=sTransitionKey,
-    bEnable:=TRUE,
-    stOut:=stOut,
-    stPower:=stPower,
-    stYag1:=stYag1,
-    stYag2:=stYag2);
+    stDbStateParams=>stDbStateParams,
+);
+
+stOut := astPositionState[E_PPM_States.OUT];
+stPower := astPositionState[E_PPM_States.POWERMETER];
+stYag1 := astPositionState[E_PPM_States.YAG1];
+stYag2 := astPositionState[E_PPM_States.YAG2];
 
 fbPowerMeter();
 fbGige();

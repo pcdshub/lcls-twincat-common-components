@@ -1,15 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <DUT Name="ENUM_LIC_States" Id="{c8ed19bc-c7b4-45d8-a75f-020a0ed98bf8}">
+  <DUT Name="E_ATM_States" Id="{39e72780-ebe1-47a1-93c3-70f8a4ded457}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
-TYPE ENUM_LIC_States :
+TYPE E_ATM_States :
 (
     Unknown := 0,
     OUT := 1,
-    MIRROR1 := 2,
-    MIRROR2 := 3,
-    TARGET := 4
-);
+    TARGET1 := 2,
+    TARGET2 := 3,
+    TARGET3 := 4,
+    TARGET4 := 5,
+    TARGET5 := 6
+) UINT;
 END_TYPE
 ]]></Declaration>
   </DUT>

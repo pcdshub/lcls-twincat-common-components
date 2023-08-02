@@ -3,45 +3,85 @@
   <POU Name="FB_LIC" Id="{c48154b5-8669-4368-9217-42352a16b40e}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_LIC
 VAR_IN_OUT
-    stYStage: DUT_MotionStage;
-    fbArbiter: FB_Arbiter;
+    stYStage: ST_MotionStage;
     fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter;
+    stOut: ST_PositionState;
+    stMirror1: ST_PositionState;
+    stMirror2: ST_PositionState;
+    stTarget1: ST_PositionState;
 END_VAR
 VAR_INPUT
-    stOut: DUT_PositionState;
-    stMirror1: DUT_PositionState;
-    stMirror2: DUT_PositionState;
-    stTarget1: DUT_PositionState;
-    sPmpsDeviceName: STRING;
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_LIC_States;
+    bEnableMotion: BOOL;
+    bEnableBeamParams: BOOL;
+    bEnablePositionLimits: BOOL;
+    sDeviceName: STRING;
     sTransitionKey: STRING;
 END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_LIC_States;
+    stDbStateParams: ST_DbStateParams;
+END_VAR
 VAR
+    bInit: BOOL;
+
     fbYStage: FB_MotionStage;
 
     {attribute 'pytmc' := '
-        pv: MMS:STATE
+        pv: MMS
         io: i
     '}
-    fbStates: FB_LIC_States;
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    bInit: BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
-stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+END_IF
+
+fbYStage(stMotionStage:=stYStage);
+
+astPositionState[E_LIC_States.OUT] := stOut;
+astPositionState[E_LIC_States.MIRROR1] := stMirror1;
+astPositionState[E_LIC_States.MIRROR2] := stMirror2;
+astPositionState[E_LIC_States.TARGET] := stTarget1;
 
 fbStates(
-    fbArbiter:=fbArbiter,
-    fbFFHWO:=fbFFHWO,
-    sTransitionKey:=sTransitionKey,
     stMotionStage:=stYStage,
-    sPmpsDeviceName:=sPmpsDeviceName,
-    bEnable := TRUE,
-    stOut:=stOut,
-    stMirror1:=stMirror1,
-    stMirror2:=stMirror2,
-    stTarget1:=stTarget1);]]></ST>
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
+    sTransitionKey:=sTransitionKey,
+    stDbStateParams=>stDbStateParams,
+);
+
+stOut := astPositionState[E_LIC_States.OUT];
+stMirror1 := astPositionState[E_LIC_States.MIRROR1];
+stMirror2 := astPositionState[E_LIC_States.MIRROR2];
+stTarget1 := astPositionState[E_LIC_States.TARGET];]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

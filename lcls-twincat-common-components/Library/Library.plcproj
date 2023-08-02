@@ -16,7 +16,7 @@
     <LibraryReferences>{78c19189-384c-4a07-a84d-94cfbb123508}</LibraryReferences>
     <CombineIds>false</CombineIds>
     <Title>lcls-twincat-common-components</Title>
-    <Released>true</Released>
+    <Released>false</Released>
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
     <WriteProductVersion>false</WriteProductVersion>
@@ -38,25 +38,19 @@
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Devices\ATM\ENUM_ATM_States.TcDUT">
+    <Compile Include="Devices\ATM\E_ATM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\ATM\FB_ATM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\ATM\FB_ATM_States.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\LIC\ENUM_LIC_States.TcDUT">
+    <Compile Include="Devices\LIC\E_LIC_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\LIC\FB_LIC.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\LIC\FB_LIC_States.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\PPM\ENUM_PPM_States.TcDUT">
+    <Compile Include="Devices\PPM\E_PPM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
@@ -66,9 +60,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\PPM\FB_PPM_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF.TcPOU">

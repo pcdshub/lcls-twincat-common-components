@@ -3,30 +3,49 @@
   <POU Name="FB_ATM" Id="{2f5a266c-a319-48e1-b797-55a7489c8358}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ATM
 VAR_IN_OUT
-    stYStage: DUT_MotionStage;
-    stXStage: DUT_MotionStage;
-    fbArbiter: FB_Arbiter;
+    stYStage: ST_MotionStage;
+    stXStage: ST_MotionStage;
     fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter;
+    stOut: ST_PositionState;
+    stTarget1: ST_PositionState;
+    stTarget2: ST_PositionState;
+    stTarget3: ST_PositionState;
+    stTarget4: ST_PositionState;
+    stTarget5: ST_PositionState;
 END_VAR
 VAR_INPUT
-    stOut: DUT_PositionState;
-    stTarget1: DUT_PositionState;
-    stTarget2: DUT_PositionState;
-    stTarget3: DUT_PositionState;
-    stTarget4: DUT_PositionState;
-    stTarget5: DUT_PositionState;
-    sPmpsDeviceName: STRING;
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_ATM_States;
+    bEnableMotion: BOOL;
+    bEnableBeamParams: BOOL;
+    bEnablePositionLimits: BOOL;
+    sDeviceName: STRING;
     sTransitionKey: STRING;
 END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_ATM_States;
+    stDbStateParams: ST_DbStateParams;
+END_VAR
 VAR
+    bInit: BOOL;
+
     fbYStage: FB_MotionStage;
     fbXStage: FB_MotionStage;
 
     {attribute 'pytmc' := '
-        pv: MMS:STATE
+        pv: MMS
         io: i
     '}
-    fbStates: FB_ATM_States;
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
     {attribute 'pytmc' := '
         pv: STC:01
@@ -36,31 +55,52 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
-stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
 
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    stXStage.bLimitForwardEnable := TRUE;
+    stXStage.bLimitBackwardEnable := TRUE;
+    stXStage.bHardwareEnable := TRUE;
+    stXStage.bPowerSelf := TRUE;
+    stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+END_IF
+
+fbYStage(stMotionStage:=stYStage);
 fbXStage(stMotionStage:=stXStage);
-stXStage.bLimitForwardEnable := TRUE;
-stXStage.bLimitBackwardEnable := TRUE;
-stXStage.bHardwareEnable := TRUE;
-stXStage.bPowerSelf := TRUE;
-stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+astPositionState[E_ATM_States.OUT] := stOut;
+astPositionState[E_ATM_States.TARGET1] := stTarget1;
+astPositionState[E_ATM_States.TARGET2] := stTarget2;
+astPositionState[E_ATM_States.TARGET3] := stTarget3;
+astPositionState[E_ATM_States.TARGET4] := stTarget4;
+astPositionState[E_ATM_States.TARGET5] := stTarget5;
 
 fbStates(
-    fbArbiter:=fbArbiter,
-    fbFFHWO:=fbFFHWO,
     stMotionStage:=stYStage,
-    sPmpsDeviceName:=sPmpsDeviceName,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
     sTransitionKey:=sTransitionKey,
-    bEnable := TRUE,
-    stOut:=stOut,
-    stTarget1:=stTarget1,
-    stTarget2:=stTarget2,
-    stTarget3:=stTarget3,
-    stTarget4:=stTarget4,
-    stTarget5:=stTarget5);
+    stDbStateParams=>stDbStateParams,
+);
+
+stOut := astPositionState[E_ATM_States.OUT];
+stTarget1 := astPositionState[E_ATM_States.TARGET1];
+stTarget2 := astPositionState[E_ATM_States.TARGET2];
+stTarget3 := astPositionState[E_ATM_States.TARGET3];
+stTarget4 := astPositionState[E_ATM_States.TARGET4];
+stTarget5 := astPositionState[E_ATM_States.TARGET5];
 
 fbThermoCouple1();]]></ST>
     </Implementation>
