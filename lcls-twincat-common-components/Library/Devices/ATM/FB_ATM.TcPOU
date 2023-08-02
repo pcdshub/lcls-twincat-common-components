@@ -40,6 +40,8 @@ VAR
     fbYStage: FB_MotionStage;
     fbXStage: FB_MotionStage;
 
+    fbStateDefaults: FB_PositionState_Defaults;
+
     {attribute 'pytmc' := '
         pv: MMS
         io: i
@@ -52,6 +54,12 @@ VAR
         io: input
     '}
     fbThermoCouple1: FB_TempSensor;
+END_VAR
+VAR CONSTANT
+    // State defaults if not provided
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -68,6 +76,14 @@ IF NOT bInit THEN
     stXStage.bHardwareEnable := TRUE;
     stXStage.bPowerSelf := TRUE;
     stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stTarget1, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget2, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget3, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget4, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget5, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
 fbYStage(stMotionStage:=stYStage);

@@ -63,6 +63,8 @@ VAR
     fbZoom: FB_MotionStage;
     fbFocus: FB_MotionStage;
 
+    fbStateDefaults: FB_PositionState_Defaults;
+
     {attribute 'pytmc' := '
         pv: MMS
         io: i
@@ -90,7 +92,12 @@ VAR
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
-]]></Declaration>
+VAR CONSTANT
+    // State defaults if not provided
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[
 IF NOT bInit THEN
@@ -115,6 +122,12 @@ IF NOT bInit THEN
     stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
     stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
     stFocusStage.fHomePosition := 0;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stYag, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stDiamond, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stReticle, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
 fbYStage(stMotionStage:=stYStage);

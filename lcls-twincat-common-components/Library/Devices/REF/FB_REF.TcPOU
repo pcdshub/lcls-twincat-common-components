@@ -34,6 +34,8 @@ VAR
 
     fbYStage: FB_MotionStage;
 
+    fbStateDefaults: FB_PositionState_Defaults;
+
     {attribute 'pytmc' := '
         pv: MMS
         io: i
@@ -47,7 +49,10 @@ VAR
     '}
     fbLaser: FB_REF_Laser;
 END_VAR
-]]></Declaration>
+VAR CONSTANT
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 10;
+END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[
 IF NOT bInit THEN
@@ -56,6 +61,10 @@ IF NOT bInit THEN
     stYStage.bHardwareEnable := TRUE;
     stYStage.bPowerSelf := FALSE;
     stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stIn, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
 fbYStage(stMotionStage:=stYStage);
