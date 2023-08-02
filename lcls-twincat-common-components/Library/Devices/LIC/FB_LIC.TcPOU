@@ -42,8 +42,6 @@ VAR
     '}
     fbStates: FB_PositionStatePMPS1D;
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-
-    bInit: BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>

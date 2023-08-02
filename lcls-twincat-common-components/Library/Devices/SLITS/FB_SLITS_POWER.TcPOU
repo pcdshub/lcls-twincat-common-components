@@ -3,10 +3,10 @@
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
 VAR_IN_OUT
-    stTopBlade: DUT_MotionStage;
-    stBottomBlade: DUT_MotionStage;
-    stNorthBlade: DUT_MotionStage;
-    stSouthBlade: DUT_MotionStage;
+    stTopBlade: ST_MotionStage;
+    stBottomBlade: ST_MotionStage;
+    stNorthBlade: ST_MotionStage;
+    stSouthBlade: ST_MotionStage;
 END_VAR
 VAR_INPUT
     {attribute 'pytmc' := '
@@ -43,10 +43,10 @@ VAR
     fHighAccel: LREAL := 0.8;
     fLowAccel: LREAL := 0.1;
 
-    stTop: DUT_PositionState;
-    stBOTTOM: DUT_PositionState;
-    stNorth: DUT_PositionState;
-    stSouth: DUT_PositionState;
+    stTop: ST_PositionState;
+    stBOTTOM: ST_PositionState;
+    stNorth: ST_PositionState;
+    stSouth: ST_PositionState;
 
     {attribute 'pytmc' := 'pv: TOP'}
     fbTop: FB_StatePTPMove;

@@ -3,13 +3,13 @@
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 VAR_IN_OUT
-    stYStage: DUT_MotionStage;
+    stYStage: ST_MotionStage;
     fbFFHWO: FB_HardwareFFOutput;
     fbArbiter: FB_Arbiter;
-    stOut: DUT_PositionState;
-    stPower: DUT_PositionState;
-    stYag1: DUT_PositionState;
-    stYag2: DUT_PositionState;
+    stOut: ST_PositionState;
+    stPower: ST_PositionState;
+    stYag1: ST_PositionState;
+    stYag2: ST_PositionState;
 END_VAR
 VAR_INPUT
     {attribute 'pytmc' := '

@@ -9,7 +9,7 @@ TYPE E_LIC_States :
     MIRROR1 := 2,
     MIRROR2 := 3,
     TARGET := 4
-);
+) UINT;
 END_TYPE
 ]]></Declaration>
   </DUT>

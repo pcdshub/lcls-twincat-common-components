@@ -9,7 +9,7 @@ TYPE E_PPM_States :
     POWERMETER := 2,
     YAG1 := 3,
     YAG2 := 4
-);
+) UINT;
 END_TYPE]]></Declaration>
   </DUT>
 </TcPlcObject>

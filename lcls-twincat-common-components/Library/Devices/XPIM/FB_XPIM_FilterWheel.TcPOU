@@ -15,14 +15,14 @@ VAR_INPUT
         pv: SET
         io: io
     '}
-    nSetPos: ENUM_XPIM_Filters;
+    nSetPos: E_XPIM_Filters;
 END_VAR
 VAR_OUTPUT
     {attribute 'pytmc' := '
         pv: GET
         io: i
     '}
-    nGetPos: ENUM_XPIM_Filters;
+    nGetPos: E_XPIM_Filters;
     bBusy: BOOL;
     bError: BOOL;
     sError: STRING;

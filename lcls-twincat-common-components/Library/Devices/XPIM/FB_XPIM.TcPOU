@@ -3,15 +3,30 @@
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
 VAR_IN_OUT
-    stYStage: DUT_MotionStage;
-    stZoomStage: DUT_MotionStage;
-    stFocusStage: DUT_MotionStage;
+    stYStage: ST_MotionStage;
+    stZoomStage: ST_MotionStage;
+    stFocusStage: ST_MotionStage;
+    fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter;
+    stOut: ST_PositionState;
+    stYag: ST_PositionState;
+    stDiamond: ST_PositionState;
+    stReticle: ST_PositionState;
     stEl6In: EL6inData22b;
     stEl6Out: EL6OutData22b;
-    fbArbiter: FB_Arbiter;
-    fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_XPIM_States;
+    bEnableMotion: BOOL;
+    bEnableBeamParams: BOOL;
+    bEnablePositionLimits: BOOL;
+    sDeviceName: STRING;
+    sTransitionKey: STRING;
+
     {attribute 'pytmc' := '
         pv: CLZ:LOCK
         io: io
@@ -32,25 +47,28 @@ VAR_INPUT
     bZoomEndBwd AT %I*: BOOL;
     bFocusEndFwd AT %I*: BOOL;
     bFocusEndBwd AT %I*: BOOL;
-
-    stOut: DUT_PositionState;
-    stYag: DUT_PositionState;
-    stDiamond: DUT_PositionState;
-    stReticle: DUT_PositionState;
-
-    sPmpsDeviceName: STRING;
-    sTransitionKey: STRING;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_XPIM_States;
+    stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR
+    bInit: BOOL;
+
     fbYStage: FB_MotionStage;
     fbZoom: FB_MotionStage;
     fbFocus: FB_MotionStage;
 
     {attribute 'pytmc' := '
-        pv: MMS:STATE
-        io: io
+        pv: MMS
+        io: i
     '}
-    fbStates: FB_XPIM_States;
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
     {attribute 'pytmc' := '
         pv: MFW
@@ -74,28 +92,34 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbYStage(stMotionStage:=stYStage);
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
-// No limit switch at the bottom
-stYStage.bLimitBackwardEnable := TRUE;
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
 
-// Extra lock on lens + lens limits are normally open
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+    // No limit switch at the bottom
+    stYStage.bLimitBackwardEnable := TRUE;
+
+    // Extra lock on lens + lens limits are NO instead of NC
+    stZoomStage.bHardwareEnable := NOT bZoomLock;
+    stZoomStage.bPowerSelf := TRUE;
+    stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+    stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+    stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+    stZoomStage.fHomePosition := 0;
+
+    stFocusStage.bHardwareEnable := NOT bFocusLock;
+    stFocusStage.bPowerSelf := TRUE;
+    stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+    stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+    stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+    stFocusStage.fHomePosition := 0;
+END_IF
+
+fbYStage(stMotionStage:=stYStage);
 fbZoom(stMotionStage:=stZoomStage);
-stZoomStage.bHardwareEnable := NOT bZoomLock;
-stZoomStage.bPowerSelf := TRUE;
-stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
-stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
-stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
-stZoomStage.fHomePosition := 0;
-
 fbFocus(stMotionStage:=stFocusStage);
-stFocusStage.bHardwareEnable := NOT bFocusLock;
-stFocusStage.bPowerSelf := TRUE;
-stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
-stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
-stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
-stFocusStage.fHomePosition := 0;
 
 // Set special error message for lens lock
 IF stZoomStage.bExecute AND bZoomLock THEN
@@ -111,25 +135,39 @@ IF stFocusStage.bExecute AND bFocusLock THEN
     stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
 END_IF
 
+astPositionState[E_XPIM_States.OUT] := stOut;
+astPositionState[E_XPIM_States.YAG] := stYag;
+astPositionState[E_XPIM_States.DIAMOND] := stDiamond;
+astPositionState[E_XPIM_States.RETICLE] := stReticle;
+
 fbStates(
-    fbArbiter:=fbArbiter,
-    fbFFHWO:=fbFFHWO,
     stMotionStage:=stYStage,
-    sPmpsDeviceName:=sPmpsDeviceName,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
     sTransitionKey:=sTransitionKey,
-    bEnable:=TRUE,
-    stOut:=stOut,
-    stYag:=stYag,
-    stDiamond:=stDiamond,
-    stReticle:=stReticle);
+    stDbStateParams=>stDbStateParams,
+);
+
+stOut := astPositionState[E_XPIM_States.OUT];
+stYag := astPositionState[E_XPIM_States.YAG];
+stDiamond := astPositionState[E_XPIM_States.DIAMOND];
+stReticle := astPositionState[E_XPIM_States.RETICLE];
 
 fbFilterWheel(
     bExecute:=TRUE,
     stIn_El6:=stEl6In,
-    stOut_El6:=stEl6Out);
+    stOut_El6:=stEl6Out,
+);
 
 fbOpal();
-fbLED(enumXPIM:=fbStates.enumGet);
+fbLED(enumXPIM:=eEnumGet);
 fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>

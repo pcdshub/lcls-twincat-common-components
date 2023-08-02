@@ -74,19 +74,16 @@
     <Compile Include="Devices\SLITS\FB_SLITS_POWER.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\WFS\ENUM_WFS_States.TcDUT">
+    <Compile Include="Devices\WFS\E_WFS_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\WFS\FB_WFS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\WFS\FB_WFS_States.TcPOU">
+    <Compile Include="Devices\XPIM\E_XPIM_Filters.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\XPIM\ENUM_XPIM_Filters.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\XPIM\ENUM_XPIM_States.TcDUT">
+    <Compile Include="Devices\XPIM\E_XPIM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM.TcPOU">
@@ -99,9 +96,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM_Opal.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\XPIM\FB_XPIM_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FB_L2SI_Flowmeter.TcPOU">

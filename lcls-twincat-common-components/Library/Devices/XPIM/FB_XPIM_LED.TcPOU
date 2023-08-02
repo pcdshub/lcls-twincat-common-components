@@ -24,7 +24,7 @@ VAR_INPUT
     '}
     fLEDTimeOut: LREAL := 10;
 
-    enumXPIM: ENUM_XPIM_States;
+    enumXPIM: E_XPIM_States;
 END_VAR
 VAR_OUTPUT
     {attribute 'pytmc' := '
@@ -36,7 +36,7 @@ VAR_OUTPUT
 END_VAR
 VAR
     tonLED: TON;
-    enumLastCycle: ENUM_XPIM_States := ENUM_XPIM_States.Unknown;
+    enumLastCycle: E_XPIM_States := E_XPIM_States.Unknown;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -44,10 +44,10 @@ END_VAR
 // LED is always (and only) useful at Reticle state
 IF bLEDAuto AND enumXPIM <> enumLastCycle THEN
     // Turn on the LED when we get to the Reticle
-    IF enumXPIM = ENUM_XPIM_States.Reticle THEN
+    IF enumXPIM = E_XPIM_States.Reticle THEN
         bLEDPower := TRUE;
     // Turn off the LED when we stop at any other state
-    ELSIF enumXPIM <> ENUM_XPIM_States.Unknown THEN
+    ELSIF enumXPIM <> E_XPIM_States.Unknown THEN
         bLEDPower := FALSE;
     END_IF
 END_IF
