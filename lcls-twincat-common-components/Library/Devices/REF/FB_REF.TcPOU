@@ -6,10 +6,10 @@ VAR_IN_OUT
     stYStage: ST_MotionStage;
     fbFFHWO: FB_HardwareFFOutput;
     fbArbiter: FB_Arbiter;
-    stIn: ST_PositionState;
-    stOut: ST_PositionState;
 END_VAR
 VAR_INPUT
+    stIn: ST_PositionState;
+    stOut: ST_PositionState;
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
