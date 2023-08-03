@@ -14,7 +14,7 @@ VAR
     );
     fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;;
+    fbFFHWO: FB_HardwareFFOutput;
     fbArbiter: FB_Arbiter(1);
     fbSubSysIO: FB_DummyArbIO;
 END_VAR
@@ -24,6 +24,9 @@ END_VAR
     LA:=fbArbiter,
     FFO:=fbFFHWO,
 );
+
+stYStage.bLimitBackwardEnable := TRUE;
+stYStage.bLimitForwardEnable := TRUE;
 
 fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
 fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10);
