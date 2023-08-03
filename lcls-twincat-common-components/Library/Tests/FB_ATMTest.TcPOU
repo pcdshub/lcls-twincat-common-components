@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_ATMTest" Id="{7b7c37ef-d7db-42bb-948f-8b077a7ccce5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ATMTest EXTENDS FB_TestSuite
+VAR
+    fbATM: FB_ATM;
+    stYStage: ST_MotionStage;
+    stXStage: ST_MotionStage;
+
+    stDefault: ST_PositionState := (
+        fVelocity:=10,
+        bMoveOk:=TRUE,
+        bValid:=TRUE
+    );
+    fbSetup: FB_StateSetupHelper;
+
+    fbFFHWO: FB_HardwareFFOutput;;
+    fbArbiter: FB_Arbiter(1);
+    fbSubSysIO: FB_DummyArbIO;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSubSysIO(
+    LA:=fbArbiter,
+    FFO:=fbFFHWO,
+);
+
+fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10);
+fbSetup(stPositionState:=fbATM.stTarget1, sName:='T1', fPosition:=20);
+fbSetup(stPositionState:=fbATM.stTarget2, sName:='T2', fPosition:=30);
+fbSetup(stPositionState:=fbATM.stTarget3, sName:='T3', fPosition:=40);
+fbSetup(stPositionState:=fbATM.stTarget4, sName:='T4', fPosition:=50);
+fbSetup(stPositionState:=fbATM.stTarget5, sName:='T5', fPosition:=60);
+
+fbATM(
+    stYStage:=stYStage,
+    stXStage:=stXStage,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=TRUE,
+    bEnableBeamParams:=TRUE,
+    bEnablePositionLimits:=TRUE,
+    sDeviceName:='ATM',
+);
+
+TestStateMove();
+]]></ST>
+    </Implementation>
+    <Method Name="TestStateMove" Id="{f3017196-77b1-444b-bcd3-e7d7d6c6f76f}">
+      <Declaration><![CDATA[METHOD TestStateMove
+VAR_INST
+    tonTimer: TON;
+    nIterState: UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastState: UINT := E_ATM_States.TARGET5;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Sanity check: can we at least move to every named state?
+TEST('TestATMStateMove');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+// Start in Unknown, then go through the state positions one by one
+IF fbATM.eEnumGet = nIterState THEN
+    nIterState := nIterState + 1;
+    fbATM.eEnumSet := nIterState;
+END_IF
+
+IF tonTimer.Q OR nIterState > nLastState THEN
+    AssertFalse(tonTimer.Q, 'Timeout in ATM move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

@@ -20,6 +20,7 @@
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
     <WriteProductVersion>false</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
     <!--    <OutputType>Exe</OutputType>
     <RootNamespace>MyApplication</RootNamespace>
     <AssemblyName>MyApplication</AssemblyName>-->
@@ -34,6 +35,7 @@
     <Folder Include="Devices\XPIM" />
     <Folder Include="Devices\PPM" />
     <Folder Include="DUTs" />
+    <Folder Include="Tests" />
     <Folder Include="POUs" />
     <Folder Include="Version" />
   </ItemGroup>
@@ -107,6 +109,12 @@
     <Compile Include="POUs\FB_PositionState_Defaults.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\FB_ATMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\PRG_TEST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Version\Global_Version.TcGVL">
       <SubType>Code</SubType>
     </Compile>
@@ -140,6 +148,12 @@
     <PlaceholderReference Include="Tc2_Utilities">
       <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="TcUnit">
+      <DefaultResolution>TcUnit, * (www.tcunit.org)</DefaultResolution>
+      <Namespace>TcUnit</Namespace>
+      <HideWhenReferencedAsDependency>true</HideWhenReferencedAsDependency>
+      <Optional>true</Optional>
     </PlaceholderReference>
   </ItemGroup>
   <ProjectExtensions>
