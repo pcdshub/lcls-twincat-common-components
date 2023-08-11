@@ -39,7 +39,6 @@ VAR
 
     {attribute 'pytmc' := '
         pv: MMS
-        io: i
         astPositionState.array: 1..2
     '}
     fbStates: FB_PositionStatePMPS1D;
@@ -48,7 +47,6 @@ VAR
 
     {attribute 'pytmc' := '
         pv: LAS
-        io: io
     '}
     fbLaser: FB_REF_Laser;
 END_VAR

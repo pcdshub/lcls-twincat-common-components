@@ -45,7 +45,6 @@ VAR
 
     {attribute 'pytmc' := '
         pv: MMS
-        io: i
         astPositionState.array: 1..6
     '}
     fbStates: FB_PositionStatePMPS1D;
@@ -54,7 +53,6 @@ VAR
 
     {attribute 'pytmc' := '
         pv: STC:01
-        io: input
     '}
     fbThermoCouple1: FB_TempSensor;
 END_VAR
