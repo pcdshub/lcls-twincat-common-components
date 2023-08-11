@@ -10,10 +10,25 @@ VAR
     //fbREFTest: FB_REFTest;
     //fbWFSTest: FB_WFSTest;
     //fbXPIMTest: FB_XPIMTest;
+
+    fbSetupJson: FB_PMPSJsonTestHelper;
+    astBeamParams: ARRAY[0..9] OF ST_DbStateParams;
+    nIter: UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[
+// Setup a fake db export for the test suite
+FOR nIter := 0 TO 9 DO
+    astBeamParams[nIter].stBeamParams := PMPS_GVL.cstFullBeam;
+    astBeamParams[nIter].sPmpsState := CONCAT('T', UINT_TO_STRING(nIter));
+END_FOR
+fbSetupJson(
+    astBeamParams := astBeamParams,
+    bExecute := TRUE,
+    sDevNAme := 'DEVICE',
+);
+// Run the tests
 TcUnit.RUN();]]></ST>
     </Implementation>
   </POU>

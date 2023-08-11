@@ -983,7 +983,7 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{545D4726-3EA4-772E-2F7C-CC5BD5A8963A}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{DA08AB1A-8781-A2D3-3B5E-FED2870BFCC0}">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">

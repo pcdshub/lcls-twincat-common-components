@@ -17,25 +17,31 @@ VAR
     fbFFHWO: FB_HardwareFFOutput;
     fbArbiter: FB_Arbiter(1);
     fbSubSysIO: FB_DummyArbIO;
+
+    bInit: BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbSubSysIO(
+      <ST><![CDATA[// Fake PMPS handling
+fbSubSysIO(
     LA:=fbArbiter,
     FFO:=fbFFHWO,
 );
 
+// Fake limit handling
 stYStage.bLimitBackwardEnable := TRUE;
 stYStage.bLimitForwardEnable := TRUE;
 
+// Standard state setup
 fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10);
-fbSetup(stPositionState:=fbATM.stTarget1, sName:='T1', fPosition:=20);
-fbSetup(stPositionState:=fbATM.stTarget2, sName:='T2', fPosition:=30);
-fbSetup(stPositionState:=fbATM.stTarget3, sName:='T3', fPosition:=40);
-fbSetup(stPositionState:=fbATM.stTarget4, sName:='T4', fPosition:=50);
-fbSetup(stPositionState:=fbATM.stTarget5, sName:='T5', fPosition:=60);
+fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+fbSetup(stPositionState:=fbATM.stTarget1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+fbSetup(stPositionState:=fbATM.stTarget2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+fbSetup(stPositionState:=fbATM.stTarget3, sName:='T3', fPosition:=40, sPmpsState:='T3');
+fbSetup(stPositionState:=fbATM.stTarget4, sName:='T4', fPosition:=50, sPmpsState:='T4');
+fbSetup(stPositionState:=fbATM.stTarget5, sName:='T5', fPosition:=60, sPmpsState:='T5');
 
+// Standard FB call
 fbATM(
     stYStage:=stYStage,
     stXStage:=stXStage,
@@ -44,10 +50,14 @@ fbATM(
     bEnableMotion:=TRUE,
     bEnableBeamParams:=TRUE,
     bEnablePositionLimits:=TRUE,
-    sDeviceName:='ATM',
+    sDeviceName:='DEVICE',
+    sTransitionKey:='T9',
+    bReadDBNow:=NOT bInit,
 );
 
 TestStateMove();
+
+bInit := TRUE;
 ]]></ST>
     </Implementation>
     <Method Name="TestStateMove" Id="{f3017196-77b1-444b-bcd3-e7d7d6c6f76f}">

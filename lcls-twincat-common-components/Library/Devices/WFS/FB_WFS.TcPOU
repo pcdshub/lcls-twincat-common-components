@@ -25,6 +25,7 @@ VAR_INPUT
     bEnablePositionLimits: BOOL;
     sDeviceName: STRING;
     sTransitionKey: STRING;
+    bReadDBNow: BOOL;
 END_VAR
 VAR_OUTPUT
     {attribute 'pytmc' := '
@@ -113,6 +114,7 @@ fbStates(
     bEnablePositionLimits:=bEnablePositionLimits,
     sDeviceName:=sDeviceName,
     sTransitionKey:=sTransitionKey,
+    bReadDBNow:=bReadDBNow,
     stDbStateParams=>stDbStateParams,
 );
 
