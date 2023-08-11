@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_L2SI_Flowmeter" Id="{f4fe6025-68b2-43d4-8493-5a0f33999a1a}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_L2SI_Flowmeter
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_L2SI_Flowmeter
 VAR
     {attribute 'pytmc' := '
         pv: MA
