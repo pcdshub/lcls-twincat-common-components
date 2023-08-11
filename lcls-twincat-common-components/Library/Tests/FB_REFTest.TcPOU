@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
+VAR
+    fbREF: FB_REF;
+    stYStage: ST_MotionStage;
+
+    stDefault: ST_PositionState := (
+        fVelocity:=10,
+        bMoveOk:=TRUE,
+        bValid:=TRUE
+    );
+    fbSetup: FB_StateSetupHelper;
+
+    fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter(1);
+    fbSubSysIO: FB_DummyArbIO;
+
+    bInit: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Fake PMPS handling
+fbSubSysIO(
+    LA:=fbArbiter,
+    FFO:=fbFFHWO,
+);
+
+// Fake limit handling
+stYStage.bLimitBackwardEnable := TRUE;
+stYStage.bLimitForwardEnable := TRUE;
+
+// Standard state setup
+fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+fbSetup(stPositionState:=fbREF.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+fbSetup(stPositionState:=fbREF.stIn, sName:='T1', fPosition:=20, sPmpsState:='T1');
+
+// Standard FB call
+fbREF(
+    stYStage:=stYStage,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=TRUE,
+    bEnableBeamParams:=TRUE,
+    bEnablePositionLimits:=TRUE,
+    sDeviceName:='DEVICE',
+    sTransitionKey:='T9',
+    bReadDBNow:=NOT bInit,
+);
+
+TestStateMove();
+
+bInit := TRUE;
+]]></ST>
+    </Implementation>
+    <Method Name="TestStateMove" Id="{3a2a7314-4b65-4375-be43-beb65ac4cd39}">
+      <Declaration><![CDATA[METHOD TestStateMove
+VAR_INST
+    tonTimer: TON;
+    nIterState: UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastState: UINT := E_EpicsInOut.IN;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Sanity check: can we at least move to every named state?
+TEST('TestREFStateMove');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+// Start in Unknown, then go through the state positions one by one
+IF fbREF.eEnumGet = nIterState THEN
+    nIterState := nIterState + 1;
+    fbREF.eEnumSet := nIterState;
+END_IF
+
+IF tonTimer.Q OR nIterState > nLastState THEN
+    AssertFalse(tonTimer.Q, 'Timeout in REF move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

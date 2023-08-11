@@ -115,6 +115,21 @@
     <Compile Include="Tests\FB_ATMTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\FB_LICTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_PPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_REFTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_WFSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_XPIMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\PRG_TEST.TcPOU">
       <SubType>Code</SubType>
     </Compile>

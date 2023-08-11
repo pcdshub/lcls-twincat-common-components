@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PPMTest" Id="{4fe2b094-7b68-4ad1-a845-3ae72e5e51ed}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PPMTest EXTENDS FB_TestSuite
+VAR
+    fbPPM: FB_PPM;
+    stYStage: ST_MotionStage;
+
+    stDefault: ST_PositionState := (
+        fVelocity:=10,
+        bMoveOk:=TRUE,
+        bValid:=TRUE
+    );
+    fbSetup: FB_StateSetupHelper;
+
+    fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter(1);
+    fbSubSysIO: FB_DummyArbIO;
+
+    bInit: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Fake PMPS handling
+fbSubSysIO(
+    LA:=fbArbiter,
+    FFO:=fbFFHWO,
+);
+
+// Fake limit handling
+stYStage.bLimitBackwardEnable := TRUE;
+stYStage.bLimitForwardEnable := TRUE;
+
+// Standard state setup
+fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+fbSetup(stPositionState:=fbPPM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+fbSetup(stPositionState:=fbPPM.stPower, sName:='T1', fPosition:=20, sPmpsState:='T1');
+fbSetup(stPositionState:=fbPPM.stYag1, sName:='T2', fPosition:=30, sPmpsState:='T2');
+fbSetup(stPositionState:=fbPPM.stYag2, sName:='T3', fPosition:=40, sPmpsState:='T3');
+
+// Standard FB call
+fbPPM(
+    stYStage:=stYStage,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=TRUE,
+    bEnableBeamParams:=TRUE,
+    bEnablePositionLimits:=TRUE,
+    sDeviceName:='DEVICE',
+    sTransitionKey:='T9',
+    bReadDBNow:=NOT bInit,
+);
+
+TestStateMove();
+
+bInit := TRUE;
+]]></ST>
+    </Implementation>
+    <Method Name="TestStateMove" Id="{6d196413-6cf3-4cc4-b625-5ae4ecbdc9a3}">
+      <Declaration><![CDATA[METHOD TestStateMove
+VAR_INST
+    tonTimer: TON;
+    nIterState: UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastState: UINT := E_PPM_States.YAG2;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Sanity check: can we at least move to every named state?
+TEST('TestPPMStateMove');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+// Start in Unknown, then go through the state positions one by one
+IF fbPPM.eEnumGet = nIterState THEN
+    nIterState := nIterState + 1;
+    fbPPM.eEnumSet := nIterState;
+END_IF
+
+IF tonTimer.Q OR nIterState > nLastState THEN
+    AssertFalse(tonTimer.Q, 'Timeout in PPM move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

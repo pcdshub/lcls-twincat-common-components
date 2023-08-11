@@ -5,11 +5,11 @@
 PROGRAM PRG_TEST
 VAR
     fbATMTest: FB_ATMTest;
-    //fbLICTest: FB_LICTest;
-    //fbPPMTest: FB_PPMTest;
-    //fbREFTest: FB_REFTest;
-    //fbWFSTest: FB_WFSTest;
-    //fbXPIMTest: FB_XPIMTest;
+    fbLICTest: FB_LICTest;
+    fbPPMTest: FB_PPMTest;
+    fbREFTest: FB_REFTest;
+    fbWFSTest: FB_WFSTest;
+    fbXPIMTest: FB_XPIMTest;
 
     fbSetupJson: FB_PMPSJsonTestHelper;
     astBeamParams: ARRAY[0..9] OF ST_DbStateParams;
