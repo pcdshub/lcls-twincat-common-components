@@ -2639,6 +2639,26 @@ External Setpoint Generation:
 				<Link VarA="PlcTask Inputs^PRG_TEST.fbATMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
 				<Link VarA="PlcTask Outputs^PRG_TEST.fbATMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^LIC_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbLICTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbLICTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^PPM_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbPPMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbREFTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbREFTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbWFSTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbWFSTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
 		</OwnerA>
 	</Mappings>
 </TcSmItem>
