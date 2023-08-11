@@ -44,7 +44,6 @@ VAR
     fbCom: FB_EL6_COM;
 
     nStep: USINT;
-    sLastTestCmd: STRING;
     bIsTest: BOOL;
     fbGetTime: NT_GetTime;
     bStopOnErr: BOOL;
