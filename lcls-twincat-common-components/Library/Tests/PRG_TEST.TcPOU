@@ -10,6 +10,7 @@ VAR
     fbREFTest: FB_REFTest;
     fbWFSTest: FB_WFSTest;
     fbXPIMTest: FB_XPIMTest;
+    fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
 
     fbSetupJson: FB_PMPSJsonTestHelper;
     astBeamParams: ARRAY[0..9] OF ST_DbStateParams;

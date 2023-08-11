@@ -43,6 +43,7 @@ VAR
     '}
     fbStates: FB_PositionStatePMPS1D;
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := '
         pv: LAS
@@ -70,8 +71,16 @@ END_IF
 
 fbYStage(stMotionStage:=stYStage);
 
-astPositionState[E_EpicsInOut.OUT] := stOut;
-astPositionState[E_EpicsInOut.IN] := stIn;
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_EpicsInOut.OUT] := stOut;
+    astPositionState[E_EpicsInOut.IN] := stIn;
+END_IF
 
 fbStates(
     stMotionStage:=stYStage,
@@ -87,6 +96,12 @@ fbStates(
     sTransitionKey:=sTransitionKey,
     bReadDBNow:=bReadDBNow,
     stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
 );
 
 stOut := astPositionState[E_EpicsInOut.OUT];

@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CheckPositionStateWrite" Id="{4a237718-942d-465c-a0b3-3b5d567db752}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CheckPositionStateWrite
+(*
+    Save a position state during one cycle, then check it the next cycle
+*)
+VAR_IN_OUT
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR
+VAR_INPUT
+    bCheck: BOOL;
+    bSave: BOOL;
+END_VAR
+VAR_OUTPUT
+    bHadWrite: BOOL;
+END_VAR
+VAR
+    astCache: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    nIter: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+bHadWrite := FALSE;
+IF bCheck THEN
+    FOR nIter := 1 TO GeneralConstants.MAX_STATES DO
+        // Only the runtime-editable EPICS fields
+        bHadWrite S= astPositionState[nIter].sName <> astCache[nIter].sName;
+        bHadWrite S= astPositionState[nIter].fPosition <> astCache[nIter].fPosition;
+        bHadWrite S= astPositionState[nIter].fDelta <> astCache[nIter].fDelta;
+        bHadWrite S= astPositionState[nIter].fVelocity <> astCache[nIter].fVelocity;
+        bHadWrite S= astPositionState[nIter].fAccel <> astCache[nIter].fAccel;
+        bHadWrite S= astPositionState[nIter].fDecel <> astCache[nIter].fDecel;
+    END_FOR
+END_IF
+
+IF bSave THEN
+    astCache := astPositionState;
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

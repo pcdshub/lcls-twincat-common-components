@@ -49,6 +49,7 @@ VAR
     '}
     fbStates: FB_PositionStatePMPS1D;
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := '
         pv: STC:01
@@ -90,12 +91,20 @@ END_IF
 fbYStage(stMotionStage:=stYStage);
 fbXStage(stMotionStage:=stXStage);
 
-astPositionState[E_ATM_States.OUT] := stOut;
-astPositionState[E_ATM_States.TARGET1] := stTarget1;
-astPositionState[E_ATM_States.TARGET2] := stTarget2;
-astPositionState[E_ATM_States.TARGET3] := stTarget3;
-astPositionState[E_ATM_States.TARGET4] := stTarget4;
-astPositionState[E_ATM_States.TARGET5] := stTarget5;
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_ATM_States.OUT] := stOut;
+    astPositionState[E_ATM_States.TARGET1] := stTarget1;
+    astPositionState[E_ATM_States.TARGET2] := stTarget2;
+    astPositionState[E_ATM_States.TARGET3] := stTarget3;
+    astPositionState[E_ATM_States.TARGET4] := stTarget4;
+    astPositionState[E_ATM_States.TARGET5] := stTarget5;
+END_IF
 
 fbStates(
     stMotionStage:=stYStage,
@@ -111,6 +120,12 @@ fbStates(
     sTransitionKey:=sTransitionKey,
     bReadDBNow:=bReadDBNow,
     stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
 );
 
 stOut := astPositionState[E_ATM_States.OUT];

@@ -103,6 +103,9 @@
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CheckPositionStateWrite.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_L2SI_Flowmeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -113,6 +116,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_ATMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_CheckPositionStateWriteTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_LICTest.TcPOU">

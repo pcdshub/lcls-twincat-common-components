@@ -45,6 +45,7 @@ VAR
     '}
     fbStates: FB_PositionStatePMPS1D;
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided
@@ -70,10 +71,18 @@ END_IF
 
 fbYStage(stMotionStage:=stYStage);
 
-astPositionState[E_LIC_States.OUT] := stOut;
-astPositionState[E_LIC_States.MIRROR1] := stMirror1;
-astPositionState[E_LIC_States.MIRROR2] := stMirror2;
-astPositionState[E_LIC_States.TARGET] := stTarget1;
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_LIC_States.OUT] := stOut;
+    astPositionState[E_LIC_States.MIRROR1] := stMirror1;
+    astPositionState[E_LIC_States.MIRROR2] := stMirror2;
+    astPositionState[E_LIC_States.TARGET] := stTarget1;
+END_IF
 
 fbStates(
     stMotionStage:=stYStage,
@@ -89,6 +98,12 @@ fbStates(
     sTransitionKey:=sTransitionKey,
     bReadDBNow:=bReadDBNow,
     stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
 );
 
 stOut := astPositionState[E_LIC_States.OUT];
