@@ -2,32 +2,52 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
+(*
+    Function block for reference laser (REF) controls:
+    - Y motion
+    - Y in and out states
+    - laser power and dimmer
+*)
 VAR_IN_OUT
+    // Y motor (state select).
     stYStage: ST_MotionStage;
+    // The fast fault output to fault to.
     fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
     fbArbiter: FB_Arbiter;
 END_VAR
 VAR_INPUT
-    stIn: ST_PositionState;
+    // Settings for the OUT state.
     stOut: ST_PositionState;
+    // Settings for the IN state.
+    stIn: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet: E_EpicsInOut;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
     bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
     bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
     sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
     sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
 END_VAR
 VAR_OUTPUT
+    // The current position state as an enum.
     {attribute 'pytmc' := '
         pv: MMS:STATE:GET
         io: i
     '}
     eEnumGet: E_EpicsInOut;
+    // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR

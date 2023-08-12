@@ -2,32 +2,60 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
+(*
+    Function block for XTES Imager (XPIM = XTES PIM = Profile Impager) controls:
+    - Y, Zoom, Focus motion
+    - Y scintillator states
+    - filterwheel serial commands
+    - camera power
+    - LED on/off
+    - flowswitch (not fully implemented)
+*)
 VAR_IN_OUT
+    // Y motor (state select).
     stYStage: ST_MotionStage;
+    // Zoom motor (camera zoom).
     stZoomStage: ST_MotionStage;
+    // Focus motor (camera focus).
     stFocusStage: ST_MotionStage;
+    // The fast fault output to fault to.
     fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
     fbArbiter: FB_Arbiter;
+    // Serial input
     stEl6In: EL6inData22b;
+    // Serial output
     stEl6Out: EL6OutData22b;
 END_VAR
 VAR_INPUT
+    // Settings for the OUT state.
     stOut: ST_PositionState;
+    // Settings for the YAG state.
     stYag: ST_PositionState;
+    // Settings for the DIAMOND state.
     stDiamond: ST_PositionState;
+    // Settings for the RETICLE state.
     stReticle: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet: E_XPIM_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
     bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
     bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
     sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
     sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
 
+    // While TRUE, the zoom motor cannot be moved.
     {attribute 'pytmc' := '
         pv: CLZ:LOCK
         io: io
@@ -36,6 +64,7 @@ VAR_INPUT
     '}
     bZoomLock: BOOL;
 
+    // While TRUE, the focus motor cannot be moved.
     {attribute 'pytmc' := '
         pv: CLF:LOCK
         io: io
@@ -44,17 +73,23 @@ VAR_INPUT
     '}
     bFocusLock: BOOL;
 
+    // Forward limit disable for zoom
     bZoomEndFwd AT %I*: BOOL;
+    // Backward limit disable for zoom
     bZoomEndBwd AT %I*: BOOL;
+    // Forward limit disable for focus
     bFocusEndFwd AT %I*: BOOL;
+    // Backward limit disable for focus
     bFocusEndBwd AT %I*: BOOL;
 END_VAR
 VAR_OUTPUT
+    // The current position state as an enum.
     {attribute 'pytmc' := '
         pv: MMS:STATE:GET
         io: i
     '}
     eEnumGet: E_XPIM_States;
+    // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR

@@ -2,34 +2,59 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
+(*
+    Function block for Power and Profile Monitor (PPM) controls:
+    - Y motion
+    - Y power and profile states
+    - power meter
+    - camera power
+    - flow meter (not fully implemented)
+    - thermocouple
+*)
 VAR_IN_OUT
+    // Y motor (state select).
     stYStage: ST_MotionStage;
+    // The fast fault output to fault to.
     fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
     fbArbiter: FB_Arbiter;
 END_VAR
 VAR_INPUT
+    // Settings for the OUT state.
     stOut: ST_PositionState;
+    // Settings for the POWERMETER state.
     stPower: ST_PositionState;
+    // Settings for the YAG1 state.
     stYag1: ST_PositionState;
+    // Settings for the YAG2 state.
     stYag2: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet: E_PPM_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
     bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
     bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
     sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
     sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
 END_VAR
 VAR_OUTPUT
+    // The current position state as an enum.
     {attribute 'pytmc' := '
         pv: MMS:STATE:GET
         io: i
     '}
     eEnumGet: E_PPM_States;
+    // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR

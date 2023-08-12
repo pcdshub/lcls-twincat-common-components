@@ -2,37 +2,62 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_ATM" Id="{2f5a266c-a319-48e1-b797-55a7489c8358}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ATM
+(*
+    Function block for Arrival Time Monitor (ATM) controls:
+    - X, Y motion
+    - Y target states
+    - thermocouple
+*)
 VAR_IN_OUT
+    // Y motor (state select).
     stYStage: ST_MotionStage;
+    // X motor (align target to beam).
     stXStage: ST_MotionStage;
+    // The fast fault output to fault to.
     fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
     fbArbiter: FB_Arbiter;
 END_VAR
 VAR_INPUT
+    // Settings for the OUT state.
     stOut: ST_PositionState;
+    // Settings for the TARGET1 state.
     stTarget1: ST_PositionState;
+    // Settings for the TARGET2 state.
     stTarget2: ST_PositionState;
+    // Settings for the TARGET3 state.
     stTarget3: ST_PositionState;
+    // Settings for the TARGET4 state.
     stTarget4: ST_PositionState;
+    // Settings for the TARGET5 state.
     stTarget5: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet: E_ATM_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
     bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
     bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
     sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
     sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
 END_VAR
 VAR_OUTPUT
+    // The current position state as an enum.
     {attribute 'pytmc' := '
         pv: MMS:STATE:GET
         io: i
     '}
     eEnumGet: E_ATM_States;
+    // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR
