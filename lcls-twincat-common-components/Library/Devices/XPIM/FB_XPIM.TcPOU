@@ -109,24 +109,16 @@ VAR
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
-    {attribute 'pytmc' := '
-        pv: MFW
-    '}
+    {attribute 'pytmc' := 'pv: MFW'}
     fbFilterWheel: FB_XPIM_FilterWheel;
 
-    {attribute 'pytmc' := '
-        pv: CAM
-    '}
+    {attribute 'pytmc' := 'pv: CAM'}
     fbOpal: FB_XPIM_Opal;
 
-    {attribute 'pytmc' := '
-        pv: CIL
-    '}
+    {attribute 'pytmc' := 'pv: CIL'}
     fbLED: FB_XPIM_LED;
 
-    {attribute 'pytmc' := '
-        pv: SFW
-    '}
+    {attribute 'pytmc' := 'pv: SFW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT

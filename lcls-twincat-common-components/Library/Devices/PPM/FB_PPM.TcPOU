@@ -72,24 +72,16 @@ VAR
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
-    {attribute 'pytmc' := '
-        pv: SPM
-    '}
+    {attribute 'pytmc' := 'pv: SPM'}
     fbPowerMeter: FB_PPM_PowerMeter;
 
-    {attribute 'pytmc' := '
-        pv: CAM
-    '}
+    {attribute 'pytmc' := 'pv: CAM'}
     fbGige: FB_PPM_Gige;
 
-    {attribute 'pytmc' :='
-        pv: SFM
-    '}
+    {attribute 'pytmc' :='pv: SFM'}
     fbFlowMeter: FB_L2SI_Flowmeter;
 
-    {attribute 'pytmc' := '
-        pv: YAG
-    '}
+    {attribute 'pytmc' := 'pv: YAG'}
     fbYagThermoCouple: FB_ThermoCouple;
 END_VAR
 VAR CONSTANT

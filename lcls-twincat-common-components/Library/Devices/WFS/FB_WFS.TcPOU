@@ -76,14 +76,10 @@ VAR
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
-    {attribute 'pytmc' := '
-        pv: STC:01
-    '}
+    {attribute 'pytmc' := 'pv: STC:01'}
     fbThermoCouple1: FB_TempSensor;
 
-    {attribute 'pytmc' := '
-        pv: STC:02
-    '}
+    {attribute 'pytmc' := 'pv: STC:02'}
     fbThermoCouple2: FB_TempSensor;
 END_VAR
 VAR CONSTANT

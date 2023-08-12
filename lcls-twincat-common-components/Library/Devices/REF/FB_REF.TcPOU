@@ -65,9 +65,7 @@ VAR
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
-    {attribute 'pytmc' := '
-        pv: LAS
-    '}
+    {attribute 'pytmc' := 'pv: LAS'}
     fbLaser: FB_REF_Laser;
 END_VAR
 VAR CONSTANT
