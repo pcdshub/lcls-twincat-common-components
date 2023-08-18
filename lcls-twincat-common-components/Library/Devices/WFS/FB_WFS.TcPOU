@@ -56,7 +56,7 @@ VAR_OUTPUT
         pv: MMS:STATE:GET
         io: i
     '}
-    eEnumGet: E_ATM_States;
+    eEnumGet: E_WFS_States;
     // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
