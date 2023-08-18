@@ -15,6 +15,7 @@ VAR_INPUT
     sPmpsDeviceName: STRING;
     sTransitionKey: STRING;
     fFlowOffset: LREAL;
+    
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
@@ -38,7 +39,7 @@ VAR
     {attribute 'pytmc' :='
         pv: FWM
     '}
-    fbFlowMeter: FB_L2SI_Flowmeter;
+    fbFlowMeter: FB_AnalogInput := (iTermBits:=12, fTermMax:=60, fTermMin:=0, fResolution:=0.1);
 
     {attribute 'pytmc' := '
         pv: YAG
