@@ -8,6 +8,7 @@
     - Y power and profile states
     - power meter
     - camera power
+    - camera illuminator
     - flow meter (not fully implemented)
     - thermocouple
 *)
