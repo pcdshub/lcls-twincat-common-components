@@ -153,10 +153,10 @@ IF NOT bInit THEN
     stFocusStage.fHomePosition := 0;
 
     // Partial backcompat, this used to set fVelocity too but this should be set per install
-    fbStateDefaults(stPositionState:=stOut, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
-    fbStateDefaults(stPositionState:=stYag, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stDiamond, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stReticle, fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stYag, sNameDefault:='YAG', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stDiamond, sNameDefault:='DIAMOND', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stReticle, sNameDefault:='RETICLE', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
 fbYStage(stMotionStage:=stYStage);

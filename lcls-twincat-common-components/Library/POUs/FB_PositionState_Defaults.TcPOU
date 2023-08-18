@@ -6,6 +6,7 @@ VAR_IN_OUT
     stPositionState: ST_PositionState;
 END_VAR
 VAR_INPUT
+    sNameDefault: STRING;
     fVeloDefault: LREAL;
     fDeltaDefault: LREAL;
     fAccelDefault: LREAL;
@@ -13,7 +14,10 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF stPositionState.fVelocity = 0 THEN
+      <ST><![CDATA[IF stPositionState.sName = '' THEN
+    stPositionState.sName := sNameDefault;
+END_IF
+IF stPositionState.fVelocity = 0 THEN
     stPositionState.fVelocity := fVeloDefault;
 END_IF
 IF stPositionState.fDelta = 0 THEN
