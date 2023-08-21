@@ -15,7 +15,7 @@
     <Implicit_Jitter_Distribution>{4604432a-6eee-489d-ba4c-0a908a6f435f}</Implicit_Jitter_Distribution>
     <LibraryReferences>{78c19189-384c-4a07-a84d-94cfbb123508}</LibraryReferences>
     <CombineIds>false</CombineIds>
-    <Title>lcls2-cc-lib-nrw</Title>
+    <Title>lcls2-cc-lib</Title>
     <Released>true</Released>
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
@@ -128,9 +128,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderReference Include="LCLS General-nrw">
-      <DefaultResolution>LCLS General-nrw, * (SLAC)</DefaultResolution>
-      <Namespace>LCLS_General_nrw</Namespace>
+    <PlaceholderReference Include="LCLS General">
+      <DefaultResolution>LCLS General, * (SLAC)</DefaultResolution>
+      <Namespace>LCLS_General</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="lcls-twincat-motion">
       <DefaultResolution>lcls-twincat-motion, * (SLAC)</DefaultResolution>
@@ -156,9 +156,6 @@
   <ItemGroup>
     <PlaceholderResolution Include="LCLS General">
       <Resolution>LCLS General, * (SLAC)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="LCLS General-nrw">
-      <Resolution>LCLS General-nrw, * (SLAC)</Resolution>
     </PlaceholderResolution>
   </ItemGroup>
   <ProjectExtensions>
