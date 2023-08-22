@@ -15,7 +15,7 @@ VAR_INPUT
     sPmpsDeviceName: STRING;
     sTransitionKey: STRING;
     fFlowOffset: LREAL;
-    
+
 END_VAR
 VAR
     fbYStage: FB_MotionStage;
