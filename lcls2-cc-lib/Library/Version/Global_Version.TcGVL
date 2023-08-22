@@ -3,10 +3,10 @@
   <GVL Name="Global_Version" Id="{28d53d87-c928-4af1-84ef-e6ceb5302370}">
     <Declaration><![CDATA[{attribute 'TcGenerated'}
 {attribute 'no-analysis'}
+{attribute 'linkalways'}
 // This function has been automatically generated from the project information.
 VAR_GLOBAL CONSTANT
     {attribute 'const_non_replaced'}
-    {attribute 'linkalways'}
     stLibVersion_lcls2_cc_lib : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, sVersion := '0.0.0');
 END_VAR
 ]]></Declaration>
