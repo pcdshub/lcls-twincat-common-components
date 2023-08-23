@@ -201,11 +201,6 @@
       <Optional>true</Optional>
     </PlaceholderReference>
   </ItemGroup>
-  <ItemGroup>
-    <PlaceholderResolution Include="LCLS General">
-      <Resolution>LCLS General, * (SLAC)</Resolution>
-    </PlaceholderResolution>
-  </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
