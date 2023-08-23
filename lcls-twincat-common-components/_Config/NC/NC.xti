@@ -20,6 +20,7 @@
 		<Axis File="LIC_Y.xti" Id="2"/>
 		<Axis File="PPM_Y.xti" Id="3"/>
 		<Axis File="REF_Y.xti" Id="4"/>
+		<Axis File="SATT_Y.xti" Id="7"/>
 		<Axis File="WFS_Y.xti" Id="5"/>
 		<Axis File="XPIM_Y.xti" Id="6"/>
 	</NC>

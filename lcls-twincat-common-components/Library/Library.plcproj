@@ -29,6 +29,7 @@
     <Folder Include="Devices" />
     <Folder Include="Devices\LIC" />
     <Folder Include="Devices\ATM" />
+    <Folder Include="Devices\SATT" />
     <Folder Include="Devices\WFS" />
     <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
@@ -68,6 +69,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF_Laser.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SATT\E_SXR_SATT_Position.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SATT\FB_AttenuatorElementDensity.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SATT\FB_SXR_SATT_Stage.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SATT\ST_SATT_Filter.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\SLITS\FB_SLITS.TcPOU">
@@ -118,6 +131,9 @@
     <Compile Include="Tests\FB_ATMTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\FB_SATTTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\FB_CheckPositionStateWriteTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -156,6 +172,10 @@
     <PlaceholderReference Include="lcls-twincat-motion">
       <DefaultResolution>lcls-twincat-motion, * (SLAC)</DefaultResolution>
       <Namespace>lcls_twincat_motion</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="lcls-twincat-physics">
+      <DefaultResolution>lcls-twincat-physics, * (SLAC)</DefaultResolution>
+      <Namespace>lcls_twincat_physics</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="PMPS">
       <DefaultResolution>PMPS, * (SLAC - LCLS)</DefaultResolution>
