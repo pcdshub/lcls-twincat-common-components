@@ -119,9 +119,6 @@
     <Compile Include="POUs\FB_CheckPositionStateWrite.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_L2SI_Flowmeter.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FB_XTES_Flowswitch.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -203,6 +200,11 @@
       <HideWhenReferencedAsDependency>true</HideWhenReferencedAsDependency>
       <Optional>true</Optional>
     </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderResolution Include="LCLS General">
+      <Resolution>LCLS General, * (SLAC)</Resolution>
+    </PlaceholderResolution>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>

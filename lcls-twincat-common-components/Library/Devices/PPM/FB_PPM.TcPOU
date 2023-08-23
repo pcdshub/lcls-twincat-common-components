@@ -9,7 +9,7 @@
     - power meter
     - camera power
     - camera illuminator
-    - flow meter (not fully implemented)
+    - flow meter
     - thermocouple
 *)
 VAR_IN_OUT
@@ -47,6 +47,8 @@ VAR_INPUT
     sTransitionKey: STRING;
     // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
+    // Offset for the flow meter in engineering units
+    fFlowOffset: LREAL;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -79,8 +81,8 @@ VAR
     {attribute 'pytmc' := 'pv: CAM'}
     fbGige: FB_PPM_Gige;
 
-    {attribute 'pytmc' :='pv: SFM'}
-    fbFlowMeter: FB_L2SI_Flowmeter;
+    {attribute 'pytmc' :='pv: FWM'}
+    fbFlowMeter: FB_AnalogInput := (iTermBits:=12, fTermMax:=60, fTermMin:=0, fResolution:=0.1);
 
     {attribute 'pytmc' := 'pv: YAG'}
     fbYagThermoCouple: FB_ThermoCouple;
@@ -151,7 +153,7 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 
 fbPowerMeter();
 fbGige();
-fbFlowMeter();
+fbFlowMeter(fOffset:=fFlowOffset);
 fbYagThermoCouple();]]></ST>
     </Implementation>
   </POU>
