@@ -141,25 +141,9 @@ END_VAR]]></Declaration>
 IF NOT bInit THEN
     bInit := TRUE;
 
-    stYStage.bHardwareEnable := TRUE;
-    stYStage.bPowerSelf := FALSE;
-    // No limit switch at the bottom
-    stYStage.bLimitBackwardEnable := TRUE;
-
-    // Extra lock on lens + lens limits are NO instead of NC
-    stZoomStage.bHardwareEnable := NOT bZoomLock;
-    stZoomStage.bPowerSelf := TRUE;
-    stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
-    stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
-    stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
-    stZoomStage.fHomePosition := 0;
-
-    stFocusStage.bHardwareEnable := NOT bFocusLock;
-    stFocusStage.bPowerSelf := TRUE;
-    stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
-    stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
-    stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
-    stFocusStage.fHomePosition := 0;
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+    stZoomStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+    stFocusStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 
     // Partial backcompat, this used to set fVelocity too but this should be set per install
     fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
@@ -167,6 +151,26 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stDiamond, sNameDefault:='DIAMOND', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stReticle, sNameDefault:='RETICLE', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+// No limit switch at the bottom
+stYStage.bLimitBackwardEnable := TRUE;
+
+// Extra lock on lens + lens limits are NO instead of NC
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stZoomStage.bPowerSelf := TRUE;
+stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stZoomStage.fHomePosition := 0;
+
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+stFocusStage.bPowerSelf := TRUE;
+stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.fHomePosition := 0;
 
 fbYStage(stMotionStage:=stYStage);
 fbZoom(stMotionStage:=stZoomStage);

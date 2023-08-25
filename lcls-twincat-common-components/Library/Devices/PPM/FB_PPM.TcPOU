@@ -106,8 +106,6 @@ END_VAR]]></Declaration>
 IF NOT bInit THEN
     bInit := TRUE;
 
-    stYStage.bHardwareEnable := TRUE;
-    stYStage.bPowerSelf := FALSE;
     stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 
     // Partial backcompat, this used to set fVelocity too but this should be set per install
@@ -116,6 +114,9 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stYag1, sNameDefault:='YAG1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stYag2, sNameDefault:='YAG2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
 
 fbYStage(stMotionStage:=stYStage);
 

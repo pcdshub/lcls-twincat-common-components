@@ -79,8 +79,6 @@ END_VAR]]></Declaration>
 IF NOT bInit THEN
     bInit := TRUE;
 
-    stYStage.bHardwareEnable := TRUE;
-    stYStage.bPowerSelf := FALSE;
     stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 
     // Partial backcompat, this used to set fVelocity too but this should be set per install
@@ -89,6 +87,9 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stMirror2, sNameDefault:='MIRROR2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
 
 fbYStage(stMotionStage:=stYStage);
 

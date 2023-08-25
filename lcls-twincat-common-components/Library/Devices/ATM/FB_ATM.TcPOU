@@ -91,14 +91,7 @@ END_VAR
 IF NOT bInit THEN
     bInit := TRUE;
 
-    stYStage.bHardwareEnable := TRUE;
-    stYStage.bPowerSelf := FALSE;
     stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
-
-    stXStage.bLimitForwardEnable := TRUE;
-    stXStage.bLimitBackwardEnable := TRUE;
-    stXStage.bHardwareEnable := TRUE;
-    stXStage.bPowerSelf := TRUE;
     stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
 
     // Partial backcompat, this used to set fVelocity too but this should be set per install
@@ -109,6 +102,14 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+stXStage.bLimitForwardEnable := TRUE;
+stXStage.bLimitBackwardEnable := TRUE;
+stXStage.bHardwareEnable := TRUE;
+stXStage.bPowerSelf := TRUE;
 
 fbYStage(stMotionStage:=stYStage);
 fbXStage(stMotionStage:=stXStage);
