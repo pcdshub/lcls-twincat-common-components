@@ -10,6 +10,15 @@
     - camera power
     - LED on/off
     - flowswitch (not fully implemented)
+
+    The following IO link points are included and should be used:
+    - FB_XPIM.bZoomEndFwd should be linked to the zoom motor's forward limit switch.
+    - FB_XPIM.bZoomEndBwd should be linked to the zoom motor's backward limit switch.
+    - FB_XPIM.bFocusEndFwd should be linked to the focus motor's forward limit switch.
+    - FB_XPIM.bFocusEndBwd should be linked to the focus motor's backward limit switch.
+    - FB_XPIM.fbOpal.bOpalPower should be linked to the camera power digital output.
+    - FB_XPIM.fbLED.bLEDPower should be linked to the LED power digital output.
+    - FB_XPIM.fbFlowSwitch.bFlowOk should be linked to the flow switch digital input, if present.
 *)
 VAR_IN_OUT
     // Y motor (state select).

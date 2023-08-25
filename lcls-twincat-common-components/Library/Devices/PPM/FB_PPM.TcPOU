@@ -11,6 +11,14 @@
     - camera illuminator
     - flow meter
     - thermocouple
+
+    The following IO link points are included and should be used:
+    - FB_PPM.fbPowerMeter.iVoltageINT should be linked to the power meter analog input voltage
+    - FB_PPM.fbPowerMeter.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+    - FB_PPM.fbGige.iIlluminatorINT should be linked to illuminator dimmer analog output voltage
+    - FB_PPM.fbGige.bGigePower should be linked to the camera power digial output channel
+    - FB_PPM.fbFlowMeter.iRaw should be linked to the flow meter current analog input channel
+    - FB_PPM.fbYagThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
 *)
 VAR_IN_OUT
     // Y motor (state select).

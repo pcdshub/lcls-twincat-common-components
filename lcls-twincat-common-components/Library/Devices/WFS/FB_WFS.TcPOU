@@ -7,6 +7,10 @@
     - X, Z motion
     - Y target states
     - 2 thermocouples
+
+    The following IO link points are included and should be used:
+    - FB_WFS.fbThermoCouple1.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+    - FB_WFS.fbThermoCouple1.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
 *)
 VAR_IN_OUT
     // Y motor (state select).

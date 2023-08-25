@@ -7,6 +7,10 @@
     - Y motion
     - Y in and out states
     - laser power and dimmer
+
+    The following IO link points are included and should be used:
+    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the laser dimmer's shutdown voltage
+    - FB_REF.fbLaser.iLaserINT should be linked to the output for the laser dimmer's dimmer
 *)
 VAR_IN_OUT
     // Y motor (state select).
