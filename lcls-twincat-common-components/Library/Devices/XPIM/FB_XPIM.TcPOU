@@ -178,15 +178,11 @@ fbFocus(stMotionStage:=stFocusStage);
 
 // Set special error message for lens lock
 IF stZoomStage.bExecute AND bZoomLock THEN
-    IF NOT stZoomStage.bError THEN
-        stZoomStage.bError := TRUE;
-    END_IF
+    stZoomStage.bError := TRUE;
     stZoomStage.sCustomErrorMessage := 'Zoom lens is locked!';
 END_IF
 IF stFocusStage.bExecute AND bFocusLock THEN
-    IF NOT stFocusStage.bError THEN
-        stFocusStage.bError := TRUE;
-    END_IF
+    stFocusStage.bError := TRUE;
     stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
 END_IF
 
