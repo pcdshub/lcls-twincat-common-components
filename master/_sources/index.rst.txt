@@ -3,22 +3,22 @@ lcls-twincat-common-components
 
 .. toctree::
     :maxdepth: 2
-    :caption: lcls2-cc-lib
+    :caption: lcls-twincat-common-components
 
-    lcls2-cc-lib_pragmas
-    lcls2-cc-lib_nc
-    lcls2-cc-lib_ethercat
-    lcls2-cc-lib_boxes
-    lcls2-cc-lib_links
+    lcls-twincat-common-components_pragmas
+    lcls-twincat-common-components_nc
+    lcls-twincat-common-components_ethercat
+    lcls-twincat-common-components_boxes
+    lcls-twincat-common-components_links
 
 
 .. toctree::
     :maxdepth: 2
     :caption: Library
 
-    lcls2-cc-lib_Library_summary
-    lcls2-cc-lib_Library_epics
-    lcls2-cc-lib_Library_source
+    lcls-twincat-common-components_Library_summary
+    lcls-twincat-common-components_Library_epics
+    lcls-twincat-common-components_Library_source
 
 
 

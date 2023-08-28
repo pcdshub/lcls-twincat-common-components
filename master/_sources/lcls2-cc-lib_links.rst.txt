@@ -1,8 +1,0 @@
-
-Links
------
-
-.. csv-table::
-    :header: Owner A, Item A, Owner B, Item B
-    :align: center
-
