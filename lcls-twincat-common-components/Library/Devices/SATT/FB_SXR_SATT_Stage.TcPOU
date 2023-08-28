@@ -42,7 +42,7 @@ VAR_INPUT
 
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
+        pv: STATE:SET
         io: io
     '}
     eEnumSet: E_SXR_SATT_Position;
@@ -59,7 +59,7 @@ END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
     {attribute 'pytmc' := '
-        pv: MMS:STATE:GET
+        pv: STATE:GET
         io: i
     '}
     eEnumGet: E_SXR_SATT_Position;
