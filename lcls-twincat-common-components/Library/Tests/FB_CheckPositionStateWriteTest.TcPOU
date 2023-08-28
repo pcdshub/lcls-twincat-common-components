@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CheckPositionStateWriteTest" Id="{b175a6be-c3c4-40f4-b64f-a3c7b0cdcfa8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CheckPositionStateWriteTest EXTENDS FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+TestSaveCheck();
+]]></ST>
+    </Implementation>
+    <Method Name="TestSaveCheck" Id="{12a88bc9-b208-416d-8a25-c714576b382f}">
+      <Declaration><![CDATA[METHOD TestSaveCheck
+VAR_INST
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbCheckPositionStateWrite: FB_CheckPositionStateWrite;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST('TestSaveCheck');
+
+fbCheckPositionStateWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+fbCheckPositionStateWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+AssertFalse(fbCheckPositionStateWrite.bHadWrite, 'Saw a write when there was no write');
+astPositionState[1].fPosition := astPositionState[1].fPosition + 1;
+fbCheckPositionStateWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+AssertTrue(fbCheckPositionStateWrite.bHadWrite, 'Did not detect position value changed');
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

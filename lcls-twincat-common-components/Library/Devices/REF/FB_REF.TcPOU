@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
+(*
+    Function block for reference laser (REF) controls:
+    - Y motion
+    - Y in and out states
+    - laser power and dimmer
+
+    The following IO link points are included and should be used:
+    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the laser dimmer's shutdown voltage
+    - FB_REF.fbLaser.iLaserINT should be linked to the output for the laser dimmer's dimmer
+*)
+VAR_IN_OUT
+    // Y motor (state select).
+    stYStage: ST_MotionStage;
+    // The fast fault output to fault to.
+    fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
+    fbArbiter: FB_Arbiter;
+END_VAR
+VAR_INPUT
+    // Settings for the OUT state.
+    stOut: ST_PositionState;
+    // Settings for the IN state.
+    stIn: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_EpicsInOut;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
+    bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+    bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+    bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+    sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
+    sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+    bReadDBNow: BOOL;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_EpicsInOut;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR
+    bInit: BOOL;
+
+    fbYStage: FB_MotionStage;
+
+    fbStateDefaults: FB_PositionState_Defaults;
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..2
+    '}
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+    {attribute 'pytmc' := 'pv: LAS'}
+    fbLaser: FB_REF_Laser;
+END_VAR
+VAR CONSTANT
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 10;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stIn, sNameDefault:='IN', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+fbYStage(stMotionStage:=stYStage);
+
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_EpicsInOut.OUT] := stOut;
+    astPositionState[E_EpicsInOut.IN] := stIn;
+END_IF
+
+fbStates(
+    stMotionStage:=stYStage,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
+    sTransitionKey:=sTransitionKey,
+    bReadDBNow:=bReadDBNow,
+    stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+
+stOut := astPositionState[E_EpicsInOut.OUT];
+stIn := astPositionState[E_EpicsInOut.IN];
+
+fbLaser();]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

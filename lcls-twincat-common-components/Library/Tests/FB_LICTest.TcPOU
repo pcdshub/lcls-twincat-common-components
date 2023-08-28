@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_LICTest" Id="{ef79d59f-e709-422b-8451-9f985c309542}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LICTest EXTENDS FB_TestSuite
+VAR
+    fbLIC: FB_LIC;
+    stYStage: ST_MotionStage;
+
+    stDefault: ST_PositionState := (
+        fVelocity:=10,
+        bMoveOk:=TRUE,
+        bValid:=TRUE
+    );
+    fbSetup: FB_StateSetupHelper;
+
+    fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter(1);
+    fbSubSysIO: FB_DummyArbIO;
+
+    bInit: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Fake PMPS handling
+fbSubSysIO(
+    LA:=fbArbiter,
+    FFO:=fbFFHWO,
+);
+
+// Fake limit handling
+stYStage.bLimitBackwardEnable := TRUE;
+stYStage.bLimitForwardEnable := TRUE;
+
+// Standard state setup
+fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+fbSetup(stPositionState:=fbLIC.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+fbSetup(stPositionState:=fbLIC.stMirror1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+fbSetup(stPositionState:=fbLIC.stMirror2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+
+// Standard FB call
+fbLIC(
+    stYStage:=stYStage,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=TRUE,
+    bEnableBeamParams:=TRUE,
+    bEnablePositionLimits:=TRUE,
+    sDeviceName:='DEVICE',
+    sTransitionKey:='T9',
+    bReadDBNow:=NOT bInit,
+);
+
+TestStateMove();
+
+bInit := TRUE;
+]]></ST>
+    </Implementation>
+    <Method Name="TestStateMove" Id="{dad8b7bd-1e01-4691-a16a-4b540b1b11f0}">
+      <Declaration><![CDATA[METHOD TestStateMove
+VAR_INST
+    tonTimer: TON;
+    nIterState: UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastState: UINT := E_LIC_States.MIRROR2;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Sanity check: can we at least move to every named state?
+TEST('TestLICStateMove');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+// Start in Unknown, then go through the state positions one by one
+IF fbLIC.eEnumGet = nIterState THEN
+    nIterState := nIterState + 1;
+    fbLIC.eEnumSet := nIterState;
+END_IF
+
+IF tonTimer.Q OR nIterState > nLastState THEN
+    AssertFalse(tonTimer.Q, 'Timeout in LIC move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_LIC" Id="{c48154b5-8669-4368-9217-42352a16b40e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LIC
+(*
+    Function block for Laser In-Coupling (LIC) controls:
+    - Y motion
+    - Y mirror and target states
+*)
+VAR_IN_OUT
+    // Y motor (state select).
+    stYStage: ST_MotionStage;
+    // The fast fault output to fault to.
+    fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
+    fbArbiter: FB_Arbiter;
+END_VAR
+VAR_INPUT
+    // Settings for the OUT state.
+    stOut: ST_PositionState;
+    // Settings for the MIRROR1 state.
+    stMirror1: ST_PositionState;
+    // Settings for the MIRROR2 state.
+    stMirror2: ST_PositionState;
+    // Settings for the TARGET1 state.
+    stTarget1: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_LIC_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
+    bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+    bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+    bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+    sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
+    sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+    bReadDBNow: BOOL;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_LIC_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR
+    bInit: BOOL;
+
+    fbYStage: FB_MotionStage;
+
+    fbStateDefaults: FB_PositionState_Defaults;
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..4
+    '}
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
+END_VAR
+VAR CONSTANT
+    // State defaults if not provided
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stMirror1, sNameDefault:='MIRROR1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stMirror2, sNameDefault:='MIRROR2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+fbYStage(stMotionStage:=stYStage);
+
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_LIC_States.OUT] := stOut;
+    astPositionState[E_LIC_States.MIRROR1] := stMirror1;
+    astPositionState[E_LIC_States.MIRROR2] := stMirror2;
+    astPositionState[E_LIC_States.TARGET] := stTarget1;
+END_IF
+
+fbStates(
+    stMotionStage:=stYStage,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
+    sTransitionKey:=sTransitionKey,
+    bReadDBNow:=bReadDBNow,
+    stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+
+stOut := astPositionState[E_LIC_States.OUT];
+stMirror1 := astPositionState[E_LIC_States.MIRROR1];
+stMirror2 := astPositionState[E_LIC_States.MIRROR2];
+stTarget1 := astPositionState[E_LIC_States.TARGET];]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

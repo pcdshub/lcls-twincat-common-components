@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM
+(*
+    Function block for XTES Imager (XPIM = XTES PIM = Profile Impager) controls:
+    - Y, Zoom, Focus motion
+    - Y scintillator states
+    - filterwheel serial commands
+    - camera power
+    - LED on/off
+    - flowswitch (not fully implemented)
+
+    The following IO link points are included and should be used:
+    - FB_XPIM.bZoomEndFwd should be linked to the zoom motor's forward limit switch.
+    - FB_XPIM.bZoomEndBwd should be linked to the zoom motor's backward limit switch.
+    - FB_XPIM.bFocusEndFwd should be linked to the focus motor's forward limit switch.
+    - FB_XPIM.bFocusEndBwd should be linked to the focus motor's backward limit switch.
+    - FB_XPIM.fbOpal.bOpalPower should be linked to the camera power digital output.
+    - FB_XPIM.fbLED.bLEDPower should be linked to the LED power digital output.
+    - FB_XPIM.fbFlowSwitch.bFlowOk should be linked to the flow switch digital input, if present.
+*)
+VAR_IN_OUT
+    // Y motor (state select).
+    stYStage: ST_MotionStage;
+    // Zoom motor (camera zoom).
+    stZoomStage: ST_MotionStage;
+    // Focus motor (camera focus).
+    stFocusStage: ST_MotionStage;
+    // The fast fault output to fault to.
+    fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
+    fbArbiter: FB_Arbiter;
+    // Serial input
+    stEl6In: EL6inData22b;
+    // Serial output
+    stEl6Out: EL6OutData22b;
+END_VAR
+VAR_INPUT
+    // Settings for the OUT state.
+    stOut: ST_PositionState;
+    // Settings for the YAG state.
+    stYag: ST_PositionState;
+    // Settings for the DIAMOND state.
+    stDiamond: ST_PositionState;
+    // Settings for the RETICLE state.
+    stReticle: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_XPIM_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
+    bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+    bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+    bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+    sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
+    sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+    bReadDBNow: BOOL;
+
+    // While TRUE, the zoom motor cannot be moved.
+    {attribute 'pytmc' := '
+        pv: CLZ:LOCK
+        io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
+    '}
+    bZoomLock: BOOL;
+
+    // While TRUE, the focus motor cannot be moved.
+    {attribute 'pytmc' := '
+        pv: CLF:LOCK
+        io: io
+        field: ZNAM Unlocked
+        field: ONAM Locked
+    '}
+    bFocusLock: BOOL;
+
+    // Forward limit disable for zoom
+    bZoomEndFwd AT %I*: BOOL;
+    // Backward limit disable for zoom
+    bZoomEndBwd AT %I*: BOOL;
+    // Forward limit disable for focus
+    bFocusEndFwd AT %I*: BOOL;
+    // Backward limit disable for focus
+    bFocusEndBwd AT %I*: BOOL;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_XPIM_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR
+    bInit: BOOL;
+
+    fbYStage: FB_MotionStage;
+    fbZoom: FB_MotionStage;
+    fbFocus: FB_MotionStage;
+
+    fbStateDefaults: FB_PositionState_Defaults;
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..4
+    '}
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+    {attribute 'pytmc' := 'pv: MFW'}
+    fbFilterWheel: FB_XPIM_FilterWheel;
+
+    {attribute 'pytmc' := 'pv: CAM'}
+    fbOpal: FB_XPIM_Opal;
+
+    {attribute 'pytmc' := 'pv: CIL'}
+    fbLED: FB_XPIM_LED;
+
+    {attribute 'pytmc' := 'pv: SFW'}
+    fbFlowSwitch: FB_XTES_Flowswitch;
+END_VAR
+VAR CONSTANT
+    // State defaults if not provided
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+    stZoomStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+    stFocusStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stYag, sNameDefault:='YAG', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stDiamond, sNameDefault:='DIAMOND', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stReticle, sNameDefault:='RETICLE', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+// No limit switch at the bottom
+stYStage.bLimitBackwardEnable := TRUE;
+
+// Extra lock on lens + lens limits are NO instead of NC
+stZoomStage.bHardwareEnable := NOT bZoomLock;
+stZoomStage.bPowerSelf := TRUE;
+stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stZoomStage.fHomePosition := 0;
+
+stFocusStage.bHardwareEnable := NOT bFocusLock;
+stFocusStage.bPowerSelf := TRUE;
+stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+stFocusStage.fHomePosition := 0;
+
+fbYStage(stMotionStage:=stYStage);
+fbZoom(stMotionStage:=stZoomStage);
+fbFocus(stMotionStage:=stFocusStage);
+
+// Set special error message for lens lock
+IF stZoomStage.bExecute AND bZoomLock THEN
+    stZoomStage.bError := TRUE;
+    stZoomStage.sCustomErrorMessage := 'Zoom lens is locked!';
+END_IF
+IF stFocusStage.bExecute AND bFocusLock THEN
+    stFocusStage.bError := TRUE;
+    stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
+END_IF
+
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_XPIM_States.OUT] := stOut;
+    astPositionState[E_XPIM_States.YAG] := stYag;
+    astPositionState[E_XPIM_States.DIAMOND] := stDiamond;
+    astPositionState[E_XPIM_States.RETICLE] := stReticle;
+END_IF
+
+fbStates(
+    stMotionStage:=stYStage,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
+    sTransitionKey:=sTransitionKey,
+    bReadDBNow:=bReadDBNow,
+    stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+
+stOut := astPositionState[E_XPIM_States.OUT];
+stYag := astPositionState[E_XPIM_States.YAG];
+stDiamond := astPositionState[E_XPIM_States.DIAMOND];
+stReticle := astPositionState[E_XPIM_States.RETICLE];
+
+fbFilterWheel(
+    bExecute:=TRUE,
+    stIn_El6:=stEl6In,
+    stOut_El6:=stEl6Out,
+);
+
+fbOpal();
+fbLED(enumXPIM:=eEnumGet);
+fbFlowSwitch();]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

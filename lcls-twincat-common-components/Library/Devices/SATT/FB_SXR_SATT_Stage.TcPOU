@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SXR_SATT_Stage" Id="{7fb611c7-2215-4e8f-8a28-e51a98acae9a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SXR_SATT_Stage
+(*
+    Function block for a single Solid ATTenuator (SATT) filter stack.
+    This is for the L2SI compact design with 4 filter stacks that each have
+    many filters.
+
+    This function block controls:
+    - Y motion
+    - Y filter states
+    - transmission calculation for one stack
+
+    There will be a fast fault during motion, but no other PMPS restrictions.
+*)
+VAR_IN_OUT
+    // Y motor (filter select)
+    stAxis : ST_MotionStage;
+    // The fast fault output to fault to.
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR_INPUT
+    // Settings for the OUT state.
+    stOut		: ST_PositionState;
+    // Settings for the FILTER1 state.
+    stFilter1	: ST_PositionState;
+    // Settings for the FILTER2 state.
+    stFilter2	: ST_PositionState;
+    // Settings for the FILTER3 state.
+    stFilter3	: ST_PositionState;
+    // Settings for the FILTER4 state.
+    stFilter4	: ST_PositionState;
+    // Settings for the FILTER5 state.
+    stFilter5	: ST_PositionState;
+    // Settings for the FILTER6 state.
+    stFilter6	: ST_PositionState;
+    // Settings for the FILTER7 state.
+    stFilter7	: ST_PositionState;
+    // Settings for the FILTER8 state.
+    stFilter8	: ST_PositionState;
+
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: STATE:SET
+        io: io
+    '}
+    eEnumSet: E_SXR_SATT_Position;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
+    bEnable: BOOL;
+
+    // Filter configuration information
+    {attribute 'pytmc' := 'pv: FILTERS'}
+    arrFilters: ARRAY[1..8] OF ST_SATT_Filter;
+
+    // Debug helper for setting the stage's nEnableMode
+    nEnableMode : E_StageEnableMode;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: STATE:GET
+        io: i
+    '}
+    eEnumGet: E_SXR_SATT_Position;
+
+    fTemp1 : LREAL;
+    fTemp2 : LREAL;
+    bIsStationary : BOOL;
+    bError : BOOL;
+
+    {attribute 'pytmc' := '
+        pv: MATERIAL
+        io: i
+    '}
+    sActiveFilterMaterial : STRING;
+
+    {attribute 'pytmc' := '
+        pv: THICKNESS
+        io: i
+        field: EGU um
+    '}
+    fActiveFilterThickness_um : LREAL;
+
+    {attribute 'pytmc' := '
+        pv: TRANSMISSION
+        io: i
+        field: DESC Filter transmission
+    '}
+    fTransmission : LREAL;
+    fActiveFilterDensity : LREAL;
+    fActiveFilterAtomicMass : LREAL;
+    fAbsorptionConstant : LREAL;
+
+    iFilterIndex: INT := 0;
+END_VAR
+VAR
+    fbMotion: FB_MotionStage;
+
+    {attribute 'pytmc' := '
+        pv:
+        astPositionState.array: 1..9
+    '}
+    fbStates: FB_PositionState1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+    bInitialized: BOOL := FALSE;
+
+    fbAtomicMass : FB_AtomicMass;
+    fbAttenuatorElementDensity : FB_AttenuatorElementDensity;
+
+    (* EL3202-0020: 0.01 °C per digit *)
+    {attribute 'pytmc' := 'pv: RTD:1'}
+    fbRTD_1: FB_TempSensor := ( fResolution:=0.01 );
+    {attribute 'pytmc' := 'pv: RTD:2'}
+    fbRTD_2: FB_TempSensor := ( fResolution:=0.01 );
+
+    fbFF: FB_FastFault := (i_Desc := 'Device is moving',
+                           i_TypeCode := E_MotionFFType.DEVICE_MOVE,
+                           i_xAutoReset := TRUE);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT bInitialized THEN
+    bInitialized := TRUE;
+
+    (* Defaults for ST_MotionStage *)
+    stAxis.bHardwareEnable      := TRUE;
+    stAxis.bLimitBackwardEnable := TRUE;
+    stAxis.bLimitForwardEnable  := TRUE;
+    stAxis.bPowerSelf           := TRUE;
+    stAxis.nBrakeMode           := ENUM_StageBrakeMode.NO_BRAKE;
+    stAxis.nHomingMode          := ENUM_EpicsHomeCmd.NONE;
+
+    (* Defaults for visualization *)
+    // stExtra.fVisuStep			:= 0.1;
+
+END_IF
+
+fbRTD_1();
+fTemp1 := fbRTD_1.fTemp;
+
+fbRTD_2();
+fTemp2 := fbRTD_2.fTemp;
+
+stAxis.nEnableMode := nEnableMode;
+fbMotion(stMotionStage:=stAxis);
+
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_SXR_SATT_Position.OUT] := stOut;
+    astPositionState[E_SXR_SATT_Position.FILTER1] := stFilter1;
+    astPositionState[E_SXR_SATT_Position.FILTER2] := stFilter2;
+    astPositionState[E_SXR_SATT_Position.FILTER3] := stFilter3;
+    astPositionState[E_SXR_SATT_Position.FILTER4] := stFilter4;
+    astPositionState[E_SXR_SATT_Position.FILTER5] := stFilter5;
+    astPositionState[E_SXR_SATT_Position.FILTER6] := stFilter6;
+    astPositionState[E_SXR_SATT_Position.FILTER7] := stFilter7;
+    astPositionState[E_SXR_SATT_Position.FILTER8] := stFilter8;
+END_IF
+
+fbStates(
+    stMotionStage:=stAxis,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    bEnable:=bEnable,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+
+stOut := astPositionState[E_SXR_SATT_Position.OUT];
+stFilter1 := astPositionState[E_SXR_SATT_Position.FILTER1];
+stFilter2 := astPositionState[E_SXR_SATT_Position.FILTER2];
+stFilter3 := astPositionState[E_SXR_SATT_Position.FILTER3];
+stFilter4 := astPositionState[E_SXR_SATT_Position.FILTER4];
+stFilter5 := astPositionState[E_SXR_SATT_Position.FILTER5];
+stFilter6 := astPositionState[E_SXR_SATT_Position.FILTER6];
+stFilter7 := astPositionState[E_SXR_SATT_Position.FILTER7];
+stFilter8 := astPositionState[E_SXR_SATT_Position.FILTER8];
+
+(* Filter indices are off by one due to "Out" being in position 1. *)
+iFilterIndex := UINT_TO_INT(eEnumGet - 1);
+
+IF iFilterIndex >= 1 AND iFilterIndex <= 8 THEN
+    sActiveFilterMaterial := arrFilters[iFilterIndex].sFilterMaterial;
+    fActiveFilterThickness_um := arrFilters[iFilterIndex].fFilterThickness_um;
+
+    fbAtomicMass(sName:=sActiveFilterMaterial, fValue=>fActiveFilterAtomicMass);
+    fbAttenuatorElementDensity(sName:=sActiveFilterMaterial, fDensity=>fActiveFilterDensity);
+
+    fAbsorptionConstant := F_CalculateAbsorptionConstant(
+        sElement:=sActiveFilterMaterial,
+        fEnergyEV:=PMPS_GVL.stCurrentBeamParameters.neV,
+        fDensity_gm3:=fActiveFilterDensity,
+        fAtomicWeight:=fActiveFilterAtomicMass,
+        bError=>bError,
+    );
+    fTransmission := F_CalculateTransmission(
+        fAbsorptionConstant:=fAbsorptionConstant,
+        fThickness_in_m:=fActiveFilterThickness_um * 1.0E-6
+    );
+ELSE
+    sActiveFilterMaterial := '';
+    fActiveFilterThickness_um := 0.0;
+    fAbsorptionConstant := 0.0;
+    fActiveFilterDensity := 0.0;
+    fActiveFilterAtomicMass := 0.0;
+    fTransmission := 1.0;
+END_IF
+
+bIsStationary := NOT stAxis.Axis.Status.Moving;
+fbFF(
+    i_DevName:=stAxis.sName,
+    i_xOK:=bIsStationary AND eEnumGet <> E_SXR_SATT_Position.UNKNOWN,
+    io_fbFFHWO := fbFFHWO
+);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
