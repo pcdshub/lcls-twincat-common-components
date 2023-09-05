@@ -840,7 +840,7 @@ FB_PositionState_Defaults
         fAccelDefault: LREAL;
         fDecelDefault: LREAL;
     END_VAR
-    IF stPositionState.sName = '' THEN
+    IF stPositionState.sName = '' OR stPositionState.sName = 'Invalid' THEN
         stPositionState.sName := sNameDefault;
     END_IF
     IF stPositionState.fVelocity = 0 THEN

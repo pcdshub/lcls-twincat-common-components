@@ -923,7 +923,7 @@ END_METHOD
     <span class="n">fAccelDefault</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
     <span class="n">fDecelDefault</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
 <span class="n">END_VAR</span>
-<span class="n">IF</span> <span class="n">stPositionState</span><span class="o">.</span><span class="n">sName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="n">THEN</span>
+<span class="n">IF</span> <span class="n">stPositionState</span><span class="o">.</span><span class="n">sName</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="n">OR</span> <span class="n">stPositionState</span><span class="o">.</span><span class="n">sName</span> <span class="o">=</span> <span class="s1">&#39;Invalid&#39;</span> <span class="n">THEN</span>
     <span class="n">stPositionState</span><span class="o">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="n">sNameDefault</span><span class="p">;</span>
 <span class="n">END_IF</span>
 <span class="n">IF</span> <span class="n">stPositionState</span><span class="o">.</span><span class="n">fVelocity</span> <span class="o">=</span> <span class="mi">0</span> <span class="n">THEN</span>
