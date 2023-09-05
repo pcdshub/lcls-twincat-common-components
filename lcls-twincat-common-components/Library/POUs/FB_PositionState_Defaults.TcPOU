@@ -14,7 +14,7 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF stPositionState.sName = '' THEN
+      <ST><![CDATA[IF stPositionState.sName = '' OR stPositionState.sName = 'Invalid' THEN
     stPositionState.sName := sNameDefault;
 END_IF
 IF stPositionState.fVelocity = 0 THEN
