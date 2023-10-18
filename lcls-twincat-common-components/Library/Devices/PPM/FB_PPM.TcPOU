@@ -90,7 +90,7 @@ VAR
     fbGige: FB_PPM_Gige;
 
     {attribute 'pytmc' :='pv: FWM'}
-    fbFlowMeter: FB_AnalogInput := (iTermBits:=12, fTermMax:=60, fTermMin:=0, fResolution:=0.1);
+    fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
 
     {attribute 'pytmc' := 'pv: YAG'}
     fbYagThermoCouple: FB_ThermoCouple;
