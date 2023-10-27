@@ -166,7 +166,8 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 fbPowerMeter();
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
-fbYagThermoCouple();]]></ST>
+fbYagThermoCouple();
+fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
