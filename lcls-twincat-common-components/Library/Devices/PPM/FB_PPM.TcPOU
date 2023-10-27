@@ -56,7 +56,7 @@ VAR_INPUT
     // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
     // Offset for the flow meter in engineering units
-    fFlowOffset: LREAL;
+    fFlowOffset: LREAL := 0;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -94,6 +94,9 @@ VAR
 
     {attribute 'pytmc' := 'pv: YAG'}
     fbYagThermoCouple: FB_ThermoCouple;
+
+    {attribute 'pytmc' := 'pv: '}
+    fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided
