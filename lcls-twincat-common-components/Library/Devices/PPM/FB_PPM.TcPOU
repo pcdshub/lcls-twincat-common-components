@@ -95,7 +95,7 @@ VAR
     {attribute 'pytmc' := 'pv: YAG'}
     fbYagThermoCouple: FB_ThermoCouple;
 
-    {attribute 'pytmc' := 'pv: '}
+    {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT

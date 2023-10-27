@@ -5,7 +5,7 @@
 FUNCTION_BLOCK FB_XTES_Flowswitch
 VAR_OUTPUT
     {attribute 'pytmc' := '
-        pv: FSW
+        pv: FLOW_OK
         field: ZNAM LOW
         field: ONAM OK
     '}
