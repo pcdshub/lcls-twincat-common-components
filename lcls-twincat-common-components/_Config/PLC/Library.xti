@@ -983,7 +983,7 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{C1D06D8D-A545-B874-7582-241F1A3045E0}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{D82D1127-1321-E53D-A8EB-DE35E6950D41}">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
@@ -1538,6 +1538,10 @@ External Setpoint Generation:
 				<Var>
 					<Name>PRG_TEST.fbPPMTest.fbPPM.fbYagThermoCouple.iRaw</Name>
 					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbPPM.fbFlowSwitch.bFlowOk</Name>
+					<Type>BOOL</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc</Name>
