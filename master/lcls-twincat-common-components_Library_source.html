@@ -1000,7 +1000,7 @@ END_METHOD
     <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">re</span><span class="o">-</span><span class="n">read</span> <span class="n">the</span> <span class="n">loaded</span> <span class="n">database</span> <span class="n">immediately</span> <span class="p">(</span><span class="n">useful</span> <span class="k">for</span> <span class="n">debug</span><span class="p">)</span><span class="o">.</span>
     <span class="n">bReadDBNow</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Offset</span> <span class="k">for</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">meter</span> <span class="ow">in</span> <span class="n">engineering</span> <span class="n">units</span>
-    <span class="n">fFlowOffset</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    <span class="n">fFlowOffset</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR_OUTPUT</span>
     <span class="o">//</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span> <span class="k">as</span> <span class="n">an</span> <span class="n">enum</span><span class="o">.</span>
@@ -1038,6 +1038,9 @@ END_METHOD
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: YAG&#39;</span><span class="p">}</span>
     <span class="n">fbYagThermoCouple</span><span class="p">:</span> <span class="n">FB_ThermoCouple</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
+    <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span> <span class="n">CONSTANT</span>
     <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
@@ -1106,6 +1109,7 @@ END_METHOD
 <span class="n">fbGige</span><span class="p">();</span>
 <span class="n">fbFlowMeter</span><span class="p">(</span><span class="n">fOffset</span><span class="o">:=</span><span class="n">fFlowOffset</span><span class="p">);</span>
 <span class="n">fbYagThermoCouple</span><span class="p">();</span>
+<span class="n">fbFlowSwitch</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
@@ -1117,6 +1121,7 @@ END_METHOD
 <li><p><a class="reference internal" href="#fb-ppm-gige">FB_PPM_Gige</a></p></li>
 <li><p><a class="reference internal" href="#fb-ppm-powermeter">FB_PPM_PowerMeter</a></p></li>
 <li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
+<li><p><a class="reference internal" href="#fb-xtes-flowswitch">FB_XTES_Flowswitch</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -3212,7 +3217,7 @@ END_METHOD
 <span class="n">FUNCTION_BLOCK</span> <span class="n">FB_XTES_Flowswitch</span>
 <span class="n">VAR_OUTPUT</span>
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">FLOW</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">FLOW_OK</span>
         <span class="n">field</span><span class="p">:</span> <span class="n">ZNAM</span> <span class="n">LOW</span>
         <span class="n">field</span><span class="p">:</span> <span class="n">ONAM</span> <span class="n">OK</span>
     <span class="s1">&#39;}</span>
