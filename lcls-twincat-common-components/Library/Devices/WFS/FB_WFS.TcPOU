@@ -85,6 +85,9 @@ VAR
 
     {attribute 'pytmc' := 'pv: STC:02'}
     fbThermoCouple2: FB_TempSensor;
+
+    {attribute 'pytmc' := 'pv: FSW'}
+    fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided
