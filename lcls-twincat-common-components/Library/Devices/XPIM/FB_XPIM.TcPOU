@@ -127,7 +127,7 @@ VAR
     {attribute 'pytmc' := 'pv: CIL'}
     fbLED: FB_XPIM_LED;
 
-    {attribute 'pytmc' := 'pv: SFW'}
+    {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT

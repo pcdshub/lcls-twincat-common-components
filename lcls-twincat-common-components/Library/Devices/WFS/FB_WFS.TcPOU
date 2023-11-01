@@ -85,6 +85,9 @@ VAR
 
     {attribute 'pytmc' := 'pv: STC:02'}
     fbThermoCouple2: FB_TempSensor;
+
+    {attribute 'pytmc' := 'pv: FSW'}
+    fbFlowSwitch: FB_XTES_Flowswitch;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided
@@ -165,7 +168,8 @@ stTarget4 := astPositionState[E_WFS_States.TARGET4];
 stTarget5 := astPositionState[E_WFS_States.TARGET5];
 
 fbThermoCouple1();
-fbThermoCouple2();]]></ST>
+fbThermoCouple2();
+fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
