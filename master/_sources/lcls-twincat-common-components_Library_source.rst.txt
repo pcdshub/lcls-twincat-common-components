@@ -2361,6 +2361,9 @@ FB_WFS
 
         {attribute 'pytmc' := 'pv: STC:02'}
         fbThermoCouple2: FB_TempSensor;
+
+        {attribute 'pytmc' := 'pv: FSW'}
+        fbFlowSwitch: FB_XTES_Flowswitch;
     END_VAR
     VAR CONSTANT
         // State defaults if not provided
@@ -2440,6 +2443,7 @@ FB_WFS
 
     fbThermoCouple1();
     fbThermoCouple2();
+    fbFlowSwitch();
 
     END_FUNCTION_BLOCK
 
@@ -2448,6 +2452,7 @@ Related:
     * `E_WFS_States`_
     * `FB_CheckPositionStateWrite`_
     * `FB_PositionState_Defaults`_
+    * `FB_XTES_Flowswitch`_
 
 
 FB_WFSTest
@@ -2676,7 +2681,7 @@ FB_XPIM
         {attribute 'pytmc' := 'pv: CIL'}
         fbLED: FB_XPIM_LED;
 
-        {attribute 'pytmc' := 'pv: SFW'}
+        {attribute 'pytmc' := 'pv: FSW'}
         fbFlowSwitch: FB_XTES_Flowswitch;
     END_VAR
     VAR CONSTANT

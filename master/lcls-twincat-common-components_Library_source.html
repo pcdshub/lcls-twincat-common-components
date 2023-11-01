@@ -2424,6 +2424,9 @@ END_FUNCTION_BLOCK
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: STC:02&#39;</span><span class="p">}</span>
     <span class="n">fbThermoCouple2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
+    <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span> <span class="n">CONSTANT</span>
     <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
@@ -2503,6 +2506,7 @@ END_FUNCTION_BLOCK
 
 <span class="n">fbThermoCouple1</span><span class="p">();</span>
 <span class="n">fbThermoCouple2</span><span class="p">();</span>
+<span class="n">fbFlowSwitch</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
@@ -2512,6 +2516,7 @@ END_FUNCTION_BLOCK
 <li><p><a class="reference internal" href="#e-wfs-states">E_WFS_States</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
 <li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
+<li><p><a class="reference internal" href="#fb-xtes-flowswitch">FB_XTES_Flowswitch</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -2739,7 +2744,7 @@ END_METHOD
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: CIL&#39;</span><span class="p">}</span>
     <span class="n">fbLED</span><span class="p">:</span> <span class="n">FB_XPIM_LED</span><span class="p">;</span>
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: SFW&#39;</span><span class="p">}</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
     <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span> <span class="n">CONSTANT</span>
