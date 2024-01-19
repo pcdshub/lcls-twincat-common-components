@@ -88,6 +88,10 @@ VAR
 
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
+
+    {attribute 'pytmc' :='pv: FWM'}
+    fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+
 END_VAR
 VAR CONSTANT
     // State defaults if not provided

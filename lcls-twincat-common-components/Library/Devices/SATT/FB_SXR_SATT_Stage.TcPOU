@@ -116,6 +116,9 @@ VAR
     {attribute 'pytmc' := 'pv: RTD:2'}
     fbRTD_2: FB_TempSensor := ( fResolution:=0.01 );
 
+    {attribute 'pytmc' :='pv: FWM'}
+    fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+
     fbFF: FB_FastFault := (i_Desc := 'Device is moving',
                            i_TypeCode := E_MotionFFType.DEVICE_MOVE,
                            i_xAutoReset := TRUE);
