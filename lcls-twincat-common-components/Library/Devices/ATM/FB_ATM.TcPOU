@@ -161,7 +161,8 @@ stTarget3 := astPositionState[E_ATM_States.TARGET3];
 stTarget4 := astPositionState[E_ATM_States.TARGET4];
 stTarget5 := astPositionState[E_ATM_States.TARGET5];
 
-fbThermoCouple1();]]></ST>
+fbThermoCouple1();
+fbFlowMeter();]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

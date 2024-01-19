@@ -173,7 +173,8 @@ stTarget5 := astPositionState[E_WFS_States.TARGET5];
 
 fbThermoCouple1();
 fbThermoCouple2();
-fbFlowSwitch();]]></ST>
+fbFlowSwitch(); // WFS in FEE
+fbFlowMeter(); // WFS in hutch]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
