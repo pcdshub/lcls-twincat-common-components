@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUTs &mdash; pcdshub/lcls-twincat-common-components  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/tree.css?v=837a00b9" />
+      <link rel="stylesheet" type="text/css" href="_static/width.css?v=ab210c7a" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -46,7 +50,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_pragmas.html">Pragmas</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_nc.html">NC Settings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_ethercat.html">Box Hierarchy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_ethercat.html">EtherCAT Terminals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_boxes.html">Boxes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_links.html">Links</a></li>
 </ul>
@@ -288,7 +292,7 @@
 <span class="o">//</span> <span class="n">This</span> <span class="n">function</span> <span class="n">has</span> <span class="n">been</span> <span class="n">automatically</span> <span class="n">generated</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">project</span> <span class="n">information</span><span class="o">.</span>
 <span class="n">VAR_GLOBAL</span> <span class="n">CONSTANT</span>
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;const_non_replaced&#39;</span><span class="p">}</span>
-    <span class="n">stLibVersion_lcls_twincat_common_components</span> <span class="p">:</span> <span class="n">ST_LibVersion</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iMajor</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iMinor</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iBuild</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iRevision</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nFlags</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sVersion</span> <span class="o">:=</span> <span class="s1">&#39;0.0.0&#39;</span><span class="p">);</span>
+    <span class="n">stLibVersion_lcls_twincat_common_components</span> <span class="p">:</span> <span class="n">ST_LibVersion</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iMajor</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iMinor</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iBuild</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">iRevision</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nFlags</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sVersion</span> <span class="o">:=</span> <span class="s1">&#39;0.0.0&#39;</span><span class="p">);</span>
 <span class="n">END_VAR</span>
 </pre></div>
 </div>
@@ -375,6 +379,9 @@
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: STC:01&#39;</span><span class="p">}</span>
     <span class="n">fbThermoCouple1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span><span class="s1">&#39;pv: FWM&#39;</span><span class="p">}</span>
+    <span class="n">fbFlowMeter</span><span class="p">:</span> <span class="n">FB_AnalogInput</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span> <span class="n">CONSTANT</span>
     <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
@@ -453,6 +460,7 @@
 <span class="n">stTarget5</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_ATM_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">];</span>
 
 <span class="n">fbThermoCouple1</span><span class="p">();</span>
+<span class="n">fbFlowMeter</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
@@ -2427,6 +2435,10 @@ END_FUNCTION_BLOCK
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
     <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span><span class="s1">&#39;pv: FWM&#39;</span><span class="p">}</span>
+    <span class="n">fbFlowMeter</span><span class="p">:</span> <span class="n">FB_AnalogInput</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
+
 <span class="n">END_VAR</span>
 <span class="n">VAR</span> <span class="n">CONSTANT</span>
     <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
@@ -2506,7 +2518,8 @@ END_FUNCTION_BLOCK
 
 <span class="n">fbThermoCouple1</span><span class="p">();</span>
 <span class="n">fbThermoCouple2</span><span class="p">();</span>
-<span class="n">fbFlowSwitch</span><span class="p">();</span>
+<span class="n">fbFlowSwitch</span><span class="p">();</span> <span class="o">//</span> <span class="n">WFS</span> <span class="ow">in</span> <span class="n">FEE</span>
+<span class="n">fbFlowMeter</span><span class="p">();</span> <span class="o">//</span> <span class="n">WFS</span> <span class="ow">in</span> <span class="n">hutch</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
@@ -3294,7 +3307,7 @@ END_METHOD
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, SLAC National Accelerator Laboratory.</p>
+    <p>&#169; Copyright 2024, SLAC National Accelerator Laboratory.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

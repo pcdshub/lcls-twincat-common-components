@@ -192,7 +192,7 @@ Global_Version
     // This function has been automatically generated from the project information.
     VAR_GLOBAL CONSTANT
         {attribute 'const_non_replaced'}
-        stLibVersion_lcls_twincat_common_components : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, nFlags := 1, sVersion := '0.0.0');
+        stLibVersion_lcls_twincat_common_components : ST_LibVersion := (iMajor := 0, iMinor := 0, iBuild := 0, iRevision := 0, nFlags := 0, sVersion := '0.0.0');
     END_VAR
 
 
@@ -284,6 +284,9 @@ FB_ATM
 
         {attribute 'pytmc' := 'pv: STC:01'}
         fbThermoCouple1: FB_TempSensor;
+
+        {attribute 'pytmc' :='pv: FWM'}
+        fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
     END_VAR
     VAR CONSTANT
         // State defaults if not provided
@@ -362,6 +365,7 @@ FB_ATM
     stTarget5 := astPositionState[E_ATM_States.TARGET5];
 
     fbThermoCouple1();
+    fbFlowMeter();
 
     END_FUNCTION_BLOCK
 
@@ -2364,6 +2368,10 @@ FB_WFS
 
         {attribute 'pytmc' := 'pv: FSW'}
         fbFlowSwitch: FB_XTES_Flowswitch;
+
+        {attribute 'pytmc' :='pv: FWM'}
+        fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+
     END_VAR
     VAR CONSTANT
         // State defaults if not provided
@@ -2443,7 +2451,8 @@ FB_WFS
 
     fbThermoCouple1();
     fbThermoCouple2();
-    fbFlowSwitch();
+    fbFlowSwitch(); // WFS in FEE
+    fbFlowMeter(); // WFS in hutch
 
     END_FUNCTION_BLOCK
 
