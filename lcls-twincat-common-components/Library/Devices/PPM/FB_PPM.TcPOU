@@ -92,8 +92,8 @@ VAR
     {attribute 'pytmc' :='pv: FWM'}
     fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
 
-    {attribute 'pytmc' := 'pv: YAG'}
-    fbYagThermoCouple: FB_ThermoCouple;
+    {attribute 'pytmc' := 'pv: YAG:STC'}
+    fbYagTempSensor: FB_TempSensor;
 
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -166,7 +166,7 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 fbPowerMeter();
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
-fbYagThermoCouple();
+fbYagTempSensor();
 fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>

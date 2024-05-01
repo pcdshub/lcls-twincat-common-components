@@ -46,10 +46,10 @@ VAR
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute 'pytmc' := '
-        pv:
+        pv: STC
         io: input
     '}
-    fbThermoCouple: FB_ThermoCouple;
+    fbTempSensor: FB_TempSensor;
 
     {attribute 'pytmc' := '
         pv: CALIB:OFFSET
@@ -76,7 +76,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbThermoCouple();
+      <ST><![CDATA[fbTempSensor();
 
 // Convert the terminal's integer into a value in millivolts
 fbGetPMVoltage(
