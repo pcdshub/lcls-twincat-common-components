@@ -81,10 +81,10 @@ VAR
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := 'pv: STC:01'}
-    fbThermoCouple1: FB_TempSensor;
+    fbThermoCouple1: FB_CC_TempSensor;
 
     {attribute 'pytmc' := 'pv: STC:02'}
-    fbThermoCouple2: FB_TempSensor;
+    fbThermoCouple2: FB_CC_TempSensor;
 
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -171,8 +171,16 @@ stTarget3 := astPositionState[E_WFS_States.TARGET3];
 stTarget4 := astPositionState[E_WFS_States.TARGET4];
 stTarget5 := astPositionState[E_WFS_States.TARGET5];
 
-fbThermoCouple1();
-fbThermoCouple2();
+fbThermoCouple1(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
+fbThermoCouple2(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
 fbFlowSwitch(); // WFS in FEE
 fbFlowMeter(); // WFS in hutch]]></ST>
     </Implementation>

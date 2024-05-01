@@ -77,7 +77,8 @@ VAR
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := 'pv: STC:01'}
-    fbThermoCouple1: FB_TempSensor;
+    fbTempSensor1: FB_CC_TempSensor;
+    fTempSP: REAL;
 
     {attribute 'pytmc' :='pv: FWM'}
     fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
@@ -161,7 +162,11 @@ stTarget3 := astPositionState[E_ATM_States.TARGET3];
 stTarget4 := astPositionState[E_ATM_States.TARGET4];
 stTarget5 := astPositionState[E_ATM_States.TARGET5];
 
-fbThermoCouple1();
+fbTempSensor1(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
 fbFlowMeter();]]></ST>
     </Implementation>
   </POU>

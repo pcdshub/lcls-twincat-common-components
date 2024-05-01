@@ -116,6 +116,9 @@
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CC_TempSensor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_CheckPositionStateWrite.TcPOU">
       <SubType>Code</SubType>
     </Compile>

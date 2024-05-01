@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_TempSensor" Id="{62e52992-2558-4a9c-b1dd-b3b9616cbbcf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CC_TempSensor EXTENDS FB_TempSensor_FFO
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Databse default read is zero if no entry
+bVeto := fFaultThreshold = 0;
+
+SUPER^(io_fbFFHWO:=io_fbFFHWO);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
