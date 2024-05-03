@@ -10,7 +10,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Databse default read is zero if no entry
+      <ST><![CDATA[// Database default read is zero if no entry
 bVeto := fFaultThreshold = 0;
 
 SUPER^(io_fbFFHWO:=io_fbFFHWO);]]></ST>
