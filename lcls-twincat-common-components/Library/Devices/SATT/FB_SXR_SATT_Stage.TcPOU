@@ -53,6 +53,9 @@ VAR_INPUT
     {attribute 'pytmc' := 'pv: FILTERS'}
     arrFilters: ARRAY[1..8] OF ST_SATT_Filter;
 
+    // String name from PMPS database
+    sDeviceName: STRING;
+
     // Debug helper for setting the stage's nEnableMode
     nEnableMode : E_StageEnableMode;
 END_VAR
@@ -112,9 +115,12 @@ VAR
 
     (* EL3202-0020: 0.01 °C per digit *)
     {attribute 'pytmc' := 'pv: RTD:1'}
-    fbRTD_1: FB_TempSensor := ( fResolution:=0.01 );
+    fbRTD_1: FB_TempSensor_FFO := ( fResolution:=0.01 );
     {attribute 'pytmc' := 'pv: RTD:2'}
-    fbRTD_2: FB_TempSensor := ( fResolution:=0.01 );
+    fbRTD_2: FB_TempSensor_FFO := ( fResolution:=0.01 );
+
+    fbReadPMPSDB: FB_JsonDocToSafeBP;
+    astPickedDB: ARRAY[1..1] OF ST_DbStateParams;
 
     fbFF: FB_FastFault := (i_Desc := 'Device is moving',
                            i_TypeCode := E_MotionFFType.DEVICE_MOVE,
@@ -139,10 +145,52 @@ IF NOT bInitialized THEN
 
 END_IF
 
-fbRTD_1();
+// There will be a single state provided on one of the filters for reactive temp
+// This database entry must exist, but the temperature can be blank
+IF stFilter1.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter1.stPMPS;
+ELSIF stFilter2.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter2.stPMPS;
+ELSIF stFilter3.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter3.stPMPS;
+ELSIF stFilter4.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter4.stPMPS;
+ELSIF stFilter5.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter5.stPMPS;
+ELSIF stFilter6.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter6.stPMPS;
+ELSIF stFilter7.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter7.stPMPS;
+ELSIF stFilter8.stPMPS.sPmpsState <> '' THEN
+    astPickedDB[1] := stFilter8.stPMPS;
+END_IF
+
+IF sDeviceName = '' THEN
+    sDeviceName := stAxis.sName;
+END_IF
+
+fbReadPMPSDB(
+    bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+    jsonDoc:=PMPS_GVL.BP_jsonDoc,
+    sDeviceName:=sDeviceName,
+    arrStates:=astPickedDB[1],
+    io_fbFFHWO:=fbFFHWO,
+);
+
+fbRTD_1(
+    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    bVeto:=fbStates.eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO:=fbFFHWO,
+);
 fTemp1 := fbRTD_1.fTemp;
 
-fbRTD_2();
+fbRTD_2(
+    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    bVeto:=fbStates.eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO:=fbFFHWO,
+);
 fTemp2 := fbRTD_2.fTemp;
 
 stAxis.nEnableMode := nEnableMode;
@@ -222,7 +270,7 @@ END_IF
 
 bIsStationary := NOT stAxis.Axis.Status.Moving;
 fbFF(
-    i_DevName:=stAxis.sName,
+    i_DevName:=sDeviceName,
     i_xOK:=bIsStationary AND eEnumGet <> E_SXR_SATT_Position.UNKNOWN,
     io_fbFFHWO := fbFFHWO
 );
