@@ -3,6 +3,10 @@
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
 
+VAR_INPUT
+    sPmpsState: STRING;
+END_VAR
+
 VAR
     {attribute 'pytmc' := '
     pv: MODE ;
@@ -21,36 +25,39 @@ VAR
     {attribute 'pytmc' := '
         pv: TOP:RTD:01
     '}
-    RTD_TOP_1: FB_TempSensor;
+    RTD_TOP_1: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: TOP:RTD:02
     '}
-    RTD_TOP_2: FB_TempSensor;
+    RTD_TOP_2: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: BOTTOM:RTD:01
     '}
-    RTD_Bottom_1: FB_TempSensor;
+    RTD_Bottom_1: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: BOTTOM:RTD:02
     '}
-    RTD_Bottom_2: FB_TempSensor;
+    RTD_Bottom_2: FB_CC_TempSensor;
 
     {attribute 'pytmc' := '
         pv: NORTH:RTD:01
     '}
-    RTD_North_1: FB_TempSensor;
+    RTD_North_1: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: NORTH:RTD:02
     '}
-    RTD_North_2: FB_TempSensor;
+    RTD_North_2: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: SOUTH:RTD:01
     '}
-    RTD_South_1: FB_TempSensor;
+    RTD_South_1: FB_CC_TempSensor;
     {attribute 'pytmc' := '
         pv: SOUTH:RTD:02
     '}
-    RTD_South_2: FB_TempSensor;
+    RTD_South_2: FB_CC_TempSensor;
+
+    fbReadPMPSDB: FB_JsonDocToSafeBP;
+    astTempDB: ARRAY[1..1] OF ST_DbStateParams;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -71,15 +78,57 @@ ACT_RTDs();
     <Action Name="ACT_RTDs" Id="{f626bddb-7b7c-4b26-9d84-fe5bb2361d2a}">
       <Implementation>
         <ST><![CDATA[
+// Database
+astTempDb[1].sPmpsState := sPmpsState;
+fbReadPMPSDB(
+    bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+    jsonDoc:=PMPS_GVL.BP_jsonDoc,
+    sDeviceName:=i_DevName,
+    arrStates:=astTempDb,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+
 //RTDs
-RTD_TOP_1();
-RTD_TOP_2();
-RTD_Bottom_1();
-RTD_Bottom_2();
-RTD_North_1();
-RTD_North_2();
-RTD_South_1();
-RTD_South_2();
+RTD_TOP_1(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_TOP_2(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_Bottom_1(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_Bottom_2(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_North_1(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_North_2(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_South_1(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
+RTD_South_2(
+    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+    sDevName:=i_DevName,
+    io_fbFFHWO:=io_fbFFHWO,
+);
 
 //Flow Switch
 fbFlowSwitch();
