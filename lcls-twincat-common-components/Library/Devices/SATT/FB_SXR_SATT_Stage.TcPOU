@@ -173,7 +173,7 @@ fbReadPMPSDB(
     bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
     jsonDoc:=PMPS_GVL.BP_jsonDoc,
     sDeviceName:=sDeviceName,
-    arrStates:=astPickedDB[1],
+    arrStates:=astPickedDB,
     io_fbFFHWO:=fbFFHWO,
 );
 
