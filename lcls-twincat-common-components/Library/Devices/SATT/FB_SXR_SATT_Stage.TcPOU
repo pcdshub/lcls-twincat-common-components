@@ -180,7 +180,7 @@ fbReadPMPSDB(
 fbRTD_1(
     fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
     sDevName:=sDeviceName,
-    bVeto:=fbStates.eEnumGet = E_SXR_SATT_Position.OUT,
+    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
     io_fbFFHWO:=fbFFHWO,
 );
 fTemp1 := fbRTD_1.fTemp;
@@ -188,7 +188,7 @@ fTemp1 := fbRTD_1.fTemp;
 fbRTD_2(
     fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
     sDevName:=sDeviceName,
-    bVeto:=fbStates.eEnumGet = E_SXR_SATT_Position.OUT,
+    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
     io_fbFFHWO:=fbFFHWO,
 );
 fTemp2 := fbRTD_2.fTemp;
