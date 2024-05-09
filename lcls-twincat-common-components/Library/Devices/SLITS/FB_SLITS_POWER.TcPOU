@@ -2,147 +2,20 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
-VAR_IN_OUT
-    stTopBlade: ST_MotionStage;
-    stBottomBlade: ST_MotionStage;
-    stNorthBlade: ST_MotionStage;
-    stSouthBlade: ST_MotionStage;
-END_VAR
-VAR_INPUT
-    {attribute 'pytmc' := '
-    pv: GO;
-    io: io;
-    field: ZNAM False
-    field: ONAM True
-    '}
-    bExecuteMotion:BOOL ;
-    {attribute 'pytmc' := '
-    pv: PMPS_OK;
-    io: i;
-    field: ZNAM False
-    field: ONAM True
-    '}
-    bMoveOk:BOOL;
-END_VAR
-VAR_OUTPUT
-END_VAR
+
 VAR
-    fbTopBlade: FB_MotionStage;
-    fbBottomBlade: FB_MotionStage;
-    fbNorthBlade: FB_MotionStage;
-    fbSouthBlade: FB_MotionStage;
-    fPosTopBlade: LREAL;
-    fPosBottomBlade: LREAL;
-    fPosNorthBlade: LREAL;
-    fPosSouthBlade: LREAL;
-
-    (*Motion Parameters*)
-    fSmallDelta: LREAL := 0.01;
-    fBigDelta: LREAL := 10;
-    fMaxVelocity: LREAL := 0.2;
-    fHighAccel: LREAL := 0.8;
-    fLowAccel: LREAL := 0.1;
-
-    stTop: ST_PositionState;
-    stBOTTOM: ST_PositionState;
-    stNorth: ST_PositionState;
-    stSouth: ST_PositionState;
-
-    {attribute 'pytmc' := 'pv: TOP'}
-    fbTop: FB_StatePTPMove;
-    {attribute 'pytmc' := 'pv: BOTTOM'}
-    fbBottom: FB_StatePTPMove;
-    {attribute 'pytmc' := 'pv: NORTH'}
-    fbNorth: FB_StatePTPMove;
-    {attribute 'pytmc' := 'pv: SOUTH'}
-    fbSouth: FB_StatePTPMove;
-
-    (*EPICS pvs*)
     {attribute 'pytmc' := '
-    pv: XWID_REQ;
-    io: io;
+    pv: MODE ;
+     field: ZNAM Local;
+    field: ONAM PMPS;
+     io: io;
     '}
-    rReqApertureSizeX : REAL;
-    {attribute 'pytmc' := '
-    pv: YWID_REQ;
-    io: io;
-    '}
-    rReqApertureSizeY : REAL;
-    {attribute 'pytmc' := '
-    pv: XCEN_REQ;
-    io: io;
-    '}
-    rReqCenterX: REAL;
-    {attribute 'pytmc' := '
-    pv: YCEN_REQ;
-    io: io;
-    '}
-    rReqCenterY: REAL;
+    xPMPSMode	:BOOL :=TRUE;
 
-    {attribute 'pytmc' := '
-    pv: ACTUAL_XWIDTH;
-    io: io;
-    '}
-    rActApertureSizeX : REAL;
-
-    {attribute 'pytmc' := '
-    pv: ACTUAL_YWIDTH;
-    io: io;
-    '}
-    rActApertureSizeY : REAL;
-    {attribute 'pytmc' := '
-    pv: ACTUAL_XCENTER;
-    io: io;
-    '}
-    rActCenterX: REAL;
-    {attribute 'pytmc' := '
-    pv: ACTUAL_YCENTER;
-    io: io;
-    '}
-    rActCenterY: REAL;
-
-    {attribute 'pytmc' := '
-    pv: XCEN_SETZERO;
-    io: io;
-    '}
-    rSetCenterX: REAL;
-    {attribute 'pytmc' := '
-    pv: YCEN_SETZERO;
-    io: io;
-    '}
-    rSetCenterY: REAL;
-
-
-    {attribute 'pytmc' := '
-    pv: OPEN;
-    io: io;
-    field: ZNAM False
-    field: ONAM True
-    '}
-    bOpen: BOOL;
-
-    {attribute 'pytmc' := '
-    pv: CLOSE;
-    io: io;
-    field: ZNAM False
-    field: ONAM True
-    '}
-    bClose: BOOL;
-
-    {attribute 'pytmc' := '
-    pv: BLOCK;
-    io: io;
-    field: ZNAM False
-    field: ONAM True
-    '}
-    bBlock: BOOL;
-
-
-    {attribute 'pytmc' := '
+     {attribute 'pytmc' := '
         pv: FSW
     '}
     fbFlowSwitch: FB_XTES_Flowswitch;
-
 
     //RTDs
     {attribute 'pytmc' := '
@@ -178,102 +51,27 @@ VAR
         pv: SOUTH:RTD:02
     '}
     RTD_South_2: FB_TempSensor;
-
-        //Local variables
-    bInit: BOOL :=true;
-    rTrig_Block: R_TRIG;
-    rTrig_Open: R_TRIG;
-    rTrig_Close: R_TRIG;
-
-    fPosBlock: LREAL;
-    fPosClose: LREAL;
-    fPosOpen: LREAL;
-
-
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-//  init the motion stages parameters
-IF ( bInit) THEN
-    stTopBlade.bHardwareEnable := TRUE;
-    stBottomBlade.bHardwareEnable := TRUE;
-    stNorthBlade.bHardwareEnable := TRUE;
-    stSouthBlade.bHardwareEnable := TRUE;
-    stTopBlade.bPowerSelf :=TRUE;
-    stBottomBlade.bPowerSelf :=TRUE;
-    stNorthBlade.bPowerSelf :=TRUE;
-    stSouthBlade.bPowerSelf :=TRUE;
-    stTopBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stBottomBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stNorthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stSouthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-END_IF
-
-
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Action Name="ACT_Init" Id="{c73db9fc-43d0-43e2-91f3-2874c0adf041}">
+      <Implementation>
+        <ST><![CDATA[
 // Instantiate Function block for all the blades
-fbTopBlade(stMotionStage:=stTopBlade);
-fbBottomBlade(stMotionStage:=stBottomBlade);
-fbNorthBlade(stMotionStage:=stNorthBlade);
-fbSouthBlade(stMotionStage:=stSouthBlade);
-
+ACT_Motion();
 //SET and GET the requested and Actual values
 ACT_CalculatePositions();
 //ACT_BLOCK();
-
-// PTP Motion for each blade
-stTop.sName := 'Top';
-stTop.fPosition := fPosTopBlade;
-stTop.fDelta := fSmallDelta;
-stTop.fVelocity := fMaxVelocity;
-stTop.fAccel := fHighAccel;
-stTop.fDecel := fHighAccel;
-
-stBOTTOM.sName := 'Bottom';
-stBOTTOM.fPosition := fPosBottomBlade;
-stBOTTOM.fDelta := fSmallDelta;
-stBOTTOM.fVelocity := fMaxVelocity;
-stBOTTOM.fAccel := fHighAccel;
-stBOTTOM.fDecel := fHighAccel;
-
-stNorth.sName := 'North';
-stNorth.fPosition := fPosNorthBlade;
-stNorth.fDelta := fSmallDelta;
-stNorth.fVelocity := fMaxVelocity;
-stNorth.fAccel := fHighAccel;
-stNorth.fDecel := fHighAccel;
-
-stSouth.sName := 'South';
-stSouth.fPosition := fPosSouthBlade;
-stSouth.fDelta := fSmallDelta;
-stSouth.fVelocity := fMaxVelocity;
-stSouth.fAccel := fHighAccel;
-stSouth.fDecel := fHighAccel;
-
-fbTop.bExecute := fbBottom.bExecute :=fbNorth.bExecute := fbSouth.bExecute := bExecuteMotion;
-
-fbTop(
-    stPositionState:=stTop,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stTopBlade);
-
-fbBottom(
-    stPositionState:=stBOTTOM,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stBottomBlade);
-
-fbNorth(
-    stPositionState:=stNorth,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stNorthBlade);
-
-fbSouth(
-    stPositionState:=stSouth,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stSouthBlade);
-
-
-////RTDs
+ACT_RTDs();
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_RTDs" Id="{f626bddb-7b7c-4b26-9d84-fe5bb2361d2a}">
+      <Implementation>
+        <ST><![CDATA[
+//RTDs
 RTD_TOP_1();
 RTD_TOP_2();
 RTD_Bottom_1();
@@ -284,65 +82,59 @@ RTD_South_1();
 RTD_South_2();
 
 //Flow Switch
-fbFlowSwitch();]]></ST>
-    </Implementation>
-    <Action Name="ACT_BLOCK" Id="{0f728c9e-1734-4e84-a426-c4e6ddfac7fb}">
-      <Implementation>
-        <ST><![CDATA[rTrig_Block (CLK:= bBlock);
-rTrig_Open (CLK:= bOpen);
-rTrig_Close (CLK:= bClose);
-
-if (rTrig_Block.Q) THEN
-    //BLOCK
-
-    bBlock := false;
-END_IF
-
-if (rTrig_Open.Q) THEN
-
-
-    bOpen := false;
-END_IF
-
-if (rTrig_Close.Q) THEN
-
-
-    bClose := false;
-END_IF]]></ST>
+fbFlowSwitch();
+]]></ST>
       </Implementation>
     </Action>
-    <Action Name="ACT_CalculatePositions" Id="{c17f647d-6436-4f85-8637-dc6c309549a9}">
+    <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
+      <Declaration><![CDATA[METHOD M_UpdatePMPS : BOOL
+VAR_INPUT
+    index: int;
+END_VAR
+]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-//Calculate requested Positions
+//Keep updating the status of the apertures PMPS
+This^.AptArrayStatus.Height := This^.rActApertureSizeY;
+This^.AptArrayStatus.Width := This^.rActApertureSizeX;
+This^.AptArrayStatus.xOK := NOT (This^.stTopBlade.bError) AND NOT (This^.stBottomBlade.bError)
+                                 AND NOT (This^.stNorthBlade.bError) AND NOT (This^.stNorthBlade.bError);
+
+//Evaluate that the current center on the X and the y direction didn't exceed limits,
+// Gap should be reduced when center is moved, gap < Maximum permessible gap - 2|Center deviation from nominal|
+//Fast fault when it does.
+IF(This^.rActApertureSizeX > (AptArrayReq.Width - (2*ABS(rActCenterX)))
+//(rActCenterX > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width/2))
+    AND (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width >0 ))
+    OR (This^.rActApertureSizeY > (AptArrayReq.Height - (2*ABS(rActCenterY)))
+    //((rActCenterY > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height/2))
+        AND(PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height>0 )) THEN
+        FFO.i_xOK := FALSE;
+    ELSE
+        FFO.i_xOK := TRUE;
+END_IF
+
+//Evaluate that the requested gaps on the X and the y direction is not larger than the current gap
+// narrow  the gap if the requested is larger
+IF(xPMPSMode) THEN
+    IF (This^.rActApertureSizeX > AptArrayReq.Width) THEN
+        rReqApertureSizeX := AptArrayReq.Width - 0.01;
+    END_IF
+    IF (This^.rActApertureSizeY > AptArrayReq.Height) THEN
+         rReqApertureSizeY := AptArrayReq.Height - 0.01;
+    END_IF
+    ELSE
+     FFO.i_xOK := FALSE;
+END_IF
 
 
-fPosTopBlade := (rReqApertureSizeY/2) + rReqCenterY;
-fPosBottomBlade := (-1*rReqApertureSizeY/2) + rReqCenterY;
-
-fPosNorthBlade := (rReqApertureSizeX/2) + rReqCenterX;
-fPosSouthBlade := (-1*rReqApertureSizeX/2) + rReqCenterX;
-
-
-//Calculate Actual Positions
-
-
-rActApertureSizeX := ABS(stNorthBlade.stAxisStatus.fActPosition - stSouthBlade.stAxisStatus.fActPosition);
-
-rActApertureSizeY := ABS(stTopBlade.stAxisStatus.fActPosition - stBottomBlade.stAxisStatus.fActPosition);
-
-rActCenterX := ((stNorthBlade.stAxisStatus.fActPosition + stSouthBlade.stAxisStatus.fActPosition)/2);
-
-rActCenterY := ((stTopBlade.stAxisStatus.fActPosition + stBottomBlade.stAxisStatus.fActPosition)/2);
-
-
-
-//ZERO BIAS
-
-// Set Y center to zero
-
-// Set X center to zero]]></ST>
+(*FAST FAULT*)
+FFO(i_xOK := ,
+    i_xReset := ,
+    i_xAutoReset :=TRUE,
+    io_fbFFHWO := io_fbFFHWO);
+]]></ST>
       </Implementation>
-    </Action>
+    </Method>
   </POU>
 </TcPlcObject>
