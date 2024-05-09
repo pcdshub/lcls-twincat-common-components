@@ -24,6 +24,7 @@ END_VAR
 FOR nIter := 0 TO 9 DO
     astBeamParams[nIter].stBeamParams := PMPS_GVL.cstFullBeam;
     astBeamParams[nIter].sPmpsState := CONCAT('T', UINT_TO_STRING(nIter));
+    astBeamParams[nIter].stReactiveParams.nTempSP := nIter + 20;
 END_FOR
 fbSetupJson(
     astBeamParams := astBeamParams,

@@ -78,7 +78,6 @@ VAR
 
     {attribute 'pytmc' := 'pv: STC:01'}
     fbTempSensor1: FB_CC_TempSensor;
-    fTempSP: REAL;
 
     {attribute 'pytmc' :='pv: FWM'}
     fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
