@@ -795,6 +795,54 @@ External Setpoint Generation:
 			</Relations>
 		</DataType>
 		<DataType>
+			<Name GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Name>
+			<BitSize>96</BitSize>
+			<SubItem>
+				<Name>Width</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+				<Comment><![CDATA[distance between horizontal slits (x)]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: Width
+            io: i
+            field: EGU mm</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+			<SubItem>
+				<Name>Height</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+				<Comment><![CDATA[distance between vertical slits (y)]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: Height
+            io: i
+            field: EGU mm</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+			<SubItem>
+				<Name>xOK</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
+				<Comment><![CDATA[status of aperture, false if error or in motion]]></Comment>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: OK
+        io: i</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+		</DataType>
+		<DataType>
 			<Name GUID="{875D2B22-B7EB-497E-B933-0C004593CCF3}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">PLCTONC_AXIS_REF_CTRL</Name>
 			<BitSize>32</BitSize>
 			<SubItem>
@@ -983,7 +1031,7 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{696D7888-13D9-45CD-2584-F00146D84A15}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{CAA8A259-C6BC-6D47-9BB7-0E847029832B}">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
@@ -1945,6 +1993,314 @@ External Setpoint Generation:
 					<Type>INT</Type>
 				</Var>
 				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbTopBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbBottomBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbNorthBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbSouthBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayReq</Name>
+					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbFlowSwitch.bFlowOk</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.Axis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.bLimitForwardEnable</Name>
+					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.bLimitBackwardEnable</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.bHome</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderULINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.Axis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.bLimitForwardEnable</Name>
+					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.bLimitBackwardEnable</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.bHome</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderULINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.Axis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.bLimitForwardEnable</Name>
+					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.bLimitBackwardEnable</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.bHome</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderULINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.Axis.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.bLimitForwardEnable</Name>
+					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.bLimitBackwardEnable</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.bHome</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderULINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
 					<Name>PRG_TEST.fbWFSTest.fbWFS.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
@@ -2734,6 +3090,66 @@ External Setpoint Generation:
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbSATTTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbTopBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbBottomBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbNorthBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbSouthBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayStatus</Name>
+					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.Axis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M1.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.Axis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M2.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.Axis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M3.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.Axis.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.M4.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbFFHWO.q_xFastFaultOut</Name>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>

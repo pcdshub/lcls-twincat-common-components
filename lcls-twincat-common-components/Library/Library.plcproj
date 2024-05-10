@@ -150,6 +150,9 @@
     <Compile Include="Tests\FB_REFTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\FB_SLITS_POWERTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\FB_WFSTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>

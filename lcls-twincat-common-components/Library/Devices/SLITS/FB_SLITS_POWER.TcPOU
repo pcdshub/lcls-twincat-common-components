@@ -61,7 +61,15 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[
+ACT_init();
+// Instantiate Function block for all the blades
+ACT_Motion();
+//SET and GET the requested and Actual values
+ACT_CalculatePositions();
+//ACT_BLOCK();
+ACT_RTDs();
+]]></ST>
     </Implementation>
     <Action Name="ACT_Init" Id="{c73db9fc-43d0-43e2-91f3-2874c0adf041}">
       <Implementation>
