@@ -56,10 +56,68 @@ fbWFS(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 ]]></ST>
     </Implementation>
+    <Method Name="AssertBothTempFault" Id="{19b10529-75b5-4949-b147-faeee7848238}">
+      <Declaration><![CDATA[METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertFalse(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT('WFS TC1 expected fault: ', Message),
+);
+AssertFalse(
+    fbWFS.fbThermoCouple2.FFO.i_xOK,
+    CONCAT('WFS TC2 expected fault: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AssertNeitherTempFault" Id="{da95bb00-7c28-4764-9d51-ad88bce02340}">
+      <Declaration><![CDATA[METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertTrue(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT('WFS TC1 expected ok: ', Message),
+);
+AssertTrue(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT('WFS TC2 sensor expected ok: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetWFSTemp" Id="{d1268d1a-3c93-46a7-bd70-abc42ffcf929}">
+      <Declaration><![CDATA[METHOD SetWFSTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+ptr := ADR(fbWFS.fbThermoCouple1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbWFS.fbThermoCouple2.iRaw);
+ptr^ := iTempC * 10;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="TestStateMove" Id="{a0e8e497-91d8-4707-b6b1-4494ed854f9c}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
@@ -85,6 +143,59 @@ END_IF
 
 IF tonTimer.Q OR nIterState > nLastState THEN
     AssertFalse(tonTimer.Q, 'Timeout in WFS move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{1b4ac7c4-07b0-4d1a-97dd-2dfd68cd11c9}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST('TestWFSTempFFO');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetWFSTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        IF fbWFS.eEnumGet = E_WFS_States.OUT THEN
+            AssertNeitherTempFault('was in out position');
+            bOutChecked := TRUE;
+        ELSIF fbWFS.eEnumGet <> E_WFS_States.Unknown THEN
+            AssertBothTempFault('was in a target position');
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetWFSTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault('has low temp reading');
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in WFS temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>

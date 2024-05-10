@@ -13,7 +13,10 @@ END_VAR
       <ST><![CDATA[// Database default read is zero if no entry
 bVeto S= fFaultThreshold = 0;
 
-SUPER^(io_fbFFHWO:=io_fbFFHWO);]]></ST>
+SUPER^(io_fbFFHWO:=io_fbFFHWO);
+
+// Always reset back to False in case sFaultThreshold loaded slow and no manual bVeto
+bVeto := FALSE;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
