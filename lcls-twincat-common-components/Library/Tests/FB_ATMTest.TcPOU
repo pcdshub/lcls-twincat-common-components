@@ -64,7 +64,7 @@ bInit := TRUE;
     <Method Name="SetATMTemp" Id="{07ebf674-935a-442d-8dea-ed2efbbd9560}">
       <Declaration><![CDATA[METHOD SetATMTemp
 VAR_INPUT
-    iRawTemp: INT;
+    iTempC: INT;
 END_VAR
 VAR
     ptr: POINTER TO INT;
@@ -73,7 +73,7 @@ END_VAR
       <Implementation>
         <ST><![CDATA[
 ptr := ADR(fbATM.fbTempSensor1.iRaw);
-ptr^ := iRawTemp;
+ptr^ := iTempC * 10;
 ]]></ST>
       </Implementation>
     </Method>
@@ -130,7 +130,7 @@ tonTimer(IN:=TRUE, PT:=T#10s);
 CASE nStep OF
     0:
         // Set the thermocouple temperatures to crazy high number
-        SetATMTemp(1000);
+        SetATMTemp(100);
         nStep := nStep + 1;
     1:
         // Wait till we see "OUT" state and one other state (OUT should be no fault)

@@ -98,7 +98,7 @@ AssertTrue(
     <Method Name="SetPPMTemp" Id="{a562a0a3-b773-435c-a674-0d23a2ebaa9b}">
       <Declaration><![CDATA[METHOD SetPPMTemp
 VAR_INPUT
-    iRawTemp: INT;
+    iTempC: INT;
 END_VAR
 VAR
     ptr: POINTER TO INT;
@@ -107,10 +107,10 @@ END_VAR
       <Implementation>
         <ST><![CDATA[
 ptr := ADR(fbPPM.fbYagTempSensor.iRaw);
-ptr^ := iRawTemp;
+ptr^ := iTempC * 10;
 
 ptr := ADR(fbPPM.fbPowerMeter.fbTempSensor.iRaw);
-ptr^ := iRawTemp;
+ptr^ := iTempC * 10;
 ]]></ST>
       </Implementation>
     </Method>
@@ -167,7 +167,7 @@ tonTimer(IN:=TRUE, PT:=T#10s);
 CASE nStep OF
     0:
         // Set the thermocouple temperatures to crazy high number
-        SetPPMTemp(1000);
+        SetPPMTemp(100);
         nStep := nStep + 1;
     1:
         // Wait till we see "OUT" state and one other state (OUT should be no fault)
@@ -191,7 +191,7 @@ CASE nStep OF
 END_CASE;
 
 IF tonTimer.Q OR nStep > nLastStep THEN
-    AssertFalse(tonTimer.Q, 'Timeout in ATM temp FFO test');
+    AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>
