@@ -12,6 +12,7 @@ VAR
     fbWFSTest: FB_WFSTest;
     fbXPIMTest: FB_XPIMTest;
     fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
+    fbCCTempSensorTest: FB_CC_TempSensorTest;
 
     fbSetupJson: FB_PMPSJsonTestHelper;
     astBeamParams: ARRAY[0..9] OF ST_DbStateParams;

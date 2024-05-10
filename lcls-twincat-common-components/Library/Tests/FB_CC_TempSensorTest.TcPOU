@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_TempSensorTest" Id="{97eee846-433c-4b59-96d7-8ed3430964de}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CC_TempSensorTest EXTENDS FB_TestSuite
+VAR
+    fbTempSensor: FB_CC_TempSensor;
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TestBasic();
+TestThresholdVeto();]]></ST>
+    </Implementation>
+    <Method Name="SetTempAndRunFB" Id="{31ab1f78-a5de-4c4f-b101-c9bfbb785b79}">
+      <Declaration><![CDATA[METHOD SetTempAndRunFB
+VAR_INPUT
+    iRawTemp: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+ptr := ADR(fbTempSensor.iRaw);
+ptr^ := iRawTemp;
+
+fbTempSensor(io_fbFFHWO:=fbFFHWO);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestBasic" Id="{dcdef24a-9782-4bfe-88f4-1b54e4b20aed}">
+      <Declaration><![CDATA[METHOD TestBasic]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST('TestBasic');
+
+fbTempSensor.fFaultThreshold := 10;
+fbTempSensor.bVeto := FALSE;
+SetTempAndRunFB(50);
+AssertTrue(
+    fbTempSensor.FFO.i_xOK,
+    'Faulted with temp below threshold',
+);
+
+fbTempSensor.fFaultThreshold := 10;
+fbTempSensor.bVeto := FALSE;
+SetTempAndRunFB(150);
+AssertFalse(
+    fbTempSensor.FFO.i_xOK,
+    'Did not fault with temp above threshold',
+);
+
+fbTempSensor.fFaultThreshold := 5;
+fbTempSensor.bVeto := TRUE;
+SetTempAndRunFB(1000);
+AssertTrue(
+    fbTempSensor.FFO.i_xOK,
+    'Faulted with manual veto',
+);
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestThresholdVeto" Id="{e88f0c37-f17e-4f5e-9576-320395957b83}">
+      <Declaration><![CDATA[METHOD TestThresholdVeto]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST('TestThresholdVeto');
+
+fbTempSensor.fFaultThreshold := 0;
+fbTempSensor.bVeto := FALSE;
+SetTempAndRunFB(500);
+AssertTrue(
+    fbTempSensor.FFO.i_xOK,
+    'Faulted with not-loaded threshold',
+);
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
