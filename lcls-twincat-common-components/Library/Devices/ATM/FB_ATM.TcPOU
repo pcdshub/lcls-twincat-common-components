@@ -163,6 +163,7 @@ stTarget5 := astPositionState[E_ATM_States.TARGET5];
 
 fbTempSensor1(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto:=eEnumGet = E_ATM_States.OUT,
     sDevName:=sDeviceName,
     io_fbFFHWO:=fbFFHWO,
 );
