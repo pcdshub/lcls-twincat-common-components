@@ -165,6 +165,7 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 
 fbPowerMeter(
     fTempSP:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
 );
@@ -172,6 +173,7 @@ fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
 fbYagTempSensor(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto:=eEnumGet = E_PPM_States.OUT,
     sDevName:=sDeviceName,
     io_fbFFHWO:=fbFFHWO,
 );

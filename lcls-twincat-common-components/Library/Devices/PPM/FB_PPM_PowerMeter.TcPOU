@@ -4,6 +4,7 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR_INPUT
     fTempSP: REAL;
+    bVetoTempFFO: BOOL;
     sDeviceName: STRING;
 END_VAR
 VAR_IN_OUT
@@ -85,6 +86,7 @@ END_VAR
     <Implementation>
       <ST><![CDATA[fbTempSensor(
     fFaultThreshold:=fTempSP,
+    bVeto:=bVetoTempFFO,
     sDevName:=sDeviceName,
     io_fbFFHWO:=fbFFHWO,
 );
