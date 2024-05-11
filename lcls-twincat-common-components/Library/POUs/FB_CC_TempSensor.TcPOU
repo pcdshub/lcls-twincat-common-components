@@ -2,18 +2,18 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_TempSensor" Id="{62e52992-2558-4a9c-b1dd-b3b9616cbbcf}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CC_TempSensor EXTENDS FB_TempSensor_FFO
-VAR_INPUT
-END_VAR
-VAR_OUTPUT
-END_VAR
 VAR
+    rtVetoReset: R_TRIG;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// Database default read is zero if no entry
 bVeto S= fFaultThreshold = 0;
+// Also reset the FFO for transitions to bVeto
+rtVetoReset(CLK:=bVeto);
+FFO.i_xReset := rtVetoReset.Q;
 
-SUPER^(io_fbFFHWO:=io_fbFFHWO);
+SUPER^(bVeto:=bVeto, bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);
 
 // Always reset back to False in case sFaultThreshold loaded slow and no manual bVeto
 bVeto := FALSE;]]></ST>

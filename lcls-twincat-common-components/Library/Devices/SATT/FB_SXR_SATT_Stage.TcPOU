@@ -115,9 +115,9 @@ VAR
 
     (* EL3202-0020: 0.01 °C per digit *)
     {attribute 'pytmc' := 'pv: RTD:1'}
-    fbRTD_1: FB_TempSensor_FFO := ( fResolution:=0.01 );
+    fbRTD_1: FB_CC_TempSensor := ( fResolution:=0.01 );
     {attribute 'pytmc' := 'pv: RTD:2'}
-    fbRTD_2: FB_TempSensor_FFO := ( fResolution:=0.01 );
+    fbRTD_2: FB_CC_TempSensor := ( fResolution:=0.01 );
 
     fbReadPMPSDB: FB_JsonDocToSafeBP;
     astPickedDB: ARRAY[1..1] OF ST_DbStateParams;

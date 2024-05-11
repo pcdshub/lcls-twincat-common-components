@@ -8,8 +8,11 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[TestBasic();
-TestThresholdVeto();]]></ST>
+      <ST><![CDATA[
+TestBasic();
+TestThresholdVeto();
+TestAutoReset();
+]]></ST>
     </Implementation>
     <Method Name="SetTempAndRunFB" Id="{31ab1f78-a5de-4c4f-b101-c9bfbb785b79}">
       <Declaration><![CDATA[METHOD SetTempAndRunFB
@@ -22,9 +25,58 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
 ptr := ADR(fbTempSensor.iRaw);
-ptr^ := iRawTemp;
+ptr^ := iRawTemp * 10;
 
 fbTempSensor(io_fbFFHWO:=fbFFHWO);
+fbFFHWO.ExecuteNoLog();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestAutoReset" Id="{9b135c6c-5fae-4bb3-aa3c-5e9e36ae077f}">
+      <Declaration><![CDATA[METHOD TestAutoReset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST('TestAutoReset');
+
+// Set a fixed threshold for the test
+fbTempSensor.fFaultThreshold := 30;
+
+// Clear faults
+fbTempSensor.bVeto := TRUE;
+SetTempAndRunFB(0);
+AssertTrue(
+    fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+    'Beam not permitted after full clear with low temp',
+);
+
+// Cause a fault
+fbTempSensor.bVeto := FALSE;
+SetTempAndRunFB(100);
+AssertFalse(
+    fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+    'Beam permitted after high temp',
+);
+
+// Remove the fault condition, should still be fauling
+fbTempSensor.bVeto := FALSE;
+SetTempAndRunFB(0);
+AssertFalse(
+    fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+    'Beam permitted before manual reset',
+);
+
+// Set veto, should no longer be faulting
+fbTempSensor.bVeto := TRUE;
+SetTempAndRunFB(0);
+AssertTrue(
+    fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+    'Beam not permitted after veto',
+);
+
+TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
@@ -36,7 +88,7 @@ TEST('TestBasic');
 
 fbTempSensor.fFaultThreshold := 10;
 fbTempSensor.bVeto := FALSE;
-SetTempAndRunFB(50);
+SetTempAndRunFB(2);
 AssertTrue(
     fbTempSensor.FFO.i_xOK,
     'Faulted with temp below threshold',
