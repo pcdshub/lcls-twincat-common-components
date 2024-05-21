@@ -10,7 +10,6 @@ END_VAR
     <Implementation>
       <ST><![CDATA[
 TestBasic();
-TestThresholdVeto();
 TestAutoReset();
 ]]></ST>
     </Implementation>
@@ -108,24 +107,6 @@ SetTempAndRunFB(1000);
 AssertTrue(
     fbTempSensor.FFO.i_xOK,
     'Faulted with manual veto',
-);
-
-TEST_FINISHED();
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="TestThresholdVeto" Id="{e88f0c37-f17e-4f5e-9576-320395957b83}">
-      <Declaration><![CDATA[METHOD TestThresholdVeto]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[
-TEST('TestThresholdVeto');
-
-fbTempSensor.fFaultThreshold := 0;
-fbTempSensor.bVeto := FALSE;
-SetTempAndRunFB(500);
-AssertTrue(
-    fbTempSensor.FFO.i_xOK,
-    'Faulted with not-loaded threshold',
 );
 
 TEST_FINISHED();

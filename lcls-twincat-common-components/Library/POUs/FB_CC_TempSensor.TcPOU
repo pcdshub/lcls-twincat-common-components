@@ -7,16 +7,12 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Database default read is zero if no entry
-bVeto S= fFaultThreshold = 0;
-// Also reset the FFO for transitions to bVeto
+      <ST><![CDATA[// Reset the FFO for transitions to bVeto
+// bAutoreset is False, but we still want to clear the fault on veto
 rtVetoReset(CLK:=bVeto);
 FFO.i_xReset := rtVetoReset.Q;
 
-SUPER^(bVeto:=bVeto, bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);
-
-// Always reset back to False in case sFaultThreshold loaded slow and no manual bVeto
-bVeto := FALSE;]]></ST>
+SUPER^(bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
