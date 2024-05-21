@@ -27,7 +27,7 @@ stYStage.bLimitForwardEnable := TRUE;
 // Standard state setup
 fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
 fbSetup(stPositionState:=fbSATT.stOut, sName:='OUT', fPosition:=10);
-fbSetup(stPositionState:=fbSATT.stFilter1, sName:='T1', fPosition:=20);
+fbSetup(stPositionState:=fbSATT.stFilter1, sName:='T1', fPosition:=20, sPmpsState:='T1');
 fbSetup(stPositionState:=fbSATT.stFilter2, sName:='T2', fPosition:=30);
 fbSetup(stPositionState:=fbSATT.stFilter3, sName:='T3', fPosition:=40);
 fbSetup(stPositionState:=fbSATT.stFilter4, sName:='T4', fPosition:=50);
@@ -41,13 +41,72 @@ fbSATT(
     stAxis:=stYStage,
     fbFFHWO:=fbFFHWO,
     bEnable:=TRUE,
+    sDeviceName:='DEVICE',
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 ]]></ST>
     </Implementation>
+    <Method Name="AssertBothTempFault" Id="{95d6c1aa-c314-417f-8510-e65298bca360}">
+      <Declaration><![CDATA[METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertFalse(
+    fbSATT.fbRTD_1.FFO.i_xOK,
+    CONCAT('SATT RTD1 expected fault: ', Message),
+);
+AssertFalse(
+    fbSATT.fbRTD_2.FFO.i_xOK,
+    CONCAT('SATT RTD2 expected fault: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AssertNeitherTempFault" Id="{5de84732-353a-4a55-9eb9-df3ae8bca03b}">
+      <Declaration><![CDATA[METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertTrue(
+    fbSATT.fbRTD_1.FFO.i_xOK,
+    CONCAT('SATT RTD1 expected ok: ', Message),
+);
+AssertTrue(
+    fbSATT.fbRTD_2.FFO.i_xOK,
+    CONCAT('SATT RTD2 expected ok: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetSATTTemp" Id="{7ebc7bb7-f0d1-456e-9851-f9318ff9a3aa}">
+      <Declaration><![CDATA[METHOD SetSATTTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+ptr := ADR(fbSATT.fbRTD_1.iRaw);
+ptr^ := iTempC * 100;
+
+ptr := ADR(fbSATT.fbRTD_2.iRaw);
+ptr^ := iTempC * 100;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="TestStateMove" Id="{6c59097f-e216-48c9-8846-19da78be43c4}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
@@ -73,6 +132,59 @@ END_IF
 
 IF tonTimer.Q OR nIterState > nLastState THEN
     AssertFalse(tonTimer.Q, 'Timeout in SATT move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{f4f8a550-63b6-47ea-b8a6-24727446e218}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST('TestSATTTempFFO');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetSATTTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT THEN
+            AssertNeitherTempFault('was in out position');
+            bOutChecked := TRUE;
+        ELSIF fbSATT.eEnumGet <> E_SXR_SATT_Position.Unknown THEN
+            AssertBothTempFault('was in a target position');
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetSATTTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault('has low temp reading');
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in SATT temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>

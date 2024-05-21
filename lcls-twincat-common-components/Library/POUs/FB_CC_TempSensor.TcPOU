@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_TempSensor" Id="{62e52992-2558-4a9c-b1dd-b3b9616cbbcf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CC_TempSensor EXTENDS FB_TempSensor_FFO
+VAR
+    rtVetoReset: R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Reset the FFO for transitions to bVeto
+// bAutoreset is False, but we still want to clear the fault on veto
+rtVetoReset(CLK:=bVeto);
+FFO.i_xReset := rtVetoReset.Q;
+
+SUPER^(bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

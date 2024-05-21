@@ -2,6 +2,14 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
+VAR_INPUT
+    fTempSP: REAL;
+    bVetoTempFFO: BOOL;
+    sDeviceName: STRING;
+END_VAR
+VAR_IN_OUT
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
 VAR
     iVoltageINT AT %I*: INT;
 
@@ -46,10 +54,10 @@ VAR
     fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute 'pytmc' := '
-        pv:
+        pv: STC
         io: input
     '}
-    fbThermoCouple: FB_ThermoCouple;
+    fbTempSensor: FB_CC_TempSensor;
 
     {attribute 'pytmc' := '
         pv: CALIB:OFFSET
@@ -76,7 +84,12 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbThermoCouple();
+      <ST><![CDATA[fbTempSensor(
+    fFaultThreshold:=fTempSP,
+    bVeto:=bVetoTempFFO,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
 
 // Convert the terminal's integer into a value in millivolts
 fbGetPMVoltage(

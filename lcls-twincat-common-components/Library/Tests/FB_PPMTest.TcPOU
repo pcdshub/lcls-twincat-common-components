@@ -52,10 +52,68 @@ fbPPM(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 ]]></ST>
     </Implementation>
+    <Method Name="AssertBothTempFault" Id="{8909043d-b06e-4fe1-af75-98d367a5485d}">
+      <Declaration><![CDATA[METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertFalse(
+    fbPPM.fbYagTempSensor.FFO.i_xOK,
+    CONCAT('PPM yag temp sensor expected fault: ', Message),
+);
+AssertFalse(
+    fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+    CONCAT('PPM pm temp sensor expected fault: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AssertNeitherTempFault" Id="{67f64774-b93e-4edd-9385-2e45e7e5bb02}">
+      <Declaration><![CDATA[METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+AssertTrue(
+    fbPPM.fbYagTempSensor.FFO.i_xOK,
+    CONCAT('PPM yag temp sensor expected ok: ', Message),
+);
+AssertTrue(
+    fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+    CONCAT('PPM pm temp sensor expected ok: ', Message),
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetPPMTemp" Id="{a562a0a3-b773-435c-a674-0d23a2ebaa9b}">
+      <Declaration><![CDATA[METHOD SetPPMTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+ptr := ADR(fbPPM.fbYagTempSensor.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbPPM.fbPowerMeter.fbTempSensor.iRaw);
+ptr^ := iTempC * 10;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="TestStateMove" Id="{6d196413-6cf3-4cc4-b625-5ae4ecbdc9a3}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
@@ -81,6 +139,59 @@ END_IF
 
 IF tonTimer.Q OR nIterState > nLastState THEN
     AssertFalse(tonTimer.Q, 'Timeout in PPM move test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{22555386-8565-4705-8fa4-8f0ccd016d60}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST('TestPPMTempFFO');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetPPMTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        IF fbPPM.eEnumGet = E_PPM_States.OUT THEN
+            AssertNeitherTempFault('was in out position');
+            bOutChecked := TRUE;
+        ELSIF fbPPM.eEnumGet <> E_PPM_States.Unknown THEN
+            AssertBothTempFault('was in a target position');
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetPPMTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault('has low temp reading');
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>

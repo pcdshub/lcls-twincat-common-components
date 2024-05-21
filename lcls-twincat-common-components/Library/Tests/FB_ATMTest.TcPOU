@@ -56,10 +56,27 @@ fbATM(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 ]]></ST>
     </Implementation>
+    <Method Name="SetATMTemp" Id="{07ebf674-935a-442d-8dea-ed2efbbd9560}">
+      <Declaration><![CDATA[METHOD SetATMTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+ptr := ADR(fbATM.fbTempSensor1.iRaw);
+ptr^ := iTempC * 10;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="TestStateMove" Id="{f3017196-77b1-444b-bcd3-e7d7d6c6f76f}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
@@ -88,6 +105,67 @@ IF tonTimer.Q OR nIterState > nLastState THEN
     TEST_FINISHED();
 END_IF
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{eda3686e-db0a-4f3e-a5a4-bddc09f8d415}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST('TestATMTempFFO');
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetATMTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        IF fbATM.eEnumGet = E_ATM_States.OUT THEN
+            AssertTrue(
+                fbATM.fbTempSensor1.FFO.i_xOK,
+                'Faulted even in out position!',
+            );
+            bOutChecked := TRUE;
+        ELSIF fbATM.eEnumGet <> E_ATM_States.Unknown THEN
+            AssertFalse(
+                fbATM.fbTempSensor1.FFO.i_xOK,
+                'No fault even for an in position!',
+            );
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetATMTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertTrue(
+            fbATM.fbTempSensor1.FFO.i_xOK,
+            'Faulted even with low temp!',
+        );
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in ATM temp FFO test');
+    TEST_FINISHED();
+END_IF]]></ST>
       </Implementation>
     </Method>
   </POU>

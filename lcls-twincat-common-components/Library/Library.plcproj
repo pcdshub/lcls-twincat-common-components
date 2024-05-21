@@ -38,6 +38,7 @@
     <Folder Include="DUTs" />
     <Folder Include="Tests" />
     <Folder Include="POUs" />
+    <Folder Include="Tests\Helpers" />
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +117,9 @@
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CC_TempSensor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_CheckPositionStateWrite.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -126,6 +130,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_ATMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_CC_TempSensorTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_SATTTest.TcPOU">
@@ -143,10 +150,16 @@
     <Compile Include="Tests\FB_REFTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\FB_SLITS_POWERTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\FB_WFSTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_XPIMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\PRG_TEST.TcPOU">
@@ -178,6 +191,10 @@
       <DefaultResolution>PMPS, * (SLAC - LCLS)</DefaultResolution>
       <Namespace>PMPS</Namespace>
     </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_MC2">
+      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_MC2</Namespace>
+    </PlaceholderReference>
     <PlaceholderReference Include="Tc2_SerialCom">
       <DefaultResolution>Tc2_SerialCom, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_SerialCom</Namespace>
@@ -189,6 +206,10 @@
     <PlaceholderReference Include="Tc2_Utilities">
       <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_JsonXml">
+      <DefaultResolution>Tc3_JsonXml, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_JsonXml</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>

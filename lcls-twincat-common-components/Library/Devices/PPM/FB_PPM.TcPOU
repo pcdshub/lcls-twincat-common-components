@@ -92,8 +92,8 @@ VAR
     {attribute 'pytmc' :='pv: FWM'}
     fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
 
-    {attribute 'pytmc' := 'pv: YAG'}
-    fbYagThermoCouple: FB_ThermoCouple;
+    {attribute 'pytmc' := 'pv: YAG:STC'}
+    fbYagTempSensor: FB_CC_TempSensor;
 
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch: FB_XTES_Flowswitch;
@@ -163,10 +163,20 @@ stPower := astPositionState[E_PPM_States.POWERMETER];
 stYag1 := astPositionState[E_PPM_States.YAG1];
 stYag2 := astPositionState[E_PPM_States.YAG2];
 
-fbPowerMeter();
+fbPowerMeter(
+    fTempSP:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
+    sDeviceName:=sDeviceName,
+    fbFFHWO:=fbFFHWO,
+);
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
-fbYagThermoCouple();
+fbYagTempSensor(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto:=eEnumGet = E_PPM_States.OUT,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
 fbFlowSwitch();]]></ST>
     </Implementation>
   </POU>
