@@ -18,7 +18,7 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
@@ -81,10 +81,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#fb-atm">FB_ATM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-atmtest">FB_ATMTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-attenuatorelementdensity">FB_AttenuatorElementDensity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-cc-tempsensortest">FB_CC_TempSensorTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewritetest">FB_CheckPositionStateWriteTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lic">FB_LIC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lictest">FB_LICTest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-pmpsjsontesthelper">FB_PMPSJsonTestHelper</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-ppm">FB_PPM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-ppm-gige">FB_PPM_Gige</a></li>
@@ -96,6 +99,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#fb-satttest">FB_SATTTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-slits">FB_SLITS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-slits-power">FB_SLITS_POWER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-slits-powertest">FB_SLITS_POWERTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-sxr-satt-stage">FB_SXR_SATT_Stage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-wfs">FB_WFS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-wfstest">FB_WFSTest</a></li>
@@ -378,7 +382,7 @@
     <span class="n">fbArrCheckWrite</span><span class="p">:</span> <span class="n">FB_CheckPositionStateWrite</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: STC:01&#39;</span><span class="p">}</span>
-    <span class="n">fbThermoCouple1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
+    <span class="n">fbTempSensor1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span><span class="s1">&#39;pv: FWM&#39;</span><span class="p">}</span>
     <span class="n">fbFlowMeter</span><span class="p">:</span> <span class="n">FB_AnalogInput</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
@@ -459,7 +463,12 @@
 <span class="n">stTarget4</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_ATM_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">];</span>
 <span class="n">stTarget5</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_ATM_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">];</span>
 
-<span class="n">fbThermoCouple1</span><span class="p">();</span>
+<span class="n">fbTempSensor1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_ATM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 <span class="n">fbFlowMeter</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
@@ -468,6 +477,7 @@
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="#e-atm-states">E_ATM_States</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
 <li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
 </ul>
@@ -529,10 +539,22 @@ fbATM(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 
 END_FUNCTION_BLOCK
+
+METHOD SetATMTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+ptr := ADR(fbATM.fbTempSensor1.iRaw);
+ptr^ := iTempC * 10;
+END_METHOD
 
 METHOD TestStateMove
 VAR_INST
@@ -556,6 +578,64 @@ END_IF
 
 IF tonTimer.Q OR nIterState &gt; nLastState THEN
     AssertFalse(tonTimer.Q, &#39;Timeout in ATM move test&#39;);
+    TEST_FINISHED();
+END_IF
+END_METHOD
+
+METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST(&#39;TestATMTempFFO&#39;);
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetATMTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see &quot;OUT&quot; state and one other state (OUT should be no fault)
+        IF fbATM.eEnumGet = E_ATM_States.OUT THEN
+            AssertTrue(
+                fbATM.fbTempSensor1.FFO.i_xOK,
+                &#39;Faulted even in out position!&#39;,
+            );
+            bOutChecked := TRUE;
+        ELSIF fbATM.eEnumGet &lt;&gt; E_ATM_States.Unknown THEN
+            AssertFalse(
+                fbATM.fbTempSensor1.FFO.i_xOK,
+                &#39;No fault even for an in position!&#39;,
+            );
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetATMTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertTrue(
+            fbATM.fbTempSensor1.FFO.i_xOK,
+            &#39;Faulted even with low temp!&#39;,
+        );
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep &gt; nLastStep THEN
+    AssertFalse(tonTimer.Q, &#39;Timeout in ATM temp FFO test&#39;);
     TEST_FINISHED();
 END_IF
 END_METHOD
@@ -596,6 +676,130 @@ END_METHOD
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
 </div>
+</section>
+<section id="fb-cc-tempsensor">
+<h2>FB_CC_TempSensor<a class="headerlink" href="#fb-cc-tempsensor" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_CC_TempSensor</span> <span class="n">EXTENDS</span> <span class="n">FB_TempSensor_FFO</span>
+<span class="n">VAR</span>
+    <span class="n">rtVetoReset</span><span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="o">//</span> <span class="n">Reset</span> <span class="n">the</span> <span class="n">FFO</span> <span class="k">for</span> <span class="n">transitions</span> <span class="n">to</span> <span class="n">bVeto</span>
+<span class="o">//</span> <span class="n">bAutoreset</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">,</span> <span class="n">but</span> <span class="n">we</span> <span class="n">still</span> <span class="n">want</span> <span class="n">to</span> <span class="n">clear</span> <span class="n">the</span> <span class="n">fault</span> <span class="n">on</span> <span class="n">veto</span>
+<span class="n">rtVetoReset</span><span class="p">(</span><span class="n">CLK</span><span class="o">:=</span><span class="n">bVeto</span><span class="p">);</span>
+<span class="n">FFO</span><span class="o">.</span><span class="n">i_xReset</span> <span class="o">:=</span> <span class="n">rtVetoReset</span><span class="o">.</span><span class="n">Q</span><span class="p">;</span>
+
+<span class="n">SUPER</span><span class="o">^</span><span class="p">(</span><span class="n">bAutoReset</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span> <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">);</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+</pre></div>
+</div>
+</section>
+<section id="fb-cc-tempsensortest">
+<h2>FB_CC_TempSensorTest<a class="headerlink" href="#fb-cc-tempsensortest" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_CC_TempSensorTest</span> <span class="n">EXTENDS</span> <span class="n">FB_TestSuite</span>
+<span class="n">VAR</span>
+    <span class="n">fbTempSensor</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="n">fbFFHWO</span><span class="p">:</span> <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">TestBasic</span><span class="p">();</span>
+<span class="n">TestAutoReset</span><span class="p">();</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+
+<span class="n">METHOD</span> <span class="n">SetTempAndRunFB</span>
+<span class="n">VAR_INPUT</span>
+    <span class="n">iRawTemp</span><span class="p">:</span> <span class="n">INT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+    <span class="n">ptr</span><span class="p">:</span> <span class="n">POINTER</span> <span class="n">TO</span> <span class="n">INT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">ptr</span> <span class="o">:=</span> <span class="n">ADR</span><span class="p">(</span><span class="n">fbTempSensor</span><span class="o">.</span><span class="n">iRaw</span><span class="p">);</span>
+<span class="n">ptr</span><span class="o">^</span> <span class="o">:=</span> <span class="n">iRawTemp</span> <span class="o">*</span> <span class="mi">10</span><span class="p">;</span>
+
+<span class="n">fbTempSensor</span><span class="p">(</span><span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">);</span>
+<span class="n">fbFFHWO</span><span class="o">.</span><span class="n">ExecuteNoLog</span><span class="p">();</span>
+<span class="n">END_METHOD</span>
+
+<span class="n">METHOD</span> <span class="n">TestAutoReset</span>
+<span class="n">VAR_INPUT</span>
+<span class="n">END_VAR</span>
+<span class="n">TEST</span><span class="p">(</span><span class="s1">&#39;TestAutoReset&#39;</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Set</span> <span class="n">a</span> <span class="n">fixed</span> <span class="n">threshold</span> <span class="k">for</span> <span class="n">the</span> <span class="n">test</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">fFaultThreshold</span> <span class="o">:=</span> <span class="mi">30</span><span class="p">;</span>
+
+<span class="o">//</span> <span class="n">Clear</span> <span class="n">faults</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">AssertTrue</span><span class="p">(</span>
+    <span class="n">fbFFHWO</span><span class="o">.</span><span class="n">astFF</span><span class="p">[</span><span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">RegistrationIdx</span><span class="p">]</span><span class="o">.</span><span class="n">BeamPermitted</span><span class="p">,</span>
+    <span class="s1">&#39;Beam not permitted after full clear with low temp&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Cause</span> <span class="n">a</span> <span class="n">fault</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+<span class="n">AssertFalse</span><span class="p">(</span>
+    <span class="n">fbFFHWO</span><span class="o">.</span><span class="n">astFF</span><span class="p">[</span><span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">RegistrationIdx</span><span class="p">]</span><span class="o">.</span><span class="n">BeamPermitted</span><span class="p">,</span>
+    <span class="s1">&#39;Beam permitted after high temp&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Remove</span> <span class="n">the</span> <span class="n">fault</span> <span class="n">condition</span><span class="p">,</span> <span class="n">should</span> <span class="n">still</span> <span class="n">be</span> <span class="n">fauling</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">AssertFalse</span><span class="p">(</span>
+    <span class="n">fbFFHWO</span><span class="o">.</span><span class="n">astFF</span><span class="p">[</span><span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">RegistrationIdx</span><span class="p">]</span><span class="o">.</span><span class="n">BeamPermitted</span><span class="p">,</span>
+    <span class="s1">&#39;Beam permitted before manual reset&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="o">//</span> <span class="n">Set</span> <span class="n">veto</span><span class="p">,</span> <span class="n">should</span> <span class="n">no</span> <span class="n">longer</span> <span class="n">be</span> <span class="n">faulting</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">AssertTrue</span><span class="p">(</span>
+    <span class="n">fbFFHWO</span><span class="o">.</span><span class="n">astFF</span><span class="p">[</span><span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">RegistrationIdx</span><span class="p">]</span><span class="o">.</span><span class="n">BeamPermitted</span><span class="p">,</span>
+    <span class="s1">&#39;Beam not permitted after veto&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">TEST_FINISHED</span><span class="p">();</span>
+<span class="n">END_METHOD</span>
+
+<span class="n">METHOD</span> <span class="n">TestBasic</span>
+<span class="n">TEST</span><span class="p">(</span><span class="s1">&#39;TestBasic&#39;</span><span class="p">);</span>
+
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">fFaultThreshold</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+<span class="n">AssertTrue</span><span class="p">(</span>
+    <span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span><span class="p">,</span>
+    <span class="s1">&#39;Faulted with temp below threshold&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">fFaultThreshold</span> <span class="o">:=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">150</span><span class="p">);</span>
+<span class="n">AssertFalse</span><span class="p">(</span>
+    <span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span><span class="p">,</span>
+    <span class="s1">&#39;Did not fault with temp above threshold&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">fFaultThreshold</span> <span class="o">:=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="n">fbTempSensor</span><span class="o">.</span><span class="n">bVeto</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">SetTempAndRunFB</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+<span class="n">AssertTrue</span><span class="p">(</span>
+    <span class="n">fbTempSensor</span><span class="o">.</span><span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span><span class="p">,</span>
+    <span class="s1">&#39;Faulted with manual veto&#39;</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">TEST_FINISHED</span><span class="p">();</span>
+<span class="n">END_METHOD</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="fb-checkpositionstatewrite">
 <h2>FB_CheckPositionStateWrite<a class="headerlink" href="#fb-checkpositionstatewrite" title="Link to this heading"></a></h2>
@@ -918,6 +1122,170 @@ END_METHOD
 </dd>
 </dl>
 </section>
+<section id="fb-pmpsjsontesthelper">
+<h2>FB_PMPSJsonTestHelper<a class="headerlink" href="#fb-pmpsjsontesthelper" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_PMPSJsonTestHelper</span>
+<span class="p">(</span><span class="o">*</span>
+    <span class="n">Create</span> <span class="n">a</span> <span class="n">JSON</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">memory</span> <span class="n">to</span> <span class="n">match</span> <span class="n">the</span> <span class="nb">input</span> <span class="n">structs</span>
+    <span class="n">Assumes</span> <span class="mi">1</span> <span class="n">device</span> <span class="k">for</span> <span class="n">simplicity</span>
+    <span class="n">Writes</span> <span class="n">to</span> <span class="n">the</span> <span class="k">global</span> <span class="n">pmps</span> <span class="n">json</span> <span class="n">doc</span>
+<span class="o">*</span><span class="p">)</span>
+<span class="n">VAR_IN_OUT</span>
+    <span class="n">astBeamParams</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="n">OF</span> <span class="n">ST_DbStateParams</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_INPUT</span>
+    <span class="n">bExecute</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="n">sDevName</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+    <span class="n">rtExec</span><span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
+    <span class="n">jsonRoot</span><span class="p">:</span> <span class="n">SJsonValue</span><span class="p">;</span>
+    <span class="n">jsonDevice</span><span class="p">:</span> <span class="n">SJsonValue</span><span class="p">;</span>
+    <span class="n">ajsonState</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">SJsonValue</span><span class="p">;</span>
+    <span class="n">fbJson</span><span class="p">:</span> <span class="n">FB_JsonDomParser</span><span class="p">;</span>
+
+    <span class="n">nIter</span><span class="p">:</span> <span class="n">DINT</span><span class="p">;</span>
+    <span class="n">nId</span><span class="p">:</span> <span class="n">DINT</span><span class="p">;</span>
+
+    <span class="n">aseVRange</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="n">asRate</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="n">asBCRange</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="n">asTran</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">STRING</span><span class="p">;</span>
+
+    <span class="n">sTemp</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="n">sPress</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">rtExec</span><span class="p">(</span><span class="n">CLK</span><span class="o">:=</span><span class="n">bExecute</span><span class="p">);</span>
+<span class="n">IF</span> <span class="n">NOT</span> <span class="n">rtExec</span><span class="o">.</span><span class="n">Q</span> <span class="n">THEN</span>
+    <span class="n">RETURN</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">jsonRoot</span> <span class="o">:=</span> <span class="n">fbJson</span><span class="o">.</span><span class="n">NewDocument</span><span class="p">();</span>
+<span class="n">jsonDevice</span> <span class="o">:=</span> <span class="n">fbJson</span><span class="o">.</span><span class="n">AddObjectMember</span><span class="p">(</span><span class="n">jsonRoot</span><span class="p">,</span> <span class="n">sDevName</span><span class="p">);</span>
+<span class="n">FOR</span> <span class="n">nIter</span> <span class="o">:=</span> <span class="n">LOWER_BOUND</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="n">TO</span> <span class="n">UPPER_BOUND</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="n">DO</span>
+    <span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span> <span class="o">:=</span> <span class="n">fbJson</span><span class="o">.</span><span class="n">AddObjectMember</span><span class="p">(</span><span class="n">jsonDevice</span><span class="p">,</span> <span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">sPmpsState</span><span class="p">);</span>
+
+    <span class="n">nId</span> <span class="o">:=</span> <span class="n">nId</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddIntMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">nId</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;beamline&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;tst&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">aseVRange</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span> <span class="o">:=</span> <span class="n">bitmaskToString</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stBeamParams</span><span class="o">.</span><span class="n">neVRange</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;neVRange&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">aseVRange</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+    <span class="p">);</span>
+    <span class="n">asRate</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span> <span class="o">:=</span> <span class="n">UDINT_TO_STRING</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stBeamParams</span><span class="o">.</span><span class="n">nRate</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;nRate&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">asRate</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;ap_ygap&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;ap_xgap&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;damage_limit&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;notes&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">sTemp</span> <span class="o">:=</span> <span class="n">TO_STRING</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;reactive_temp&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">sTemp</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">sPress</span> <span class="o">:=</span> <span class="n">TO_STRING</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nPressSP</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;reactive_pressure&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">sPress</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">asBCRange</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span> <span class="o">:=</span> <span class="n">bitmaskToString</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stBeamParams</span><span class="o">.</span><span class="n">nBCRange</span><span class="p">,</span> <span class="mi">15</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;nBeamClassRange&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">asBCRange</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">sPmpsState</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">asTran</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span> <span class="o">:=</span> <span class="n">REAL_TO_STRING</span><span class="p">(</span><span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stBeamParams</span><span class="o">.</span><span class="n">nTran</span><span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;nTran&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">asTran</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;ap_name&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;ap_ycenter&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;ap_xcenter&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddStringMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;pulse_energy&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">);</span>
+    <span class="n">fbJson</span><span class="o">.</span><span class="n">AddBoolMember</span><span class="p">(</span>
+        <span class="n">v</span><span class="o">:=</span><span class="n">ajsonState</span><span class="p">[</span><span class="n">nIter</span><span class="p">],</span>
+        <span class="n">member</span><span class="o">:=</span><span class="s1">&#39;special&#39;</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span>
+    <span class="p">);</span>
+<span class="n">END_FOR</span>
+
+<span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">BP_jsonDoc</span> <span class="o">:=</span> <span class="n">jsonRoot</span><span class="p">;</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+
+<span class="n">METHOD</span> <span class="n">bitmaskToString</span> <span class="p">:</span> <span class="n">STRING</span>
+<span class="n">VAR_INPUT</span>
+    <span class="n">nBitmask</span><span class="p">:</span> <span class="n">DWORD</span><span class="p">;</span>
+    <span class="n">nBits</span><span class="p">:</span> <span class="n">UINT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+    <span class="n">nIter</span><span class="p">:</span> <span class="n">UINT</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">bitmaskToString</span> <span class="o">:=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+<span class="n">FOR</span> <span class="n">nIter</span> <span class="o">:=</span> <span class="mi">1</span> <span class="n">TO</span> <span class="n">nBits</span> <span class="n">DO</span>
+    <span class="n">bitmaskToString</span> <span class="o">:=</span> <span class="n">CONCAT</span><span class="p">(</span><span class="n">DWORD_TO_STRING</span><span class="p">(</span><span class="n">SHR</span><span class="p">(</span><span class="n">nBitmask</span><span class="p">,</span> <span class="n">nIter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="n">AND</span> <span class="mi">1</span><span class="p">),</span> <span class="n">bitmaskToString</span><span class="p">);</span>
+<span class="n">END_FOR</span>
+<span class="n">END_METHOD</span>
+</pre></div>
+</div>
+</section>
 <section id="fb-positionstate-defaults">
 <h2>FB_PositionState_Defaults<a class="headerlink" href="#fb-positionstate-defaults" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_PositionState_Defaults</span>
@@ -1044,8 +1412,8 @@ END_METHOD
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span><span class="s1">&#39;pv: FWM&#39;</span><span class="p">}</span>
     <span class="n">fbFlowMeter</span><span class="p">:</span> <span class="n">FB_AnalogInput</span> <span class="o">:=</span> <span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: YAG&#39;</span><span class="p">}</span>
-    <span class="n">fbYagThermoCouple</span><span class="p">:</span> <span class="n">FB_ThermoCouple</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: YAG:STC&#39;</span><span class="p">}</span>
+    <span class="n">fbYagTempSensor</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
     <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
@@ -1113,10 +1481,20 @@ END_METHOD
 <span class="n">stYag1</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_PPM_States</span><span class="o">.</span><span class="n">YAG1</span><span class="p">];</span>
 <span class="n">stYag2</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_PPM_States</span><span class="o">.</span><span class="n">YAG2</span><span class="p">];</span>
 
-<span class="n">fbPowerMeter</span><span class="p">();</span>
+<span class="n">fbPowerMeter</span><span class="p">(</span>
+    <span class="n">fTempSP</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVetoTempFFO</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_PPM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDeviceName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 <span class="n">fbGige</span><span class="p">();</span>
 <span class="n">fbFlowMeter</span><span class="p">(</span><span class="n">fOffset</span><span class="o">:=</span><span class="n">fFlowOffset</span><span class="p">);</span>
-<span class="n">fbYagThermoCouple</span><span class="p">();</span>
+<span class="n">fbYagTempSensor</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_PPM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 <span class="n">fbFlowSwitch</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
@@ -1125,6 +1503,7 @@ END_METHOD
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="#e-ppm-states">E_PPM_States</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
 <li><p><a class="reference internal" href="#fb-ppm-gige">FB_PPM_Gige</a></p></li>
 <li><p><a class="reference internal" href="#fb-ppm-powermeter">FB_PPM_PowerMeter</a></p></li>
@@ -1187,6 +1566,14 @@ END_METHOD
 <section id="fb-ppm-powermeter">
 <h2>FB_PPM_PowerMeter<a class="headerlink" href="#fb-ppm-powermeter" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_PPM_PowerMeter</span>
+<span class="n">VAR_INPUT</span>
+    <span class="n">fTempSP</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">bVetoTempFFO</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="n">sDeviceName</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_IN_OUT</span>
+    <span class="n">fbFFHWO</span><span class="p">:</span> <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
+<span class="n">END_VAR</span>
 <span class="n">VAR</span>
     <span class="n">iVoltageINT</span> <span class="n">AT</span> <span class="o">%</span><span class="n">I</span><span class="o">*</span><span class="p">:</span> <span class="n">INT</span><span class="p">;</span>
 
@@ -1231,10 +1618,10 @@ END_METHOD
     <span class="n">fCalibMJBuffer</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1..1000</span><span class="p">]</span> <span class="n">OF</span> <span class="n">LREAL</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">STC</span>
         <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
     <span class="s1">&#39;}</span>
-    <span class="n">fbThermoCouple</span><span class="p">:</span> <span class="n">FB_ThermoCouple</span><span class="p">;</span>
+    <span class="n">fbTempSensor</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
         <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB</span><span class="p">:</span><span class="n">OFFSET</span>
@@ -1259,7 +1646,12 @@ END_METHOD
     <span class="n">fbCalibBaseBuffer</span><span class="p">:</span> <span class="n">FB_LREALBuffer</span><span class="p">;</span>
     <span class="n">fbCalibMJBuffer</span><span class="p">:</span> <span class="n">FB_LREALBuffer</span><span class="p">;</span>
 <span class="n">END_VAR</span>
-<span class="n">fbThermoCouple</span><span class="p">();</span>
+<span class="n">fbTempSensor</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">bVetoTempFFO</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 
 <span class="o">//</span> <span class="n">Convert</span> <span class="n">the</span> <span class="n">terminal</span><span class="s1">&#39;s integer into a value in millivolts</span>
 <span class="n">fbGetPMVoltage</span><span class="p">(</span>
@@ -1290,6 +1682,12 @@ END_METHOD
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
 </div>
+<dl class="simple">
+<dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="fb-ppmtest">
 <h2>FB_PPMTest<a class="headerlink" href="#fb-ppmtest" title="Link to this heading"></a></h2>
@@ -1342,10 +1740,53 @@ fbPPM(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 
 END_FUNCTION_BLOCK
+
+METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertFalse(
+    fbPPM.fbYagTempSensor.FFO.i_xOK,
+    CONCAT(&#39;PPM yag temp sensor expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+    CONCAT(&#39;PPM pm temp sensor expected fault: &#39;, Message),
+);
+END_METHOD
+
+METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertTrue(
+    fbPPM.fbYagTempSensor.FFO.i_xOK,
+    CONCAT(&#39;PPM yag temp sensor expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+    CONCAT(&#39;PPM pm temp sensor expected ok: &#39;, Message),
+);
+END_METHOD
+
+METHOD SetPPMTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+ptr := ADR(fbPPM.fbYagTempSensor.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbPPM.fbPowerMeter.fbTempSensor.iRaw);
+ptr^ := iTempC * 10;
+END_METHOD
 
 METHOD TestStateMove
 VAR_INST
@@ -1369,6 +1810,55 @@ END_IF
 
 IF tonTimer.Q OR nIterState &gt; nLastState THEN
     AssertFalse(tonTimer.Q, &#39;Timeout in PPM move test&#39;);
+    TEST_FINISHED();
+END_IF
+END_METHOD
+
+METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST(&#39;TestPPMTempFFO&#39;);
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetPPMTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see &quot;OUT&quot; state and one other state (OUT should be no fault)
+        IF fbPPM.eEnumGet = E_PPM_States.OUT THEN
+            AssertNeitherTempFault(&#39;was in out position&#39;);
+            bOutChecked := TRUE;
+        ELSIF fbPPM.eEnumGet &lt;&gt; E_PPM_States.Unknown THEN
+            AssertBothTempFault(&#39;was in a target position&#39;);
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetPPMTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault(&#39;has low temp reading&#39;);
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep &gt; nLastStep THEN
+    AssertFalse(tonTimer.Q, &#39;Timeout in PPM temp FFO test&#39;);
     TEST_FINISHED();
 END_IF
 END_METHOD
@@ -1684,7 +2174,7 @@ stYStage.bLimitForwardEnable := TRUE;
 // Standard state setup
 fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
 fbSetup(stPositionState:=fbSATT.stOut, sName:=&#39;OUT&#39;, fPosition:=10);
-fbSetup(stPositionState:=fbSATT.stFilter1, sName:=&#39;T1&#39;, fPosition:=20);
+fbSetup(stPositionState:=fbSATT.stFilter1, sName:=&#39;T1&#39;, fPosition:=20, sPmpsState:=&#39;T1&#39;);
 fbSetup(stPositionState:=fbSATT.stFilter2, sName:=&#39;T2&#39;, fPosition:=30);
 fbSetup(stPositionState:=fbSATT.stFilter3, sName:=&#39;T3&#39;, fPosition:=40);
 fbSetup(stPositionState:=fbSATT.stFilter4, sName:=&#39;T4&#39;, fPosition:=50);
@@ -1698,13 +2188,57 @@ fbSATT(
     stAxis:=stYStage,
     fbFFHWO:=fbFFHWO,
     bEnable:=TRUE,
+    sDeviceName:=&#39;DEVICE&#39;,
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 
 END_FUNCTION_BLOCK
+
+METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertFalse(
+    fbSATT.fbRTD_1.FFO.i_xOK,
+    CONCAT(&#39;SATT RTD1 expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSATT.fbRTD_2.FFO.i_xOK,
+    CONCAT(&#39;SATT RTD2 expected fault: &#39;, Message),
+);
+END_METHOD
+
+METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertTrue(
+    fbSATT.fbRTD_1.FFO.i_xOK,
+    CONCAT(&#39;SATT RTD1 expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSATT.fbRTD_2.FFO.i_xOK,
+    CONCAT(&#39;SATT RTD2 expected ok: &#39;, Message),
+);
+END_METHOD
+
+METHOD SetSATTTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+ptr := ADR(fbSATT.fbRTD_1.iRaw);
+ptr^ := iTempC * 100;
+
+ptr := ADR(fbSATT.fbRTD_2.iRaw);
+ptr^ := iTempC * 100;
+END_METHOD
 
 METHOD TestStateMove
 VAR_INST
@@ -1731,6 +2265,55 @@ IF tonTimer.Q OR nIterState &gt; nLastState THEN
     TEST_FINISHED();
 END_IF
 END_METHOD
+
+METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST(&#39;TestSATTTempFFO&#39;);
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetSATTTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see &quot;OUT&quot; state and one other state (OUT should be no fault)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT THEN
+            AssertNeitherTempFault(&#39;was in out position&#39;);
+            bOutChecked := TRUE;
+        ELSIF fbSATT.eEnumGet &lt;&gt; E_SXR_SATT_Position.Unknown THEN
+            AssertBothTempFault(&#39;was in a target position&#39;);
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetSATTTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault(&#39;has low temp reading&#39;);
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep &gt; nLastStep THEN
+    AssertFalse(tonTimer.Q, &#39;Timeout in SATT temp FFO test&#39;);
+    TEST_FINISHED();
+END_IF
+END_METHOD
 </pre></div>
 </div>
 <dl class="simple">
@@ -1743,38 +2326,19 @@ END_METHOD
 </section>
 <section id="fb-slits">
 <h2>FB_SLITS<a class="headerlink" href="#fb-slits" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_SLITS</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;analysis&#39;</span> <span class="o">:=</span> <span class="s1">&#39;-33&#39;</span><span class="p">}</span>
+<span class="n">FUNCTION_BLOCK</span> <span class="n">FB_SLITS</span>
 
-
-<span class="n">END_FUNCTION_BLOCK</span>
-
-<span class="n">ACTION</span> <span class="n">ACT_BLOCK</span><span class="p">:</span>
-
-<span class="n">END_ACTION</span>
-
-<span class="n">ACTION</span> <span class="n">ACT_CalculatePositions</span><span class="p">:</span>
-
-<span class="n">END_ACTION</span>
-</pre></div>
-</div>
-</section>
-<section id="fb-slits-power">
-<h2>FB_SLITS_POWER<a class="headerlink" href="#fb-slits-power" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_SLITS_POWER</span> <span class="n">EXTENDS</span> <span class="n">FB_SLITS</span>
 <span class="n">VAR_IN_OUT</span>
     <span class="n">stTopBlade</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
     <span class="n">stBottomBlade</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
     <span class="n">stNorthBlade</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
     <span class="n">stSouthBlade</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
+    <span class="n">bExecuteMotion</span><span class="p">:</span><span class="n">BOOL</span> <span class="p">;</span>
+    <span class="n">io_fbFFHWO</span>    <span class="p">:</span>    <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
+    <span class="n">fbArbiter</span><span class="p">:</span> <span class="n">FB_Arbiter</span><span class="p">();</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR_INPUT</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-    <span class="n">pv</span><span class="p">:</span> <span class="n">GO</span><span class="p">;</span>
-    <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
-    <span class="n">field</span><span class="p">:</span> <span class="n">ZNAM</span> <span class="kc">False</span>
-    <span class="n">field</span><span class="p">:</span> <span class="n">ONAM</span> <span class="kc">True</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">bExecuteMotion</span><span class="p">:</span><span class="n">BOOL</span> <span class="p">;</span>
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">PMPS_OK</span><span class="p">;</span>
     <span class="n">io</span><span class="p">:</span> <span class="n">i</span><span class="p">;</span>
@@ -1782,9 +2346,31 @@ END_METHOD
     <span class="n">field</span><span class="p">:</span> <span class="n">ONAM</span> <span class="kc">True</span>
     <span class="s1">&#39;}</span>
     <span class="n">bMoveOk</span><span class="p">:</span><span class="n">BOOL</span><span class="p">;</span>
+
+    <span class="p">(</span><span class="o">*</span><span class="n">Offsets</span><span class="o">*</span><span class="p">)</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="n">Offset_Top</span><span class="p">;</span>
+    <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">rEncoderOffsetTop</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="n">ZeroOffset_Bottom</span><span class="p">;</span>
+    <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">rEncoderOffsetBottom</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="n">ZeroOffset_North</span><span class="p">;</span>
+    <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">rEncoderOffsetNorth</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="n">ZeroOffset_South</span><span class="p">;</span>
+    <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">rEncoderOffsetSouth</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">i_DevName</span> <span class="p">:</span> <span class="n">STRING</span><span class="p">;</span> <span class="o">//</span><span class="n">device</span> <span class="n">name</span> <span class="k">for</span> <span class="n">FFO</span> <span class="ow">and</span> <span class="n">PMPS</span> <span class="n">diagnostics</span>
 <span class="n">END_VAR</span>
-<span class="n">VAR_OUTPUT</span>
-<span class="n">END_VAR</span>
+
 <span class="n">VAR</span>
     <span class="n">fbTopBlade</span><span class="p">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
     <span class="n">fbBottomBlade</span><span class="p">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
@@ -1802,10 +2388,10 @@ END_METHOD
     <span class="n">fHighAccel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mf">0.8</span><span class="p">;</span>
     <span class="n">fLowAccel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mf">0.1</span><span class="p">;</span>
 
-    <span class="n">stTop</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
-    <span class="n">stBOTTOM</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
-    <span class="n">stNorth</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
-    <span class="n">stSouth</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTop</span><span class="p">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
+    <span class="n">stBOTTOM</span><span class="p">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
+    <span class="n">stNorth</span><span class="p">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
+    <span class="n">stSouth</span><span class="p">:</span> <span class="n">DUT_PositionState</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: TOP&#39;</span><span class="p">}</span>
     <span class="n">fbTop</span><span class="p">:</span> <span class="n">FB_StatePTPMove</span><span class="p">;</span>
@@ -1864,13 +2450,12 @@ END_METHOD
     <span class="n">pv</span><span class="p">:</span> <span class="n">XCEN_SETZERO</span><span class="p">;</span>
     <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
     <span class="s1">&#39;}</span>
-    <span class="n">rSetCenterX</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">rSetCenterX</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">YCEN_SETZERO</span><span class="p">;</span>
     <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
     <span class="s1">&#39;}</span>
-    <span class="n">rSetCenterY</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
-
+    <span class="n">rSetCenterY</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
     <span class="n">pv</span><span class="p">:</span> <span class="n">OPEN</span><span class="p">;</span>
@@ -1896,60 +2481,143 @@ END_METHOD
     <span class="s1">&#39;}</span>
     <span class="n">bBlock</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
 
-
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">FSW</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
-
-
-    <span class="o">//</span><span class="n">RTDs</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">TOP</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_TOP_1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">TOP</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_TOP_2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">BOTTOM</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_Bottom_1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">BOTTOM</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_Bottom_2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">NORTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_North_1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">NORTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_North_2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">SOUTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_South_1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">SOUTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">RTD_South_2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
-
-        <span class="o">//</span><span class="n">Local</span> <span class="n">variables</span>
+    <span class="o">//</span><span class="n">Local</span> <span class="n">variables</span>
     <span class="n">bInit</span><span class="p">:</span> <span class="n">BOOL</span> <span class="o">:=</span><span class="n">true</span><span class="p">;</span>
     <span class="n">rTrig_Block</span><span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
     <span class="n">rTrig_Open</span><span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
     <span class="n">rTrig_Close</span><span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
 
+    <span class="o">//</span><span class="n">old</span> <span class="n">values</span>
+    <span class="n">rOldReqApertureSizeX</span> <span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">rOldReqApertureSizeY</span> <span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">rOldReqCenterX</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+    <span class="n">rOldReqCenterY</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
+
+    <span class="n">bExecuteMotionX</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="n">bExecuteMotionY</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+
+
     <span class="n">fPosBlock</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
     <span class="n">fPosClose</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
     <span class="n">fPosOpen</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
 
+    <span class="n">stSetPositionOptions</span><span class="p">:</span> <span class="n">ST_SetPositionOptions</span><span class="p">;</span>
+    <span class="n">fbSetPosition_TOP</span><span class="p">:</span> <span class="n">MC_SetPosition</span><span class="p">;</span>
+    <span class="n">fbSetPosition_Bottom</span><span class="p">:</span> <span class="n">MC_SetPosition</span><span class="p">;</span>
+    <span class="n">fbSetPosition_North</span><span class="p">:</span> <span class="n">MC_SetPosition</span><span class="p">;</span>
+    <span class="n">fbSetPosition_South</span><span class="p">:</span> <span class="n">MC_SetPosition</span><span class="p">;</span>
 
+    <span class="o">//</span> <span class="n">For</span> <span class="n">logging</span>
+    <span class="n">fbLogger</span> <span class="p">:</span> <span class="n">FB_LogMessage</span> <span class="o">:=</span> <span class="p">(</span><span class="n">eSubsystem</span><span class="o">:=</span><span class="n">E_SubSystem</span><span class="o">.</span><span class="n">MOTION</span><span class="p">);</span>
+    <span class="n">tErrorPresent</span> <span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
+    <span class="n">tAction</span> <span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
+    <span class="n">tOverrideActivated</span> <span class="p">:</span> <span class="n">R_TRIG</span><span class="p">;</span>
+
+    <span class="n">FFO</span>    <span class="p">:</span>    <span class="n">FB_FastFault</span> <span class="o">:=</span><span class="p">(</span>
+        <span class="n">i_DevName</span> <span class="o">:=</span> <span class="s1">&#39;Slits&#39;</span><span class="p">,</span>
+        <span class="n">i_Desc</span> <span class="o">:=</span> <span class="s1">&#39;Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF&#39;</span><span class="p">,</span>
+        <span class="n">i_TypeCode</span> <span class="o">:=</span> <span class="mi">16</span><span class="c1">#FAA);</span>
+
+    <span class="n">AptArrayStatus</span> <span class="n">AT</span> <span class="o">%</span><span class="n">Q</span><span class="o">*</span> <span class="p">:</span> <span class="n">ST_PMPS_Aperture_IO</span><span class="p">;</span>
+    <span class="n">AptArrayReq</span> <span class="n">AT</span> <span class="o">%</span><span class="n">I</span><span class="o">*</span> <span class="p">:</span> <span class="n">ST_PMPS_Aperture_IO</span><span class="p">;</span>
+
+    <span class="n">bTest</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
 <span class="n">END_VAR</span>
+<span class="n">rTrig_Block</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bBlock</span><span class="p">);</span>
+<span class="n">rTrig_Open</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bOpen</span><span class="p">);</span>
+<span class="n">rTrig_Close</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bClose</span><span class="p">);</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Block</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="o">//</span><span class="n">BLOCK</span>
+
+    <span class="n">bBlock</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Open</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
+
+
+    <span class="n">bOpen</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Close</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
+
+
+    <span class="n">bClose</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+
+<span class="n">ACTION</span> <span class="n">ACT_CalculatePositions</span><span class="p">:</span>
+<span class="o">//</span><span class="n">check</span> <span class="k">if</span> <span class="n">requested</span> <span class="n">center</span> <span class="ow">or</span> <span class="n">gap</span> <span class="n">has</span> <span class="n">changed</span>
+<span class="o">//</span><span class="n">check</span> <span class="n">that</span> <span class="n">the</span> <span class="n">requested</span> <span class="n">values</span> <span class="n">are</span> <span class="n">within</span> <span class="n">acceptable</span> <span class="n">motion</span> <span class="nb">range</span>
+<span class="n">IF</span> <span class="p">(</span><span class="n">rOldReqApertureSizeX</span> <span class="o">&lt;&gt;</span> <span class="n">rReqApertureSizeX</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">IF</span> <span class="p">(</span><span class="n">rReqApertureSizeX</span> <span class="o">&lt;=</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Width</span><span class="p">)</span>  <span class="n">THEN</span>
+        <span class="n">rOldReqApertureSizeX</span> <span class="o">:=</span> <span class="n">rReqApertureSizeX</span><span class="p">;</span>
+        <span class="n">bExecuteMotionX</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+        <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new X gap.&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+    <span class="n">ELSE</span>
+        <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new X gap is larger than PMPS request.&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+    <span class="n">END_IF</span>
+  <span class="o">//</span>  <span class="n">ELSE</span>
+    <span class="o">//</span>    <span class="n">rReqApertureSizeX</span> <span class="o">:=</span> <span class="n">rActApertureSizeX</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">IF</span> <span class="p">(</span><span class="n">rOldReqCenterX</span> <span class="o">&lt;&gt;</span> <span class="n">rReqCenterX</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">rOldReqCenterX</span> <span class="o">:=</span> <span class="n">rReqCenterX</span><span class="p">;</span>
+    <span class="n">bExecuteMotionX</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+    <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new X center&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+   <span class="o">//</span> <span class="n">ELSE</span>
+      <span class="o">//</span>  <span class="n">rReqCenterX</span> <span class="o">:=</span> <span class="n">rActCenterX</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">IF</span> <span class="p">(</span><span class="n">rOldReqApertureSizeY</span> <span class="o">&lt;&gt;</span> <span class="n">rReqApertureSizeY</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">IF</span> <span class="n">rReqApertureSizeY</span> <span class="o">&lt;=</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Height</span> <span class="n">THEN</span>
+        <span class="n">rOldReqApertureSizeY</span> <span class="o">:=</span> <span class="n">rReqApertureSizeY</span><span class="p">;</span>
+        <span class="n">bExecuteMotionY</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+        <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new Y gap.&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+    <span class="n">ELSE</span>
+        <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new Y gap is larger than PMPS request.&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+    <span class="n">END_IF</span>
+   <span class="o">//</span> <span class="n">ELSE</span>
+       <span class="o">//</span> <span class="n">rReqApertureSizeY</span> <span class="o">:=</span> <span class="n">rActApertureSizeY</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">IF</span> <span class="p">(</span><span class="n">rOldReqCenterY</span> <span class="o">&lt;&gt;</span> <span class="n">rReqCenterY</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">rOldReqCenterY</span> <span class="o">:=</span> <span class="n">rReqCenterY</span><span class="p">;</span>
+    <span class="n">bExecuteMotionY</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+    <span class="n">fbLogger</span><span class="p">(</span><span class="n">sMsg</span><span class="o">:=</span><span class="s1">&#39;Requested new Y center.&#39;</span><span class="p">,</span> <span class="n">eSevr</span><span class="o">:=</span><span class="n">TcEventSeverity</span><span class="o">.</span><span class="n">Verbose</span><span class="p">);</span>
+   <span class="o">//</span> <span class="n">ELSE</span>
+      <span class="o">//</span>  <span class="n">rReqCenterY</span> <span class="o">:=</span> <span class="n">rActCenterY</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+
+<span class="o">//</span><span class="n">Calculate</span> <span class="n">requested</span> <span class="n">target</span> <span class="n">positions</span> <span class="kn">from</span> <span class="nn">requested</span> <span class="n">gap</span> <span class="ow">and</span> <span class="n">center</span>
+<span class="n">fPosTopBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="n">rReqApertureSizeY</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">rReqCenterY</span> <span class="o">+</span> <span class="n">rEncoderOffsetTop</span><span class="p">)</span> <span class="p">;</span>
+<span class="n">fPosBottomBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">rReqApertureSizeY</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">rReqCenterY</span><span class="o">+</span><span class="n">rEncoderOffsetBottom</span><span class="p">);</span>
+
+<span class="n">fPosNorthBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="n">rReqApertureSizeX</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">rReqCenterX</span> <span class="o">+</span> <span class="n">rEncoderOffsetNorth</span><span class="p">);</span>
+<span class="n">fPosSouthBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">rReqApertureSizeX</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">rReqCenterX</span> <span class="o">+</span> <span class="n">rEncoderOffsetSouth</span><span class="p">);</span>
+
+
+<span class="o">//</span><span class="n">Calculate</span> <span class="n">actual</span> <span class="n">gap</span> <span class="ow">and</span> <span class="n">center</span> <span class="kn">from</span> <span class="nn">actual</span> <span class="n">stages</span> <span class="n">positions</span>
+<span class="n">rActApertureSizeX</span> <span class="o">:=</span> <span class="n">LREAL_TO_REAL</span><span class="p">((</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetNorth</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">stSouthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span><span class="o">-</span> <span class="n">rEncoderOffsetSouth</span><span class="p">));</span>
+
+<span class="n">rActApertureSizeY</span> <span class="o">:=</span> <span class="n">LREAL_TO_REAL</span><span class="p">((</span><span class="n">stTopBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetTop</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">stBottomBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetBottom</span><span class="p">));</span>
+
+<span class="n">rActCenterX</span> <span class="o">:=</span> <span class="n">LREAL_TO_REAL</span><span class="p">((((</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetNorth</span><span class="p">)</span>  <span class="o">+</span> <span class="p">(</span><span class="n">stSouthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetSouth</span> <span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">));</span>
+
+<span class="n">rActCenterY</span> <span class="o">:=</span> <span class="n">LREAL_TO_REAL</span><span class="p">((((</span><span class="n">stTopBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetTop</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">stBottomBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">rEncoderOffsetBottom</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">));</span>
+
+
+
+<span class="o">//</span><span class="n">Update</span> <span class="n">PMPS</span> <span class="n">Arbiter</span> <span class="k">with</span> <span class="n">the</span> <span class="n">Actual</span> <span class="n">Size</span> <span class="ow">and</span> <span class="n">Center</span> <span class="n">of</span> <span class="n">the</span> <span class="n">Aperture</span>
+<span class="n">END_ACTION</span>
+
+<span class="n">ACTION</span> <span class="n">ACT_Home</span><span class="p">:</span>
+
+<span class="n">END_ACTION</span>
+
+<span class="n">ACTION</span> <span class="n">ACT_Init</span><span class="p">:</span>
 <span class="o">//</span>  <span class="n">init</span> <span class="n">the</span> <span class="n">motion</span> <span class="n">stages</span> <span class="n">parameters</span>
 <span class="n">IF</span> <span class="p">(</span> <span class="n">bInit</span><span class="p">)</span> <span class="n">THEN</span>
     <span class="n">stTopBlade</span><span class="o">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
@@ -1964,18 +2632,16 @@ END_METHOD
     <span class="n">stBottomBlade</span><span class="o">.</span><span class="n">nBrakeMode</span> <span class="o">:=</span> <span class="n">ENUM_StageBrakeMode</span><span class="o">.</span><span class="n">NO_BRAKE</span><span class="p">;</span>
     <span class="n">stNorthBlade</span><span class="o">.</span><span class="n">nBrakeMode</span> <span class="o">:=</span> <span class="n">ENUM_StageBrakeMode</span><span class="o">.</span><span class="n">NO_BRAKE</span><span class="p">;</span>
     <span class="n">stSouthBlade</span><span class="o">.</span><span class="n">nBrakeMode</span> <span class="o">:=</span> <span class="n">ENUM_StageBrakeMode</span><span class="o">.</span><span class="n">NO_BRAKE</span><span class="p">;</span>
+    <span class="n">FFO</span><span class="o">.</span><span class="n">i_DevName</span> <span class="o">:=</span> <span class="n">i_DevName</span><span class="p">;</span>
 <span class="n">END_IF</span>
+<span class="n">END_ACTION</span>
 
-
+<span class="n">ACTION</span> <span class="n">ACT_Motion</span><span class="p">:</span>
 <span class="o">//</span> <span class="n">Instantiate</span> <span class="n">Function</span> <span class="n">block</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">blades</span>
 <span class="n">fbTopBlade</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stTopBlade</span><span class="p">);</span>
 <span class="n">fbBottomBlade</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stBottomBlade</span><span class="p">);</span>
 <span class="n">fbNorthBlade</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stNorthBlade</span><span class="p">);</span>
 <span class="n">fbSouthBlade</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stSouthBlade</span><span class="p">);</span>
-
-<span class="o">//</span><span class="n">SET</span> <span class="ow">and</span> <span class="n">GET</span> <span class="n">the</span> <span class="n">requested</span> <span class="ow">and</span> <span class="n">Actual</span> <span class="n">values</span>
-<span class="n">ACT_CalculatePositions</span><span class="p">();</span>
-<span class="o">//</span><span class="n">ACT_BLOCK</span><span class="p">();</span>
 
 <span class="o">//</span> <span class="n">PTP</span> <span class="n">Motion</span> <span class="k">for</span> <span class="n">each</span> <span class="n">blade</span>
 <span class="n">stTop</span><span class="o">.</span><span class="n">sName</span> <span class="o">:=</span> <span class="s1">&#39;Top&#39;</span><span class="p">;</span>
@@ -2006,7 +2672,16 @@ END_METHOD
 <span class="n">stSouth</span><span class="o">.</span><span class="n">fAccel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
 <span class="n">stSouth</span><span class="o">.</span><span class="n">fDecel</span> <span class="o">:=</span> <span class="n">fHighAccel</span><span class="p">;</span>
 
-<span class="n">fbTop</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">fbBottom</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span><span class="n">fbNorth</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">fbSouth</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">bExecuteMotion</span><span class="p">;</span>
+<span class="n">IF</span> <span class="p">(</span><span class="n">bExecuteMotionY</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">fbTop</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">fbBottom</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">bExecuteMotionY</span><span class="p">;</span>
+    <span class="n">bExecuteMotionY</span><span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">IF</span> <span class="p">(</span><span class="n">bExecuteMotionX</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">fbNorth</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">fbSouth</span><span class="o">.</span><span class="n">bExecute</span> <span class="o">:=</span> <span class="n">bExecuteMotionX</span><span class="p">;</span>
+    <span class="n">bExecuteMotionX</span><span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
 
 <span class="n">fbTop</span><span class="p">(</span>
     <span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTop</span><span class="p">,</span>
@@ -2027,83 +2702,388 @@ END_METHOD
     <span class="n">stPositionState</span><span class="o">:=</span><span class="n">stSouth</span><span class="p">,</span>
     <span class="n">bMoveOk</span><span class="o">:=</span><span class="n">bMoveOk</span><span class="p">,</span>
     <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stSouthBlade</span><span class="p">);</span>
+<span class="n">END_ACTION</span>
+</pre></div>
+</div>
+</section>
+<section id="fb-slits-power">
+<h2>FB_SLITS_POWER<a class="headerlink" href="#fb-slits-power" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_SLITS_POWER</span> <span class="n">EXTENDS</span> <span class="n">FB_SLITS</span>
 
+<span class="n">VAR_INPUT</span>
+    <span class="n">sPmpsState</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+<span class="n">END_VAR</span>
 
-<span class="o">////</span><span class="n">RTDs</span>
-<span class="n">RTD_TOP_1</span><span class="p">();</span>
-<span class="n">RTD_TOP_2</span><span class="p">();</span>
-<span class="n">RTD_Bottom_1</span><span class="p">();</span>
-<span class="n">RTD_Bottom_2</span><span class="p">();</span>
-<span class="n">RTD_North_1</span><span class="p">();</span>
-<span class="n">RTD_North_2</span><span class="p">();</span>
-<span class="n">RTD_South_1</span><span class="p">();</span>
-<span class="n">RTD_South_2</span><span class="p">();</span>
+<span class="n">VAR</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="n">MODE</span> <span class="p">;</span>
+     <span class="n">field</span><span class="p">:</span> <span class="n">ZNAM</span> <span class="n">Local</span><span class="p">;</span>
+    <span class="n">field</span><span class="p">:</span> <span class="n">ONAM</span> <span class="n">PMPS</span><span class="p">;</span>
+     <span class="n">io</span><span class="p">:</span> <span class="n">io</span><span class="p">;</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">xPMPSMode</span>       <span class="p">:</span><span class="n">BOOL</span> <span class="o">:=</span><span class="n">TRUE</span><span class="p">;</span>
 
-<span class="o">//</span><span class="n">Flow</span> <span class="n">Switch</span>
-<span class="n">fbFlowSwitch</span><span class="p">();</span>
+     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">FSW</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
+
+    <span class="o">//</span><span class="n">RTDs</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">TOP</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_TOP_1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">TOP</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_TOP_2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">BOTTOM</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_Bottom_1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">BOTTOM</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_Bottom_2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">NORTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_North_1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">NORTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_North_2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">SOUTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">01</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_South_1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">SOUTH</span><span class="p">:</span><span class="n">RTD</span><span class="p">:</span><span class="mi">02</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">RTD_South_2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="n">fbReadPMPSDB</span><span class="p">:</span> <span class="n">FB_JsonDocToSafeBP</span><span class="p">;</span>
+    <span class="n">astTempDB</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1..1</span><span class="p">]</span> <span class="n">OF</span> <span class="n">ST_DbStateParams</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">ACT_init</span><span class="p">();</span>
+<span class="o">//</span> <span class="n">Instantiate</span> <span class="n">Function</span> <span class="n">block</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">blades</span>
+<span class="n">ACT_Motion</span><span class="p">();</span>
+<span class="o">//</span><span class="n">SET</span> <span class="ow">and</span> <span class="n">GET</span> <span class="n">the</span> <span class="n">requested</span> <span class="ow">and</span> <span class="n">Actual</span> <span class="n">values</span>
+<span class="n">ACT_CalculatePositions</span><span class="p">();</span>
+<span class="o">//</span><span class="n">ACT_BLOCK</span><span class="p">();</span>
+<span class="n">ACT_RTDs</span><span class="p">();</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 
-<span class="n">ACTION</span> <span class="n">ACT_BLOCK</span><span class="p">:</span>
-<span class="n">rTrig_Block</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bBlock</span><span class="p">);</span>
-<span class="n">rTrig_Open</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bOpen</span><span class="p">);</span>
-<span class="n">rTrig_Close</span> <span class="p">(</span><span class="n">CLK</span><span class="o">:=</span> <span class="n">bClose</span><span class="p">);</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Block</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
-    <span class="o">//</span><span class="n">BLOCK</span>
-
-    <span class="n">bBlock</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
-<span class="n">END_IF</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Open</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
-
-
-    <span class="n">bOpen</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
-<span class="n">END_IF</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">rTrig_Close</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span> <span class="n">THEN</span>
-
-
-    <span class="n">bClose</span> <span class="o">:=</span> <span class="n">false</span><span class="p">;</span>
-<span class="n">END_IF</span>
+<span class="n">ACTION</span> <span class="n">ACT_Init</span><span class="p">:</span>
+<span class="o">//</span> <span class="n">Instantiate</span> <span class="n">Function</span> <span class="n">block</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">the</span> <span class="n">blades</span>
+<span class="n">ACT_Motion</span><span class="p">();</span>
+<span class="o">//</span><span class="n">SET</span> <span class="ow">and</span> <span class="n">GET</span> <span class="n">the</span> <span class="n">requested</span> <span class="ow">and</span> <span class="n">Actual</span> <span class="n">values</span>
+<span class="n">ACT_CalculatePositions</span><span class="p">();</span>
+<span class="o">//</span><span class="n">ACT_BLOCK</span><span class="p">();</span>
+<span class="n">ACT_RTDs</span><span class="p">();</span>
 <span class="n">END_ACTION</span>
 
-<span class="n">ACTION</span> <span class="n">ACT_CalculatePositions</span><span class="p">:</span>
-<span class="o">//</span><span class="n">Calculate</span> <span class="n">requested</span> <span class="n">Positions</span>
+<span class="n">ACTION</span> <span class="n">ACT_RTDs</span><span class="p">:</span>
+<span class="o">//</span> <span class="n">Database</span>
+<span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sPmpsState</span> <span class="o">:=</span> <span class="n">sPmpsState</span><span class="p">;</span>
+<span class="n">fbReadPMPSDB</span><span class="p">(</span>
+    <span class="n">bExecute</span><span class="o">:=</span><span class="n">NOT</span> <span class="n">MOTION_GVL</span><span class="o">.</span><span class="n">fbPmpsFileReader</span><span class="o">.</span><span class="n">bBusy</span><span class="p">,</span>
+    <span class="n">jsonDoc</span><span class="o">:=</span><span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">BP_jsonDoc</span><span class="p">,</span>
+    <span class="n">sDeviceName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">arrStates</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 
+<span class="o">//</span><span class="n">RTDs</span>
+<span class="n">RTD_TOP_1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_TOP_2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_Bottom_1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_Bottom_2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_North_1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_North_2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_South_1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">RTD_South_2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">astTempDb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">i_DevName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">io_fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 
-<span class="n">fPosTopBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="n">rReqApertureSizeY</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">rReqCenterY</span><span class="p">;</span>
-<span class="n">fPosBottomBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">rReqApertureSizeY</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">rReqCenterY</span><span class="p">;</span>
-
-<span class="n">fPosNorthBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="n">rReqApertureSizeX</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">rReqCenterX</span><span class="p">;</span>
-<span class="n">fPosSouthBlade</span> <span class="o">:=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">rReqApertureSizeX</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">rReqCenterX</span><span class="p">;</span>
-
-
-<span class="o">//</span><span class="n">Calculate</span> <span class="n">Actual</span> <span class="n">Positions</span>
-
-
-<span class="n">rActApertureSizeX</span> <span class="o">:=</span> <span class="n">ABS</span><span class="p">(</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">stSouthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span><span class="p">);</span>
-
-<span class="n">rActApertureSizeY</span> <span class="o">:=</span> <span class="n">ABS</span><span class="p">(</span><span class="n">stTopBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">-</span> <span class="n">stBottomBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span><span class="p">);</span>
-
-<span class="n">rActCenterX</span> <span class="o">:=</span> <span class="p">((</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">+</span> <span class="n">stSouthBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
-
-<span class="n">rActCenterY</span> <span class="o">:=</span> <span class="p">((</span><span class="n">stTopBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span> <span class="o">+</span> <span class="n">stBottomBlade</span><span class="o">.</span><span class="n">stAxisStatus</span><span class="o">.</span><span class="n">fActPosition</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
-
-
-
-<span class="o">//</span><span class="n">ZERO</span> <span class="n">BIAS</span>
-
-<span class="o">//</span> <span class="n">Set</span> <span class="n">Y</span> <span class="n">center</span> <span class="n">to</span> <span class="n">zero</span>
-
-<span class="o">//</span> <span class="n">Set</span> <span class="n">X</span> <span class="n">center</span> <span class="n">to</span> <span class="n">zero</span>
+<span class="o">//</span><span class="n">Flow</span> <span class="n">Switch</span>
+<span class="n">fbFlowSwitch</span><span class="p">();</span>
 <span class="n">END_ACTION</span>
+
+<span class="n">METHOD</span> <span class="n">M_UpdatePMPS</span> <span class="p">:</span> <span class="n">BOOL</span>
+<span class="n">VAR_INPUT</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="o">//</span><span class="n">Keep</span> <span class="n">updating</span> <span class="n">the</span> <span class="n">status</span> <span class="n">of</span> <span class="n">the</span> <span class="n">apertures</span> <span class="n">PMPS</span>
+<span class="n">This</span><span class="o">^.</span><span class="n">AptArrayStatus</span><span class="o">.</span><span class="n">Height</span> <span class="o">:=</span> <span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeY</span><span class="p">;</span>
+<span class="n">This</span><span class="o">^.</span><span class="n">AptArrayStatus</span><span class="o">.</span><span class="n">Width</span> <span class="o">:=</span> <span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeX</span><span class="p">;</span>
+<span class="n">This</span><span class="o">^.</span><span class="n">AptArrayStatus</span><span class="o">.</span><span class="n">xOK</span> <span class="o">:=</span> <span class="n">NOT</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">stTopBlade</span><span class="o">.</span><span class="n">bError</span><span class="p">)</span> <span class="n">AND</span> <span class="n">NOT</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">stBottomBlade</span><span class="o">.</span><span class="n">bError</span><span class="p">)</span>
+                                 <span class="n">AND</span> <span class="n">NOT</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">bError</span><span class="p">)</span> <span class="n">AND</span> <span class="n">NOT</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">stNorthBlade</span><span class="o">.</span><span class="n">bError</span><span class="p">);</span>
+
+<span class="o">//</span><span class="n">Evaluate</span> <span class="n">that</span> <span class="n">the</span> <span class="n">current</span> <span class="n">center</span> <span class="n">on</span> <span class="n">the</span> <span class="n">X</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">y</span> <span class="n">direction</span> <span class="n">didn</span><span class="s1">&#39;t exceed limits,</span>
+<span class="o">//</span> <span class="n">Gap</span> <span class="n">should</span> <span class="n">be</span> <span class="n">reduced</span> <span class="n">when</span> <span class="n">center</span> <span class="ow">is</span> <span class="n">moved</span><span class="p">,</span> <span class="n">gap</span> <span class="o">&lt;</span> <span class="n">Maximum</span> <span class="n">permessible</span> <span class="n">gap</span> <span class="o">-</span> <span class="mi">2</span><span class="o">|</span><span class="n">Center</span> <span class="n">deviation</span> <span class="kn">from</span> <span class="nn">nominal</span><span class="o">|</span>
+<span class="o">//</span><span class="n">Fast</span> <span class="n">fault</span> <span class="n">when</span> <span class="n">it</span> <span class="n">does</span><span class="o">.</span>
+<span class="n">IF</span><span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeX</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Width</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ABS</span><span class="p">(</span><span class="n">rActCenterX</span><span class="p">)))</span>
+<span class="o">//</span><span class="p">(</span><span class="n">rActCenterX</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">stCurrentBeamParameters</span><span class="o">.</span><span class="n">astApertures</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">Width</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">AND</span> <span class="p">(</span><span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">stCurrentBeamParameters</span><span class="o">.</span><span class="n">astApertures</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">Width</span> <span class="o">&gt;</span><span class="mi">0</span> <span class="p">))</span>
+    <span class="n">OR</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeY</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Height</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ABS</span><span class="p">(</span><span class="n">rActCenterY</span><span class="p">)))</span>
+    <span class="o">//</span><span class="p">((</span><span class="n">rActCenterY</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">stCurrentBeamParameters</span><span class="o">.</span><span class="n">astApertures</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">Height</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">AND</span><span class="p">(</span><span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">stCurrentBeamParameters</span><span class="o">.</span><span class="n">astApertures</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">Height</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">))</span> <span class="n">THEN</span>
+        <span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+    <span class="n">ELSE</span>
+        <span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="o">//</span><span class="n">Evaluate</span> <span class="n">that</span> <span class="n">the</span> <span class="n">requested</span> <span class="n">gaps</span> <span class="n">on</span> <span class="n">the</span> <span class="n">X</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">y</span> <span class="n">direction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">larger</span> <span class="n">than</span> <span class="n">the</span> <span class="n">current</span> <span class="n">gap</span>
+<span class="o">//</span> <span class="n">narrow</span>  <span class="n">the</span> <span class="n">gap</span> <span class="k">if</span> <span class="n">the</span> <span class="n">requested</span> <span class="ow">is</span> <span class="n">larger</span>
+<span class="n">IF</span><span class="p">(</span><span class="n">xPMPSMode</span><span class="p">)</span> <span class="n">THEN</span>
+    <span class="n">IF</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeX</span> <span class="o">&gt;</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Width</span><span class="p">)</span> <span class="n">THEN</span>
+        <span class="n">rReqApertureSizeX</span> <span class="o">:=</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Width</span> <span class="o">-</span> <span class="mf">0.01</span><span class="p">;</span>
+    <span class="n">END_IF</span>
+    <span class="n">IF</span> <span class="p">(</span><span class="n">This</span><span class="o">^.</span><span class="n">rActApertureSizeY</span> <span class="o">&gt;</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Height</span><span class="p">)</span> <span class="n">THEN</span>
+         <span class="n">rReqApertureSizeY</span> <span class="o">:=</span> <span class="n">AptArrayReq</span><span class="o">.</span><span class="n">Height</span> <span class="o">-</span> <span class="mf">0.01</span><span class="p">;</span>
+    <span class="n">END_IF</span>
+    <span class="n">ELSE</span>
+     <span class="n">FFO</span><span class="o">.</span><span class="n">i_xOK</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+
+<span class="p">(</span><span class="o">*</span><span class="n">FAST</span> <span class="n">FAULT</span><span class="o">*</span><span class="p">)</span>
+<span class="n">FFO</span><span class="p">(</span><span class="n">i_xOK</span> <span class="o">:=</span> <span class="p">,</span>
+    <span class="n">i_xReset</span> <span class="o">:=</span> <span class="p">,</span>
+    <span class="n">i_xAutoReset</span> <span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span> <span class="o">:=</span> <span class="n">io_fbFFHWO</span><span class="p">);</span>
+<span class="n">END_METHOD</span>
 </pre></div>
 </div>
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 <li><p><a class="reference internal" href="#fb-slits">FB_SLITS</a></p></li>
 <li><p><a class="reference internal" href="#fb-xtes-flowswitch">FB_XTES_Flowswitch</a></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="fb-slits-powertest">
+<h2>FB_SLITS_POWERTest<a class="headerlink" href="#fb-slits-powertest" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
+VAR
+    fbSlitsPower: FB_SLITS_POWER;
+    M1: ST_MotionStage;
+    M2: ST_MotionStage;
+    M3: ST_MotionStage;
+    M4: ST_MotionStage;
+    bExecuteMotion: BOOL := FALSE;
+
+    fbFFHWO: FB_HardwareFFOutput;
+    fbArbiter: FB_Arbiter(1);
+END_VAR
+fbSlitsPower(
+    stTopBlade:=M1,
+    stBottomBlade:=M2,
+    stNorthBlade:=M3,
+    stSouthBlade:=M4,
+    bExecuteMotion:=bExecuteMotion,
+    i_DevName:=&#39;DEVICE&#39;,
+    sPmpsState:=&#39;T1&#39;,
+    io_fbFFHWO := fbFFHWO,
+    fbArbiter := fbArbiter,
+);
+
+TestTempFFO();
+
+END_FUNCTION_BLOCK
+
+METHOD AssertAllTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertFalse(
+    fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
+    CONCAT(&#39;Slits Top 1 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
+    CONCAT(&#39;Slits Top 2 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
+    CONCAT(&#39;Slits Bottom 1 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
+    CONCAT(&#39;Slits Bottom 2 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_North_1.FFO.i_xOK,
+    CONCAT(&#39;Slits North 1 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_North_2.FFO.i_xOK,
+    CONCAT(&#39;Slits North 2 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_South_1.FFO.i_xOK,
+    CONCAT(&#39;Slits South 1 RTD expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbSlitsPower.RTD_South_2.FFO.i_xOK,
+    CONCAT(&#39;Slits South 2 1 RTD expected fault: &#39;, Message),
+);
+END_METHOD
+
+METHOD AssertNoneTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertTrue(
+    fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
+    CONCAT(&#39;Slits Top 1 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
+    CONCAT(&#39;Slits Top 2 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
+    CONCAT(&#39;Slits Bottom 1 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
+    CONCAT(&#39;Slits Bottom 2 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_North_1.FFO.i_xOK,
+    CONCAT(&#39;Slits North 1 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_North_2.FFO.i_xOK,
+    CONCAT(&#39;Slits North 2 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_South_1.FFO.i_xOK,
+    CONCAT(&#39;Slits South 1 RTD expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbSlitsPower.RTD_South_2.FFO.i_xOK,
+    CONCAT(&#39;Slits South 2 1 RTD expected ok: &#39;, Message),
+);
+END_METHOD
+
+METHOD SetSlitsTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+ptr := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_North_1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_North_2.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_South_1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbSlitsPower.RTD_South_2.iRaw);
+ptr^ := iTempC * 10;
+END_METHOD
+
+METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 4;
+END_VAR
+// Do we fault at the correct times?
+TEST(&#39;TestSlitsTempFFO&#39;);
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+
+CASE nStep OF
+    0:
+        // Hold until the PMPS DB is ready
+        // Most tests don&#39;t need this because they start by waiting for a move
+        IF fbSlitsPower.RTD_TOP_1.fFaultThreshold &gt; 0 THEN
+            nStep := nStep + 1;
+        END_IF
+    1:
+        // Set the thermocouple temperatures to crazy high number
+        SetSlitsTemp(100);
+        nStep := nStep + 1;
+    2:
+        // We should see faults on all RTDs at 100C
+        AssertAllTempFault(&#39;has high temp reading&#39;);
+        nStep := nStep + 1;
+    3:
+        // Set the thermocouple temperatures to low again
+        SetSlitsTemp(0);
+        nStep := nStep + 1;
+    4:
+        AssertNoneTempFault(&#39;has low temp reading&#39;);
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep &gt; nLastStep THEN
+    AssertFalse(tonTimer.Q, &#39;Timeout in PPM temp FFO test&#39;);
+    TEST_FINISHED();
+END_IF
+END_METHOD
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#fb-slits-power">FB_SLITS_POWER</a></p></li>
 </ul>
 </dd>
 </dl>
@@ -2161,6 +3141,9 @@ VAR_INPUT
     // Filter configuration information
     {attribute &#39;pytmc&#39; := &#39;pv: FILTERS&#39;}
     arrFilters: ARRAY[1..8] OF ST_SATT_Filter;
+
+    // String name from PMPS database
+    sDeviceName: STRING;
 
     // Debug helper for setting the stage&#39;s nEnableMode
     nEnableMode : E_StageEnableMode;
@@ -2221,9 +3204,12 @@ VAR
 
     (* EL3202-0020: 0.01 °C per digit *)
     {attribute &#39;pytmc&#39; := &#39;pv: RTD:1&#39;}
-    fbRTD_1: FB_TempSensor := ( fResolution:=0.01 );
+    fbRTD_1: FB_CC_TempSensor := ( fResolution:=0.01 );
     {attribute &#39;pytmc&#39; := &#39;pv: RTD:2&#39;}
-    fbRTD_2: FB_TempSensor := ( fResolution:=0.01 );
+    fbRTD_2: FB_CC_TempSensor := ( fResolution:=0.01 );
+
+    fbReadPMPSDB: FB_JsonDocToSafeBP;
+    astPickedDB: ARRAY[1..1] OF ST_DbStateParams;
 
     fbFF: FB_FastFault := (i_Desc := &#39;Device is moving&#39;,
                            i_TypeCode := E_MotionFFType.DEVICE_MOVE,
@@ -2244,12 +3230,6 @@ IF NOT bInitialized THEN
     // stExtra.fVisuStep                    := 0.1;
 
 END_IF
-
-fbRTD_1();
-fTemp1 := fbRTD_1.fTemp;
-
-fbRTD_2();
-fTemp2 := fbRTD_2.fTemp;
 
 stAxis.nEnableMode := nEnableMode;
 fbMotion(stMotionStage:=stAxis);
@@ -2328,10 +3308,58 @@ END_IF
 
 bIsStationary := NOT stAxis.Axis.Status.Moving;
 fbFF(
-    i_DevName:=stAxis.sName,
+    i_DevName:=sDeviceName,
     i_xOK:=bIsStationary AND eEnumGet &lt;&gt; E_SXR_SATT_Position.UNKNOWN,
     io_fbFFHWO := fbFFHWO
 );
+
+// There will be a single state provided on one of the filters for reactive temp
+// This database entry must exist, but the temperature can be blank
+IF stFilter1.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter1.stPMPS.sPmpsState;
+ELSIF stFilter2.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter2.stPMPS.sPmpsState;
+ELSIF stFilter3.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter3.stPMPS.sPmpsState;
+ELSIF stFilter4.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter4.stPMPS.sPmpsState;
+ELSIF stFilter5.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter5.stPMPS.sPmpsState;
+ELSIF stFilter6.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter6.stPMPS.sPmpsState;
+ELSIF stFilter7.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter7.stPMPS.sPmpsState;
+ELSIF stFilter8.stPMPS.sPmpsState &lt;&gt; &#39;&#39; THEN
+    astPickedDB[1].sPmpsState := stFilter8.stPMPS.sPmpsState;
+END_IF
+
+IF sDeviceName = &#39;&#39; THEN
+    sDeviceName := stAxis.sName;
+END_IF
+
+fbReadPMPSDB(
+    bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+    jsonDoc:=PMPS_GVL.BP_jsonDoc,
+    sDeviceName:=sDeviceName,
+    arrStates:=astPickedDB,
+    io_fbFFHWO:=fbFFHWO,
+);
+
+fbRTD_1(
+    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO:=fbFFHWO,
+);
+fTemp1 := fbRTD_1.fTemp;
+
+fbRTD_2(
+    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName:=sDeviceName,
+    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO:=fbFFHWO,
+);
+fTemp2 := fbRTD_2.fTemp;
 
 END_FUNCTION_BLOCK
 </pre></div>
@@ -2340,6 +3368,7 @@ END_FUNCTION_BLOCK
 <dt>Related:</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="#e-sxr-satt-position">E_SXR_SATT_Position</a></p></li>
 <li><p><a class="reference internal" href="#fb-attenuatorelementdensity">FB_AttenuatorElementDensity</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
 <li><p><a class="reference internal" href="#st-satt-filter">ST_SATT_Filter</a></p></li>
 </ul>
@@ -2428,10 +3457,10 @@ END_FUNCTION_BLOCK
     <span class="n">fbArrCheckWrite</span><span class="p">:</span> <span class="n">FB_CheckPositionStateWrite</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: STC:01&#39;</span><span class="p">}</span>
-    <span class="n">fbThermoCouple1</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
+    <span class="n">fbThermoCouple1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: STC:02&#39;</span><span class="p">}</span>
-    <span class="n">fbThermoCouple2</span><span class="p">:</span> <span class="n">FB_TempSensor</span><span class="p">;</span>
+    <span class="n">fbThermoCouple2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: FSW&#39;</span><span class="p">}</span>
     <span class="n">fbFlowSwitch</span><span class="p">:</span> <span class="n">FB_XTES_Flowswitch</span><span class="p">;</span>
@@ -2516,8 +3545,18 @@ END_FUNCTION_BLOCK
 <span class="n">stTarget4</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_WFS_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">];</span>
 <span class="n">stTarget5</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_WFS_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">];</span>
 
-<span class="n">fbThermoCouple1</span><span class="p">();</span>
-<span class="n">fbThermoCouple2</span><span class="p">();</span>
+<span class="n">fbThermoCouple1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_WFS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">fbThermoCouple2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_WFS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
 <span class="n">fbFlowSwitch</span><span class="p">();</span> <span class="o">//</span> <span class="n">WFS</span> <span class="ow">in</span> <span class="n">FEE</span>
 <span class="n">fbFlowMeter</span><span class="p">();</span> <span class="o">//</span> <span class="n">WFS</span> <span class="ow">in</span> <span class="n">hutch</span>
 
@@ -2527,6 +3566,7 @@ END_FUNCTION_BLOCK
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="#e-wfs-states">E_WFS_States</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
 <li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
 <li><p><a class="reference internal" href="#fb-xtes-flowswitch">FB_XTES_Flowswitch</a></p></li>
@@ -2589,10 +3629,53 @@ fbWFS(
 );
 
 TestStateMove();
+TestTempFFO();
 
 bInit := TRUE;
 
 END_FUNCTION_BLOCK
+
+METHOD AssertBothTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertFalse(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT(&#39;WFS TC1 expected fault: &#39;, Message),
+);
+AssertFalse(
+    fbWFS.fbThermoCouple2.FFO.i_xOK,
+    CONCAT(&#39;WFS TC2 expected fault: &#39;, Message),
+);
+END_METHOD
+
+METHOD AssertNeitherTempFault
+VAR_INPUT
+    Message: STRING;
+END_VAR
+AssertTrue(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT(&#39;WFS TC1 expected ok: &#39;, Message),
+);
+AssertTrue(
+    fbWFS.fbThermoCouple1.FFO.i_xOK,
+    CONCAT(&#39;WFS TC2 sensor expected ok: &#39;, Message),
+);
+END_METHOD
+
+METHOD SetWFSTemp
+VAR_INPUT
+    iTempC: INT;
+END_VAR
+VAR
+    ptr: POINTER TO INT;
+END_VAR
+ptr := ADR(fbWFS.fbThermoCouple1.iRaw);
+ptr^ := iTempC * 10;
+
+ptr := ADR(fbWFS.fbThermoCouple2.iRaw);
+ptr^ := iTempC * 10;
+END_METHOD
 
 METHOD TestStateMove
 VAR_INST
@@ -2616,6 +3699,55 @@ END_IF
 
 IF tonTimer.Q OR nIterState &gt; nLastState THEN
     AssertFalse(tonTimer.Q, &#39;Timeout in WFS move test&#39;);
+    TEST_FINISHED();
+END_IF
+END_METHOD
+
+METHOD TestTempFFO
+VAR_INST
+    tonTimer: TON;
+    nStep: UINT := 0;
+    bOutChecked: BOOL := FALSE;
+    bInChecked: BOOL := FALSE;
+END_VAR
+VAR CONSTANT
+    nLastStep: UINT := 3;
+END_VAR
+// Do we fault at the correct times?
+// Parasitically depends on state move test
+TEST(&#39;TestWFSTempFFO&#39;);
+
+// Prepare a timeout
+tonTimer(IN:=TRUE, PT:=T#10s);
+
+CASE nStep OF
+    0:
+        // Set the thermocouple temperatures to crazy high number
+        SetWFSTemp(100);
+        nStep := nStep + 1;
+    1:
+        // Wait till we see &quot;OUT&quot; state and one other state (OUT should be no fault)
+        IF fbWFS.eEnumGet = E_WFS_States.OUT THEN
+            AssertNeitherTempFault(&#39;was in out position&#39;);
+            bOutChecked := TRUE;
+        ELSIF fbWFS.eEnumGet &lt;&gt; E_WFS_States.Unknown THEN
+            AssertBothTempFault(&#39;was in a target position&#39;);
+            bInChecked := TRUE;
+        END_IF
+        IF bOutChecked AND bInChecked THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to low again
+        SetWFSTemp(0);
+        nStep := nStep + 1;
+    3:
+        AssertNeitherTempFault(&#39;has low temp reading&#39;);
+        nStep := nStep + 1;
+END_CASE;
+
+IF tonTimer.Q OR nStep &gt; nLastStep THEN
+    AssertFalse(tonTimer.Q, &#39;Timeout in WFS temp FFO test&#39;);
     TEST_FINISHED();
 END_IF
 END_METHOD
@@ -3257,9 +4389,11 @@ END_METHOD
     <span class="n">fbPPMTest</span><span class="p">:</span> <span class="n">FB_PPMTest</span><span class="p">;</span>
     <span class="n">fbREFTest</span><span class="p">:</span> <span class="n">FB_REFTest</span><span class="p">;</span>
     <span class="n">fbSATTTest</span><span class="p">:</span> <span class="n">FB_SATTTest</span><span class="p">;</span>
+    <span class="n">fbSlitsPowerTest</span><span class="p">:</span> <span class="n">FB_SLITS_POWERTest</span><span class="p">;</span>
     <span class="n">fbWFSTest</span><span class="p">:</span> <span class="n">FB_WFSTest</span><span class="p">;</span>
     <span class="n">fbXPIMTest</span><span class="p">:</span> <span class="n">FB_XPIMTest</span><span class="p">;</span>
     <span class="n">fbCheckPositionStateWriteTest</span><span class="p">:</span> <span class="n">FB_CheckPositionStateWriteTest</span><span class="p">;</span>
+    <span class="n">fbCCTempSensorTest</span><span class="p">:</span> <span class="n">FB_CC_TempSensorTest</span><span class="p">;</span>
 
     <span class="n">fbSetupJson</span><span class="p">:</span> <span class="n">FB_PMPSJsonTestHelper</span><span class="p">;</span>
     <span class="n">astBeamParams</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">0..9</span><span class="p">]</span> <span class="n">OF</span> <span class="n">ST_DbStateParams</span><span class="p">;</span>
@@ -3269,6 +4403,7 @@ END_METHOD
 <span class="n">FOR</span> <span class="n">nIter</span> <span class="o">:=</span> <span class="mi">0</span> <span class="n">TO</span> <span class="mi">9</span> <span class="n">DO</span>
     <span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stBeamParams</span> <span class="o">:=</span> <span class="n">PMPS_GVL</span><span class="o">.</span><span class="n">cstFullBeam</span><span class="p">;</span>
     <span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">sPmpsState</span> <span class="o">:=</span> <span class="n">CONCAT</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">UINT_TO_STRING</span><span class="p">(</span><span class="n">nIter</span><span class="p">));</span>
+    <span class="n">astBeamParams</span><span class="p">[</span><span class="n">nIter</span><span class="p">]</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span> <span class="o">:=</span> <span class="n">nIter</span> <span class="o">+</span> <span class="mi">20</span><span class="p">;</span>
 <span class="n">END_FOR</span>
 <span class="n">fbSetupJson</span><span class="p">(</span>
     <span class="n">astBeamParams</span> <span class="o">:=</span> <span class="n">astBeamParams</span><span class="p">,</span>
@@ -3284,11 +4419,14 @@ END_METHOD
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
 <li><p><a class="reference internal" href="#fb-atmtest">FB_ATMTest</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensortest">FB_CC_TempSensorTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-checkpositionstatewritetest">FB_CheckPositionStateWriteTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-lictest">FB_LICTest</a></p></li>
+<li><p><a class="reference internal" href="#fb-pmpsjsontesthelper">FB_PMPSJsonTestHelper</a></p></li>
 <li><p><a class="reference internal" href="#fb-ppmtest">FB_PPMTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-reftest">FB_REFTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-satttest">FB_SATTTest</a></p></li>
+<li><p><a class="reference internal" href="#fb-slits-powertest">FB_SLITS_POWERTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-wfstest">FB_WFSTest</a></p></li>
 <li><p><a class="reference internal" href="#fb-xpimtest">FB_XPIMTest</a></p></li>
 </ul>
