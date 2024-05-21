@@ -6,6 +6,14 @@ VAR_INPUT
     fTempSP: REAL;
     bVetoTempFFO: BOOL;
     sDeviceName: STRING;
+    // Calibrated for each gentec, should be passed as input or set via pv
+    // If not set, responsive energy will not be calculated
+    {attribute 'pytmc' := '
+        pv: Responsivity
+        io: io
+        field: EGU V/W
+    '}
+    fResponsivity: LREAL;
 END_VAR
 VAR_IN_OUT
     fbFFHWO: FB_HardwareFFOutput;
@@ -77,10 +85,71 @@ VAR
     '}
     fCalibMJRatio: LREAL;
 
+    // Linked to beam rate
+    {attribute 'pytmc' := '
+        pv: BeamRateFromEpics
+        link: TPG:SYS0:1:DST04:RATE
+    '}
+    fFrequency: UINT;
+
+    // Pulse-by-pulse energy
+    {attribute 'pytmc' := '
+        pv: ResponMJ
+        io: i
+        field: EGU mJ
+    '}
+    fResponMJ: LREAL;
+
+    // Pulse-by-pulse energy buffer
+    {attribute 'pytmc' := '
+        pv: ResponMJ_BUFFER
+        io: i
+        field: EGU mJ
+    '}
+    fResponMJBuffer: ARRAY[1..1000] OF LREAL;
+
+    // Wattage
+    {attribute 'pytmc' := '
+        pv: ResponWattage
+        io: i
+        field: EGU W
+    '}
+    fResponWattage: LREAL;
+
+    // Background voltage
+    {attribute 'pytmc' := '
+        pv: Background
+        io: io
+        field: EGU V
+    '}
+    fBackground: LREAL;
+
+    // Boolean to trigger collection of background voltages
+    {attribute 'pytmc' := '
+        pv: BackgroundCollect
+        io: i
+    '}
+    fBackgroundCollect: BOOL;
+
+    {attribute 'pytmc' := '
+        pv: BackgroundCollectionTime
+        io: io
+        field: EGU s
+    '}
+    // Time in seconds to collect background voltages for
+    fBackgroundCollectionTime: UINT;
+    // Number of cycles to collect background voltages for
+    fBackgroundCollectionCycles: UDINT;
+    // Number of cycles that background voltages have already been collected
+    fBackgroundCollectionCyclesDone: UDINT;
+    // Sum of background voltages, should only be used internally
+    fBackgroundCollectionSum: LREAL;
+
     fbGetPMVoltage: FB_AnalogInput;
     fbVoltageBuffer: FB_LREALBuffer;
     fbCalibBaseBuffer: FB_LREALBuffer;
     fbCalibMJBuffer: FB_LREALBuffer;
+    fbResponMJBuffer: FB_LREALBuffer;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -103,6 +172,26 @@ fbGetPMVoltage(
 fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
 fCalibMJ := fCalibBase * fCalibMJRatio;
 
+// (Re)starting backround collection, will gracefully restart
+IF fBackgroundCollect = TRUE THEN
+    fBackgroundCollect := FALSE;
+    fBackgroundCollectionCycles := 10_000_000 * fBackgroundCollectionTime / _TaskInfo[GETCURTASKINDEXEX()].CycleTime;
+    fBackgroundCollectionCyclesDone := 0;
+    fBackgroundCollectionSum := 0;
+END_IF
+// Keeps a running average of background voltage
+IF fBackgroundCollectionCycles <> 0 THEN
+    fBackgroundCollectionSum := fBackgroundCollectionSum + fVoltage;
+    fBackgroundCollectionCycles := fBackgroundCollectionCycles - 1;
+    fBackgroundCollectionCyclesDone := fBackgroundCollectionCyclesDone + 1;
+    fBackground := fBackgroundCollectionSum / fBackgroundCollectionCyclesDone;
+END_IF
+// Getting wattage and energy
+IF fResponsivity <> 0 AND fFrequency <> 0 THEN
+    fResponWattage := (fVoltage - fBackground) / fResponsivity;
+    fResponMJ := fResponWattage / fFrequency;
+END_IF
+
 // Buffer the full-rate Voltage and calibrated MJ values
 fbVoltageBuffer(
     bExecute := TRUE,
@@ -115,7 +204,11 @@ fbCalibBaseBuffer(
 fbCalibMJBuffer(
     bExecute := TRUE,
     fInput := fCalibMJ,
-    arrOutput => fCalibMJBuffer);]]></ST>
+    arrOutput => fCalibMJBuffer);
+fbResponMJBuffer(
+    bExecute := TRUE,
+    fInput := fResponMJ,
+    arrOutput => fResponMJBuffer);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
