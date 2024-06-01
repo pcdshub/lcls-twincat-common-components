@@ -168,6 +168,8 @@ fbPowerMeter(
     bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
+    eEnumGet:=eEnumGet,
+    stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
