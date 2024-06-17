@@ -60,10 +60,16 @@
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\PPM\FB_PPM_R.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\PPM\FB_PPM_Gige.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
+    <Compile Include="Devices\PPM\FB_PPM_R_PowerMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF.TcPOU">

@@ -1,0 +1,285 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PPM_R_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_R_PowerMeter
+VAR_INPUT
+    fTempSP: REAL;
+    bVetoTempFFO: BOOL;
+    sDeviceName: STRING;
+
+    // Used to know when to stop background auto-collection
+    eEnumGet: E_PPM_States;
+    stYAxisState: DWORD;
+
+    // Calibrated for each gentec, should be passed as input or set via pv
+    // If not set, responsive energy will not be calculated
+    {attribute 'pytmc' := '
+        pv: Responsivity
+        io: io
+        field: EGU V/W
+    '}
+    fResponsivity: LREAL;
+END_VAR
+VAR_IN_OUT
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR
+    iVoltageINT AT %I*: INT;
+
+    {attribute 'pytmc' := '
+        pv: VOLT
+        io: input
+        field: EGU mV
+    '}
+    fVoltage: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: VOLT_BUFFER
+        io: input
+        field: EGU mV
+    '}
+    fVoltageBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
+        pv: STC
+        io: input
+    '}
+    fbTempSensor: FB_CC_TempSensor;
+
+    // Used to get beam mode and rate
+    {attribute 'pytmc' := '
+        pv: AccTypeFromEpics
+        link: TPR:FEES:GD02:0:MODE.RVAL
+    '}
+    uAccelerator: UINT;
+    {attribute 'pytmc' := '
+        pv: NCBeamRateFromEpics
+        link: TPG:SYS0:1:DST04:RATE
+    '}
+    uNCFrequency: UINT;
+    {attribute 'pytmc' := '
+        pv: SCBeamRateFromEpics
+        link: TPG:SYS0:1:DST04:RATE
+    '}
+    uSCFrequency: UINT;
+    uFrequency: UINT;
+
+    // Pulse-by-pulse energy and buffer
+    {attribute 'pytmc' := '
+        pv: PulseEnergy
+        io: i
+        field: EGU mJ
+    '}
+    fCalibMJ: LREAL;
+    {attribute 'pytmc' := '
+        pv: PulseEnergy_BUFFER
+        io: i
+        field: EGU mJ
+    '}
+    fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
+
+    // Wattage and buffer
+    {attribute 'pytmc' := '
+        pv: PulseWattage
+        io: i
+        field: EGU W
+    '}
+    fPulseWattage: LREAL;
+    {attribute 'pytmc' := '
+        pv: PulseWattage_BUFFER
+        io: i
+        field: EGU mJ
+    '}
+    fPulseWattageBuffer: ARRAY[1..1000] OF LREAL;
+
+    // Background voltage
+    {attribute 'pytmc' := '
+        pv: BackgroundVoltage
+        io: io
+        field: EGU V
+    '}
+    fBackgroundVoltage: LREAL;
+
+    // Internal variables for background voltage auto-collection
+    fBackgroundVoltageAcc: LREAL;
+    fBackgroundVoltageSum: LREAL;
+    fBackgroundVoltageStale: LREAL;
+    tonBackgroundAutoCollecting: TON;
+    fBackgroundVoltageBuffer: ARRAY[1..100] OF LREAL;
+    udBackgroundVoltageBufferIndex: UDINT := 1;
+    rTrig_Background : R_TRIG;
+    i: UDINT;
+    // Used to reset auto-collected background buffer, and fBackgroundVoltage if in Passive mode
+    {attribute 'pytmc' := '
+        pv: ResetAutoBackground
+        io: i
+        field: EGU mJ
+    '}
+    bResetAutoBackground: BOOL;
+
+    // In manual mode, auto-background updates buffer but does not change fBackgroundVoltage
+    {attribute 'pytmc' := '
+        pv: BackgroundMode
+        io: io
+    '}
+    BACKGROUND_MODE: (Manual, Passive) := Passive;
+
+    // Boolean to trigger collection of background voltages
+    {attribute 'pytmc' := '
+        pv: BackgroundCollect
+        io: i
+    '}
+    bBackgroundCollect: BOOL;
+
+    // Time in seconds to collect background voltages for
+    {attribute 'pytmc' := '
+        pv: BackgroundCollectionTime
+        io: io
+        field: EGU s
+    '}
+    uBackgroundCollectionTime: UINT := 60;
+    tofBackgroundCollecting: TOF;
+    udBackgroundManualCount: UDINT;
+
+    fbGetPMVoltage: FB_AnalogInput;
+
+    fbVoltageBuffer: FB_LREALBuffer;
+    fbPulseWattageBuffer: FB_LREALBuffer;
+    fbCalibMJBuffer: FB_LREALBuffer;
+
+    FFO: FB_FastFault :=(
+        i_Desc := 'Fault occurs when the per-pulse energy reading is high enough to damage the power meter',
+        i_TypeCode := 16#500);
+    bOverAllowableEnergy: BOOL;
+END_VAR
+VAR CONSTANT
+    // Voltage limits for wavelength ranges
+    uWavelengthEdge1: UINT := 300;
+    uWavelengthEdge2: UINT := 1000;
+    uWavelengthEdge3: UINT := 1560;
+    uWavelengthEdge4: UINT := 2000;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbTempSensor(
+    fFaultThreshold:=fTempSP,
+    bVeto:=bVetoTempFFO,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
+
+// Convert the terminal's integer into a value in millivolts
+fbGetPMVoltage(
+    iRaw := iVoltageINT,
+    iTermBits := 15,
+    fTermMax := 10000,
+    fTermMin := 0,
+    fReal => fVoltage);
+
+rTrig_Background(CLK:=(eEnumGet <> E_PPM_States.OUT OR stYAxisState <> 0));
+// Reset buffer and related variables
+IF rTrig_Background.Q OR bResetAutoBackground THEN
+    IF bResetAutoBackground THEN
+        bResetAutoBackground := FALSE;
+        IF BACKGROUND_MODE = Passive THEN
+            fBackgroundVoltage := 0;
+        END_IF
+    ELSE
+        // Dump 5s worth of readings
+        IF udBackgroundVoltageBufferIndex > 6 THEN
+            FOR i := (udBackgroundVoltageBufferIndex - 5) TO (udBackgroundVoltageBufferIndex - 1) DO
+                fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageBuffer[i MOD 100];
+            END_FOR
+            udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex - 5;
+            IF udBackgroundVoltageBufferIndex <> 1 AND BACKGROUND_MODE = Passive THEN
+                fBackgroundVoltage := fBackgroundVoltageSum / MAX((udBackgroundVoltageBufferIndex - 1), 100);
+            END_IF
+        ELSIF BACKGROUND_MODE = Passive THEN
+                fBackgroundVoltage := 0;
+        END_IF
+    END_IF
+    fBackgroundVoltageAcc := 0;
+    fBackgroundVoltageSum := 0;
+    tonBackgroundAutoCollecting(IN := FALSE);
+    udBackgroundVoltageBufferIndex := 1;
+ELSIF eEnumGet = E_PPM_States.OUT AND stYAxisState = 0 THEN
+    tonBackgroundAutoCollecting( IN := TRUE, PT := T#1000MS);
+    // Every second, move fBackgroundVoltageAcc into buffer and sum
+    IF tonBackgroundAutoCollecting.Q = TRUE THEN
+        tonBackgroundAutoCollecting( IN := FALSE);
+        fBackgroundVoltageStale := fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex];
+        fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex] := fBackgroundVoltageAcc;
+        // Remove overwritten voltage
+        IF udBackgroundVoltageBufferIndex > 100 THEN
+            fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageStale;
+        END_IF
+        fBackgroundVoltageSum := fBackgroundVoltageSum + fBackgroundVoltageAcc;
+        fBackgroundVoltageAcc := fVoltage;
+        udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex + 1;
+    ELSE
+        fBackgroundVoltageAcc := fBackgroundVoltageAcc + fVoltage;
+    END_IF
+
+END_IF
+
+IF udBackgroundVoltageBufferIndex <> 1 AND BACKGROUND_MODE = Passive THEN
+    fBackgroundVoltage := fBackgroundVoltageSum / MAX((udBackgroundVoltageBufferIndex - 1), 100);
+END_IF
+
+// Start collecting background in manual mode - 60s by default but can be set with uBackgroundCollectionTime
+IF bBackgroundCollect = TRUE THEN
+    bBackgroundCollect := FALSE;
+    BACKGROUND_MODE := Manual;
+    udBackgroundManualCount := 0;
+    fBackgroundVoltage := 0;
+    tofBackgroundCollecting(IN := TRUE);
+END_IF
+
+IF BACKGROUND_MODE = Manual THEN
+    tofBackgroundCollecting(IN := FALSE, PT := UINT_TO_TIME(uBackgroundCollectionTime * 1000));
+    IF tofBackgroundCollecting.Q = TRUE THEN
+        udBackgroundManualCount := udBackgroundManualCount + 1;
+        fBackgroundVoltage := (fBackgroundVoltage * (udBackgroundManualCount - 1) + fVoltage) / udBackgroundManualCount;
+    END_IF
+END_IF
+
+// Getting frequency based on accelerator source
+CASE uAccelerator OF
+    0: uFrequency := uNCFrequency;
+    1: uFrequency := uSCFrequency;
+    2: uFrequency := 0; // ASTA?
+ELSE
+    uFrequency := 0;
+END_CASE
+
+// Getting wattage and energy
+fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
+fCalibMJ := SEL(uFrequency <> 0, -9999, fPulseWattage / uFrequency);
+
+// FF in case voltage is high enough to damage power meter based on wavelength
+CASE PMPS_GVL.cstFullBeam.neV OF
+    0..(uWavelengthEdge1-1): bOverAllowableEnergy := fCalibMJ > 2;
+    uWavelengthEdge1..(uWavelengthEdge2-1): bOverAllowableEnergy := fCalibMJ > 2;
+    uWavelengthEdge2..(uWavelengthEdge3-1): bOverAllowableEnergy := fCalibMJ > 4;
+    uWavelengthEdge3..(uWavelengthEdge4-1): bOverAllowableEnergy := fCalibMJ > 0.5;
+    uWavelengthEdge4..65535: bOverAllowableEnergy := fCalibMJ > 1;
+END_CASE
+
+FFO(i_xOK := bOverAllowableEnergy,
+    io_fbFFHWO := fbFFHWO);
+
+// Buffer the full-rate Voltage, Pulse wattage, and calibrated MJ values
+fbVoltageBuffer(
+    bExecute := TRUE,
+    fInput := fVoltage,
+    arrOutput => fVoltageBuffer);
+fbPulseWattageBuffer(
+    bExecute := TRUE,
+    fInput := fPulseWattage,
+    arrOutput => fPulseWattageBuffer);
+fbCalibMJBuffer(
+    bExecute := TRUE,
+    fInput := fCalibMJ,
+    arrOutput => fCalibMJBuffer);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="FB_PPM" Id="{c334698b-35d4-4428-8e57-279a533e7d6a}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
+  <POU Name="FB_PPM_R" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_R
 (*
     Function block for Power and Profile Monitor (PPM) controls:
     - Y motion
@@ -57,6 +57,8 @@ VAR_INPUT
     bReadDBNow: BOOL;
     // Offset for the flow meter in engineering units
     fFlowOffset: LREAL := 0;
+    // Responsivity for power meter
+    fResponsivity: LREAL;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -84,7 +86,7 @@ VAR
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := 'pv: SPM'}
-    fbPowerMeter: FB_PPM_PowerMeter;
+    fbPowerMeter: FB_PPM_R_PowerMeter;
 
     {attribute 'pytmc' := 'pv: CAM'}
     fbGige: FB_PPM_Gige;
@@ -105,7 +107,8 @@ VAR CONSTANT
     fOutDecel: LREAL := 25;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT bInit THEN
+      <ST><![CDATA[
+IF NOT bInit THEN
     bInit := TRUE;
 
     stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
@@ -167,6 +170,9 @@ fbPowerMeter(
     bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
+    eEnumGet:=eEnumGet,
+    stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
+    fResponsivity:=fResponsivity,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);

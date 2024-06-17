@@ -1,23 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
+  <POU Name="FB_PPM_PowerMeter" Id="{03e60216-9eee-410a-8164-008c07fae464}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
+
 VAR_INPUT
     fTempSP: REAL;
     bVetoTempFFO: BOOL;
     sDeviceName: STRING;
-    eEnumGet: E_PPM_States;
-    stYAxisState: DWORD;
-
-    // Calibrated for each gentec, should be passed as input or set via pv
-    // If not set, responsive energy will not be calculated
-    {attribute 'pytmc' := '
-        pv: Responsivity
-        io: io
-        field: EGU V/W
-    '}
-    fResponsivity: LREAL;
-    fVoltageCeiling: LREAL;
 END_VAR
 VAR_IN_OUT
     fbFFHWO: FB_HardwareFFOutput;
@@ -40,109 +29,59 @@ VAR
     fVoltageBuffer: ARRAY[1..1000] OF LREAL;
 
     {attribute 'pytmc' := '
+        pv: CALIB
+        io: input
+    '}
+    fCalibBase: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: CALIB_BUFFER
+        io: input
+    '}
+    fCalibBaseBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
+        pv: MJ
+        io: input
+        field: EGU mJ
+    '}
+    fCalibMJ: LREAL;
+
+    {attribute 'pytmc' := '
+        pv: MJ_BUFFER
+        io: input
+        field: EGU mJ
+    '}
+    fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
+
+    {attribute 'pytmc' := '
         pv: STC
         io: input
     '}
     fbTempSensor: FB_CC_TempSensor;
 
     {attribute 'pytmc' := '
-        pv: AccTypeFromEpics
-        link: TPR:FEES:GD02:0:MODE.RVAL
-    '}
-    uAccelerator: UINT;
-
-    {attribute 'pytmc' := '
-        pv: NCBeamRateFromEpics
-        link: TPG:SYS0:1:DST04:RATE
-    '}
-    uNCFrequency: UINT;
-
-    {attribute 'pytmc' := '
-        pv: SCBeamRateFromEpics
-        link: TPG:SYS0:1:DST04:RATE
-    '}
-    uSCFrequency: UINT;
-
-    uFrequency: UINT;
-
-    // Pulse-by-pulse energy
-    {attribute 'pytmc' := '
-        pv: PulseEnergy
-        io: i
-        field: EGU mJ
-    '}
-    fCalibMJ: LREAL;
-
-    // Pulse-by-pulse energy buffer
-    {attribute 'pytmc' := '
-        pv: PulseEnergy_BUFFER
-        io: i
-        field: EGU mJ
-    '}
-    fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
-
-    // Wattage
-    {attribute 'pytmc' := '
-        pv: PulseWattage
-        io: i
-        field: EGU W
-    '}
-    fPulseWattage: LREAL;
-
-    // Background voltage
-    {attribute 'pytmc' := '
-        pv: BackgroundVoltage
-        io: io
-        field: EGU V
-    '}
-    fBackgroundVoltage: LREAL;
-
-    fBackgroundVoltageAcc: LREAL;
-    fBackgroundVoltageSum: LREAL;
-    fBackgroundVoltageStale: LREAL;
-    tonBackgroundAutoCollecting: TON;
-    fBackgroundVoltageBuffer: ARRAY[1..100] OF LREAL;
-    udBackgroundVoltageBufferIndex: UDINT := 1;
-    i: UDINT;
-
-    {attribute 'pytmc' := '
-        pv: BackgroundMode
+        pv: CALIB:OFFSET
         io: io
     '}
-    BACKGROUND_MODE: (Manual, Passive) := Passive;
-
-    // Boolean to trigger collection of background voltages
-    {attribute 'pytmc' := '
-        pv: BackgroundCollect
-        io: i
-    '}
-    bBackgroundCollect: BOOL;
+    fCalibRelOffset: LREAL;
 
     {attribute 'pytmc' := '
-        pv: BackgroundCollectionTime
+        pv: CALIB:RATIO
         io: io
-        field: EGU s
     '}
-    // Time in seconds to collect background voltages for
-    uBackgroundCollectionTime: UINT := 60;
+    fCalibRelRatio: LREAL;
 
-    tofBackgroundCollecting: TOF;
-    udBackgroundManualCount: UDINT;
+    {attribute 'pytmc' := '
+        pv: CALIB:MJ_RATIO
+        io: io
+    '}
+    fCalibMJRatio: LREAL;
 
     fbGetPMVoltage: FB_AnalogInput;
-
     fbVoltageBuffer: FB_LREALBuffer;
+    fbCalibBaseBuffer: FB_LREALBuffer;
     fbCalibMJBuffer: FB_LREALBuffer;
-
-    FFO: FB_FastFault :=(
-        i_Desc := 'Fault occurs when the temprature trip point is reached',
-        i_TypeCode := 16#f400);
-    bOverAllowableEnergy: BOOL;
-END_VAR
-VAR CONSTANT
-    fWavelengthEdge1: REAL := 300 + 1.0E-44;
-    fWavelengthEdge2: REAL := 1000 + 1.0E-44;
-    fWavelengthEdge3: REAL := 1600 + 1.0E-44;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbTempSensor(
@@ -160,91 +99,19 @@ fbGetPMVoltage(
     fTermMin := 0,
     fReal => fVoltage);
 
-IF R_TRIG(CLK:=(eEnumGet <> E_PPM_States.OUT OR stYAxisState <> 0)) THEN
-    // Dump most recent readings
-    IF udBackgroundVoltageBufferIndex > 5 THEN
-        FOR i := (udBackgroundVoltageBufferIndex - 5) TO udBackgroundVoltageBufferIndex DO
-            fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageBuffer[i MOD 100];
-        END_FOR
-        udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex - 5;
-        IF udBackgroundVoltageBufferIndex <> 1 AND BACKGROUND_MODE = Passive THEN
-            fBackgroundVoltage := fBackgroundVoltageSum / MAX((udBackgroundVoltageBufferIndex - 1), 100);
-        END_IF
-    END_IF
-    fBackgroundVoltageAcc := 0;
-    fBackgroundVoltageSum := 0;
-    tonBackgroundAutoCollecting(IN := FALSE);
-    udBackgroundVoltageBufferIndex := 1;
-ELSIF eEnumGet = E_PPM_States.OUT AND stYAxisState = 0 THEN
-    tonBackgroundAutoCollecting( IN := TRUE, PT := T#1000MS);
-    IF tonBackgroundAutoCollecting.Q = TRUE THEN
-        tonBackgroundAutoCollecting( IN := FALSE);
-        fBackgroundVoltageStale := fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex];
-        fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex] := fBackgroundVoltageAcc;
-        IF udBackgroundVoltageBufferIndex > 100 THEN
-            fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageStale;
-        END_IF
-        fBackgroundVoltageSum := fBackgroundVoltageSum + fBackgroundVoltageAcc;
-        fBackgroundVoltageAcc := fVoltage;
-        udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex + 1;
-    ELSE
-        fBackgroundVoltageAcc := fBackgroundVoltageAcc + fVoltage;
-    END_IF
-
-END_IF
-
-IF udBackgroundVoltageBufferIndex <> 1 AND BACKGROUND_MODE = Passive THEN
-    fBackgroundVoltage := fBackgroundVoltageSum / MAX((udBackgroundVoltageBufferIndex - 1), 100);
-END_IF
-
-IF bBackgroundCollect = TRUE THEN
-    bBackgroundCollect := FALSE;
-    BACKGROUND_MODE := Manual;
-    udBackgroundManualCount := 0;
-    fBackgroundVoltage := 0;
-    tofBackgroundCollecting(IN := TRUE);
-END_IF
-
-IF BACKGROUND_MODE = Manual THEN
-    tofBackgroundCollecting(IN := FALSE, PT := UINT_TO_TIME(uBackgroundCollectionTime * 1000));
-    IF tofBackgroundCollecting.Q = TRUE THEN
-        udBackgroundManualCount := udBackgroundManualCount + 1;
-        fBackgroundVoltage := (fBackgroundVoltage * (udBackgroundManualCount - 1) + fVoltage) / udBackgroundManualCount;
-    END_IF
-END_IF
-
-// Getting frequency based on accelerator source
-CASE uAccelerator OF
-    0: uFrequency := uNCFrequency;
-    1: uFrequency := uSCFrequency;
-    2: uFrequency := 0; // ASTA?
-ELSE
-    uFrequency := 0;
-END_CASE
-
-// Getting wattage and energy
-fPulseWattage := (fVoltage - fBackgroundVoltage) / fResponsivity;
-IF fResponsivity <> 0 AND uFrequency <> 0 THEN
-    fCalibMJ := fPulseWattage / uFrequency;
-ELSE
-    fCalibMJ := -9999;
-END_IF
-
-CASE PMPS_GVL.cstFullBeam.neV OF
-    0..300: 				bOverAllowableEnergy := fCalibMJ > 2;
-    fWavelengthEdge1..1000: bOverAllowableEnergy := fCalibMJ > 4;
-    fWavelengthEdge2..1600: bOverAllowableEnergy := fCalibMJ > 0.5;
-    fWavelengthEdge3..2000: bOverAllowableEnergy := fCalibMJ > 1;
-END_CASE
-
-FFO(i_xOK := bOverAllowableEnergy,
-    io_fbFFHWO := fbFFHWO);
+// Power meter calibration
+fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
+fCalibMJ := fCalibBase * fCalibMJRatio;
 
 // Buffer the full-rate Voltage and calibrated MJ values
 fbVoltageBuffer(
     bExecute := TRUE,
     fInput := fVoltage,
     arrOutput => fVoltageBuffer);
+fbCalibBaseBuffer(
+    bExecute := TRUE,
+    fInput := fCalibBase,
+    arrOutput => fCalibBaseBuffer);
 fbCalibMJBuffer(
     bExecute := TRUE,
     fInput := fCalibMJ,
