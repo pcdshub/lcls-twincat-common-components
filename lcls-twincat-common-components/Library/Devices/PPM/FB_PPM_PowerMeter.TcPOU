@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
+  <POU Name="FB_PPM_PowerMeter" Id="{03e60216-9eee-410a-8164-008c07fae464}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
+
 VAR_INPUT
     fTempSP: REAL;
     bVetoTempFFO: BOOL;
@@ -81,8 +82,7 @@ VAR
     fbVoltageBuffer: FB_LREALBuffer;
     fbCalibBaseBuffer: FB_LREALBuffer;
     fbCalibMJBuffer: FB_LREALBuffer;
-END_VAR
-]]></Declaration>
+END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbTempSensor(
     fFaultThreshold:=fTempSP,
