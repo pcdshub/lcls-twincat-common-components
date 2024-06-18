@@ -54,6 +54,9 @@
     <Compile Include="Devices\LIC\FB_LIC.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\PPM\BEAMLINE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\PPM\E_PPM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>

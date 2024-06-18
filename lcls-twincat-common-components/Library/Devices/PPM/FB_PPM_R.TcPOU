@@ -59,6 +59,8 @@ VAR_INPUT
     fFlowOffset: LREAL := 0;
     // Responsivity for power meter
     fResponsivity: LREAL;
+    // None, Soft, or Hard, used for pulse energy FF
+    eBeamline: BEAMLINE := BEAMLINE.None;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -173,6 +175,7 @@ fbPowerMeter(
     eEnumGet:=eEnumGet,
     stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
     fResponsivity:=fResponsivity,
+    eBeamline:=eBeamline,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);

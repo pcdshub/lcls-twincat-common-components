@@ -14,11 +14,13 @@ VAR_INPUT
     // Calibrated for each gentec, should be passed as input or set via pv
     // If not set, responsive energy will not be calculated
     {attribute 'pytmc' := '
-        pv: Responsivity
+        pv: RES
         io: io
         field: EGU V/W
     '}
     fResponsivity: LREAL;
+
+    eBeamline: BEAMLINE := BEAMLINE.None;
 END_VAR
 VAR_IN_OUT
     fbFFHWO: FB_HardwareFFOutput;
@@ -66,13 +68,13 @@ VAR
 
     // Pulse-by-pulse energy and buffer
     {attribute 'pytmc' := '
-        pv: PulseEnergy
+        pv: MJ
         io: i
         field: EGU mJ
     '}
     fCalibMJ: LREAL;
     {attribute 'pytmc' := '
-        pv: PulseEnergy_BUFFER
+        pv: MJ_BUFFER
         io: i
         field: EGU mJ
     '}
@@ -80,13 +82,13 @@ VAR
 
     // Wattage and buffer
     {attribute 'pytmc' := '
-        pv: PulseWattage
+        pv: WATT
         io: i
         field: EGU W
     '}
     fPulseWattage: LREAL;
     {attribute 'pytmc' := '
-        pv: PulseWattage_BUFFER
+        pv: WATT_BUFFER
         io: i
         field: EGU mJ
     '}
@@ -94,7 +96,7 @@ VAR
 
     // Background voltage
     {attribute 'pytmc' := '
-        pv: BackgroundVoltage
+        pv: BACK:VOLT
         io: io
         field: EGU V
     '}
@@ -111,7 +113,7 @@ VAR
     i: UDINT;
     // Used to reset auto-collected background buffer, and fBackgroundVoltage if in Passive mode
     {attribute 'pytmc' := '
-        pv: ResetAutoBackground
+        pv: BACK:RESET
         io: i
         field: EGU mJ
     '}
@@ -119,21 +121,21 @@ VAR
 
     // In manual mode, auto-background updates buffer but does not change fBackgroundVoltage
     {attribute 'pytmc' := '
-        pv: BackgroundMode
+        pv: BACK:MODE
         io: io
     '}
     BACKGROUND_MODE: (Manual, Passive) := Passive;
 
     // Boolean to trigger collection of background voltages
     {attribute 'pytmc' := '
-        pv: BackgroundCollect
+        pv: BACK:COLL
         io: i
     '}
     bBackgroundCollect: BOOL;
 
     // Time in seconds to collect background voltages for
     {attribute 'pytmc' := '
-        pv: BackgroundCollectionTime
+        pv: BACK:TIME
         io: io
         field: EGU s
     '}
@@ -152,12 +154,22 @@ VAR
         i_TypeCode := 16#500);
     bOverAllowableEnergy: BOOL;
 END_VAR
-VAR CONSTANT
+VAR_STAT CONSTANT
     // Voltage limits for wavelength ranges
-    uWavelengthEdge1: UINT := 300;
-    uWavelengthEdge2: UINT := 1000;
-    uWavelengthEdge3: UINT := 1560;
-    uWavelengthEdge4: UINT := 2000;
+    uSoftWavelengthEdge1: UINT := 300;
+    uSoftWavelengthEdge1L: UINT := 299;
+    uSoftWavelengthEdge2: UINT := 1000;
+    uSoftWavelengthEdge2L: UINT := 999;
+    uSoftWavelengthEdge3: UINT := 1560;
+    uSoftWavelengthEdge3L: UINT := 1559;
+    uSoftWavelengthEdge4: UINT := 2000;
+    uSoftWavelengthEdge4L: UINT := 1999;
+
+    uHardWavelengthEdge1: UINT := 1000;
+    uHardWavelengthEdge2: UINT := 1500;
+    uHardWavelengthEdge2L: UINT := 1499;
+    uHardWavelengthEdge3: UINT := 4000;
+    uHardWavelengthEdge3L: UINT := 3999;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbTempSensor(
@@ -256,14 +268,21 @@ fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fR
 fCalibMJ := SEL(uFrequency <> 0, -9999, fPulseWattage / uFrequency);
 
 // FF in case voltage is high enough to damage power meter based on wavelength
-CASE PMPS_GVL.cstFullBeam.neV OF
-    0..(uWavelengthEdge1-1): bOverAllowableEnergy := fCalibMJ > 2;
-    uWavelengthEdge1..(uWavelengthEdge2-1): bOverAllowableEnergy := fCalibMJ > 2;
-    uWavelengthEdge2..(uWavelengthEdge3-1): bOverAllowableEnergy := fCalibMJ > 4;
-    uWavelengthEdge3..(uWavelengthEdge4-1): bOverAllowableEnergy := fCalibMJ > 0.5;
-    uWavelengthEdge4..65535: bOverAllowableEnergy := fCalibMJ > 1;
-END_CASE
-
+IF eBeamline = BEAMLINE.Soft THEN
+    CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
+        0 .. uSoftWavelengthEdge1L: bOverAllowableEnergy := fCalibMJ > 2;
+        uSoftWavelengthEdge1 .. uSoftWavelengthEdge2L : bOverAllowableEnergy := fCalibMJ > 2;
+        uSoftWavelengthEdge2 .. uSoftWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ > 4;
+        uSoftWavelengthEdge3 .. uSoftWavelengthEdge4L: bOverAllowableEnergy := fCalibMJ > 0.5;
+        uSoftWavelengthEdge4 .. 65535: bOverAllowableEnergy := fCalibMJ > 1;
+    END_CASE
+ELSIF eBeamline = BEAMLINE.Hard THEN
+    CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
+        uHardWavelengthEdge1 .. uHardWavelengthEdge2L: bOverAllowableEnergy := fCalibMJ > 10;
+        uHardWavelengthEdge2 .. uHardWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ > 4;
+        uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ > 10;
+    END_CASE
+END_IF
 FFO(i_xOK := bOverAllowableEnergy,
     io_fbFFHWO := fbFFHWO);
 
