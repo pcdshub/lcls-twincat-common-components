@@ -1,0 +1,4372 @@
+
+
+DUTs
+----
+
+
+E_ATM_States
+^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_ATM_States :
+    (
+        Unknown := 0,
+        OUT := 1,
+        TARGET1 := 2,
+        TARGET2 := 3,
+        TARGET3 := 4,
+        TARGET4 := 5,
+        TARGET5 := 6
+    ) UINT;
+    END_TYPE
+
+
+Related:
+    * `E_ATM_States`_
+
+
+E_LIC_States
+^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_LIC_States :
+    (
+        Unknown := 0,
+        OUT := 1,
+        MIRROR1 := 2,
+        MIRROR2 := 3,
+        TARGET := 4
+    ) UINT;
+    END_TYPE
+
+
+
+
+E_PPM_States
+^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_PPM_States :
+    (
+        Unknown := 0,
+        OUT := 1,
+        POWERMETER := 2,
+        YAG1 := 3,
+        YAG2 := 4
+    ) UINT;
+    END_TYPE
+
+
+
+
+E_SXR_SATT_Position
+^^^^^^^^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_SXR_SATT_Position :
+    (
+        UNKNOWN := 0, // UNKNOWN must be in slot 0 or the FB breaks
+        OUT := 1, // OUT at slot 1 is a convention
+        FILTER1 := 2,
+        FILTER2 := 3,
+        FILTER3 := 4,
+        FILTER4 := 5,
+        FILTER5 := 6,
+        FILTER6 := 7,
+        FILTER7 := 8,
+        FILTER8 := 9
+    ) UINT;
+    END_TYPE
+
+
+
+
+E_WFS_States
+^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_WFS_States :
+    (
+        Unknown := 0,
+        OUT := 1,
+        TARGET1 := 2,
+        TARGET2 := 3,
+        TARGET3 := 4,
+        TARGET4 := 5,
+        TARGET5 := 6
+    ) UINT;
+    END_TYPE
+
+
+
+
+E_XPIM_Filters
+^^^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_XPIM_Filters :
+    (
+        Unknown := 0,
+        T50 := 1,
+        T25 := 2,
+        T10 := 3,
+        T5 := 4,
+        T1 := 5,
+        T100 := 6
+    ) UINT;
+    END_TYPE
+
+
+
+
+E_XPIM_States
+^^^^^^^^^^^^^
+
+::
+
+    {attribute 'qualified_only'}
+    TYPE E_XPIM_States :
+    (
+        Unknown := 0,
+        OUT := 1,
+        YAG := 2,
+        DIAMOND := 3,
+        RETICLE := 4
+    ) UINT;
+    END_TYPE
+
+
+
+
+ST_SATT_Filter
+^^^^^^^^^^^^^^
+
+::
+
+    TYPE ST_SATT_Filter :
+    STRUCT
+        {attribute 'pytmc' := '
+            pv: MATERIAL
+            io: input
+            field: DESC Filter material name
+        '}
+        sFilterMaterial : STRING;
+
+        {attribute 'pytmc' := '
+            pv: THICKNESS
+            io: input
+            field: DESC Filter material thickness
+            field: EGU um
+        '}
+        fFilterThickness_um : LREAL;
+    END_STRUCT
+    END_TYPE
+
+
+
+
+GVLs
+----
+
+
+Global_Version
+^^^^^^^^^^^^^^
+
+::
+
+    {attribute 'TcGenerated'}
+    {attribute 'no-analysis'}
+    {attribute 'linkalways'}
+    // This function has been automatically generated from the project information.
+    VAR_GLOBAL CONSTANT
+        {attribute 'const_non_replaced'}
+        stLibVersion_lcls_twincat_common_components : ST_LibVersion := (iMajor := 3, iMinor := 5, iBuild := 0, iRevision := 0, nFlags := 1, sVersion := '3.5.0');
+    END_VAR
+
+
+
+
+POUs
+----
+
+
+FB_ATM
+^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_ATM
+    (*
+        Function block for Arrival Time Monitor (ATM) controls:
+        - X, Y motion
+        - Y target states
+        - thermocouple
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // X motor (align target to beam).
+        stXStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the TARGET1 state.
+        stTarget1: ST_PositionState;
+        // Settings for the TARGET2 state.
+        stTarget2: ST_PositionState;
+        // Settings for the TARGET3 state.
+        stTarget3: ST_PositionState;
+        // Settings for the TARGET4 state.
+        stTarget4: ST_PositionState;
+        // Settings for the TARGET5 state.
+        stTarget5: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_ATM_States;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_ATM_States;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+        fbXStage: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..6
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        {attribute 'pytmc' := 'pv: STC:01'}
+        fbTempSensor1: FB_CC_TempSensor;
+
+        {attribute 'pytmc' :='pv: FWM'}
+        fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+    END_VAR
+    VAR CONSTANT
+        // State defaults if not provided
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 200;
+        fOutDecel: LREAL := 25;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+        stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+        fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget2, sNameDefault:='TARGET2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget3, sNameDefault:='TARGET3', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+
+    stXStage.bLimitForwardEnable := TRUE;
+    stXStage.bLimitBackwardEnable := TRUE;
+    stXStage.bHardwareEnable := TRUE;
+    stXStage.bPowerSelf := TRUE;
+
+    fbYStage(stMotionStage:=stYStage);
+    fbXStage(stMotionStage:=stXStage);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_ATM_States.OUT] := stOut;
+        astPositionState[E_ATM_States.TARGET1] := stTarget1;
+        astPositionState[E_ATM_States.TARGET2] := stTarget2;
+        astPositionState[E_ATM_States.TARGET3] := stTarget3;
+        astPositionState[E_ATM_States.TARGET4] := stTarget4;
+        astPositionState[E_ATM_States.TARGET5] := stTarget5;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_ATM_States.OUT];
+    stTarget1 := astPositionState[E_ATM_States.TARGET1];
+    stTarget2 := astPositionState[E_ATM_States.TARGET2];
+    stTarget3 := astPositionState[E_ATM_States.TARGET3];
+    stTarget4 := astPositionState[E_ATM_States.TARGET4];
+    stTarget5 := astPositionState[E_ATM_States.TARGET5];
+
+    fbTempSensor1(
+        fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+        bVeto:=eEnumGet = E_ATM_States.OUT,
+        sDevName:=sDeviceName,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fbFlowMeter();
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_ATM_States`_
+    * `FB_CC_TempSensor`_
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PositionState_Defaults`_
+
+
+FB_ATMTest
+^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_ATMTest EXTENDS FB_TestSuite
+    VAR
+        fbATM: FB_ATM;
+        stYStage: ST_MotionStage;
+        stXStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbATM.stTarget1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbATM.stTarget2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+    fbSetup(stPositionState:=fbATM.stTarget3, sName:='T3', fPosition:=40, sPmpsState:='T3');
+    fbSetup(stPositionState:=fbATM.stTarget4, sName:='T4', fPosition:=50, sPmpsState:='T4');
+    fbSetup(stPositionState:=fbATM.stTarget5, sName:='T5', fPosition:=60, sPmpsState:='T5');
+
+    // Standard FB call
+    fbATM(
+        stYStage:=stYStage,
+        stXStage:=stXStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+    TestTempFFO();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD SetATMTemp
+    VAR_INPUT
+        iTempC: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbATM.fbTempSensor1.iRaw);
+    ptr^ := iTempC * 10;
+    END_METHOD
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_ATM_States.TARGET5;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestATMStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbATM.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbATM.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in ATM move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+    METHOD TestTempFFO
+    VAR_INST
+        tonTimer: TON;
+        nStep: UINT := 0;
+        bOutChecked: BOOL := FALSE;
+        bInChecked: BOOL := FALSE;
+    END_VAR
+    VAR CONSTANT
+        nLastStep: UINT := 3;
+    END_VAR
+    // Do we fault at the correct times?
+    // Parasitically depends on state move test
+    TEST('TestATMTempFFO');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    CASE nStep OF
+        0:
+            // Set the thermocouple temperatures to crazy high number
+            SetATMTemp(100);
+            nStep := nStep + 1;
+        1:
+            // Wait till we see "OUT" state and one other state (OUT should be no fault)
+            IF fbATM.eEnumGet = E_ATM_States.OUT THEN
+                AssertTrue(
+                    fbATM.fbTempSensor1.FFO.i_xOK,
+                    'Faulted even in out position!',
+                );
+                bOutChecked := TRUE;
+            ELSIF fbATM.eEnumGet <> E_ATM_States.Unknown THEN
+                AssertFalse(
+                    fbATM.fbTempSensor1.FFO.i_xOK,
+                    'No fault even for an in position!',
+                );
+                bInChecked := TRUE;
+            END_IF
+            IF bOutChecked AND bInChecked THEN
+                nStep := nStep + 1;
+            END_IF
+        2:
+            // Set the thermocouple temperatures to low again
+            SetATMTemp(0);
+            nStep := nStep + 1;
+        3:
+            AssertTrue(
+                fbATM.fbTempSensor1.FFO.i_xOK,
+                'Faulted even with low temp!',
+            );
+            nStep := nStep + 1;
+    END_CASE;
+
+    IF tonTimer.Q OR nStep > nLastStep THEN
+        AssertFalse(tonTimer.Q, 'Timeout in ATM temp FFO test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_ATM_States`_
+    * `FB_ATM`_
+
+
+FB_AttenuatorElementDensity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_AttenuatorElementDensity
+    VAR_INPUT
+        sName : STRING;
+    END_VAR
+    VAR_OUTPUT
+        fDensity : LREAL;
+    END_VAR
+    VAR
+        fbElementDensity : FB_ElementDensity;
+    END_VAR
+    IF sName = 'C' THEN
+        (* Special-case diamond here *)
+        fDensity := 3.51E6;  (* C (Diamond) g/m^3 *)
+    ELSE
+        fbElementDensity(sName:=sName);
+        IF fbElementDensity.bFound THEN
+            fDensity := fbElementDensity.fValue * 1.0E6; (* g/cm^3 -> g/m^3 *)
+        ELSE
+            fDensity := 0.0;
+        END_IF
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_CC_TempSensor
+^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_CC_TempSensor EXTENDS FB_TempSensor_FFO
+    VAR
+        rtVetoReset: R_TRIG;
+    END_VAR
+    // Reset the FFO for transitions to bVeto
+    // bAutoreset is False, but we still want to clear the fault on veto
+    rtVetoReset(CLK:=bVeto);
+    FFO.i_xReset := rtVetoReset.Q;
+
+    SUPER^(bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_CC_TempSensorTest
+^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_CC_TempSensorTest EXTENDS FB_TestSuite
+    VAR
+        fbTempSensor: FB_CC_TempSensor;
+        fbFFHWO: FB_HardwareFFOutput;
+    END_VAR
+    TestBasic();
+    TestAutoReset();
+
+    END_FUNCTION_BLOCK
+
+    METHOD SetTempAndRunFB
+    VAR_INPUT
+        iRawTemp: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbTempSensor.iRaw);
+    ptr^ := iRawTemp * 10;
+
+    fbTempSensor(io_fbFFHWO:=fbFFHWO);
+    fbFFHWO.ExecuteNoLog();
+    END_METHOD
+
+    METHOD TestAutoReset
+    VAR_INPUT
+    END_VAR
+    TEST('TestAutoReset');
+
+    // Set a fixed threshold for the test
+    fbTempSensor.fFaultThreshold := 30;
+
+    // Clear faults
+    fbTempSensor.bVeto := TRUE;
+    SetTempAndRunFB(0);
+    AssertTrue(
+        fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+        'Beam not permitted after full clear with low temp',
+    );
+
+    // Cause a fault
+    fbTempSensor.bVeto := FALSE;
+    SetTempAndRunFB(100);
+    AssertFalse(
+        fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+        'Beam permitted after high temp',
+    );
+
+    // Remove the fault condition, should still be fauling
+    fbTempSensor.bVeto := FALSE;
+    SetTempAndRunFB(0);
+    AssertFalse(
+        fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+        'Beam permitted before manual reset',
+    );
+
+    // Set veto, should no longer be faulting
+    fbTempSensor.bVeto := TRUE;
+    SetTempAndRunFB(0);
+    AssertTrue(
+        fbFFHWO.astFF[fbTempSensor.FFO.RegistrationIdx].BeamPermitted,
+        'Beam not permitted after veto',
+    );
+
+    TEST_FINISHED();
+    END_METHOD
+
+    METHOD TestBasic
+    TEST('TestBasic');
+
+    fbTempSensor.fFaultThreshold := 10;
+    fbTempSensor.bVeto := FALSE;
+    SetTempAndRunFB(2);
+    AssertTrue(
+        fbTempSensor.FFO.i_xOK,
+        'Faulted with temp below threshold',
+    );
+
+    fbTempSensor.fFaultThreshold := 10;
+    fbTempSensor.bVeto := FALSE;
+    SetTempAndRunFB(150);
+    AssertFalse(
+        fbTempSensor.FFO.i_xOK,
+        'Did not fault with temp above threshold',
+    );
+
+    fbTempSensor.fFaultThreshold := 5;
+    fbTempSensor.bVeto := TRUE;
+    SetTempAndRunFB(1000);
+    AssertTrue(
+        fbTempSensor.FFO.i_xOK,
+        'Faulted with manual veto',
+    );
+
+    TEST_FINISHED();
+    END_METHOD
+
+
+Related:
+    * `FB_CC_TempSensor`_
+
+
+FB_CheckPositionStateWrite
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_CheckPositionStateWrite
+    (*
+        Save a position state during one cycle, then check it the next cycle
+    *)
+    VAR_IN_OUT
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    END_VAR
+    VAR_INPUT
+        bCheck: BOOL;
+        bSave: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        bHadWrite: BOOL;
+    END_VAR
+    VAR
+        astCache: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        nIter: UINT;
+    END_VAR
+    bHadWrite := FALSE;
+    IF bCheck THEN
+        FOR nIter := 1 TO GeneralConstants.MAX_STATES DO
+            // Only the runtime-editable EPICS fields
+            bHadWrite S= astPositionState[nIter].sName <> astCache[nIter].sName;
+            bHadWrite S= astPositionState[nIter].fPosition <> astCache[nIter].fPosition;
+            bHadWrite S= astPositionState[nIter].fDelta <> astCache[nIter].fDelta;
+            bHadWrite S= astPositionState[nIter].fVelocity <> astCache[nIter].fVelocity;
+            bHadWrite S= astPositionState[nIter].fAccel <> astCache[nIter].fAccel;
+            bHadWrite S= astPositionState[nIter].fDecel <> astCache[nIter].fDecel;
+        END_FOR
+    END_IF
+
+    IF bSave THEN
+        astCache := astPositionState;
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_CheckPositionStateWriteTest
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_CheckPositionStateWriteTest EXTENDS FB_TestSuite
+    VAR
+    END_VAR
+    TestSaveCheck();
+
+    END_FUNCTION_BLOCK
+
+    METHOD TestSaveCheck
+    VAR_INST
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbCheckPositionStateWrite: FB_CheckPositionStateWrite;
+    END_VAR
+    TEST('TestSaveCheck');
+
+    fbCheckPositionStateWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+    fbCheckPositionStateWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    AssertFalse(fbCheckPositionStateWrite.bHadWrite, 'Saw a write when there was no write');
+    astPositionState[1].fPosition := astPositionState[1].fPosition + 1;
+    fbCheckPositionStateWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    AssertTrue(fbCheckPositionStateWrite.bHadWrite, 'Did not detect position value changed');
+
+    TEST_FINISHED();
+    END_METHOD
+
+
+Related:
+    * `FB_CheckPositionStateWrite`_
+
+
+FB_LIC
+^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_LIC
+    (*
+        Function block for Laser In-Coupling (LIC) controls:
+        - Y motion
+        - Y mirror and target states
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the MIRROR1 state.
+        stMirror1: ST_PositionState;
+        // Settings for the MIRROR2 state.
+        stMirror2: ST_PositionState;
+        // Settings for the TARGET1 state.
+        stTarget1: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_LIC_States;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_LIC_States;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..4
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+    END_VAR
+    VAR CONSTANT
+        // State defaults if not provided
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 200;
+        fOutDecel: LREAL := 25;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+        fbStateDefaults(stPositionState:=stMirror1, sNameDefault:='MIRROR1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stMirror2, sNameDefault:='MIRROR2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+
+    fbYStage(stMotionStage:=stYStage);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_LIC_States.OUT] := stOut;
+        astPositionState[E_LIC_States.MIRROR1] := stMirror1;
+        astPositionState[E_LIC_States.MIRROR2] := stMirror2;
+        astPositionState[E_LIC_States.TARGET] := stTarget1;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_LIC_States.OUT];
+    stMirror1 := astPositionState[E_LIC_States.MIRROR1];
+    stMirror2 := astPositionState[E_LIC_States.MIRROR2];
+    stTarget1 := astPositionState[E_LIC_States.TARGET];
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_LIC_States`_
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PositionState_Defaults`_
+
+
+FB_LICTest
+^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_LICTest EXTENDS FB_TestSuite
+    VAR
+        fbLIC: FB_LIC;
+        stYStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbLIC.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbLIC.stMirror1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbLIC.stMirror2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+
+    // Standard FB call
+    fbLIC(
+        stYStage:=stYStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_LIC_States.MIRROR2;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestLICStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbLIC.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbLIC.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in LIC move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_LIC_States`_
+    * `FB_LIC`_
+
+
+FB_PMPSJsonTestHelper
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PMPSJsonTestHelper
+    (*
+        Create a JSON doc in memory to match the input structs
+        Assumes 1 device for simplicity
+        Writes to the global pmps json doc
+    *)
+    VAR_IN_OUT
+        astBeamParams: ARRAY[*] OF ST_DbStateParams;
+    END_VAR
+    VAR_INPUT
+        bExecute: BOOL;
+        sDevName: STRING;
+    END_VAR
+    VAR_OUTPUT
+    END_VAR
+    VAR
+        rtExec: R_TRIG;
+        jsonRoot: SJsonValue;
+        jsonDevice: SJsonValue;
+        ajsonState: ARRAY[0..GeneralConstants.MAX_STATES] OF SJsonValue;
+        fbJson: FB_JsonDomParser;
+
+        nIter: DINT;
+        nId: DINT;
+
+        aseVRange: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+        asRate: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+        asBCRange: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+        asTran: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+
+        sTemp: STRING;
+        sPress: STRING;
+    END_VAR
+    rtExec(CLK:=bExecute);
+    IF NOT rtExec.Q THEN
+        RETURN;
+    END_IF
+
+    jsonRoot := fbJson.NewDocument();
+    jsonDevice := fbJson.AddObjectMember(jsonRoot, sDevName);
+    FOR nIter := LOWER_BOUND(astBeamParams, 1) TO UPPER_BOUND(astBeamParams, 1) DO
+        ajsonState[nIter] := fbJson.AddObjectMember(jsonDevice, astBeamParams[nIter].sPmpsState);
+
+        nId := nId + 1;
+        fbJson.AddIntMember(
+            v:=ajsonState[nIter],
+            member:='id',
+            value:=nId,
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='beamline',
+            value:='tst',
+        );
+        aseVRange[nIter] := bitmaskToString(astBeamParams[nIter].stBeamParams.neVRange, 32);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='neVRange',
+            value:=aseVRange[nIter],
+        );
+        asRate[nIter] := UDINT_TO_STRING(astBeamParams[nIter].stBeamParams.nRate);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='nRate',
+            value:=asRate[nIter],
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='ap_ygap',
+            value:='',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='ap_xgap',
+            value:='',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='damage_limit',
+            value:='',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='notes',
+            value:='',
+        );
+        sTemp := TO_STRING(astBeamParams[nIter].stReactiveParams.nTempSP);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='reactive_temp',
+            value:=sTemp,
+        );
+        sPress := TO_STRING(astBeamParams[nIter].stReactiveParams.nPressSP);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='reactive_pressure',
+            value:=sPress,
+        );
+        asBCRange[nIter] := bitmaskToString(astBeamParams[nIter].stBeamParams.nBCRange, 15);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='nBeamClassRange',
+            value:=asBCRange[nIter],
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='name',
+            value:=astBeamParams[nIter].sPmpsState,
+        );
+        asTran[nIter] := REAL_TO_STRING(astBeamParams[nIter].stBeamParams.nTran);
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='nTran',
+            value:=asTran[nIter],
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='ap_name',
+            value:='None',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='ap_ycenter',
+            value:='',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='ap_xcenter',
+            value:='',
+        );
+        fbJson.AddStringMember(
+            v:=ajsonState[nIter],
+            member:='pulse_energy',
+            value:='',
+        );
+        fbJson.AddBoolMember(
+            v:=ajsonState[nIter],
+            member:='special',
+            value:=FALSE,
+        );
+    END_FOR
+
+    PMPS_GVL.BP_jsonDoc := jsonRoot;
+
+    END_FUNCTION_BLOCK
+
+    METHOD bitmaskToString : STRING
+    VAR_INPUT
+        nBitmask: DWORD;
+        nBits: UINT;
+    END_VAR
+    VAR
+        nIter: UINT;
+    END_VAR
+    bitmaskToString := '';
+    FOR nIter := 1 TO nBits DO
+        bitmaskToString := CONCAT(DWORD_TO_STRING(SHR(nBitmask, nIter - 1) AND 1), bitmaskToString);
+    END_FOR
+    END_METHOD
+
+
+
+
+FB_PositionState_Defaults
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PositionState_Defaults
+    VAR_IN_OUT
+        stPositionState: ST_PositionState;
+    END_VAR
+    VAR_INPUT
+        sNameDefault: STRING;
+        fVeloDefault: LREAL;
+        fDeltaDefault: LREAL;
+        fAccelDefault: LREAL;
+        fDecelDefault: LREAL;
+    END_VAR
+    IF stPositionState.sName = '' OR stPositionState.sName = 'Invalid' THEN
+        stPositionState.sName := sNameDefault;
+    END_IF
+    IF stPositionState.fVelocity = 0 THEN
+        stPositionState.fVelocity := fVeloDefault;
+    END_IF
+    IF stPositionState.fDelta = 0 THEN
+        stPositionState.fDelta := fDeltaDefault;
+    END_IF
+    IF stPositionState.fAccel = 0 THEN
+        stPositionState.fAccel := fAccelDefault;
+    END_IF
+    IF stPositionState.fDecel = 0 THEN
+        stPositionState.fDecel := fDecelDefault;
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_PPM
+^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PPM
+    (*
+        Function block for Power and Profile Monitor (PPM) controls:
+        - Y motion
+        - Y power and profile states
+        - power meter
+        - camera power
+        - camera illuminator
+        - flow meter
+        - thermocouple
+
+        The following IO link points are included and should be used:
+        - FB_PPM.fbPowerMeter.iVoltageINT should be linked to the power meter analog input voltage
+        - FB_PPM.fbPowerMeter.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+        - FB_PPM.fbGige.iIlluminatorINT should be linked to illuminator dimmer analog output voltage
+        - FB_PPM.fbGige.bGigePower should be linked to the camera power digial output channel
+        - FB_PPM.fbFlowMeter.iRaw should be linked to the flow meter current analog input channel
+        - FB_PPM.fbYagThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the POWERMETER state.
+        stPower: ST_PositionState;
+        // Settings for the YAG1 state.
+        stYag1: ST_PositionState;
+        // Settings for the YAG2 state.
+        stYag2: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_PPM_States;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+        // Offset for the flow meter in engineering units
+        fFlowOffset: LREAL := 0;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_PPM_States;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..4
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        {attribute 'pytmc' := 'pv: SPM'}
+        fbPowerMeter: FB_PPM_PowerMeter;
+
+        {attribute 'pytmc' := 'pv: CAM'}
+        fbGige: FB_PPM_Gige;
+
+        {attribute 'pytmc' :='pv: FWM'}
+        fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+
+        {attribute 'pytmc' := 'pv: YAG:STC'}
+        fbYagTempSensor: FB_CC_TempSensor;
+
+        {attribute 'pytmc' := 'pv: FSW'}
+        fbFlowSwitch: FB_XTES_Flowswitch;
+    END_VAR
+    VAR CONSTANT
+        // State defaults if not provided
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 200;
+        fOutDecel: LREAL := 25;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+        fbStateDefaults(stPositionState:=stPower, sNameDefault:='POWERMETER', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stYag1, sNameDefault:='YAG1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stYag2, sNameDefault:='YAG2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+
+    fbYStage(stMotionStage:=stYStage);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_PPM_States.OUT] := stOut;
+        astPositionState[E_PPM_States.POWERMETER] := stPower;
+        astPositionState[E_PPM_States.YAG1] := stYag1;
+        astPositionState[E_PPM_States.YAG2] := stYag2;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_PPM_States.OUT];
+    stPower := astPositionState[E_PPM_States.POWERMETER];
+    stYag1 := astPositionState[E_PPM_States.YAG1];
+    stYag2 := astPositionState[E_PPM_States.YAG2];
+
+    fbPowerMeter(
+        fTempSP:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+        bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
+        sDeviceName:=sDeviceName,
+        fbFFHWO:=fbFFHWO,
+    );
+    fbGige();
+    fbFlowMeter(fOffset:=fFlowOffset);
+    fbYagTempSensor(
+        fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+        bVeto:=eEnumGet = E_PPM_States.OUT,
+        sDevName:=sDeviceName,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fbFlowSwitch();
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_PPM_States`_
+    * `FB_CC_TempSensor`_
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PPM_Gige`_
+    * `FB_PPM_PowerMeter`_
+    * `FB_PositionState_Defaults`_
+    * `FB_XTES_Flowswitch`_
+
+
+FB_PPM_Gige
+^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PPM_Gige
+    VAR
+        iIlluminatorINT AT %Q*: INT;
+
+        {attribute 'pytmc' := '
+            pv: PWR
+            field: ZNAM OFF
+            field: ONAM ON
+        '}
+        bGigePower AT %Q*: BOOL;
+
+        {attribute 'pytmc' := '
+            pv: CIL:PCT
+            EGU: %
+        '}
+        fIlluminatorPercent: LREAL;
+
+        fbGetIllPercent: FB_AnalogInput;
+        fbSetIllPercent: FB_AnalogOutput;
+
+        bGigeInit: BOOL := FALSE;
+    END_VAR
+    // Turn the GigE on by default
+    IF NOT bGigeInit THEN
+        bGigePower := TRUE;
+        bGigeInit := TRUE;
+    END_IF
+
+    // Illuminator conversion to percentage
+    fbSetIllPercent(
+        fReal:=fIlluminatorPercent,
+        fSafeMax:=100,
+        fSafeMin:=0,
+        iTermBits:=15,
+        fTermMax:=100,
+        fTermMin:=0,
+        iRaw=>iIlluminatorINT);
+    fbGetIllPercent(
+        iRaw:=iIlluminatorINT,
+        iTermBits:=15,
+        fTermMax:=100,
+        fTermMin:=0,
+        fReal=>fIlluminatorPercent);
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_PPM_PowerMeter
+^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PPM_PowerMeter
+    VAR_INPUT
+        fTempSP: REAL;
+        bVetoTempFFO: BOOL;
+        sDeviceName: STRING;
+    END_VAR
+    VAR_IN_OUT
+        fbFFHWO: FB_HardwareFFOutput;
+    END_VAR
+    VAR
+        iVoltageINT AT %I*: INT;
+
+        {attribute 'pytmc' := '
+            pv: VOLT
+            io: input
+            field: EGU mV
+        '}
+        fVoltage: LREAL;
+
+        {attribute 'pytmc' := '
+            pv: VOLT_BUFFER
+            io: input
+            field: EGU mV
+        '}
+        fVoltageBuffer: ARRAY[1..1000] OF LREAL;
+
+        {attribute 'pytmc' := '
+            pv: CALIB
+            io: input
+        '}
+        fCalibBase: LREAL;
+
+        {attribute 'pytmc' := '
+            pv: CALIB_BUFFER
+            io: input
+        '}
+        fCalibBaseBuffer: ARRAY[1..1000] OF LREAL;
+
+        {attribute 'pytmc' := '
+            pv: MJ
+            io: input
+            field: EGU mJ
+        '}
+        fCalibMJ: LREAL;
+
+        {attribute 'pytmc' := '
+            pv: MJ_BUFFER
+            io: input
+            field: EGU mJ
+        '}
+        fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
+
+        {attribute 'pytmc' := '
+            pv: STC
+            io: input
+        '}
+        fbTempSensor: FB_CC_TempSensor;
+
+        {attribute 'pytmc' := '
+            pv: CALIB:OFFSET
+            io: io
+        '}
+        fCalibRelOffset: LREAL;
+
+        {attribute 'pytmc' := '
+            pv: CALIB:RATIO
+            io: io
+        '}
+        fCalibRelRatio: LREAL;
+
+        {attribute 'pytmc' := '
+            pv: CALIB:MJ_RATIO
+            io: io
+        '}
+        fCalibMJRatio: LREAL;
+
+        fbGetPMVoltage: FB_AnalogInput;
+        fbVoltageBuffer: FB_LREALBuffer;
+        fbCalibBaseBuffer: FB_LREALBuffer;
+        fbCalibMJBuffer: FB_LREALBuffer;
+    END_VAR
+    fbTempSensor(
+        fFaultThreshold:=fTempSP,
+        bVeto:=bVetoTempFFO,
+        sDevName:=sDeviceName,
+        io_fbFFHWO:=fbFFHWO,
+    );
+
+    // Convert the terminal's integer into a value in millivolts
+    fbGetPMVoltage(
+        iRaw := iVoltageINT,
+        iTermBits := 15,
+        fTermMax := 10000,
+        fTermMin := 0,
+        fReal => fVoltage);
+
+    // Power meter calibration
+    fCalibBase := (fVoltage + fCalibRelOffset) * fCalibRelRatio;
+    fCalibMJ := fCalibBase * fCalibMJRatio;
+
+    // Buffer the full-rate Voltage and calibrated MJ values
+    fbVoltageBuffer(
+        bExecute := TRUE,
+        fInput := fVoltage,
+        arrOutput => fVoltageBuffer);
+    fbCalibBaseBuffer(
+        bExecute := TRUE,
+        fInput := fCalibBase,
+        arrOutput => fCalibBaseBuffer);
+    fbCalibMJBuffer(
+        bExecute := TRUE,
+        fInput := fCalibMJ,
+        arrOutput => fCalibMJBuffer);
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `FB_CC_TempSensor`_
+
+
+FB_PPMTest
+^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_PPMTest EXTENDS FB_TestSuite
+    VAR
+        fbPPM: FB_PPM;
+        stYStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbPPM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbPPM.stPower, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbPPM.stYag1, sName:='T2', fPosition:=30, sPmpsState:='T2');
+    fbSetup(stPositionState:=fbPPM.stYag2, sName:='T3', fPosition:=40, sPmpsState:='T3');
+
+    // Standard FB call
+    fbPPM(
+        stYStage:=stYStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+    TestTempFFO();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD AssertBothTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertFalse(
+        fbPPM.fbYagTempSensor.FFO.i_xOK,
+        CONCAT('PPM yag temp sensor expected fault: ', Message),
+    );
+    AssertFalse(
+        fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+        CONCAT('PPM pm temp sensor expected fault: ', Message),
+    );
+    END_METHOD
+
+    METHOD AssertNeitherTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertTrue(
+        fbPPM.fbYagTempSensor.FFO.i_xOK,
+        CONCAT('PPM yag temp sensor expected ok: ', Message),
+    );
+    AssertTrue(
+        fbPPM.fbPowerMeter.fbTempSensor.FFO.i_xOK,
+        CONCAT('PPM pm temp sensor expected ok: ', Message),
+    );
+    END_METHOD
+
+    METHOD SetPPMTemp
+    VAR_INPUT
+        iTempC: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbPPM.fbYagTempSensor.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbPPM.fbPowerMeter.fbTempSensor.iRaw);
+    ptr^ := iTempC * 10;
+    END_METHOD
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_PPM_States.YAG2;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestPPMStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbPPM.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbPPM.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in PPM move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+    METHOD TestTempFFO
+    VAR_INST
+        tonTimer: TON;
+        nStep: UINT := 0;
+        bOutChecked: BOOL := FALSE;
+        bInChecked: BOOL := FALSE;
+    END_VAR
+    VAR CONSTANT
+        nLastStep: UINT := 3;
+    END_VAR
+    // Do we fault at the correct times?
+    // Parasitically depends on state move test
+    TEST('TestPPMTempFFO');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    CASE nStep OF
+        0:
+            // Set the thermocouple temperatures to crazy high number
+            SetPPMTemp(100);
+            nStep := nStep + 1;
+        1:
+            // Wait till we see "OUT" state and one other state (OUT should be no fault)
+            IF fbPPM.eEnumGet = E_PPM_States.OUT THEN
+                AssertNeitherTempFault('was in out position');
+                bOutChecked := TRUE;
+            ELSIF fbPPM.eEnumGet <> E_PPM_States.Unknown THEN
+                AssertBothTempFault('was in a target position');
+                bInChecked := TRUE;
+            END_IF
+            IF bOutChecked AND bInChecked THEN
+                nStep := nStep + 1;
+            END_IF
+        2:
+            // Set the thermocouple temperatures to low again
+            SetPPMTemp(0);
+            nStep := nStep + 1;
+        3:
+            AssertNeitherTempFault('has low temp reading');
+            nStep := nStep + 1;
+    END_CASE;
+
+    IF tonTimer.Q OR nStep > nLastStep THEN
+        AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_PPM_States`_
+    * `FB_PPM`_
+
+
+FB_REF
+^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_REF
+    (*
+        Function block for reference laser (REF) controls:
+        - Y motion
+        - Y in and out states
+        - laser power and dimmer
+
+        The following IO link points are included and should be used:
+        - FB_REF.fbLaser.iShutdownINT should be linked to the output for the laser dimmer's shutdown voltage
+        - FB_REF.fbLaser.iLaserINT should be linked to the output for the laser dimmer's dimmer
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the IN state.
+        stIn: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_EpicsInOut;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_EpicsInOut;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..2
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        {attribute 'pytmc' := 'pv: LAS'}
+        fbLaser: FB_REF_Laser;
+    END_VAR
+    VAR CONSTANT
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 10;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stIn, sNameDefault:='IN', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+
+    fbYStage(stMotionStage:=stYStage);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_EpicsInOut.OUT] := stOut;
+        astPositionState[E_EpicsInOut.IN] := stIn;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_EpicsInOut.OUT];
+    stIn := astPositionState[E_EpicsInOut.IN];
+
+    fbLaser();
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PositionState_Defaults`_
+    * `FB_REF_Laser`_
+
+
+FB_REF_Laser
+^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_REF_Laser
+    VAR_INPUT
+        bShutdown: BOOL;
+
+        {attribute 'pytmc' := '
+            pv: PCT
+            io: io
+        '}
+        fLaserPercent: LREAL;
+    END_VAR
+    VAR
+        iShutdownINT AT %Q*: INT;
+        iLaserINT AT %Q*: INT;
+
+        fbGetLasPercent: FB_AnalogInput;
+        fbSetLasPercent: FB_AnalogOutput;
+    END_VAR
+    // Send 5V to suppress laser
+    IF bShutdown THEN
+        iShutdownINT := LREAL_TO_INT(EXPT(2, 14));
+    ELSE
+        iShutdownINT := 0;
+    END_IF
+
+    // Limit to 0-5V instead of 10V
+    fbSetLasPercent(
+        fReal:=fLaserPercent,
+        fSafeMax:=100,
+        fSafeMin:=0,
+        iTermBits:=15,
+        fTermMax:=200,
+        fTermMin:=0,
+        iRaw=>iLaserInt);
+    fbGetLasPercent(
+        iRaw:=iLaserInt,
+        iTermBits:=15,
+        fTermMax:=200,
+        fTermMin:=0,
+        fReal=>fLaserPercent);
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_REFTest
+^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
+    VAR
+        fbREF: FB_REF;
+        stYStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbREF.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbREF.stIn, sName:='T1', fPosition:=20, sPmpsState:='T1');
+
+    // Standard FB call
+    fbREF(
+        stYStage:=stYStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_EpicsInOut.IN;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestREFStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbREF.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbREF.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in REF move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `FB_REF`_
+
+
+FB_SATTTest
+^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_SATTTest EXTENDS FB_TestSuite
+    VAR
+        fbSATT: FB_SXR_SATT_Stage;
+        stYStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fDelta:=0.5,
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbSATT.stOut, sName:='OUT', fPosition:=10);
+    fbSetup(stPositionState:=fbSATT.stFilter1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbSATT.stFilter2, sName:='T2', fPosition:=30);
+    fbSetup(stPositionState:=fbSATT.stFilter3, sName:='T3', fPosition:=40);
+    fbSetup(stPositionState:=fbSATT.stFilter4, sName:='T4', fPosition:=50);
+    fbSetup(stPositionState:=fbSATT.stFilter5, sName:='T5', fPosition:=60);
+    fbSetup(stPositionState:=fbSATT.stFilter6, sName:='T6', fPosition:=70);
+    fbSetup(stPositionState:=fbSATT.stFilter7, sName:='T7', fPosition:=80);
+    fbSetup(stPositionState:=fbSATT.stFilter8, sName:='T8', fPosition:=90);
+
+    // Standard FB call
+    fbSATT(
+        stAxis:=stYStage,
+        fbFFHWO:=fbFFHWO,
+        bEnable:=TRUE,
+        sDeviceName:='DEVICE',
+    );
+
+    TestStateMove();
+    TestTempFFO();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD AssertBothTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertFalse(
+        fbSATT.fbRTD_1.FFO.i_xOK,
+        CONCAT('SATT RTD1 expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSATT.fbRTD_2.FFO.i_xOK,
+        CONCAT('SATT RTD2 expected fault: ', Message),
+    );
+    END_METHOD
+
+    METHOD AssertNeitherTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertTrue(
+        fbSATT.fbRTD_1.FFO.i_xOK,
+        CONCAT('SATT RTD1 expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSATT.fbRTD_2.FFO.i_xOK,
+        CONCAT('SATT RTD2 expected ok: ', Message),
+    );
+    END_METHOD
+
+    METHOD SetSATTTemp
+    VAR_INPUT
+        iTempC: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbSATT.fbRTD_1.iRaw);
+    ptr^ := iTempC * 100;
+
+    ptr := ADR(fbSATT.fbRTD_2.iRaw);
+    ptr^ := iTempC * 100;
+    END_METHOD
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_SXR_SATT_Position.FILTER8;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestSATTStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#20s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbSATT.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbSATT.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in SATT move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+    METHOD TestTempFFO
+    VAR_INST
+        tonTimer: TON;
+        nStep: UINT := 0;
+        bOutChecked: BOOL := FALSE;
+        bInChecked: BOOL := FALSE;
+    END_VAR
+    VAR CONSTANT
+        nLastStep: UINT := 3;
+    END_VAR
+    // Do we fault at the correct times?
+    // Parasitically depends on state move test
+    TEST('TestSATTTempFFO');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    CASE nStep OF
+        0:
+            // Set the thermocouple temperatures to crazy high number
+            SetSATTTemp(100);
+            nStep := nStep + 1;
+        1:
+            // Wait till we see "OUT" state and one other state (OUT should be no fault)
+            IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT THEN
+                AssertNeitherTempFault('was in out position');
+                bOutChecked := TRUE;
+            ELSIF fbSATT.eEnumGet <> E_SXR_SATT_Position.Unknown THEN
+                AssertBothTempFault('was in a target position');
+                bInChecked := TRUE;
+            END_IF
+            IF bOutChecked AND bInChecked THEN
+                nStep := nStep + 1;
+            END_IF
+        2:
+            // Set the thermocouple temperatures to low again
+            SetSATTTemp(0);
+            nStep := nStep + 1;
+        3:
+            AssertNeitherTempFault('has low temp reading');
+            nStep := nStep + 1;
+    END_CASE;
+
+    IF tonTimer.Q OR nStep > nLastStep THEN
+        AssertFalse(tonTimer.Q, 'Timeout in SATT temp FFO test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_SXR_SATT_Position`_
+    * `FB_SXR_SATT_Stage`_
+
+
+FB_SLITS
+^^^^^^^^
+
+::
+
+    {attribute 'analysis' := '-33'}
+    FUNCTION_BLOCK FB_SLITS
+
+    VAR_IN_OUT
+        stTopBlade: ST_MotionStage;
+        stBottomBlade: ST_MotionStage;
+        stNorthBlade: ST_MotionStage;
+        stSouthBlade: ST_MotionStage;
+        bExecuteMotion:BOOL ;
+        io_fbFFHWO    :    FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter();
+    END_VAR
+    VAR_INPUT
+        {attribute 'pytmc' := '
+        pv: PMPS_OK;
+        io: i;
+        field: ZNAM False
+        field: ONAM True
+        '}
+        bMoveOk:BOOL;
+
+        (*Offsets*)
+        {attribute 'pytmc' := '
+        pv: Offset_Top;
+        io: io;
+        '}
+        rEncoderOffsetTop: REAL;
+        {attribute 'pytmc' := '
+        pv: ZeroOffset_Bottom;
+        io: io;
+        '}
+        rEncoderOffsetBottom: REAL;
+        {attribute 'pytmc' := '
+        pv: ZeroOffset_North;
+        io: io;
+        '}
+        rEncoderOffsetNorth: REAL;
+        {attribute 'pytmc' := '
+        pv: ZeroOffset_South;
+        io: io;
+        '}
+        rEncoderOffsetSouth: REAL;
+        i_DevName : STRING; //device name for FFO and PMPS diagnostics
+    END_VAR
+
+    VAR
+        fbTopBlade: FB_MotionStage;
+        fbBottomBlade: FB_MotionStage;
+        fbNorthBlade: FB_MotionStage;
+        fbSouthBlade: FB_MotionStage;
+        fPosTopBlade: LREAL;
+        fPosBottomBlade: LREAL;
+        fPosNorthBlade: LREAL;
+        fPosSouthBlade: LREAL;
+
+        (*Motion Parameters*)
+        fSmallDelta: LREAL := 0.01;
+        fBigDelta: LREAL := 10;
+        fMaxVelocity: LREAL := 0.2;
+        fHighAccel: LREAL := 0.8;
+        fLowAccel: LREAL := 0.1;
+
+        stTop: DUT_PositionState;
+        stBOTTOM: DUT_PositionState;
+        stNorth: DUT_PositionState;
+        stSouth: DUT_PositionState;
+
+        {attribute 'pytmc' := 'pv: TOP'}
+        fbTop: FB_StatePTPMove;
+        {attribute 'pytmc' := 'pv: BOTTOM'}
+        fbBottom: FB_StatePTPMove;
+        {attribute 'pytmc' := 'pv: NORTH'}
+        fbNorth: FB_StatePTPMove;
+        {attribute 'pytmc' := 'pv: SOUTH'}
+        fbSouth: FB_StatePTPMove;
+
+        (*EPICS pvs*)
+        {attribute 'pytmc' := '
+        pv: XWID_REQ;
+        io: io;
+        '}
+        rReqApertureSizeX : REAL;
+        {attribute 'pytmc' := '
+        pv: YWID_REQ;
+        io: io;
+        '}
+        rReqApertureSizeY : REAL;
+        {attribute 'pytmc' := '
+        pv: XCEN_REQ;
+        io: io;
+        '}
+        rReqCenterX: REAL;
+        {attribute 'pytmc' := '
+        pv: YCEN_REQ;
+        io: io;
+        '}
+        rReqCenterY: REAL;
+
+        {attribute 'pytmc' := '
+        pv: ACTUAL_XWIDTH;
+        io: io;
+        '}
+        rActApertureSizeX : REAL;
+
+        {attribute 'pytmc' := '
+        pv: ACTUAL_YWIDTH;
+        io: io;
+        '}
+        rActApertureSizeY : REAL;
+        {attribute 'pytmc' := '
+        pv: ACTUAL_XCENTER;
+        io: io;
+        '}
+        rActCenterX: REAL;
+        {attribute 'pytmc' := '
+        pv: ACTUAL_YCENTER;
+        io: io;
+        '}
+        rActCenterY: REAL;
+
+        {attribute 'pytmc' := '
+        pv: XCEN_SETZERO;
+        io: io;
+        '}
+        rSetCenterX: BOOL;
+        {attribute 'pytmc' := '
+        pv: YCEN_SETZERO;
+        io: io;
+        '}
+        rSetCenterY: BOOL;
+
+        {attribute 'pytmc' := '
+        pv: OPEN;
+        io: io;
+        field: ZNAM False
+        field: ONAM True
+        '}
+        bOpen: BOOL;
+
+        {attribute 'pytmc' := '
+        pv: CLOSE;
+        io: io;
+        field: ZNAM False
+        field: ONAM True
+        '}
+        bClose: BOOL;
+
+        {attribute 'pytmc' := '
+        pv: BLOCK;
+        io: io;
+        field: ZNAM False
+        field: ONAM True
+        '}
+        bBlock: BOOL;
+
+        //Local variables
+        bInit: BOOL :=true;
+        rTrig_Block: R_TRIG;
+        rTrig_Open: R_TRIG;
+        rTrig_Close: R_TRIG;
+
+        //old values
+        rOldReqApertureSizeX : REAL;
+        rOldReqApertureSizeY : REAL;
+        rOldReqCenterX: REAL;
+        rOldReqCenterY: REAL;
+
+        bExecuteMotionX: BOOL;
+        bExecuteMotionY: BOOL;
+
+
+        fPosBlock: LREAL;
+        fPosClose: LREAL;
+        fPosOpen: LREAL;
+
+        stSetPositionOptions: ST_SetPositionOptions;
+        fbSetPosition_TOP: MC_SetPosition;
+        fbSetPosition_Bottom: MC_SetPosition;
+        fbSetPosition_North: MC_SetPosition;
+        fbSetPosition_South: MC_SetPosition;
+
+        // For logging
+        fbLogger : FB_LogMessage := (eSubsystem:=E_SubSystem.MOTION);
+        tErrorPresent : R_TRIG;
+        tAction : R_TRIG;
+        tOverrideActivated : R_TRIG;
+
+        FFO    :    FB_FastFault :=(
+            i_DevName := 'Slits',
+            i_Desc := 'Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF',
+            i_TypeCode := 16#FAA);
+
+        AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
+        AptArrayReq AT %I* : ST_PMPS_Aperture_IO;
+
+        bTest: BOOL;
+    END_VAR
+    rTrig_Block (CLK:= bBlock);
+    rTrig_Open (CLK:= bOpen);
+    rTrig_Close (CLK:= bClose);
+
+    if (rTrig_Block.Q) THEN
+        //BLOCK
+
+        bBlock := false;
+    END_IF
+
+    if (rTrig_Open.Q) THEN
+
+
+        bOpen := false;
+    END_IF
+
+    if (rTrig_Close.Q) THEN
+
+
+        bClose := false;
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+    ACTION ACT_CalculatePositions:
+    //check if requested center or gap has changed
+    //check that the requested values are within acceptable motion range
+    IF (rOldReqApertureSizeX <> rReqApertureSizeX) THEN
+        IF (rReqApertureSizeX <= AptArrayReq.Width)  THEN
+            rOldReqApertureSizeX := rReqApertureSizeX;
+            bExecuteMotionX := TRUE;
+            fbLogger(sMsg:='Requested new X gap.', eSevr:=TcEventSeverity.Verbose);
+        ELSE
+            fbLogger(sMsg:='Requested new X gap is larger than PMPS request.', eSevr:=TcEventSeverity.Verbose);
+        END_IF
+      //  ELSE
+        //    rReqApertureSizeX := rActApertureSizeX;
+    END_IF
+
+    IF (rOldReqCenterX <> rReqCenterX) THEN
+        rOldReqCenterX := rReqCenterX;
+        bExecuteMotionX := TRUE;
+        fbLogger(sMsg:='Requested new X center', eSevr:=TcEventSeverity.Verbose);
+       // ELSE
+          //  rReqCenterX := rActCenterX;
+    END_IF
+
+    IF (rOldReqApertureSizeY <> rReqApertureSizeY) THEN
+        IF rReqApertureSizeY <= AptArrayReq.Height THEN
+            rOldReqApertureSizeY := rReqApertureSizeY;
+            bExecuteMotionY := TRUE;
+            fbLogger(sMsg:='Requested new Y gap.', eSevr:=TcEventSeverity.Verbose);
+        ELSE
+            fbLogger(sMsg:='Requested new Y gap is larger than PMPS request.', eSevr:=TcEventSeverity.Verbose);
+        END_IF
+       // ELSE
+           // rReqApertureSizeY := rActApertureSizeY;
+    END_IF
+
+    IF (rOldReqCenterY <> rReqCenterY) THEN
+        rOldReqCenterY := rReqCenterY;
+        bExecuteMotionY := TRUE;
+        fbLogger(sMsg:='Requested new Y center.', eSevr:=TcEventSeverity.Verbose);
+       // ELSE
+          //  rReqCenterY := rActCenterY;
+    END_IF
+
+
+    //Calculate requested target positions from requested gap and center
+    fPosTopBlade := (rReqApertureSizeY/2) + (rReqCenterY + rEncoderOffsetTop) ;
+    fPosBottomBlade := (-1*rReqApertureSizeY/2) + (rReqCenterY+rEncoderOffsetBottom);
+
+    fPosNorthBlade := (rReqApertureSizeX/2) + (rReqCenterX + rEncoderOffsetNorth);
+    fPosSouthBlade := (-1*rReqApertureSizeX/2) + (rReqCenterX + rEncoderOffsetSouth);
+
+
+    //Calculate actual gap and center from actual stages positions
+    rActApertureSizeX := LREAL_TO_REAL((stNorthBlade.stAxisStatus.fActPosition - rEncoderOffsetNorth) - (stSouthBlade.stAxisStatus.fActPosition- rEncoderOffsetSouth));
+
+    rActApertureSizeY := LREAL_TO_REAL((stTopBlade.stAxisStatus.fActPosition - rEncoderOffsetTop) - (stBottomBlade.stAxisStatus.fActPosition - rEncoderOffsetBottom));
+
+    rActCenterX := LREAL_TO_REAL((((stNorthBlade.stAxisStatus.fActPosition - rEncoderOffsetNorth)  + (stSouthBlade.stAxisStatus.fActPosition - rEncoderOffsetSouth ))/2));
+
+    rActCenterY := LREAL_TO_REAL((((stTopBlade.stAxisStatus.fActPosition - rEncoderOffsetTop) + (stBottomBlade.stAxisStatus.fActPosition - rEncoderOffsetBottom))/2));
+
+
+
+    //Update PMPS Arbiter with the Actual Size and Center of the Aperture
+    END_ACTION
+
+    ACTION ACT_Home:
+
+    END_ACTION
+
+    ACTION ACT_Init:
+    //  init the motion stages parameters
+    IF ( bInit) THEN
+        stTopBlade.bHardwareEnable := TRUE;
+        stBottomBlade.bHardwareEnable := TRUE;
+        stNorthBlade.bHardwareEnable := TRUE;
+        stSouthBlade.bHardwareEnable := TRUE;
+        stTopBlade.bPowerSelf :=TRUE;
+        stBottomBlade.bPowerSelf :=TRUE;
+        stNorthBlade.bPowerSelf :=TRUE;
+        stSouthBlade.bPowerSelf :=TRUE;
+        stTopBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+        stBottomBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+        stNorthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+        stSouthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
+        FFO.i_DevName := i_DevName;
+    END_IF
+    END_ACTION
+
+    ACTION ACT_Motion:
+    // Instantiate Function block for all the blades
+    fbTopBlade(stMotionStage:=stTopBlade);
+    fbBottomBlade(stMotionStage:=stBottomBlade);
+    fbNorthBlade(stMotionStage:=stNorthBlade);
+    fbSouthBlade(stMotionStage:=stSouthBlade);
+
+    // PTP Motion for each blade
+    stTop.sName := 'Top';
+    stTop.fPosition := fPosTopBlade;
+    stTop.fDelta := fSmallDelta;
+    stTop.fVelocity := fMaxVelocity;
+    stTop.fAccel := fHighAccel;
+    stTop.fDecel := fHighAccel;
+
+    stBOTTOM.sName := 'Bottom';
+    stBOTTOM.fPosition := fPosBottomBlade;
+    stBOTTOM.fDelta := fSmallDelta;
+    stBOTTOM.fVelocity := fMaxVelocity;
+    stBOTTOM.fAccel := fHighAccel;
+    stBOTTOM.fDecel := fHighAccel;
+
+    stNorth.sName := 'North';
+    stNorth.fPosition := fPosNorthBlade;
+    stNorth.fDelta := fSmallDelta;
+    stNorth.fVelocity := fMaxVelocity;
+    stNorth.fAccel := fHighAccel;
+    stNorth.fDecel := fHighAccel;
+
+    stSouth.sName := 'South';
+    stSouth.fPosition := fPosSouthBlade;
+    stSouth.fDelta := fSmallDelta;
+    stSouth.fVelocity := fMaxVelocity;
+    stSouth.fAccel := fHighAccel;
+    stSouth.fDecel := fHighAccel;
+
+    IF (bExecuteMotionY) THEN
+        fbTop.bExecute := fbBottom.bExecute := bExecuteMotionY;
+        bExecuteMotionY:= FALSE;
+    END_IF
+
+    IF (bExecuteMotionX) THEN
+        fbNorth.bExecute := fbSouth.bExecute := bExecuteMotionX;
+        bExecuteMotionX:= FALSE;
+    END_IF
+
+
+    fbTop(
+        stPositionState:=stTop,
+        bMoveOk:=bMoveOk,
+        stMotionStage:=stTopBlade);
+
+    fbBottom(
+        stPositionState:=stBOTTOM,
+        bMoveOk:=bMoveOk,
+        stMotionStage:=stBottomBlade);
+
+    fbNorth(
+        stPositionState:=stNorth,
+        bMoveOk:=bMoveOk,
+        stMotionStage:=stNorthBlade);
+
+    fbSouth(
+        stPositionState:=stSouth,
+        bMoveOk:=bMoveOk,
+        stMotionStage:=stSouthBlade);
+    END_ACTION
+
+
+
+
+FB_SLITS_POWER
+^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
+
+    VAR_INPUT
+        sPmpsState: STRING;
+    END_VAR
+
+    VAR
+        {attribute 'pytmc' := '
+        pv: MODE ;
+         field: ZNAM Local;
+        field: ONAM PMPS;
+         io: io;
+        '}
+        xPMPSMode	:BOOL :=TRUE;
+
+         {attribute 'pytmc' := '
+            pv: FSW
+        '}
+        fbFlowSwitch: FB_XTES_Flowswitch;
+
+        //RTDs
+        {attribute 'pytmc' := '
+            pv: TOP:RTD:01
+        '}
+        RTD_TOP_1: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: TOP:RTD:02
+        '}
+        RTD_TOP_2: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: BOTTOM:RTD:01
+        '}
+        RTD_Bottom_1: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: BOTTOM:RTD:02
+        '}
+        RTD_Bottom_2: FB_CC_TempSensor;
+
+        {attribute 'pytmc' := '
+            pv: NORTH:RTD:01
+        '}
+        RTD_North_1: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: NORTH:RTD:02
+        '}
+        RTD_North_2: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: SOUTH:RTD:01
+        '}
+        RTD_South_1: FB_CC_TempSensor;
+        {attribute 'pytmc' := '
+            pv: SOUTH:RTD:02
+        '}
+        RTD_South_2: FB_CC_TempSensor;
+
+        fbReadPMPSDB: FB_JsonDocToSafeBP;
+        astTempDB: ARRAY[1..1] OF ST_DbStateParams;
+    END_VAR
+    ACT_init();
+    // Instantiate Function block for all the blades
+    ACT_Motion();
+    //SET and GET the requested and Actual values
+    ACT_CalculatePositions();
+    //ACT_BLOCK();
+    ACT_RTDs();
+
+    END_FUNCTION_BLOCK
+
+    ACTION ACT_Init:
+    // Instantiate Function block for all the blades
+    ACT_Motion();
+    //SET and GET the requested and Actual values
+    ACT_CalculatePositions();
+    //ACT_BLOCK();
+    ACT_RTDs();
+    END_ACTION
+
+    ACTION ACT_RTDs:
+    // Database
+    astTempDb[1].sPmpsState := sPmpsState;
+    fbReadPMPSDB(
+        bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+        jsonDoc:=PMPS_GVL.BP_jsonDoc,
+        sDeviceName:=i_DevName,
+        arrStates:=astTempDb,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+
+    //RTDs
+    RTD_TOP_1(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_TOP_2(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_Bottom_1(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_Bottom_2(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_North_1(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_North_2(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_South_1(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+    RTD_South_2(
+        fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
+        sDevName:=i_DevName,
+        io_fbFFHWO:=io_fbFFHWO,
+    );
+
+    //Flow Switch
+    fbFlowSwitch();
+    END_ACTION
+
+    METHOD M_UpdatePMPS : BOOL
+    VAR_INPUT
+        index: int;
+    END_VAR
+    //Keep updating the status of the apertures PMPS
+    This^.AptArrayStatus.Height := This^.rActApertureSizeY;
+    This^.AptArrayStatus.Width := This^.rActApertureSizeX;
+    This^.AptArrayStatus.xOK := NOT (This^.stTopBlade.bError) AND NOT (This^.stBottomBlade.bError)
+                                     AND NOT (This^.stNorthBlade.bError) AND NOT (This^.stNorthBlade.bError);
+
+    //Evaluate that the current center on the X and the y direction didn't exceed limits,
+    // Gap should be reduced when center is moved, gap < Maximum permessible gap - 2|Center deviation from nominal|
+    //Fast fault when it does.
+    IF(This^.rActApertureSizeX > (AptArrayReq.Width - (2*ABS(rActCenterX)))
+    //(rActCenterX > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width/2))
+        AND (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width >0 ))
+        OR (This^.rActApertureSizeY > (AptArrayReq.Height - (2*ABS(rActCenterY)))
+        //((rActCenterY > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height/2))
+            AND(PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height>0 )) THEN
+            FFO.i_xOK := FALSE;
+        ELSE
+            FFO.i_xOK := TRUE;
+    END_IF
+
+    //Evaluate that the requested gaps on the X and the y direction is not larger than the current gap
+    // narrow  the gap if the requested is larger
+    IF(xPMPSMode) THEN
+        IF (This^.rActApertureSizeX > AptArrayReq.Width) THEN
+            rReqApertureSizeX := AptArrayReq.Width - 0.01;
+        END_IF
+        IF (This^.rActApertureSizeY > AptArrayReq.Height) THEN
+             rReqApertureSizeY := AptArrayReq.Height - 0.01;
+        END_IF
+        ELSE
+         FFO.i_xOK := FALSE;
+    END_IF
+
+
+    (*FAST FAULT*)
+    FFO(i_xOK := ,
+        i_xReset := ,
+        i_xAutoReset :=TRUE,
+        io_fbFFHWO := io_fbFFHWO);
+    END_METHOD
+
+
+Related:
+    * `FB_CC_TempSensor`_
+    * `FB_SLITS`_
+    * `FB_XTES_Flowswitch`_
+
+
+FB_SLITS_POWERTest
+^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
+    VAR
+        fbSlitsPower: FB_SLITS_POWER;
+        M1: ST_MotionStage;
+        M2: ST_MotionStage;
+        M3: ST_MotionStage;
+        M4: ST_MotionStage;
+        bExecuteMotion: BOOL := FALSE;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+    END_VAR
+    fbSlitsPower(
+        stTopBlade:=M1,
+        stBottomBlade:=M2,
+        stNorthBlade:=M3,
+        stSouthBlade:=M4,
+        bExecuteMotion:=bExecuteMotion,
+        i_DevName:='DEVICE',
+        sPmpsState:='T1',
+        io_fbFFHWO := fbFFHWO,
+        fbArbiter := fbArbiter,
+    );
+
+    TestTempFFO();
+
+    END_FUNCTION_BLOCK
+
+    METHOD AssertAllTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertFalse(
+        fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
+        CONCAT('Slits Top 1 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
+        CONCAT('Slits Top 2 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
+        CONCAT('Slits Bottom 1 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
+        CONCAT('Slits Bottom 2 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_North_1.FFO.i_xOK,
+        CONCAT('Slits North 1 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_North_2.FFO.i_xOK,
+        CONCAT('Slits North 2 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_South_1.FFO.i_xOK,
+        CONCAT('Slits South 1 RTD expected fault: ', Message),
+    );
+    AssertFalse(
+        fbSlitsPower.RTD_South_2.FFO.i_xOK,
+        CONCAT('Slits South 2 1 RTD expected fault: ', Message),
+    );
+    END_METHOD
+
+    METHOD AssertNoneTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertTrue(
+        fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
+        CONCAT('Slits Top 1 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
+        CONCAT('Slits Top 2 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
+        CONCAT('Slits Bottom 1 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
+        CONCAT('Slits Bottom 2 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_North_1.FFO.i_xOK,
+        CONCAT('Slits North 1 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_North_2.FFO.i_xOK,
+        CONCAT('Slits North 2 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_South_1.FFO.i_xOK,
+        CONCAT('Slits South 1 RTD expected ok: ', Message),
+    );
+    AssertTrue(
+        fbSlitsPower.RTD_South_2.FFO.i_xOK,
+        CONCAT('Slits South 2 1 RTD expected ok: ', Message),
+    );
+    END_METHOD
+
+    METHOD SetSlitsTemp
+    VAR_INPUT
+        iTempC: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_North_1.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_North_2.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_South_1.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbSlitsPower.RTD_South_2.iRaw);
+    ptr^ := iTempC * 10;
+    END_METHOD
+
+    METHOD TestTempFFO
+    VAR_INST
+        tonTimer: TON;
+        nStep: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastStep: UINT := 4;
+    END_VAR
+    // Do we fault at the correct times?
+    TEST('TestSlitsTempFFO');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+
+    CASE nStep OF
+        0:
+            // Hold until the PMPS DB is ready
+            // Most tests don't need this because they start by waiting for a move
+            IF fbSlitsPower.RTD_TOP_1.fFaultThreshold > 0 THEN
+                nStep := nStep + 1;
+            END_IF
+        1:
+            // Set the thermocouple temperatures to crazy high number
+            SetSlitsTemp(100);
+            nStep := nStep + 1;
+        2:
+            // We should see faults on all RTDs at 100C
+            AssertAllTempFault('has high temp reading');
+            nStep := nStep + 1;
+        3:
+            // Set the thermocouple temperatures to low again
+            SetSlitsTemp(0);
+            nStep := nStep + 1;
+        4:
+            AssertNoneTempFault('has low temp reading');
+            nStep := nStep + 1;
+    END_CASE;
+
+    IF tonTimer.Q OR nStep > nLastStep THEN
+        AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `FB_SLITS_POWER`_
+
+
+FB_SXR_SATT_Stage
+^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_SXR_SATT_Stage
+    (*
+        Function block for a single Solid ATTenuator (SATT) filter stack.
+        This is for the L2SI compact design with 4 filter stacks that each have
+        many filters.
+
+        This function block controls:
+        - Y motion
+        - Y filter states
+        - transmission calculation for one stack
+
+        There will be a fast fault during motion, but no other PMPS restrictions.
+    *)
+    VAR_IN_OUT
+        // Y motor (filter select)
+        stAxis : ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut		: ST_PositionState;
+        // Settings for the FILTER1 state.
+        stFilter1	: ST_PositionState;
+        // Settings for the FILTER2 state.
+        stFilter2	: ST_PositionState;
+        // Settings for the FILTER3 state.
+        stFilter3	: ST_PositionState;
+        // Settings for the FILTER4 state.
+        stFilter4	: ST_PositionState;
+        // Settings for the FILTER5 state.
+        stFilter5	: ST_PositionState;
+        // Settings for the FILTER6 state.
+        stFilter6	: ST_PositionState;
+        // Settings for the FILTER7 state.
+        stFilter7	: ST_PositionState;
+        // Settings for the FILTER8 state.
+        stFilter8	: ST_PositionState;
+
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: STATE:SET
+            io: io
+        '}
+        eEnumSet: E_SXR_SATT_Position;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnable: BOOL;
+
+        // Filter configuration information
+        {attribute 'pytmc' := 'pv: FILTERS'}
+        arrFilters: ARRAY[1..8] OF ST_SATT_Filter;
+
+        // String name from PMPS database
+        sDeviceName: STRING;
+
+        // Debug helper for setting the stage's nEnableMode
+        nEnableMode : E_StageEnableMode;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: STATE:GET
+            io: i
+        '}
+        eEnumGet: E_SXR_SATT_Position;
+
+        fTemp1 : LREAL;
+        fTemp2 : LREAL;
+        bIsStationary : BOOL;
+        bError : BOOL;
+
+        {attribute 'pytmc' := '
+            pv: MATERIAL
+            io: i
+        '}
+        sActiveFilterMaterial : STRING;
+
+        {attribute 'pytmc' := '
+            pv: THICKNESS
+            io: i
+            field: EGU um
+        '}
+        fActiveFilterThickness_um : LREAL;
+
+        {attribute 'pytmc' := '
+            pv: TRANSMISSION
+            io: i
+            field: DESC Filter transmission
+        '}
+        fTransmission : LREAL;
+        fActiveFilterDensity : LREAL;
+        fActiveFilterAtomicMass : LREAL;
+        fAbsorptionConstant : LREAL;
+
+        iFilterIndex: INT := 0;
+    END_VAR
+    VAR
+        fbMotion: FB_MotionStage;
+
+        {attribute 'pytmc' := '
+            pv:
+            astPositionState.array: 1..9
+        '}
+        fbStates: FB_PositionState1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        bInitialized: BOOL := FALSE;
+
+        fbAtomicMass : FB_AtomicMass;
+        fbAttenuatorElementDensity : FB_AttenuatorElementDensity;
+
+        (* EL3202-0020: 0.01 °C per digit *)
+        {attribute 'pytmc' := 'pv: RTD:1'}
+        fbRTD_1: FB_CC_TempSensor := ( fResolution:=0.01 );
+        {attribute 'pytmc' := 'pv: RTD:2'}
+        fbRTD_2: FB_CC_TempSensor := ( fResolution:=0.01 );
+
+        fbReadPMPSDB: FB_JsonDocToSafeBP;
+        astPickedDB: ARRAY[1..1] OF ST_DbStateParams;
+
+        fbFF: FB_FastFault := (i_Desc := 'Device is moving',
+                               i_TypeCode := E_MotionFFType.DEVICE_MOVE,
+                               i_xAutoReset := TRUE);
+    END_VAR
+    IF NOT bInitialized THEN
+        bInitialized := TRUE;
+
+        (* Defaults for ST_MotionStage *)
+        stAxis.bHardwareEnable      := TRUE;
+        stAxis.bLimitBackwardEnable := TRUE;
+        stAxis.bLimitForwardEnable  := TRUE;
+        stAxis.bPowerSelf           := TRUE;
+        stAxis.nBrakeMode           := ENUM_StageBrakeMode.NO_BRAKE;
+        stAxis.nHomingMode          := ENUM_EpicsHomeCmd.NONE;
+
+        (* Defaults for visualization *)
+        // stExtra.fVisuStep			:= 0.1;
+
+    END_IF
+
+    stAxis.nEnableMode := nEnableMode;
+    fbMotion(stMotionStage:=stAxis);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_SXR_SATT_Position.OUT] := stOut;
+        astPositionState[E_SXR_SATT_Position.FILTER1] := stFilter1;
+        astPositionState[E_SXR_SATT_Position.FILTER2] := stFilter2;
+        astPositionState[E_SXR_SATT_Position.FILTER3] := stFilter3;
+        astPositionState[E_SXR_SATT_Position.FILTER4] := stFilter4;
+        astPositionState[E_SXR_SATT_Position.FILTER5] := stFilter5;
+        astPositionState[E_SXR_SATT_Position.FILTER6] := stFilter6;
+        astPositionState[E_SXR_SATT_Position.FILTER7] := stFilter7;
+        astPositionState[E_SXR_SATT_Position.FILTER8] := stFilter8;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stAxis,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        bEnable:=bEnable,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_SXR_SATT_Position.OUT];
+    stFilter1 := astPositionState[E_SXR_SATT_Position.FILTER1];
+    stFilter2 := astPositionState[E_SXR_SATT_Position.FILTER2];
+    stFilter3 := astPositionState[E_SXR_SATT_Position.FILTER3];
+    stFilter4 := astPositionState[E_SXR_SATT_Position.FILTER4];
+    stFilter5 := astPositionState[E_SXR_SATT_Position.FILTER5];
+    stFilter6 := astPositionState[E_SXR_SATT_Position.FILTER6];
+    stFilter7 := astPositionState[E_SXR_SATT_Position.FILTER7];
+    stFilter8 := astPositionState[E_SXR_SATT_Position.FILTER8];
+
+    (* Filter indices are off by one due to "Out" being in position 1. *)
+    iFilterIndex := UINT_TO_INT(eEnumGet - 1);
+
+    IF iFilterIndex >= 1 AND iFilterIndex <= 8 THEN
+        sActiveFilterMaterial := arrFilters[iFilterIndex].sFilterMaterial;
+        fActiveFilterThickness_um := arrFilters[iFilterIndex].fFilterThickness_um;
+
+        fbAtomicMass(sName:=sActiveFilterMaterial, fValue=>fActiveFilterAtomicMass);
+        fbAttenuatorElementDensity(sName:=sActiveFilterMaterial, fDensity=>fActiveFilterDensity);
+
+        fAbsorptionConstant := F_CalculateAbsorptionConstant(
+            sElement:=sActiveFilterMaterial,
+            fEnergyEV:=PMPS_GVL.stCurrentBeamParameters.neV,
+            fDensity_gm3:=fActiveFilterDensity,
+            fAtomicWeight:=fActiveFilterAtomicMass,
+            bError=>bError,
+        );
+        fTransmission := F_CalculateTransmission(
+            fAbsorptionConstant:=fAbsorptionConstant,
+            fThickness_in_m:=fActiveFilterThickness_um * 1.0E-6
+        );
+    ELSE
+        sActiveFilterMaterial := '';
+        fActiveFilterThickness_um := 0.0;
+        fAbsorptionConstant := 0.0;
+        fActiveFilterDensity := 0.0;
+        fActiveFilterAtomicMass := 0.0;
+        fTransmission := 1.0;
+    END_IF
+
+    bIsStationary := NOT stAxis.Axis.Status.Moving;
+    fbFF(
+        i_DevName:=sDeviceName,
+        i_xOK:=bIsStationary AND eEnumGet <> E_SXR_SATT_Position.UNKNOWN,
+        io_fbFFHWO := fbFFHWO
+    );
+
+    // There will be a single state provided on one of the filters for reactive temp
+    // This database entry must exist, but the temperature can be blank
+    IF stFilter1.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter1.stPMPS.sPmpsState;
+    ELSIF stFilter2.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter2.stPMPS.sPmpsState;
+    ELSIF stFilter3.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter3.stPMPS.sPmpsState;
+    ELSIF stFilter4.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter4.stPMPS.sPmpsState;
+    ELSIF stFilter5.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter5.stPMPS.sPmpsState;
+    ELSIF stFilter6.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter6.stPMPS.sPmpsState;
+    ELSIF stFilter7.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter7.stPMPS.sPmpsState;
+    ELSIF stFilter8.stPMPS.sPmpsState <> '' THEN
+        astPickedDB[1].sPmpsState := stFilter8.stPMPS.sPmpsState;
+    END_IF
+
+    IF sDeviceName = '' THEN
+        sDeviceName := stAxis.sName;
+    END_IF
+
+    fbReadPMPSDB(
+        bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+        jsonDoc:=PMPS_GVL.BP_jsonDoc,
+        sDeviceName:=sDeviceName,
+        arrStates:=astPickedDB,
+        io_fbFFHWO:=fbFFHWO,
+    );
+
+    fbRTD_1(
+        fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+        sDevName:=sDeviceName,
+        bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fTemp1 := fbRTD_1.fTemp;
+
+    fbRTD_2(
+        fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
+        sDevName:=sDeviceName,
+        bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fTemp2 := fbRTD_2.fTemp;
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_SXR_SATT_Position`_
+    * `FB_AttenuatorElementDensity`_
+    * `FB_CC_TempSensor`_
+    * `FB_CheckPositionStateWrite`_
+    * `ST_SATT_Filter`_
+
+
+FB_WFS
+^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_WFS
+    (*
+        Function block for WaveFront Sensor target (WFS) controls:
+        - X, Z motion
+        - Y target states
+        - 2 thermocouples
+
+        The following IO link points are included and should be used:
+        - FB_WFS.fbThermoCouple1.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+        - FB_WFS.fbThermoCouple1.fbThermoCouple.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // Z motor (focus adjust).
+        stZStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the TARGET1 state.
+        stTarget1: ST_PositionState;
+        // Settings for the TARGET2 state.
+        stTarget2: ST_PositionState;
+        // Settings for the TARGET3 state.
+        stTarget3: ST_PositionState;
+        // Settings for the TARGET4 state.
+        stTarget4: ST_PositionState;
+        // Settings for the TARGET5 state.
+        stTarget5: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_WFS_States;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_WFS_States;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+        fbZStage: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..6
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        {attribute 'pytmc' := 'pv: STC:01'}
+        fbThermoCouple1: FB_CC_TempSensor;
+
+        {attribute 'pytmc' := 'pv: STC:02'}
+        fbThermoCouple2: FB_CC_TempSensor;
+
+        {attribute 'pytmc' := 'pv: FSW'}
+        fbFlowSwitch: FB_XTES_Flowswitch;
+
+        {attribute 'pytmc' :='pv: FWM'}
+        fbFlowMeter: FB_AnalogInput := (iTermBits:=15, fTermMax:=60, fTermMin:=0);
+
+    END_VAR
+    VAR CONSTANT
+        // State defaults if not provided
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 200;
+        fOutDecel: LREAL := 25;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+        stZStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+        fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget2, sNameDefault:='TARGET2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget3, sNameDefault:='TARGET3', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+
+    stZStage.bLimitForwardEnable := TRUE;
+    stZStage.bLimitBackwardEnable := TRUE;
+    stZStage.bHardwareEnable := TRUE;
+    stZStage.bPowerSelf := TRUE;
+
+    fbYStage(stMotionStage:=stYStage);
+    fbZStage(stMotionStage:=stZStage);
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_WFS_States.OUT] := stOut;
+        astPositionState[E_WFS_States.TARGET1] := stTarget1;
+        astPositionState[E_WFS_States.TARGET2] := stTarget2;
+        astPositionState[E_WFS_States.TARGET3] := stTarget3;
+        astPositionState[E_WFS_States.TARGET4] := stTarget4;
+        astPositionState[E_WFS_States.TARGET5] := stTarget5;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_WFS_States.OUT];
+    stTarget1 := astPositionState[E_WFS_States.TARGET1];
+    stTarget2 := astPositionState[E_WFS_States.TARGET2];
+    stTarget3 := astPositionState[E_WFS_States.TARGET3];
+    stTarget4 := astPositionState[E_WFS_States.TARGET4];
+    stTarget5 := astPositionState[E_WFS_States.TARGET5];
+
+    fbThermoCouple1(
+        fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+        bVeto:=eEnumGet = E_WFS_States.OUT,
+        sDevName:=sDeviceName,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fbThermoCouple2(
+        fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+        bVeto:=eEnumGet = E_WFS_States.OUT,
+        sDevName:=sDeviceName,
+        io_fbFFHWO:=fbFFHWO,
+    );
+    fbFlowSwitch(); // WFS in FEE
+    fbFlowMeter(); // WFS in hutch
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_WFS_States`_
+    * `FB_CC_TempSensor`_
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PositionState_Defaults`_
+    * `FB_XTES_Flowswitch`_
+
+
+FB_WFSTest
+^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_WFSTest EXTENDS FB_TestSuite
+    VAR
+        fbWFS: FB_WFS;
+        stYStage: ST_MotionStage;
+        stZStage: ST_MotionStage;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbWFS.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbWFS.stTarget1, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbWFS.stTarget2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+    fbSetup(stPositionState:=fbWFS.stTarget3, sName:='T3', fPosition:=40, sPmpsState:='T3');
+    fbSetup(stPositionState:=fbWFS.stTarget4, sName:='T4', fPosition:=50, sPmpsState:='T4');
+    fbSetup(stPositionState:=fbWFS.stTarget5, sName:='T5', fPosition:=60, sPmpsState:='T5');
+
+    // Standard FB call
+    fbWFS(
+        stYStage:=stYStage,
+        stZStage:=stZStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+    TestTempFFO();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD AssertBothTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertFalse(
+        fbWFS.fbThermoCouple1.FFO.i_xOK,
+        CONCAT('WFS TC1 expected fault: ', Message),
+    );
+    AssertFalse(
+        fbWFS.fbThermoCouple2.FFO.i_xOK,
+        CONCAT('WFS TC2 expected fault: ', Message),
+    );
+    END_METHOD
+
+    METHOD AssertNeitherTempFault
+    VAR_INPUT
+        Message: STRING;
+    END_VAR
+    AssertTrue(
+        fbWFS.fbThermoCouple1.FFO.i_xOK,
+        CONCAT('WFS TC1 expected ok: ', Message),
+    );
+    AssertTrue(
+        fbWFS.fbThermoCouple1.FFO.i_xOK,
+        CONCAT('WFS TC2 sensor expected ok: ', Message),
+    );
+    END_METHOD
+
+    METHOD SetWFSTemp
+    VAR_INPUT
+        iTempC: INT;
+    END_VAR
+    VAR
+        ptr: POINTER TO INT;
+    END_VAR
+    ptr := ADR(fbWFS.fbThermoCouple1.iRaw);
+    ptr^ := iTempC * 10;
+
+    ptr := ADR(fbWFS.fbThermoCouple2.iRaw);
+    ptr^ := iTempC * 10;
+    END_METHOD
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_WFS_States.TARGET5;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestWFSStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbWFS.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbWFS.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in WFS move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+    METHOD TestTempFFO
+    VAR_INST
+        tonTimer: TON;
+        nStep: UINT := 0;
+        bOutChecked: BOOL := FALSE;
+        bInChecked: BOOL := FALSE;
+    END_VAR
+    VAR CONSTANT
+        nLastStep: UINT := 3;
+    END_VAR
+    // Do we fault at the correct times?
+    // Parasitically depends on state move test
+    TEST('TestWFSTempFFO');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    CASE nStep OF
+        0:
+            // Set the thermocouple temperatures to crazy high number
+            SetWFSTemp(100);
+            nStep := nStep + 1;
+        1:
+            // Wait till we see "OUT" state and one other state (OUT should be no fault)
+            IF fbWFS.eEnumGet = E_WFS_States.OUT THEN
+                AssertNeitherTempFault('was in out position');
+                bOutChecked := TRUE;
+            ELSIF fbWFS.eEnumGet <> E_WFS_States.Unknown THEN
+                AssertBothTempFault('was in a target position');
+                bInChecked := TRUE;
+            END_IF
+            IF bOutChecked AND bInChecked THEN
+                nStep := nStep + 1;
+            END_IF
+        2:
+            // Set the thermocouple temperatures to low again
+            SetWFSTemp(0);
+            nStep := nStep + 1;
+        3:
+            AssertNeitherTempFault('has low temp reading');
+            nStep := nStep + 1;
+    END_CASE;
+
+    IF tonTimer.Q OR nStep > nLastStep THEN
+        AssertFalse(tonTimer.Q, 'Timeout in WFS temp FFO test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_WFS_States`_
+    * `FB_WFS`_
+
+
+FB_XPIM
+^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_XPIM
+    (*
+        Function block for XTES Imager (XPIM = XTES PIM = Profile Impager) controls:
+        - Y, Zoom, Focus motion
+        - Y scintillator states
+        - filterwheel serial commands
+        - camera power
+        - LED on/off
+        - flowswitch (not fully implemented)
+
+        The following IO link points are included and should be used:
+        - FB_XPIM.bZoomEndFwd should be linked to the zoom motor's forward limit switch.
+        - FB_XPIM.bZoomEndBwd should be linked to the zoom motor's backward limit switch.
+        - FB_XPIM.bFocusEndFwd should be linked to the focus motor's forward limit switch.
+        - FB_XPIM.bFocusEndBwd should be linked to the focus motor's backward limit switch.
+        - FB_XPIM.fbOpal.bOpalPower should be linked to the camera power digital output.
+        - FB_XPIM.fbLED.bLEDPower should be linked to the LED power digital output.
+        - FB_XPIM.fbFlowSwitch.bFlowOk should be linked to the flow switch digital input, if present.
+    *)
+    VAR_IN_OUT
+        // Y motor (state select).
+        stYStage: ST_MotionStage;
+        // Zoom motor (camera zoom).
+        stZoomStage: ST_MotionStage;
+        // Focus motor (camera focus).
+        stFocusStage: ST_MotionStage;
+        // The fast fault output to fault to.
+        fbFFHWO: FB_HardwareFFOutput;
+        // The arbiter to request beam conditions from.
+        fbArbiter: FB_Arbiter;
+        // Serial input
+        stEl6In: EL6inData22b;
+        // Serial output
+        stEl6Out: EL6OutData22b;
+    END_VAR
+    VAR_INPUT
+        // Settings for the OUT state.
+        stOut: ST_PositionState;
+        // Settings for the YAG state.
+        stYag: ST_PositionState;
+        // Settings for the DIAMOND state.
+        stDiamond: ST_PositionState;
+        // Settings for the RETICLE state.
+        stReticle: ST_PositionState;
+        // Set this to a non-unknown value to request a new move.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:SET
+            io: io
+        '}
+        eEnumSet: E_XPIM_States;
+        // Set this to TRUE to enable input state moves, or FALSE to disable them.
+        bEnableMotion: BOOL;
+        // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+        bEnableBeamParams: BOOL;
+        // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+        bEnablePositionLimits: BOOL;
+        // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+        sDeviceName: STRING;
+        // The name of the transition state in the PMPS database.
+        sTransitionKey: STRING;
+        // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+        bReadDBNow: BOOL;
+
+        // While TRUE, the zoom motor cannot be moved.
+        {attribute 'pytmc' := '
+            pv: CLZ:LOCK
+            io: io
+            field: ZNAM Unlocked
+            field: ONAM Locked
+        '}
+        bZoomLock: BOOL;
+
+        // While TRUE, the focus motor cannot be moved.
+        {attribute 'pytmc' := '
+            pv: CLF:LOCK
+            io: io
+            field: ZNAM Unlocked
+            field: ONAM Locked
+        '}
+        bFocusLock: BOOL;
+
+        // Forward limit disable for zoom
+        bZoomEndFwd AT %I*: BOOL;
+        // Backward limit disable for zoom
+        bZoomEndBwd AT %I*: BOOL;
+        // Forward limit disable for focus
+        bFocusEndFwd AT %I*: BOOL;
+        // Backward limit disable for focus
+        bFocusEndBwd AT %I*: BOOL;
+    END_VAR
+    VAR_OUTPUT
+        // The current position state as an enum.
+        {attribute 'pytmc' := '
+            pv: MMS:STATE:GET
+            io: i
+        '}
+        eEnumGet: E_XPIM_States;
+        // The PMPS database lookup associated with the current position state.
+        stDbStateParams: ST_DbStateParams;
+    END_VAR
+    VAR
+        bInit: BOOL;
+
+        fbYStage: FB_MotionStage;
+        fbZoom: FB_MotionStage;
+        fbFocus: FB_MotionStage;
+
+        fbStateDefaults: FB_PositionState_Defaults;
+
+        {attribute 'pytmc' := '
+            pv: MMS
+            astPositionState.array: 1..4
+        '}
+        fbStates: FB_PositionStatePMPS1D;
+        astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+        fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+        {attribute 'pytmc' := 'pv: MFW'}
+        fbFilterWheel: FB_XPIM_FilterWheel;
+
+        {attribute 'pytmc' := 'pv: CAM'}
+        fbOpal: FB_XPIM_Opal;
+
+        {attribute 'pytmc' := 'pv: CIL'}
+        fbLED: FB_XPIM_LED;
+
+        {attribute 'pytmc' := 'pv: FSW'}
+        fbFlowSwitch: FB_XTES_Flowswitch;
+    END_VAR
+    VAR CONSTANT
+        // State defaults if not provided
+        fDelta: LREAL := 2;
+        fAccel: LREAL := 200;
+        fOutDecel: LREAL := 25;
+    END_VAR
+    IF NOT bInit THEN
+        bInit := TRUE;
+
+        stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+        stZoomStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+        stFocusStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+        // Partial backcompat, this used to set fVelocity too but this should be set per install
+        fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+        fbStateDefaults(stPositionState:=stYag, sNameDefault:='YAG', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stDiamond, sNameDefault:='DIAMOND', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stReticle, sNameDefault:='RETICLE', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    END_IF
+
+    stYStage.bHardwareEnable := TRUE;
+    stYStage.bPowerSelf := FALSE;
+    // No limit switch at the bottom
+    stYStage.bLimitBackwardEnable := TRUE;
+
+    // Extra lock on lens + lens limits are NO instead of NC
+    stZoomStage.bHardwareEnable := NOT bZoomLock;
+    stZoomStage.bPowerSelf := TRUE;
+    stZoomStage.bLimitForwardEnable := NOT bZoomEndFwd;
+    stZoomStage.bLimitBackwardEnable := NOT bZoomEndBwd;
+    stZoomStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+    stZoomStage.fHomePosition := 0;
+
+    stFocusStage.bHardwareEnable := NOT bFocusLock;
+    stFocusStage.bPowerSelf := TRUE;
+    stFocusStage.bLimitForwardEnable := NOT bFocusEndFwd;
+    stFocusStage.bLimitBackwardEnable := NOT bFocusEndBwd;
+    stFocusStage.nHomingMode := ENUM_EpicsHomeCmd.LOW_LIMIT;
+    stFocusStage.fHomePosition := 0;
+
+    fbYStage(stMotionStage:=stYStage);
+    fbZoom(stMotionStage:=stZoomStage);
+    fbFocus(stMotionStage:=stFocusStage);
+
+    // Set special error message for lens lock
+    IF stZoomStage.bExecute AND bZoomLock THEN
+        stZoomStage.bError := TRUE;
+        stZoomStage.sCustomErrorMessage := 'Zoom lens is locked!';
+    END_IF
+    IF stFocusStage.bExecute AND bFocusLock THEN
+        stFocusStage.bError := TRUE;
+        stFocusStage.sCustomErrorMessage := 'Focus lens is locked!';
+    END_IF
+
+    // We need to update from PLC or from EPICS, but not both
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=TRUE,
+        bSave:=FALSE,
+    );
+    IF NOT fbArrCheckWrite.bHadWrite THEN
+        astPositionState[E_XPIM_States.OUT] := stOut;
+        astPositionState[E_XPIM_States.YAG] := stYag;
+        astPositionState[E_XPIM_States.DIAMOND] := stDiamond;
+        astPositionState[E_XPIM_States.RETICLE] := stReticle;
+    END_IF
+
+    fbStates(
+        stMotionStage:=stYStage,
+        astPositionState:=astPositionState,
+        eEnumSet:=eEnumSet,
+        eEnumGet:=eEnumGet,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        bEnableMotion:=bEnableMotion,
+        bEnableBeamParams:=bEnableBeamParams,
+        bEnablePositionLimits:=bEnablePositionLimits,
+        sDeviceName:=sDeviceName,
+        sTransitionKey:=sTransitionKey,
+        bReadDBNow:=bReadDBNow,
+        stDbStateParams=>stDbStateParams,
+    );
+
+    fbArrCheckWrite(
+        astPositionState:=astPositionState,
+        bCheck:=FALSE,
+        bSave:=TRUE,
+    );
+
+    stOut := astPositionState[E_XPIM_States.OUT];
+    stYag := astPositionState[E_XPIM_States.YAG];
+    stDiamond := astPositionState[E_XPIM_States.DIAMOND];
+    stReticle := astPositionState[E_XPIM_States.RETICLE];
+
+    fbFilterWheel(
+        bExecute:=TRUE,
+        stIn_El6:=stEl6In,
+        stOut_El6:=stEl6Out,
+    );
+
+    fbOpal();
+    fbLED(enumXPIM:=eEnumGet);
+    fbFlowSwitch();
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_XPIM_States`_
+    * `FB_CheckPositionStateWrite`_
+    * `FB_PositionState_Defaults`_
+    * `FB_XPIM_FilterWheel`_
+    * `FB_XPIM_LED`_
+    * `FB_XPIM_Opal`_
+    * `FB_XTES_Flowswitch`_
+
+
+FB_XPIM_FilterWheel
+^^^^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_XPIM_FilterWheel
+    VAR_INPUT
+        bExecute: BOOL;
+
+        {attribute 'pytmc' := '
+            pv: ERR:RESET
+            io: output
+        '}
+        bResetError: BOOL;
+
+        {attribute 'pytmc' := '
+            pv: SET
+            io: io
+        '}
+        nSetPos: E_XPIM_Filters;
+    END_VAR
+    VAR_OUTPUT
+        {attribute 'pytmc' := '
+            pv: GET
+            io: i
+        '}
+        nGetPos: E_XPIM_Filters;
+        bBusy: BOOL;
+        bError: BOOL;
+        sError: STRING;
+        {attribute 'pytmc' := '
+            pv: ERR:MSG
+            io: input
+        '}
+        sLastError: STRING;
+        sErrorTS: STRING;
+    END_VAR
+    VAR_IN_OUT
+        stIn_EL6: EL6inData22B;
+        stOut_EL6: EL6outData22B;
+    END_VAR
+    VAR
+        {attribute 'pytmc' := '
+            pv: RAW
+        '}
+        fbCom: FB_EL6_COM;
+
+        nStep: USINT;
+        bIsTest: BOOL;
+        fbGetTime: NT_GetTime;
+        bStopOnErr: BOOL;
+    END_VAR
+    fbCom.sSendSuffix := '$R';
+    fbCom.sRecvSuffix := '$R';
+
+    IF bExecute AND nStep = 0 THEN
+        IF bResetError OR NOT bError THEN
+            nStep := 10;
+        END_IF
+    ELSIF NOT bExecute THEN
+        nStep := 0;
+    END_IF
+    CASE nStep OF
+        0:
+            ; // idle
+        10:
+            // Get position
+            bIsTest := FALSE;
+            fbCom(sCmd:='pos?',
+                bSend:=TRUE,
+                stIn_EL6:=stIn_EL6,
+                stOut_EL6:=stOut_EL6);
+            nStep := nStep + 10;
+        20:
+            // Wait for response and set variables
+            fbCom(stIn_EL6:=stIn_EL6,
+                stOut_EL6:=stOut_EL6);
+            IF fbCom.bDone THEN
+                bError := FALSE;
+                sError := '';
+                nGetPos := STRING_TO_USINT(fbCom.sResponse);
+                nSetPos := nGetPos;
+                nStep := nStep + 10;
+                IF nGetPos = 0 THEN
+                    sError := 'Filter wheel in invalid state';
+                    bStopOnErr := TRUE;
+                    nStep := 50;
+                END_IF
+            END_IF
+        30:
+            // Wait for a move request
+            IF nSetPos <> nGetPos THEN
+                fbCom(sCmd:=CONCAT('pos=', INT_TO_STRING(nSetPos)),
+                    bSend:=TRUE,
+                    stIn_EL6:=stIn_EL6,
+                    stOut_EL6:=stOut_EL6);
+                nStep := nStep + 10;
+                bBusy := TRUE;
+            END_IF
+        40:
+            fbCom(stIn_EL6:=stIn_EL6,
+                stOut_EL6:=stOut_EL6);
+            // Wait for move to be done
+            IF fbCom.bDone THEN
+                bBusy := FALSE;
+                nStep := 10;
+                // Handle setpoint error
+                IF fbCom.sResponse = 'Command error CMD_ARG_INVALID$N$R' THEN
+                    sError := 'Invalid set position';
+                    nStep := 50;
+                END_IF
+            END_IF
+        50:
+            // Set sError and then jump here for standard handling
+            sLastError := sError;
+            bError := TRUE;
+            fbGetTime(NETID:='',
+                START:=TRUE);
+            nStep := nStep + 10;
+        60:
+            // Error handling continued
+            fbGetTime();
+            IF NOT fbGetTime.BUSY THEN
+                sErrorTS := SYSTEMTIME_TO_STRING(fbGetTime.TIMESTR);
+                fbGetTime.START := FALSE;
+                // set bStopOnErr to TRUE if it was a major error
+                IF bStopOnErr THEN
+                    nStep := 0;
+                ELSE
+                    nStep := 10;
+                END_IF
+                bStopOnErr := FALSE;
+            END_IF
+    END_CASE
+    // Check for inner comms errors, report to EPICS same way
+    IF NOT bError AND
+        (fbCom.eRecvErrorID <> COMERROR_NOERROR
+        OR fbCom.eSendErrorID <> COMERROR_NOERROR
+        OR fbCom.eRecvErrorID <> COMERROR_NOERROR) THEN
+        sError := 'Serial Communication Error';
+        bStopOnErr := TRUE;
+        nStep := 50;
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_XPIM_Filters`_
+
+
+FB_XPIM_LED
+^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_XPIM_LED
+    VAR_INPUT
+        {attribute 'pytmc' := '
+            pv: PWR
+            io: io
+            field: ZNAM OFF
+            field: ONAM ON
+        '}
+        bLEDPower AT %Q*: BOOL;
+
+        {attribute 'pytmc' := '
+            pv: AUTO
+            io: io
+        '}
+        bLEDAuto: BOOL := TRUE;
+
+        {attribute 'pytmc' := '
+            pv: CLK:TIMEOUT
+            io: io
+            field: EGU min
+        '}
+        fLEDTimeOut: LREAL := 10;
+
+        enumXPIM: E_XPIM_States;
+    END_VAR
+    VAR_OUTPUT
+        {attribute 'pytmc' := '
+            pv: CLK:REMAINING
+            io: io
+            field: EGU min
+        '}
+        fLEDRemaining: LREAL;
+    END_VAR
+    VAR
+        tonLED: TON;
+        enumLastCycle: E_XPIM_States := E_XPIM_States.Unknown;
+    END_VAR
+    // If configured, change the LED level automatically
+    // LED is always (and only) useful at Reticle state
+    IF bLEDAuto AND enumXPIM <> enumLastCycle THEN
+        // Turn on the LED when we get to the Reticle
+        IF enumXPIM = E_XPIM_States.Reticle THEN
+            bLEDPower := TRUE;
+        // Turn off the LED when we stop at any other state
+        ELSIF enumXPIM <> E_XPIM_States.Unknown THEN
+            bLEDPower := FALSE;
+        END_IF
+    END_IF
+    enumLastCycle := enumXPIM;
+
+    // If configured, start a shutdown timer when LED goes high
+    IF fLEDTimeOut <> 0 THEN;
+        tonLED(IN:=bLEDPower,
+               PT:=LREAL_TO_TIME(fLEDTimeOut * 60 * 1000));
+        fLEDRemaining := fLEDTimeOut - TIME_TO_LREAL(tonLED.ET) / 60 / 1000;
+
+        IF tonLED.Q THEN
+            bLEDPower := FALSE;
+        END_IF
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+Related:
+    * `E_XPIM_States`_
+
+
+FB_XPIM_Opal
+^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_XPIM_Opal
+    VAR_INPUT
+        {attribute 'pytmc' := '
+            pv: PWR
+            io: io
+            field: ZNAM OFF
+            field: ONAM ON
+        '}
+        bOpalPower AT %Q*: BOOL;
+    END_VAR
+    VAR
+        bOpalInit: BOOL := FALSE;
+    END_VAR
+    // Turn the Opal on by default
+    IF NOT bOpalInit THEN
+        bOpalPower := TRUE;
+        bOpalInit := TRUE;
+    END_IF
+
+    END_FUNCTION_BLOCK
+
+
+
+
+FB_XPIMTest
+^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_XPIMTest EXTENDS FB_TestSuite
+    VAR
+        fbXPIM: FB_XPIM;
+        stYStage: ST_MotionStage;
+        stZoomStage: ST_MotionStage;
+        stFocusStage: ST_MotionStage;
+
+        stEl6In: EL6inData22b;
+        stEl6Out: EL6OutData22b;
+
+        stDefault: ST_PositionState := (
+            fVelocity:=10,
+            bMoveOk:=TRUE,
+            bValid:=TRUE
+        );
+        fbSetup: FB_StateSetupHelper;
+
+        fbFFHWO: FB_HardwareFFOutput;
+        fbArbiter: FB_Arbiter(1);
+        fbSubSysIO: FB_DummyArbIO;
+
+        bInit: BOOL;
+    END_VAR
+    // Fake PMPS handling
+    fbSubSysIO(
+        LA:=fbArbiter,
+        FFO:=fbFFHWO,
+    );
+
+    // Fake limit handling
+    stYStage.bLimitBackwardEnable := TRUE;
+    stYStage.bLimitForwardEnable := TRUE;
+
+    // Standard state setup
+    fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
+    fbSetup(stPositionState:=fbXPIM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
+    fbSetup(stPositionState:=fbXPIM.stReticle, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    fbSetup(stPositionState:=fbXPIM.stYag, sName:='T2', fPosition:=30, sPmpsState:='T2');
+    fbSetup(stPositionState:=fbXPIM.stDiamond, sName:='T3', fPosition:=40, sPmpsState:='T3');
+
+    // Standard FB call
+    fbXPIM(
+        stYStage:=stYStage,
+        stZoomStage:=stZoomStage,
+        stFocusStage:=stFocusStage,
+        fbFFHWO:=fbFFHWO,
+        fbArbiter:=fbArbiter,
+        stEl6In:=stEl6In,
+        stEl6Out:=stEl6Out,
+        bEnableMotion:=TRUE,
+        bEnableBeamParams:=TRUE,
+        bEnablePositionLimits:=TRUE,
+        sDeviceName:='DEVICE',
+        sTransitionKey:='T9',
+        bReadDBNow:=NOT bInit,
+    );
+
+    TestStateMove();
+
+    bInit := TRUE;
+
+    END_FUNCTION_BLOCK
+
+    METHOD TestStateMove
+    VAR_INST
+        tonTimer: TON;
+        nIterState: UINT := 0;
+    END_VAR
+    VAR CONSTANT
+        nLastState: UINT := E_XPIM_States.RETICLE;
+    END_VAR
+    // Sanity check: can we at least move to every named state?
+    TEST('TestXPIMStateMove');
+
+    // Prepare a timeout
+    tonTimer(IN:=TRUE, PT:=T#10s);
+
+    // Start in Unknown, then go through the state positions one by one
+    IF fbXPIM.eEnumGet = nIterState THEN
+        nIterState := nIterState + 1;
+        fbXPIM.eEnumSet := nIterState;
+    END_IF
+
+    IF tonTimer.Q OR nIterState > nLastState THEN
+        AssertFalse(tonTimer.Q, 'Timeout in XPIM move test');
+        TEST_FINISHED();
+    END_IF
+    END_METHOD
+
+
+Related:
+    * `E_XPIM_States`_
+    * `FB_XPIM`_
+
+
+FB_XTES_Flowswitch
+^^^^^^^^^^^^^^^^^^
+
+::
+
+    {attribute 'analysis' := '-33'}
+    FUNCTION_BLOCK FB_XTES_Flowswitch
+    VAR_OUTPUT
+        {attribute 'pytmc' := '
+            pv: FLOW_OK
+            field: ZNAM LOW
+            field: ONAM OK
+        '}
+        bFlowOk AT %I*: BOOL;
+    END_VAR
+
+
+    END_FUNCTION_BLOCK
+
+
+
+
+PRG_TEST
+^^^^^^^^
+
+::
+
+    {attribute 'analysis' := '-33'}
+    PROGRAM PRG_TEST
+    VAR
+        fbATMTest: FB_ATMTest;
+        fbLICTest: FB_LICTest;
+        fbPPMTest: FB_PPMTest;
+        fbREFTest: FB_REFTest;
+        fbSATTTest: FB_SATTTest;
+        fbSlitsPowerTest: FB_SLITS_POWERTest;
+        fbWFSTest: FB_WFSTest;
+        fbXPIMTest: FB_XPIMTest;
+        fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
+        fbCCTempSensorTest: FB_CC_TempSensorTest;
+
+        fbSetupJson: FB_PMPSJsonTestHelper;
+        astBeamParams: ARRAY[0..9] OF ST_DbStateParams;
+        nIter: UINT;
+    END_VAR
+    // Setup a fake db export for the test suite
+    FOR nIter := 0 TO 9 DO
+        astBeamParams[nIter].stBeamParams := PMPS_GVL.cstFullBeam;
+        astBeamParams[nIter].sPmpsState := CONCAT('T', UINT_TO_STRING(nIter));
+        astBeamParams[nIter].stReactiveParams.nTempSP := nIter + 20;
+    END_FOR
+    fbSetupJson(
+        astBeamParams := astBeamParams,
+        bExecute := TRUE,
+        sDevNAme := 'DEVICE',
+    );
+    // Run the tests
+    TcUnit.RUN();
+
+    END_PROGRAM
+
+
+Related:
+    * `FB_ATMTest`_
+    * `FB_CC_TempSensorTest`_
+    * `FB_CheckPositionStateWriteTest`_
+    * `FB_LICTest`_
+    * `FB_PMPSJsonTestHelper`_
+    * `FB_PPMTest`_
+    * `FB_REFTest`_
+    * `FB_SATTTest`_
+    * `FB_SLITS_POWERTest`_
+    * `FB_WFSTest`_
+    * `FB_XPIMTest`_
+
