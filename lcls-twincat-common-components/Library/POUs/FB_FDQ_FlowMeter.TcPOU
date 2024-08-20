@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_FDQ_FlowMeter" Id="{b5b12a66-8d5f-455f-b8d1-7dfb923b9d24}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_FDQ_FlowMeter EXTENDS FB_AnalogInput
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: FWM
+        field: EGU lpm
+    '}
+    fFlow : LREAL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[SUPER^(iTermBits:=15, fTermMax:=60, fTermMin:=0);
+fFlow := SUPER^.fReal;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
