@@ -798,6 +798,31 @@ Related:
     * `FB_CheckPositionStateWrite`_
 
 
+FB_FDQ_FlowMeter
+^^^^^^^^^^^^^^^^
+
+::
+
+    FUNCTION_BLOCK FB_FDQ_FlowMeter EXTENDS FB_AnalogInput
+    VAR_INPUT
+    END_VAR
+    VAR_OUTPUT
+        {attribute 'pytmc' := '
+            pv: FWM
+            field: EGU lpm
+        '}
+        fFlow : LREAL;
+    END_VAR
+    VAR
+    END_VAR
+    SUPER^(iTermBits:=15, fTermMax:=60, fTermMin:=0);
+    fFlow := SUPER^.fReal;
+
+    END_FUNCTION_BLOCK
+
+
+
+
 FB_LIC
 ^^^^^^
 

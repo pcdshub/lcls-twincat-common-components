@@ -85,6 +85,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#fb-cc-tempsensortest">FB_CC_TempSensorTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewritetest">FB_CheckPositionStateWriteTest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-fdq-flowmeter">FB_FDQ_FlowMeter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lic">FB_LIC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lictest">FB_LICTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-pmpsjsontesthelper">FB_PMPSJsonTestHelper</a></li>
@@ -887,6 +888,27 @@ END_METHOD
 </ul>
 </dd>
 </dl>
+</section>
+<section id="fb-fdq-flowmeter">
+<h2>FB_FDQ_FlowMeter<a class="headerlink" href="#fb-fdq-flowmeter" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_FDQ_FlowMeter</span> <span class="n">EXTENDS</span> <span class="n">FB_AnalogInput</span>
+<span class="n">VAR_INPUT</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">FWM</span>
+        <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">lpm</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">fFlow</span> <span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+<span class="n">END_VAR</span>
+<span class="n">SUPER</span><span class="o">^</span><span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">fFlow</span> <span class="o">:=</span> <span class="n">SUPER</span><span class="o">^.</span><span class="n">fReal</span><span class="p">;</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+</pre></div>
+</div>
 </section>
 <section id="fb-lic">
 <h2>FB_LIC<a class="headerlink" href="#fb-lic" title="Link to this heading"></a></h2>

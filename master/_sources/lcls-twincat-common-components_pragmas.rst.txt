@@ -6,7 +6,7 @@ Pragmas
     :header: PLC Name, Total Pragmas, Errors
     :align: center
 
-    :ref:`Library <Library_overview_pragmas>`, 117, 0
+    :ref:`Library <Library_overview_pragmas>`, 118, 0
 
 
 .. _Library_overview_pragmas:
@@ -15,7 +15,7 @@ Pragmas
 Library
 ^^^^^^^
 
-Total pragmas found: 117
+Total pragmas found: 118
 Total linter errors: 0
 
 
