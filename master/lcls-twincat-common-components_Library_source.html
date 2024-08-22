@@ -891,20 +891,36 @@ END_METHOD
 </section>
 <section id="fb-fdq-flowmeter">
 <h2>FB_FDQ_FlowMeter<a class="headerlink" href="#fb-fdq-flowmeter" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_FDQ_FlowMeter</span> <span class="n">EXTENDS</span> <span class="n">FB_AnalogInput</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_FDQ_FlowMeter</span>
 <span class="n">VAR_INPUT</span>
+    <span class="o">//</span> <span class="n">Connect</span> <span class="n">this</span> <span class="nb">input</span> <span class="n">to</span> <span class="n">the</span> <span class="n">terminal</span>
+    <span class="n">iRaw</span> <span class="n">AT</span> <span class="o">%</span><span class="n">I</span><span class="o">*</span><span class="p">:</span> <span class="n">INT</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">number</span> <span class="n">of</span> <span class="n">bits</span> <span class="n">correlated</span> <span class="k">with</span> <span class="n">the</span> <span class="n">terminal</span><span class="s1">&#39;s max value. This is not necessarily the resolution parameter.</span>
+    <span class="n">iTermBits</span><span class="p">:</span> <span class="n">UINT</span> <span class="o">:=</span> <span class="mi">15</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">fReal</span> <span class="n">value</span> <span class="n">correlated</span> <span class="k">with</span> <span class="n">the</span> <span class="n">terminal</span><span class="s1">&#39;s max value</span>
+    <span class="n">fTermMax</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">60</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">fReal</span> <span class="n">value</span> <span class="n">correlated</span> <span class="k">with</span> <span class="n">the</span> <span class="n">terminal</span><span class="s1">&#39;s min value</span>
+    <span class="n">fTermMin</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Value</span> <span class="n">to</span> <span class="n">scale</span> <span class="n">the</span> <span class="n">end</span> <span class="n">result</span> <span class="n">to</span>
+    <span class="n">fResolution</span> <span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">fOffset</span> <span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR_OUTPUT</span>
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
         <span class="n">pv</span><span class="p">:</span> <span class="n">FWM</span>
         <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">lpm</span>
     <span class="s1">&#39;}</span>
-    <span class="n">fFlow</span> <span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    <span class="n">fbFlowMeter</span> <span class="p">:</span> <span class="n">FB_AnalogInput</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span>
 <span class="n">END_VAR</span>
-<span class="n">SUPER</span><span class="o">^</span><span class="p">(</span><span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span> <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">60</span><span class="p">,</span> <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">);</span>
-<span class="n">fFlow</span> <span class="o">:=</span> <span class="n">SUPER</span><span class="o">^.</span><span class="n">fReal</span><span class="p">;</span>
+<span class="n">fbFlowMeter</span><span class="p">(</span><span class="n">iRaw</span> <span class="o">:=</span> <span class="n">iRaw</span><span class="p">,</span>
+<span class="n">iTermBits</span><span class="o">:=</span><span class="n">iTermBits</span><span class="p">,</span>
+<span class="n">fTermMax</span><span class="o">:=</span><span class="n">fTermMax</span><span class="p">,</span>
+<span class="n">fTermMin</span><span class="o">:=</span><span class="n">fTermMin</span><span class="p">,</span>
+<span class="n">fResolution</span><span class="o">:=</span><span class="n">fResolution</span><span class="p">,</span>
+<span class="n">fOffset</span><span class="o">:=</span><span class="n">fOffset</span>
+<span class="p">);</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>

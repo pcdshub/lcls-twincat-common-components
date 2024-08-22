@@ -803,20 +803,36 @@ FB_FDQ_FlowMeter
 
 ::
 
-    FUNCTION_BLOCK FB_FDQ_FlowMeter EXTENDS FB_AnalogInput
+    FUNCTION_BLOCK FB_FDQ_FlowMeter
     VAR_INPUT
+        // Connect this input to the terminal
+        iRaw AT %I*: INT;
+        // The number of bits correlated with the terminal's max value. This is not necessarily the resolution parameter.
+        iTermBits: UINT := 15;
+        // The fReal value correlated with the terminal's max value
+        fTermMax: LREAL := 60;
+        // The fReal value correlated with the terminal's min value
+        fTermMin: LREAL := 0;
+        // Value to scale the end result to
+        fResolution : LREAL := 1;
+        fOffset : LREAL;
     END_VAR
     VAR_OUTPUT
         {attribute 'pytmc' := '
             pv: FWM
             field: EGU lpm
         '}
-        fFlow : LREAL;
+        fbFlowMeter : FB_AnalogInput;
     END_VAR
     VAR
     END_VAR
-    SUPER^(iTermBits:=15, fTermMax:=60, fTermMin:=0);
-    fFlow := SUPER^.fReal;
+    fbFlowMeter(iRaw := iRaw,
+    iTermBits:=iTermBits,
+    fTermMax:=fTermMax,
+    fTermMin:=fTermMin,
+    fResolution:=fResolution,
+    fOffset:=fOffset
+    );
 
     END_FUNCTION_BLOCK
 
