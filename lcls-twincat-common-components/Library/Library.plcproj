@@ -15,7 +15,7 @@
     <Implicit_Jitter_Distribution>{4604432a-6eee-489d-ba4c-0a908a6f435f}</Implicit_Jitter_Distribution>
     <LibraryReferences>{78c19189-384c-4a07-a84d-94cfbb123508}</LibraryReferences>
     <CombineIds>false</CombineIds>
-    <Title>lcls-twincat-cc-km</Title>
+    <Title>lcls-twincat-common-components</Title>
     <Released>false</Released>
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
@@ -54,25 +54,16 @@
     <Compile Include="Devices\LIC\FB_LIC.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\PPM\BEAMLINE.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Devices\PPM\E_PPM_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Devices\PPM\FB_PPM_R.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Devices\PPM\FB_PPM_Gige.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\PPM\FB_PPM_R_PowerMeter.TcPOU">
+    <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF.TcPOU">
