@@ -46,34 +46,40 @@ VAR
     '}
     fbTempSensor: FB_CC_TempSensor;
 
+
+    uFrequency: UINT;
     // Used to get beam mode and rate
     {attribute 'pytmc' := '
-        pv: AccTypeFromEpics
-        link: TPR:FEES:GD02:0:MODE.RVAL
+        pv: SXRAccTypeFromEpics
+        link: PHYS:UNDS:1:FACMODE.RVAL
     '}
-    uAccelerator: UINT;
+    uSXR_Accelerator: UINT;
     {attribute 'pytmc' := '
-        pv: NCBeamRateFromEpics
-        link: TPG:SYS0:1:DST03:RATE
+        pv: SXR_NC_BeamRateFromEpics
+        link: EVNT:SYS0:1:NC_SOFTRATE
     '}
-    uSC_HXR_Frequency: UINT;
+    uSXR_NC_Frequency: UINT;
     {attribute 'pytmc' := '
-        pv: SCBeamRateFromEpics
+        pv: SXR_SC_BeamRateFromEpics
         link: TPG:SYS0:1:DST04:RATE
     '}
-    uSC_SXR_Frequency: UINT;
-    // Placeholders until I find the rights pvs for normal conducting
-        {attribute 'pytmc' := '
-        pv: NCBeamRateFromEpics
+    uSXR_SC_Frequency: UINT;
+
+    {attribute 'pytmc' := '
+        pv: HXRAccTypeFromEpics
+        link: PHYS:UNDH:1:FACMODE.RVAL
+    '}
+    uHXR_Accelerator: UINT;
+    {attribute 'pytmc' := '
+        pv: HXR_NC_BeamRateFromEpics
+        link: EVNT:SYS0:1:NC_HARDRATE
+    '}
+    uHXR_NC_Frequency: UINT;
+    {attribute 'pytmc' := '
+        pv: HXR_SC_BeamRateFromEpics
         link: TPG:SYS0:1:DST03:RATE
     '}
-    uNC_HXR_Frequency: UINT;
-    {attribute 'pytmc' := '
-        pv: SCBeamRateFromEpics
-        link: TPG:SYS0:1:DST04:RATE
-    '}
-    uNC_SXR_Frequency: UINT;
-    uFrequency: UINT;
+    uHXR_SC_Frequency: UINT;
 
     // Pulse-by-pulse energy and buffer
     {attribute 'pytmc' := '
@@ -274,21 +280,20 @@ CASE uAccelerator OF
 ELSE
     uFrequency := 0;
 END_CASE*)
-CASE uAccelerator OF
-    0: IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesL THEN
-        uFrequency := uNC_HXR_Frequency;
-    ELSIF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
-        uFrequency := uNC_SXR_Frequency;
+
+IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
+    IF uSXR_Accelerator = 0 THEN
+        uFrequency := uSXR_NC_Frequency;
+    ELSIF uSXR_Accelerator = 1 THEN
+        uFrequency := uSXR_SC_Frequency;
     END_IF
-    1: 	IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesL THEN
-        uFrequency := uSC_HXR_Frequency;
-    ELSIF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
-        uFrequency := uSC_SXR_Frequency;
+ELSIF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesL THEN
+    IF uHXR_Accelerator = 0 THEN
+        uFrequency := uHXR_NC_Frequency;
+    ELSIF uHXR_Accelerator = 1 THEN
+        uFrequency := uHXR_SC_Frequency;
     END_IF
-    2: uFrequency := 0; // ASTA?
-ELSE
-    uFrequency := 0;
-END_CASE
+END_IF
 
 // Getting wattage and energy
 fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
