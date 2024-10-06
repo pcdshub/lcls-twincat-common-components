@@ -47,7 +47,7 @@ VAR
     fbTempSensor: FB_CC_TempSensor;
 
 
-    uFrequency: UINT;
+    fFrequency: REAL;
     // Used to get beam mode and rate
     {attribute 'pytmc' := '
         pv: SXRAccTypeFromEpics
@@ -58,7 +58,7 @@ VAR
         pv: SXR_NC_BeamRateFromEpics
         link: EVNT:SYS0:1:NC_SOFTRATE
     '}
-    uSXR_NC_Frequency: UINT;
+    fSXR_NC_Frequency: REAL;
     {attribute 'pytmc' := '
         pv: SXR_SC_BeamRateFromEpics
         link: TPG:SYS0:1:DST04:RATE
@@ -74,7 +74,7 @@ VAR
         pv: HXR_NC_BeamRateFromEpics
         link: EVNT:SYS0:1:NC_HARDRATE
     '}
-    uHXR_NC_Frequency: UINT;
+    fHXR_NC_Frequency: REAL;
     {attribute 'pytmc' := '
         pv: HXR_SC_BeamRateFromEpics
         link: TPG:SYS0:1:DST03:RATE
@@ -283,21 +283,21 @@ END_CASE*)
 
 IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
     IF uSXR_Accelerator = 0 THEN
-        uFrequency := uSXR_NC_Frequency;
+        fFrequency := fSXR_NC_Frequency;
     ELSIF uSXR_Accelerator = 1 THEN
-        uFrequency := uSXR_SC_Frequency;
+        fFrequency := uSXR_SC_Frequency;
     END_IF
 ELSIF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesL THEN
     IF uHXR_Accelerator = 0 THEN
-        uFrequency := uHXR_NC_Frequency;
+        fFrequency := fHXR_NC_Frequency;
     ELSIF uHXR_Accelerator = 1 THEN
-        uFrequency := uHXR_SC_Frequency;
+        fFrequency := uHXR_SC_Frequency;
     END_IF
 END_IF
 
 // Getting wattage and energy
 fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
-fCalibMJ := SEL(uFrequency <> 0, -9999, fPulseWattage / uFrequency);
+fCalibMJ := SEL(fFrequency <> 0, -9999, fPulseWattage / fFrequency);
 
 // FF in case voltage is high enough to damage power meter based on wavelength
 IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
