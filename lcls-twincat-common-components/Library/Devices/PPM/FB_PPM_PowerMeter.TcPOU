@@ -281,26 +281,26 @@ ELSE
     uFrequency := 0;
 END_CASE*)
 
-IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
+{IF defined (K)}
     IF uSXR_Accelerator = 0 THEN
         fFrequency := fSXR_NC_Frequency;
     ELSIF uSXR_Accelerator = 1 THEN
         fFrequency := uSXR_SC_Frequency;
     END_IF
-ELSIF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesL THEN
+{ELSIF defined (L)}
     IF uHXR_Accelerator = 0 THEN
         fFrequency := fHXR_NC_Frequency;
     ELSIF uHXR_Accelerator = 1 THEN
         fFrequency := uHXR_SC_Frequency;
     END_IF
-END_IF
+{END_IF}
 
 // Getting wattage and energy
 fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
 fCalibMJ := SEL(fFrequency <> 0, -9999, fPulseWattage / fFrequency);
 
 // FF in case voltage is high enough to damage power meter based on wavelength
-IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
+{IF defined (K)}
     CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
         0 .. uSoftWavelengthEdge1L: bOverAllowableEnergy := fCalibMJ > 2;
         uSoftWavelengthEdge1 .. uSoftWavelengthEdge2L : bOverAllowableEnergy := fCalibMJ > 2;
@@ -308,13 +308,13 @@ IF PMPS_GVL.g_areVBoundaries = PMPS_GVL.g_areVBoundariesK THEN
         uSoftWavelengthEdge3 .. uSoftWavelengthEdge4L: bOverAllowableEnergy := fCalibMJ > 0.5;
         uSoftWavelengthEdge4 .. 65535: bOverAllowableEnergy := fCalibMJ > 1;
     END_CASE
-ELSIF PMPS_GVL.g_areVBoundaries := PMPS_GVL.g_areVBoundariesL THEN
+{ELSIF defined (L)}
     CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
         uHardWavelengthEdge1 .. uHardWavelengthEdge2L: bOverAllowableEnergy := fCalibMJ > 10;
         uHardWavelengthEdge2 .. uHardWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ > 4;
         uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ > 10;
     END_CASE
-END_IF
+{END_IF}
 FFO(i_xOK := bOverAllowableEnergy,
     io_fbFFHWO := fbFFHWO);
 
