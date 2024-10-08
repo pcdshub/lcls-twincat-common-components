@@ -57,6 +57,8 @@ VAR_INPUT
     bReadDBNow: BOOL;
     // Offset for the flow meter in engineering units
     fFlowOffset: LREAL := 0;
+    // Responsivity for power meter
+    fResponsivity: LREAL;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -168,6 +170,9 @@ fbPowerMeter(
     bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
+    eEnumGet:=eEnumGet,
+    stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
+    fResponsivity:=fResponsivity,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
