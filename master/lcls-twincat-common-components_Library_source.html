@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -6,21 +8,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUTs &mdash; pcdshub/lcls-twincat-common-components  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
       <link rel="stylesheet" type="text/css" href="_static/tree.css?v=837a00b9" />
       <link rel="stylesheet" type="text/css" href="_static/width.css?v=ab210c7a" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -1415,6 +1413,8 @@ END_METHOD
     <span class="n">bReadDBNow</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Offset</span> <span class="k">for</span> <span class="n">the</span> <span class="n">flow</span> <span class="n">meter</span> <span class="ow">in</span> <span class="n">engineering</span> <span class="n">units</span>
     <span class="n">fFlowOffset</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Responsivity</span> <span class="k">for</span> <span class="n">power</span> <span class="n">meter</span>
+    <span class="n">fResponsivity</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR_OUTPUT</span>
     <span class="o">//</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span> <span class="k">as</span> <span class="n">an</span> <span class="n">enum</span><span class="o">.</span>
@@ -1524,6 +1524,9 @@ END_METHOD
     <span class="n">bVetoTempFFO</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_PPM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
     <span class="n">sDeviceName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
     <span class="n">fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+    <span class="n">eEnumGet</span><span class="o">:=</span><span class="n">eEnumGet</span><span class="p">,</span>
+    <span class="n">stYAxisState</span><span class="o">:=</span><span class="n">stYStage</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">NcToPlc</span><span class="o">.</span><span class="n">AxisState</span><span class="p">,</span>
+    <span class="n">fResponsivity</span><span class="o">:=</span><span class="n">fResponsivity</span><span class="p">,</span>
 <span class="p">);</span>
 <span class="n">fbGige</span><span class="p">();</span>
 <span class="n">fbFlowMeter</span><span class="p">(</span><span class="n">fOffset</span><span class="o">:=</span><span class="n">fFlowOffset</span><span class="p">);</span>
@@ -1603,125 +1606,342 @@ END_METHOD
 </section>
 <section id="fb-ppm-powermeter">
 <h2>FB_PPM_PowerMeter<a class="headerlink" href="#fb-ppm-powermeter" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_PPM_PowerMeter</span>
-<span class="n">VAR_INPUT</span>
-    <span class="n">fTempSP</span><span class="p">:</span> <span class="n">REAL</span><span class="p">;</span>
-    <span class="n">bVetoTempFFO</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
-    <span class="n">sDeviceName</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
-<span class="n">END_VAR</span>
-<span class="n">VAR_IN_OUT</span>
-    <span class="n">fbFFHWO</span><span class="p">:</span> <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
-<span class="n">END_VAR</span>
-<span class="n">VAR</span>
-    <span class="n">iVoltageINT</span> <span class="n">AT</span> <span class="o">%</span><span class="n">I</span><span class="o">*</span><span class="p">:</span> <span class="n">INT</span><span class="p">;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FUNCTION_BLOCK FB_PPM_PowerMeter
+VAR_INPUT
+    fTempSP: REAL;
+    bVetoTempFFO: BOOL;
+    sDeviceName: STRING;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">VOLT</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-        <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">mV</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fVoltage</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    // Used to know when to stop background auto-collection
+    eEnumGet: E_PPM_States;
+    stYAxisState: DWORD;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">VOLT_BUFFER</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-        <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">mV</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fVoltageBuffer</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1..1000</span><span class="p">]</span> <span class="n">OF</span> <span class="n">LREAL</span><span class="p">;</span>
+    // Calibrated for each gentec, should be passed as input
+    // If not set, responsive energy will not be calculated
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: RES
+        io: i
+        field: EGU V/W
+    &#39;}
+    fResponsivity: LREAL;
+END_VAR
+VAR_IN_OUT
+    fbFFHWO: FB_HardwareFFOutput;
+END_VAR
+VAR
+    iVoltageINT AT %I*: INT;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibBase</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: VOLT
+        io: input
+        field: EGU mV
+    &#39;}
+    fVoltage: LREAL;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB_BUFFER</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibBaseBuffer</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1..1000</span><span class="p">]</span> <span class="n">OF</span> <span class="n">LREAL</span><span class="p">;</span>
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: VOLT_BUFFER
+        io: input
+        field: EGU mV
+    &#39;}
+    fVoltageBuffer: ARRAY[1..1000] OF LREAL;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">MJ</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-        <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">mJ</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibMJ</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: STC
+        io: input
+    &#39;}
+    fbTempSensor: FB_CC_TempSensor;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">MJ_BUFFER</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-        <span class="n">field</span><span class="p">:</span> <span class="n">EGU</span> <span class="n">mJ</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibMJBuffer</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1..1000</span><span class="p">]</span> <span class="n">OF</span> <span class="n">LREAL</span><span class="p">;</span>
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">STC</span>
-        <span class="n">io</span><span class="p">:</span> <span class="nb">input</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fbTempSensor</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+    fFrequency: REAL;
+    // Used to get beam mode and rate
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: SXRAccTypeFromEpics
+        link: PHYS:UNDS:1:FACMODE.RVAL
+    &#39;}
+    uSXR_Accelerator: UINT;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: SXR_NC_BeamRateFromEpics
+        link: EVNT:SYS0:1:NC_SOFTRATE
+    &#39;}
+    fSXR_NC_Frequency: REAL;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: SXR_SC_BeamRateFromEpics
+        link: TPG:SYS0:1:DST04:RATE
+    &#39;}
+    uSXR_SC_Frequency: UINT;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB</span><span class="p">:</span><span class="n">OFFSET</span>
-        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibRelOffset</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: HXRAccTypeFromEpics
+        link: PHYS:UNDH:1:FACMODE.RVAL
+    &#39;}
+    uHXR_Accelerator: UINT;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: HXR_NC_BeamRateFromEpics
+        link: EVNT:SYS0:1:NC_HARDRATE
+    &#39;}
+    fHXR_NC_Frequency: REAL;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: HXR_SC_BeamRateFromEpics
+        link: TPG:SYS0:1:DST03:RATE
+    &#39;}
+    uHXR_SC_Frequency: UINT;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB</span><span class="p">:</span><span class="n">RATIO</span>
-        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibRelRatio</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    // Pulse-by-pulse energy and buffer
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: MJ
+        io: i
+        field: EGU mJ
+    &#39;}
+    fCalibMJ: LREAL;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: MJ_BUFFER
+        io: i
+        field: EGU mJ
+    &#39;}
+    fCalibMJBuffer: ARRAY[1..1000] OF LREAL;
 
-    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
-        <span class="n">pv</span><span class="p">:</span> <span class="n">CALIB</span><span class="p">:</span><span class="n">MJ_RATIO</span>
-        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
-    <span class="s1">&#39;}</span>
-    <span class="n">fCalibMJRatio</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+    // Wattage and buffer
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: WATT
+        io: i
+        field: EGU mW
+    &#39;}
+    fPulseWattage: LREAL;
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: WATT_BUFFER
+        io: i
+        field: EGU mW
+    &#39;}
+    fPulseWattageBuffer: ARRAY[1..1000] OF LREAL;
 
-    <span class="n">fbGetPMVoltage</span><span class="p">:</span> <span class="n">FB_AnalogInput</span><span class="p">;</span>
-    <span class="n">fbVoltageBuffer</span><span class="p">:</span> <span class="n">FB_LREALBuffer</span><span class="p">;</span>
-    <span class="n">fbCalibBaseBuffer</span><span class="p">:</span> <span class="n">FB_LREALBuffer</span><span class="p">;</span>
-    <span class="n">fbCalibMJBuffer</span><span class="p">:</span> <span class="n">FB_LREALBuffer</span><span class="p">;</span>
-<span class="n">END_VAR</span>
-<span class="n">fbTempSensor</span><span class="p">(</span>
-    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fTempSP</span><span class="p">,</span>
-    <span class="n">bVeto</span><span class="o">:=</span><span class="n">bVetoTempFFO</span><span class="p">,</span>
-    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
-    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
-<span class="p">);</span>
+    // Background voltage
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: BACK:VOLT
+        io: io
+        field: EGU mV
+    &#39;}
+    fBackgroundVoltage: LREAL;
 
-<span class="o">//</span> <span class="n">Convert</span> <span class="n">the</span> <span class="n">terminal</span><span class="s1">&#39;s integer into a value in millivolts</span>
-<span class="n">fbGetPMVoltage</span><span class="p">(</span>
-    <span class="n">iRaw</span> <span class="o">:=</span> <span class="n">iVoltageINT</span><span class="p">,</span>
-    <span class="n">iTermBits</span> <span class="o">:=</span> <span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span> <span class="o">:=</span> <span class="mi">10000</span><span class="p">,</span>
-    <span class="n">fTermMin</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">fReal</span> <span class="o">=&gt;</span> <span class="n">fVoltage</span><span class="p">);</span>
+    // Internal variables for background voltage auto-collection
+    fBackgroundVoltageAcc: LREAL;
+    uAccCount: UINT;
+    fBackgroundVoltageSum: LREAL;
+    fBackgroundVoltageStale: LREAL;
+    tonBackgroundAutoCollecting: TON;
+    fBackgroundVoltageBuffer: ARRAY[1..100] OF LREAL;
+    udBackgroundVoltageBufferIndex: UDINT := 1;
+    rTrig_Background : R_TRIG;
+    i: UDINT;
+    // Used to reset auto-collected background buffer, and fBackgroundVoltage if in Passive mode
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: BACK:RESET
+        io: io
+    &#39;}
+    bResetAutoBackground: BOOL;
 
-<span class="o">//</span> <span class="n">Power</span> <span class="n">meter</span> <span class="n">calibration</span>
-<span class="n">fCalibBase</span> <span class="o">:=</span> <span class="p">(</span><span class="n">fVoltage</span> <span class="o">+</span> <span class="n">fCalibRelOffset</span><span class="p">)</span> <span class="o">*</span> <span class="n">fCalibRelRatio</span><span class="p">;</span>
-<span class="n">fCalibMJ</span> <span class="o">:=</span> <span class="n">fCalibBase</span> <span class="o">*</span> <span class="n">fCalibMJRatio</span><span class="p">;</span>
+    // In manual mode, auto-background updates buffer but does not change fBackgroundVoltage
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: BACK:MODE
+        io: io
+    &#39;}
+    BACKGROUND_MODE: (Manual, Passive) := Passive;
 
-<span class="o">//</span> <span class="n">Buffer</span> <span class="n">the</span> <span class="n">full</span><span class="o">-</span><span class="n">rate</span> <span class="n">Voltage</span> <span class="ow">and</span> <span class="n">calibrated</span> <span class="n">MJ</span> <span class="n">values</span>
-<span class="n">fbVoltageBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fVoltage</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fVoltageBuffer</span><span class="p">);</span>
-<span class="n">fbCalibBaseBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fCalibBase</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fCalibBaseBuffer</span><span class="p">);</span>
-<span class="n">fbCalibMJBuffer</span><span class="p">(</span>
-    <span class="n">bExecute</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">,</span>
-    <span class="n">fInput</span> <span class="o">:=</span> <span class="n">fCalibMJ</span><span class="p">,</span>
-    <span class="n">arrOutput</span> <span class="o">=&gt;</span> <span class="n">fCalibMJBuffer</span><span class="p">);</span>
+    // Boolean to trigger collection of background voltages
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: BACK:COLL
+        io: io
+    &#39;}
+    bBackgroundCollect: BOOL;
 
-<span class="n">END_FUNCTION_BLOCK</span>
+    // Time in seconds to collect background voltages for
+    {attribute &#39;pytmc&#39; := &#39;
+        pv: BACK:TIME
+        io: io
+        field: EGU s
+    &#39;}
+    uBackgroundCollectionTime: UINT := 60;
+    tofBackgroundCollecting: TOF;
+    udBackgroundManualCount: UDINT;
+
+    fbGetPMVoltage: FB_AnalogInput;
+
+    fbVoltageBuffer: FB_LREALBuffer;
+    fbPulseWattageBuffer: FB_LREALBuffer;
+    fbCalibMJBuffer: FB_LREALBuffer;
+
+    FFO: FB_FastFault :=(
+        i_Desc := &#39;Fault occurs when the per-pulse energy reading is high enough to damage the power meter&#39;,
+        i_TypeCode := 16#500);
+    bOverAllowableEnergy: BOOL;
+END_VAR
+VAR_STAT CONSTANT
+    // Voltage limits for wavelength ranges
+    uSoftWavelengthEdge1: UINT := 300;
+    uSoftWavelengthEdge1L: UINT := 299;
+    uSoftWavelengthEdge2: UINT := 1000;
+    uSoftWavelengthEdge2L: UINT := 999;
+    uSoftWavelengthEdge3: UINT := 1560;
+    uSoftWavelengthEdge3L: UINT := 1559;
+    uSoftWavelengthEdge4: UINT := 2000;
+    uSoftWavelengthEdge4L: UINT := 1999;
+
+    uHardWavelengthEdge1: UINT := 1000;
+    uHardWavelengthEdge2: UINT := 1500;
+    uHardWavelengthEdge2L: UINT := 1499;
+    uHardWavelengthEdge3: UINT := 4000;
+    uHardWavelengthEdge3L: UINT := 3999;
+END_VAR
+fbTempSensor(
+    fFaultThreshold:=fTempSP,
+    bVeto:=bVetoTempFFO,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
+
+// Convert the terminal&#39;s integer into a value in millivolts
+fbGetPMVoltage(
+    iRaw := iVoltageINT,
+    iTermBits := 15,
+    fTermMax := 10000,
+    fTermMin := 0,
+    fReal =&gt; fVoltage);
+
+rTrig_Background(CLK:=(eEnumGet &lt;&gt; E_PPM_States.OUT OR stYAxisState &lt;&gt; 0));
+// Reset buffer and related variables
+IF rTrig_Background.Q OR bResetAutoBackground THEN
+    IF bResetAutoBackground THEN
+        bResetAutoBackground := FALSE;
+        IF BACKGROUND_MODE = Passive THEN
+            fBackgroundVoltage := 0;
+        END_IF
+    ELSE
+        // Dump 5s worth of readings
+        IF udBackgroundVoltageBufferIndex &gt; 6 THEN
+            FOR i := (udBackgroundVoltageBufferIndex - 5) TO (udBackgroundVoltageBufferIndex - 1) DO
+                fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageBuffer[i MOD 100];
+            END_FOR
+            udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex - 5;
+            IF udBackgroundVoltageBufferIndex &lt;&gt; 1 AND BACKGROUND_MODE = Passive THEN
+                fBackgroundVoltage := fBackgroundVoltageSum / MIN((udBackgroundVoltageBufferIndex - 1), 100);
+            END_IF
+        ELSIF BACKGROUND_MODE = Passive THEN
+                fBackgroundVoltage := 0;
+        END_IF
+    END_IF
+    fBackgroundVoltageAcc := 0;
+    fBackgroundVoltageSum := 0;
+    tonBackgroundAutoCollecting(IN := FALSE);
+    udBackgroundVoltageBufferIndex := 1;
+ELSIF eEnumGet = E_PPM_States.OUT AND stYAxisState = 0 THEN
+    tonBackgroundAutoCollecting( IN := TRUE, PT := T#1000MS);
+    // Every second, move fBackgroundVoltageAcc into buffer and sum
+    IF tonBackgroundAutoCollecting.Q = TRUE THEN
+        tonBackgroundAutoCollecting( IN := FALSE);
+        fBackgroundVoltageStale := fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex MOD 100];
+        fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex MOD 100] := fBackgroundVoltageAcc / uAccCount;
+        // Remove overwritten voltage
+        IF udBackgroundVoltageBufferIndex &gt; 100 THEN
+            fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageStale;
+        END_IF
+        fBackgroundVoltageSum := fBackgroundVoltageSum + fBackgroundVoltageAcc / uAccCount;
+        fBackgroundVoltageAcc := fVoltage;
+        uAccCount := 1;
+        udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex + 1;
+    ELSE
+        uAccCount := uAccCount + 1;
+        fBackgroundVoltageAcc := fBackgroundVoltageAcc + fVoltage;
+    END_IF
+
+END_IF
+
+IF udBackgroundVoltageBufferIndex &lt;&gt; 1 AND BACKGROUND_MODE = Passive THEN
+    fBackgroundVoltage := fBackgroundVoltageSum / MIN((udBackgroundVoltageBufferIndex - 1), 100);
+END_IF
+
+// Start collecting background in manual mode - 60s by default but can be set with uBackgroundCollectionTime
+IF bBackgroundCollect = TRUE THEN
+    bBackgroundCollect := FALSE;
+    udBackgroundManualCount := 0;
+    fBackgroundVoltage := 0;
+    tofBackgroundCollecting(IN := TRUE);
+END_IF
+
+
+tofBackgroundCollecting(IN := FALSE, PT := UINT_TO_TIME(uBackgroundCollectionTime * 1000));
+IF tofBackgroundCollecting.Q = TRUE THEN
+    udBackgroundManualCount := udBackgroundManualCount + 1;
+    IF BACKGROUND_MODE = Manual THEN
+        fBackgroundVoltage := (fBackgroundVoltage * (udBackgroundManualCount - 1) + fVoltage) / udBackgroundManualCount;
+    END_IF
+END_IF
+
+// Getting frequency based on accelerator source
+(*
+CASE uAccelerator OF
+    0: uFrequency := uNCFrequency;
+    1: uFrequency := uSCFrequency;
+    2: uFrequency := 0; // ASTA?
+ELSE
+    uFrequency := 0;
+END_CASE*)
+
+{IF defined (K)}
+    IF uSXR_Accelerator = 0 THEN
+        fFrequency := fSXR_NC_Frequency;
+    ELSIF uSXR_Accelerator = 1 THEN
+        fFrequency := uSXR_SC_Frequency;
+    END_IF
+{ELSIF defined (L)}
+    IF uHXR_Accelerator = 0 THEN
+        fFrequency := fHXR_NC_Frequency;
+    ELSIF uHXR_Accelerator = 1 THEN
+        fFrequency := uHXR_SC_Frequency;
+    END_IF
+{END_IF}
+
+// Getting wattage and energy
+fPulseWattage := SEL(fResponsivity &lt;&gt; 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
+fCalibMJ := SEL(fFrequency &lt;&gt; 0, -9999, fPulseWattage / fFrequency);
+
+// FF in case voltage is high enough to damage power meter based on wavelength
+{IF defined (K)}
+    CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
+        0 .. uSoftWavelengthEdge1L: bOverAllowableEnergy := fCalibMJ &gt; 2;
+        uSoftWavelengthEdge1 .. uSoftWavelengthEdge2L : bOverAllowableEnergy := fCalibMJ &gt; 2;
+        uSoftWavelengthEdge2 .. uSoftWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ &gt; 4;
+        uSoftWavelengthEdge3 .. uSoftWavelengthEdge4L: bOverAllowableEnergy := fCalibMJ &gt; 0.5;
+        uSoftWavelengthEdge4 .. 65535: bOverAllowableEnergy := fCalibMJ &gt; 1;
+    END_CASE
+{ELSIF defined (L)}
+    CASE REAL_TO_UINT(PMPS_GVL.cstFullBeam.neV) OF
+        uHardWavelengthEdge1 .. uHardWavelengthEdge2L: bOverAllowableEnergy := fCalibMJ &gt; 10;
+        uHardWavelengthEdge2 .. uHardWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ &gt; 4;
+        uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ &gt; 10;
+    END_CASE
+{END_IF}
+FFO(i_xOK := bOverAllowableEnergy,
+    io_fbFFHWO := fbFFHWO);
+
+// Buffer the full-rate Voltage, Pulse wattage, and calibrated MJ values
+fbVoltageBuffer(
+    bExecute := TRUE,
+    fInput := fVoltage,
+    arrOutput =&gt; fVoltageBuffer);
+fbPulseWattageBuffer(
+    bExecute := TRUE,
+    fInput := fPulseWattage,
+    arrOutput =&gt; fPulseWattageBuffer);
+fbCalibMJBuffer(
+    bExecute := TRUE,
+    fInput := fCalibMJ,
+    arrOutput =&gt; fCalibMJBuffer);
+
+END_FUNCTION_BLOCK
 </pre></div>
 </div>
 <dl class="simple">
 <dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#e-ppm-states">E_PPM_States</a></p></li>
 <li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
 </ul>
 </dd>
