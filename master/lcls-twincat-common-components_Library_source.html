@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUTs &mdash; pcdshub/lcls-twincat-common-components  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/tree.css?v=837a00b9" />
       <link rel="stylesheet" type="text/css" href="_static/width.css?v=ab210c7a" />
 
@@ -1818,7 +1818,7 @@ IF rTrig_Background.Q OR bResetAutoBackground THEN
         // Dump 5s worth of readings
         IF udBackgroundVoltageBufferIndex &gt; 6 THEN
             FOR i := (udBackgroundVoltageBufferIndex - 5) TO (udBackgroundVoltageBufferIndex - 1) DO
-                fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageBuffer[i MOD 100];
+                fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageBuffer[((i-1) MOD 100) + 1];
             END_FOR
             udBackgroundVoltageBufferIndex := udBackgroundVoltageBufferIndex - 5;
             IF udBackgroundVoltageBufferIndex &lt;&gt; 1 AND BACKGROUND_MODE = Passive THEN
@@ -1837,8 +1837,8 @@ ELSIF eEnumGet = E_PPM_States.OUT AND stYAxisState = 0 THEN
     // Every second, move fBackgroundVoltageAcc into buffer and sum
     IF tonBackgroundAutoCollecting.Q = TRUE THEN
         tonBackgroundAutoCollecting( IN := FALSE);
-        fBackgroundVoltageStale := fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex MOD 100];
-        fBackgroundVoltageBuffer[udBackgroundVoltageBufferIndex MOD 100] := fBackgroundVoltageAcc / uAccCount;
+        fBackgroundVoltageStale := fBackgroundVoltageBuffer[((udBackgroundVoltageBufferIndex - 1) MOD 100) + 1];
+        fBackgroundVoltageBuffer[((udBackgroundVoltageBufferIndex - 1) MOD 100) + 1] := fBackgroundVoltageAcc / uAccCount;
         // Remove overwritten voltage
         IF udBackgroundVoltageBufferIndex &gt; 100 THEN
             fBackgroundVoltageSum := fBackgroundVoltageSum - fBackgroundVoltageStale;
