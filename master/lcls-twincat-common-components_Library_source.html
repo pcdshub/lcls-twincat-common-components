@@ -1919,7 +1919,8 @@ fCalibMJ := SEL(fFrequency &lt;&gt; 0, -9999, fPulseWattage / fFrequency);
         uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ &gt; 10;
     END_CASE
 {END_IF}
-FFO(i_xOK := bOverAllowableEnergy,
+FFO(i_xOK := NOT bOverAllowableEnergy,
+    i_DevName := sDeviceName,
     io_fbFFHWO := fbFFHWO);
 
 // Buffer the full-rate Voltage, Pulse wattage, and calibrated MJ values
