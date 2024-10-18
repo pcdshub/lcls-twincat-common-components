@@ -31,9 +31,9 @@ VAR_INPUT
     stTarget4: ST_PositionState;
     // Settings for the TARGET5 state.
     stTarget5: ST_PositionState;
-    // Settings for the TARGET4 state.
+    // Settings for the TARGET6 state.
     stTarget6: ST_PositionState;
-    // Settings for the TARGET5 state.
+    // Settings for the TARGET7 state.
     stTarget7: ST_PositionState;
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
