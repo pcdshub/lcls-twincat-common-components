@@ -31,6 +31,10 @@ VAR_INPUT
     stTarget4: ST_PositionState;
     // Settings for the TARGET5 state.
     stTarget5: ST_PositionState;
+    // Settings for the TARGET4 state.
+    stTarget6: ST_PositionState;
+    // Settings for the TARGET5 state.
+    stTarget7: ST_PositionState;
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
@@ -104,6 +108,8 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stTarget3, sNameDefault:='TARGET3', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
     fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget6, sNameDefault:='TARGET6', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget7, sNameDefault:='TARGET7', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
 stYStage.bHardwareEnable := TRUE;
@@ -130,6 +136,8 @@ IF NOT fbArrCheckWrite.bHadWrite THEN
     astPositionState[E_ATM_States.TARGET3] := stTarget3;
     astPositionState[E_ATM_States.TARGET4] := stTarget4;
     astPositionState[E_ATM_States.TARGET5] := stTarget5;
+    astPositionState[E_ATM_States.TARGET6] := stTarget6;
+    astPositionState[E_ATM_States.TARGET7] := stTarget7;
 END_IF
 
 fbStates(
@@ -160,6 +168,8 @@ stTarget2 := astPositionState[E_ATM_States.TARGET2];
 stTarget3 := astPositionState[E_ATM_States.TARGET3];
 stTarget4 := astPositionState[E_ATM_States.TARGET4];
 stTarget5 := astPositionState[E_ATM_States.TARGET5];
+stTarget6 := astPositionState[E_ATM_States.TARGET6];
+stTarget7 := astPositionState[E_ATM_States.TARGET7];
 
 fbTempSensor1(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
