@@ -269,15 +269,6 @@ IF tofBackgroundCollecting.Q = TRUE THEN
 END_IF
 
 // Getting frequency based on accelerator source
-(*
-CASE uAccelerator OF
-    0: uFrequency := uNCFrequency;
-    1: uFrequency := uSCFrequency;
-    2: uFrequency := 0; // ASTA?
-ELSE
-    uFrequency := 0;
-END_CASE*)
-
 {IF defined (K)}
     IF PMPS_GVL.stCurrentBeamParameters.nMachineMode = 0 THEN
         fFrequency := fSXR_NC_Frequency;
