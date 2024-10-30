@@ -304,7 +304,7 @@ fCalibMJ := SEL(fFrequency <> 0, -9999, fPulseWattage / fFrequency);
         uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ > 10;
     END_CASE
 {END_IF}
-IF eEnumGet <> E_PPM_States.OUT AND bOverAllowableEnergy = TRUE THEN
+IF eEnumGet <> E_PPM_States.OUT AND bOverAllowableEnergy THEN
     uOverCounter := MIN(uOverCounter + 2, 50);
 ELSE
     uOverCounter := MAX(uOverCounter - 1, 1);
