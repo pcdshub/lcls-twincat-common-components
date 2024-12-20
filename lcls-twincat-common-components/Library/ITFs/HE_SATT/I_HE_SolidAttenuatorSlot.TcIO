@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorSlot" Id="{3e8eeb75-9916-40f0-88b6-19addd7d485a}">
+    <Declaration><![CDATA[
+INTERFACE I_HE_SolidAttenuatorSlot EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetCenterPosition" Id="{78205785-44e1-4ed3-afae-b705d8b77b5d}">
+      <Declaration><![CDATA[
+METHOD GetCenterPosition
+VAR_INPUT
+    CenterPosition : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetLength" Id="{fb86d9c1-a43b-47b3-a6d9-79c92ba8b474}">
+      <Declaration><![CDATA[
+METHOD GetLength
+VAR_INPUT
+    Length : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetMaterial" Id="{24854c65-cec0-4921-a4c5-3586e6d76869}">
+      <Declaration><![CDATA[
+METHOD GetMaterial
+VAR_IN_OUT
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetState" Id="{140499a8-d9f5-418c-ac5f-ee50adf2d1f8}">
+      <Declaration><![CDATA[
+METHOD GetState : E_HE_SolidAttenuatorSlotState
+]]></Declaration>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{9ecc5f3d-b8f9-40d0-a6b0-269c8fded543}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates : I_QuantityLREAL;
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{d1bf7eb8-81af-44da-a73f-22357072aa32}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter : I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="IsEnabled" Id="{4e1f759c-f599-4a61-9148-d1e107784260}">
+      <Declaration><![CDATA[
+METHOD IsEnabled : BOOL
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

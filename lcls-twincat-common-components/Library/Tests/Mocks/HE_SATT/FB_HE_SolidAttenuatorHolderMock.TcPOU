@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorHolderMock" Id="{97032738-f9d4-4a7b-b0ed-ed2164124302}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderMock EXTENDS FB_FalliblePublicMock IMPLEMENTS I_HE_SolidAttenuatorHolder
+VAR
+    nNumberOfSlots : INT;
+    stSettings : ST_HE_SolidAttenuatorHolderSettings;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="GetNumberOfSlots" Id="{15e4c3d3-2c46-4d34-b72d-3b65b88630ee}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetNumberOfSlots : INT
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetSettings" Id="{901c2515-f91d-4b82-8d34-c135b3a11596}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetSettings
+VAR_IN_OUT
+    Settings	: ST_HE_SolidAttenuatorHolderSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetSlotAt" Id="{18ebd8ca-3da7-40e1-a134-e5fdcbe6ab82}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetSlotAt
+VAR_INPUT
+    Position	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

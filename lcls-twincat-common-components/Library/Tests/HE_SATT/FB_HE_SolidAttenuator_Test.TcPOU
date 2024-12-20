@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuator_Test" Id="{1b4c1eea-24a1-4066-b059-d2bef1b9e796}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuator_Test EXTENDS FB_TestSuiteExtended
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="SetNominalCase" Id="{a2f38704-14db-4803-b465-4d42ad52f38f}">
+      <Declaration><![CDATA[
+METHOD PRIVATE SetNominalCase
+VAR_IN_OUT
+    HE_SolidAttenuatorSettingsMock : FB_HE_SolidAttenuatorSettingsMock;
+    PhotonEnergyMock : FB_QuantityLREALPublicMock;
+    TransmissionMock : FB_QuantityLREALPublicMock;
+    HE_SolidAttenuatorHolderA1Mock : FB_HE_SolidAttenuatorHolderMock;
+    HE_SolidAttenuatorHolderA2Mock : FB_HE_SolidAttenuatorHolderMock;
+    HE_SolidAttenuatorHolderA3Mock : FB_HE_SolidAttenuatorHolderMock;
+    HE_SolidAttenuatorHolderA4Mock : FB_HE_SolidAttenuatorHolderMock;
+    HE_SolidAttenuatorHolderA5Mock : FB_HE_SolidAttenuatorHolderMock;
+END_VAR
+VAR
+    stSettings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+stSettings.bEnabled := TRUE;
+stSettings.eMode := E_HE_SolidAttenuatorCalculationMode.FLOOR;
+HE_SolidAttenuatorSettingsMock.SetSettings(Settings := stSettings);
+HE_SolidAttenuatorSettingsMock.ClearError();
+
+PhotonEnergyMock.Units := 'eV';
+PhotonEnergyMock.Val := 5000.0;
+PhotonEnergyMock.ClearError();
+
+TransmissionMock.Units := '1';
+TransmissionMock.Val := 0.5;
+TransmissionMock.ClearError();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestValidInputsCalculateExpectNoErrorCorrectResult" Id="{7d030b90-e547-4223-a986-ab5363d08ce3}">
+      <Declaration><![CDATA[
+METHOD PRIVATE TestValidInputsCalculateExpectNoErrorCorrectResult
+VAR
+    // Expected
+    fDelta : LREAL := 0.01; // % of Expected
+    stExpected : ST_HE_SolidAttenuatorOutput;
+
+    // Mocks
+    fbHE_SolidAttenuatorSettingsMock : FB_HE_SolidAttenuatorSettingsMock;
+    fbPhotonEnergyMock : FB_QuantityLREALPublicMock;
+    fbTransmissionMock : FB_QuantityLREALPublicMock;
+    fbHE_SolidAttenuatorHolderA1Mock : FB_HE_SolidAttenuatorHolderMock;
+    fbHE_SolidAttenuatorHolderA2Mock : FB_HE_SolidAttenuatorHolderMock;
+    fbHE_SolidAttenuatorHolderA3Mock : FB_HE_SolidAttenuatorHolderMock;
+    fbHE_SolidAttenuatorHolderA4Mock : FB_HE_SolidAttenuatorHolderMock;
+    fbHE_SolidAttenuatorHolderA5Mock : FB_HE_SolidAttenuatorHolderMock;
+
+    // Settings
+    stHE_SolidAttenuatorSettings : ST_HE_SolidAttenuatorSettings;
+
+    // Subject Under Test
+    fbHE_SolidAttenuator : FB_HE_SolidAttenuator(
+        Settings := fbHE_SolidAttenuatorSettingsMock,
+        PhotonEnergy := fbPhotonEnergyMock,
+        Transmission := fbTransmissionMock,
+        HolderA1 := fbHE_SolidAttenuatorHolderA1Mock,
+        HolderA2 := fbHE_SolidAttenuatorHolderA2Mock,
+        HolderA3 := fbHE_SolidAttenuatorHolderA3Mock,
+        HolderA4 := fbHE_SolidAttenuatorHolderA4Mock,
+        HolderA5 := fbHE_SolidAttenuatorHolderA5Mock
+    );
+    stResult : ST_HE_SolidAttenuatorOutput;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST(__POUNAME());
+
+SetNominalCase(
+    HE_SolidAttenuatorSettingsMock := fbHE_SolidAttenuatorSettingsMock,
+    PhotonEnergyMock := fbPhotonEnergyMock,
+    TransmissionMock := fbTransmissionMock,
+    HE_SolidAttenuatorHolderA1Mock := fbHE_SolidAttenuatorHolderA1Mock,
+    HE_SolidAttenuatorHolderA2Mock := fbHE_SolidAttenuatorHolderA2Mock,
+    HE_SolidAttenuatorHolderA3Mock := fbHE_SolidAttenuatorHolderA3Mock,
+    HE_SolidAttenuatorHolderA4Mock := fbHE_SolidAttenuatorHolderA4Mock,
+    HE_SolidAttenuatorHolderA5Mock := fbHE_SolidAttenuatorHolderA5Mock
+);
+
+fbHE_SolidAttenuator.Calculate();
+
+fbHE_SolidAttenuator();
+
+AssertNoError(Fallible := fbHE_SolidAttenuator);
+
+AssertNoErrorExpectedHE_SolidAttenuatorOutput(
+    Expected := stExpected,
+    Actual := stResult,
+    Delta := fDelta
+);
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

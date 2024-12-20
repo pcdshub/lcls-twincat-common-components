@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuator" Id="{0308bf0b-9079-42fc-a6b3-8754767b71e7}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuator EXTENDS FB_Fallible
+VAR
+    iSettings : I_HE_SolidAttenuatorSettings;
+    iAttenuationLengthDatabase : I_HE_SolidAttenuatorAttentuationLengthDatabase;
+    iBeamParameters : I_HE_SolidAttenuatorXRayBeamParameters;
+    iRequestedTransmission : I_QuantityLREAL;
+    iState : I_HE_SolidAttenuatorState;
+    iHolderA1 : I_HE_SolidAttenuatorHolder;
+    iHolderA2 : I_HE_SolidAttenuatorHolder;
+    iHolderA3 : I_HE_SolidAttenuatorHolder;
+    iHolderA4 : I_HE_SolidAttenuatorHolder;
+    iHolderA5 : I_HE_SolidAttenuatorHolder;
+
+    bBusy : BOOL;
+    bDone : BOOL;
+
+    fbCurrentTransmission : FB_QuantityLREALPublic(Units := '1');
+    bCalculateHolderPositionsCommand : BOOL;
+    bActivateQueuedHolderPositionsCommand : BOOL;
+    bValidCalculation : BOOL;
+    eState : E_HE_SolidAttenuatorState;
+    stSettings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+GetSettings(Settings := stSettings);
+
+eState := iState.GetState();
+
+CASE eState OF
+    E_HE_SolidAttenuatorState.MONITORING_MANUAL:
+    E_HE_SolidAttenuatorState.MONITORING_AUTO:
+    E_HE_SolidAttenuatorState.CALCULATING_AUTO:
+        CalculateHolderPositions();
+    E_HE_SolidAttenuatorState.CALCULATING_MANUAL:
+        CalculateHolderPositions();
+    E_HE_SolidAttenuatorState.MOVING_MANUAL:
+        ActivateQueuedHolderPositions();
+    E_HE_SolidAttenuatorState.MOVING_AUTO:
+    E_HE_SolidAttenuatorState.ERROR_MANUAL:
+    E_HE_SolidAttenuatorState.ERROR_AUTO:
+END_CASE
+
+GetCurrentTransmission(Transmission := fbCurrentTransmission);
+]]></ST>
+    </Implementation>
+    <Method Name="ActivateQueuedHolderPositions" Id="{de0b6ea0-d20c-46f6-8bff-21ae0bcc8ecf}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD ActivateQueuedHolderPositions
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateHolderPositions" Id="{40a2523b-30ac-4485-9628-e1df2abd7407}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD CalculateHolderPositions
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{6acfac08-5f66-4b17-825d-f8678fa991c3}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    Settings : I_HE_SolidAttenuatorSettings;
+    AttenuationLengthDatabase : I_HE_SolidAttenuatorAttentuationLengthDatabase;
+    BeamParameters : I_HE_SolidAttenuatorXRayBeamParameters;
+    RequestedTransmission : I_QuantityLREAL;
+    HolderA1 : I_HE_SolidAttenuatorHolder;
+    HolderA2 : I_HE_SolidAttenuatorHolder;
+    HolderA3 : I_HE_SolidAttenuatorHolder;
+    HolderA4 : I_HE_SolidAttenuatorHolder;
+    HolderA5 : I_HE_SolidAttenuatorHolder;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iSettings := Settings;
+iAttenuationLengthDatabase := AttenuationLengthDatabase;
+iBeamParameters := BeamParameters;
+iRequestedTransmission := RequestedTransmission;
+iHolderA1 := HolderA1;
+iHolderA2 := HolderA2;
+iHolderA3 := HolderA3;
+iHolderA4 := HolderA4;
+iHolderA5 := HolderA5;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetCurrentTransmission" Id="{a5031e5e-f029-433d-894f-729d280aa2ef}">
+      <Declaration><![CDATA[
+METHOD GetCurrentTransmission
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetSettings" Id="{2f8f58b3-5f5a-49c0-828f-a8647db0ea56}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetSettings
+VAR_IN_OUT
+    Settings	: ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

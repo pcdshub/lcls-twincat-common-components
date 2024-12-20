@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorCommands" Id="{967cca1c-4608-4517-b99b-1a03634089ef}">
+    <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorCommands EXTENDS I_Fallible
+]]></Declaration>
+  </Itf>
+</TcPlcObject>

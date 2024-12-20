@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorState" Id="{a3e53fae-c57e-4a2e-92e1-c5849e8de238}">
+    <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorState EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetState" Id="{d87b2537-df7d-4545-84af-f73c3719ed51}">
+      <Declaration><![CDATA[
+METHOD GetState : E_HE_SolidAttenuatorState
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

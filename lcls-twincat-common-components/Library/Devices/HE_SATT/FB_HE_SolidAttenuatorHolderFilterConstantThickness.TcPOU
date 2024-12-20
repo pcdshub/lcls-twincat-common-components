@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorHolderFilterConstantThickness" Id="{19348cb5-5839-459e-a6ab-3778342bf58c}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderFilterConstantThickness EXTENDS FB_Fallible IMPLEMENTS I_HE_SolidAttenuatorHolder
+VAR CONSTANT
+    nNumSlots : INT := 11;
+END_VAR
+VAR
+    iConvertUnits : I_ConvertUnitsLREAL;
+    iBeamPositionInAxisCoordinates : I_QuantityLREAL;
+    iMotionAxis : I_MotionAxis;
+    aiSlot : ARRAY[1..nNumSlots] OF I_HE_SolidAttenuatorSlot;
+
+    nIndex : INT;
+    fbQuerySlotCenterPositionInAxisCoordinates : FB_QuantityLREALPublic(Units := 'mm');
+    fbOffsetFromCenterInCorrectUnits : FB_QuantityLREALPublic(Units := 'mm');
+    fbTargetPositionForMoveInAxisCoordinates : FB_QuantityLREALPublic(Units := 'mm');
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{91b5f034-af28-42fa-a61b-e21d90ef94a1}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    ConvertUnits : I_ConvertUnitsLREAL;
+    BeamPositionInAxisCoordinates : I_QuantityLREAL;
+    MotionAxis : I_MotionAxis;
+    Slot01 : I_HE_SolidAttenuatorSlot;
+    Slot02 : I_HE_SolidAttenuatorSlot;
+    Slot03 : I_HE_SolidAttenuatorSlot;
+    Slot04 : I_HE_SolidAttenuatorSlot;
+    Slot05 : I_HE_SolidAttenuatorSlot;
+    Slot06 : I_HE_SolidAttenuatorSlot;
+    Slot07 : I_HE_SolidAttenuatorSlot;
+    Slot08 : I_HE_SolidAttenuatorSlot;
+    Slot09 : I_HE_SolidAttenuatorSlot;
+    Slot10 : I_HE_SolidAttenuatorSlot;
+    Slot11 : I_HE_SolidAttenuatorSlot;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits := ConvertUnits;
+iBeamPositionInAxisCoordinates := BeamPositionInAxisCoordinates;
+iMotionAxis := MotionAxis;
+aiSlot[1] := Slot01;
+aiSlot[2] := Slot02;
+aiSlot[3] := Slot03;
+aiSlot[4] := Slot04;
+aiSlot[5] := Slot05;
+aiSlot[6] := Slot06;
+aiSlot[7] := Slot07;
+aiSlot[8] := Slot08;
+aiSlot[9] := Slot09;
+aiSlot[10] := Slot10;
+aiSlot[11] := Slot11;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMaterialAtBeamPosition" Id="{9cd2d32a-9e4a-4f9c-bc87-ec08f0f10fa3}">
+      <Declaration><![CDATA[METHOD GetMaterialAtBeamPosition
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAtBeamPosition" Id="{c99b7cb4-92e5-4843-bac0-baa21563c2a9}">
+      <Declaration><![CDATA[METHOD GetThicknessAtBeamPosition
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{27e62117-305d-49a3-a8d2-048c150e06af}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter : I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+FOR nIndex := 1 TO nNumSlots BY 1 DO
+    HasSpecifiedFilter := aiSlot[nIndex].HasSpecifiedFilter(Filter := Filter);
+    IF HasSpecifiedFilter THEN
+        RETURN;
+    END_IF
+END_FOR
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedSlot" Id="{7079ba63-4439-4b0d-935f-3d4d2ac286d4}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedSlot : BOOL
+VAR_INPUT
+    Slot : I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+FOR nIndex := 1 TO nNumSlots BY 1 DO
+    HasSpecifiedSlot := Slot = aiSlot[nIndex];
+    IF HasSpecifiedSlot THEN
+        RETURN;
+    END_IF
+END_FOR
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveToSpecifiedSlot" Id="{82b159c5-3a5e-47fd-9673-a754064c754a}">
+      <Declaration><![CDATA[
+METHOD MoveToSpecifiedSlot
+VAR_INPUT
+    Slot : I_HE_SolidAttenuatorSlot;
+    OffsetFromCenter : I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IF NOT HasSpecifiedSlot(Slot := Slot) THEN
+    SetError(Msg := 'Specified slot to move to was not found in the holder.');
+    RETURN;
+END_IF
+
+Slot.GetCenterPosition(CenterPosition := fbQuerySlotCenterPositionInAxisCoordinates);
+
+iConvertUnits.ConvertQuantityLREAL(
+    QuantityToConvert := OffsetFromCenter,
+    DesiredUnits := fbQuerySlotCenterPositionInAxisCoordinates.Units,
+    ConvertedQuantity := fbOffsetFromCenterInCorrectUnits
+);
+
+IF iConvertUnits.GetError() THEN
+    SetError(Msg := 'Provided offset from center had invalid units.');
+    RETURN;
+END_IF
+
+fbTargetPositionForMoveInAxisCoordinates.Val := fbQuerySlotCenterPositionInAxisCoordinates.Val + fbOffsetFromCenterInCorrectUnits.Val;
+
+iMotionAxis.CommandMoveAbsolute(TargetPosition := fbTargetPositionForMoveInAxisCoordinates);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

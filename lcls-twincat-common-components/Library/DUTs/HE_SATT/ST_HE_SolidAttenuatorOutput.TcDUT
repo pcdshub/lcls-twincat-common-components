@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_HE_SolidAttenuatorOutput" Id="{f78eea49-241f-4df6-a7d4-8d7bb73fc67c}">
+    <Declaration><![CDATA[
+TYPE ST_HE_SolidAttenuatorOutput :
+STRUCT
+    bHolderA1Needed : BOOL;
+    fbHolderA1DesiredMaterial : T_MaxString;
+    fbHolderA1DesiredThickness : FB_QuantityLREALPublic(Units := 'um');
+
+    bHolderA2Needed : BOOL;
+    fbHolderA2DesiredMaterial : T_MaxString;
+    fbHolderA2DesiredThickness : FB_QuantityLREALPublic(Units := 'um');
+
+    bHolderA3Needed : BOOL;
+    fbHolderA3DesiredMaterial : T_MaxString;
+    fbHolderA3DesiredThickness : FB_QuantityLREALPublic(Units := 'um');
+
+    bHolderA4Needed : BOOL;
+    fbHolderA4DesiredMaterial : T_MaxString;
+    fbHolderA4DesiredThickness : FB_QuantityLREALPublic(Units := 'um');
+
+    bHolderA5Needed : BOOL;
+    fbHolderA5DesiredMaterial : T_MaxString;
+    fbHolderA5DesiredThickness : FB_QuantityLREALPublic(Units := 'um');
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

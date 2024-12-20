@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorState" Id="{77ef1fbc-cdce-44be-aeaa-e6e2799f4a2c}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorState IMPLEMENTS I_HE_SolidAttenuatorState
+VAR
+    iSettings : I_HE_SolidAttenuatorSettings;
+    iCommands : I_HE_SolidAttenuatorCommands;
+    eState : E_HE_SolidAttenuatorState;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{38e475e6-03ff-459c-b194-79c8ad21fff3}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    Settings : I_HE_SolidAttenuatorSettings;
+    Commands : I_HE_SolidAttenuatorCommands;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetState" Id="{2ddf7644-1c3e-4870-9d92-a207e115cc80}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetState : E_HE_SolidAttenuatorState
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

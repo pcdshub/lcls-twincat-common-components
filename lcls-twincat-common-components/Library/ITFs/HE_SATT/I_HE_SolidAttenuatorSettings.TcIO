@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorSettings" Id="{9b0b5766-1026-4b5f-a488-7f1bf59d2945}">
+    <Declaration><![CDATA[
+INTERFACE I_HE_SolidAttenuatorSettings EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetSettings" Id="{852a8dea-8e78-4b40-a562-1d89834ba8e5}">
+      <Declaration><![CDATA[
+METHOD GetSettings
+VAR_IN_OUT
+    Settings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

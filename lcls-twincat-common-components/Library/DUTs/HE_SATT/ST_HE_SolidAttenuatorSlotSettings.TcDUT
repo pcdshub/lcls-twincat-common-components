@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_HE_SolidAttenuatorSlotSettings" Id="{34a02836-e654-4aa3-bf7f-f34baf13f071}">
+    <Declaration><![CDATA[
+TYPE ST_HE_SolidAttenuatorSlotSettings :
+STRUCT
+    bEnabled : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
