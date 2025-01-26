@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR_INPUT
@@ -19,12 +19,22 @@ VAR_INPUT
         field: EGU V/W
     '}
     fResponsivity: LREAL;
+
+    // Passed to FB_AnalogInput
+    // The initial values are correct for EL3062,
+    // but not for EL3602, which needs iTermBits:=31
+    // with fTermMax and fTermMin dependent on what
+    // range the terminal was configured to use
+    // (default -10000mV to +10000mV)
+    iTermBits : UINT := 15;
+    fTermMax : REAL := 10000;
+    fTermMin: REAL := 0;
 END_VAR
 VAR_IN_OUT
     fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR
-    iVoltageINT AT %I*: INT;
+    iVoltageINT AT %I*: DINT;
 
     {attribute 'pytmc' := '
         pv: VOLT
@@ -194,9 +204,9 @@ END_VAR]]></Declaration>
 // Convert the terminal's integer into a value in millivolts
 fbGetPMVoltage(
     iRaw := iVoltageINT,
-    iTermBits := 15,
-    fTermMax := 10000,
-    fTermMin := 0,
+    iTermBits := iTermBits,
+    fTermMax := fTermMax,
+    fTermMin := fTermMin,
     fReal => fVoltage);
 
 rTrig_Background(CLK:=(eEnumGet <> E_PPM_States.OUT OR stYAxisState <> 0));

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 (*
@@ -59,6 +59,16 @@ VAR_INPUT
     fFlowOffset: LREAL := 0;
     // Responsivity for power meter
     fResponsivity: LREAL;
+
+    // Passed to FB_AnalogInput
+    // The initial values are correct for EL3062,
+    // but not for EL3602, which needs iTermBits:=31
+    // with fTermMax and fTermMin dependent on what
+    // range the terminal was configured to use
+    // (default -10000mV to +10000mV)
+    iTermBits : UINT := 15;
+    fTermMax : REAL := 10000;
+    fTermMin: REAL := 0;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -173,6 +183,9 @@ fbPowerMeter(
     eEnumGet:=eEnumGet,
     stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
     fResponsivity:=fResponsivity,
+    iTermBits:=iTermBits,
+    fTermMax:=fTermMax,
+    fTermMin:=fTermMin,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
