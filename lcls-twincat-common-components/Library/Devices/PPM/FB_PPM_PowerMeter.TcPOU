@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM_PowerMeter" Id="{fedad4c7-7971-4466-a86d-d67d48d0e596}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM_PowerMeter
 VAR_INPUT
@@ -66,7 +66,7 @@ VAR
     fSXR_NC_Frequency: REAL;
     {attribute 'pytmc' := '
         pv: SXR_SC_BeamRateFromEpics
-        link: TPG:SYS0:1:DST04:RATE
+        link: TPG:SYS0:1:DST04:RATE_RBV
     '}
     uSXR_SC_Frequency: UINT;
 
@@ -77,7 +77,7 @@ VAR
     fHXR_NC_Frequency: REAL;
     {attribute 'pytmc' := '
         pv: HXR_SC_BeamRateFromEpics
-        link: TPG:SYS0:1:DST03:RATE
+        link: TPG:SYS0:1:DST03:RATE_RBV
     '}
     uHXR_SC_Frequency: UINT;
 
@@ -169,29 +169,6 @@ VAR
     fbVoltageBuffer: FB_LREALBuffer;
     fbPulseWattageBuffer: FB_LREALBuffer;
     fbCalibMJBuffer: FB_LREALBuffer;
-
-    FF: FB_FastFault :=(
-        i_Desc := 'Fault occurs when the per-pulse energy reading is high enough to damage the power meter',
-        i_TypeCode := 16#500);
-    bOverAllowableEnergy: BOOL;
-    uOverCounter: UINT := 1;
-END_VAR
-VAR_STAT CONSTANT
-    // Voltage limits for wavelength ranges
-    uSoftWavelengthEdge1: UINT := 300;
-    uSoftWavelengthEdge1L: UINT := 299;
-    uSoftWavelengthEdge2: UINT := 1000;
-    uSoftWavelengthEdge2L: UINT := 999;
-    uSoftWavelengthEdge3: UINT := 1560;
-    uSoftWavelengthEdge3L: UINT := 1559;
-    uSoftWavelengthEdge4: UINT := 2000;
-    uSoftWavelengthEdge4L: UINT := 1999;
-
-    uHardWavelengthEdge1: UINT := 1000;
-    uHardWavelengthEdge2: UINT := 1500;
-    uHardWavelengthEdge2L: UINT := 1499;
-    uHardWavelengthEdge3: UINT := 4000;
-    uHardWavelengthEdge3L: UINT := 3999;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[fbTempSensor(
@@ -202,6 +179,9 @@ END_VAR]]></Declaration>
 );
 
 // Convert the terminal's integer into a value in millivolts
+// If you get a compile-time error about converting type DINT
+// to type INT, update your lcls-general version to at least
+// v2.12.0
 fbGetPMVoltage(
     iRaw := iVoltageINT,
     iTermBits := iTermBits,
@@ -297,31 +277,6 @@ END_IF
 // Getting wattage and energy
 fPulseWattage := SEL(fResponsivity <> 0, 0, (fVoltage - fBackgroundVoltage) / fResponsivity);
 fCalibMJ := SEL(fFrequency <> 0, -9999, fPulseWattage / fFrequency);
-
-// FF in case voltage is high enough to damage power meter based on wavelengths
-{IF defined (K)}
-    CASE REAL_TO_UINT(PMPS_GVL.stCurrentBeamParameters.neV) OF
-        0 .. uSoftWavelengthEdge1L: bOverAllowableEnergy := fCalibMJ > 2;
-        uSoftWavelengthEdge1 .. uSoftWavelengthEdge2L : bOverAllowableEnergy := fCalibMJ > 2;
-        uSoftWavelengthEdge2 .. uSoftWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ > 4;
-        uSoftWavelengthEdge3 .. uSoftWavelengthEdge4L: bOverAllowableEnergy := fCalibMJ > 0.5;
-        uSoftWavelengthEdge4 .. 65535: bOverAllowableEnergy := fCalibMJ > 1;
-    END_CASE
-{ELSIF defined (L)}
-    CASE REAL_TO_UINT(PMPS_GVL.stCurrentBeamParameters.neV) OF
-        uHardWavelengthEdge1 .. uHardWavelengthEdge2L: bOverAllowableEnergy := fCalibMJ > 10;
-        uHardWavelengthEdge2 .. uHardWavelengthEdge3L: bOverAllowableEnergy := fCalibMJ > 4;
-        uHardWavelengthEdge3 .. 65535: bOverAllowableEnergy := fCalibMJ > 10;
-    END_CASE
-{END_IF}
-IF eEnumGet = E_PPM_States.POWERMETER AND bOverAllowableEnergy THEN
-    uOverCounter := MIN(uOverCounter + 1, 10);
-ELSE
-    uOverCounter := 0;
-END_IF
-FF(i_xOK := eEnumGet <> E_PPM_States.POWERMETER OR uOverCounter < 10,
-    i_DevName := sDeviceName,
-    io_fbFFHWO := fbFFHWO);
 
 // Buffer the full-rate Voltage, Pulse wattage, and calibrated MJ values
 fbVoltageBuffer(
