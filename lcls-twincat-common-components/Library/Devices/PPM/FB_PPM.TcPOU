@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.18">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPM
 (*
@@ -177,7 +177,7 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 
 fbPowerMeter(
     fTempSP:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
+    bVetoTempFFO:=eEnumGet <> E_PPM_States.POWERMETER,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
     eEnumGet:=eEnumGet,
