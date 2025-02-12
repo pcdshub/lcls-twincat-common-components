@@ -59,6 +59,16 @@ VAR_INPUT
     fFlowOffset: LREAL := 0;
     // Responsivity for power meter
     fResponsivity: LREAL;
+
+    // Passed to FB_AnalogInput
+    // The initial values are correct for EL3062,
+    // but not for EL3602, which needs iTermBits:=31
+    // with fTermMax and fTermMin dependent on what
+    // range the terminal was configured to use
+    // (default -10000mV to +10000mV)
+    iTermBits : UINT := 15;
+    fTermMax : REAL := 10000;
+    fTermMin: REAL := 0;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -167,12 +177,15 @@ stYag2 := astPositionState[E_PPM_States.YAG2];
 
 fbPowerMeter(
     fTempSP:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVetoTempFFO:=eEnumGet = E_PPM_States.OUT,
+    bVetoTempFFO:=eEnumGet <> E_PPM_States.POWERMETER,
     sDeviceName:=sDeviceName,
     fbFFHWO:=fbFFHWO,
     eEnumGet:=eEnumGet,
     stYAxisState:=stYStage.Axis.NcToPlc.AxisState,
     fResponsivity:=fResponsivity,
+    iTermBits:=iTermBits,
+    fTermMax:=fTermMax,
+    fTermMin:=fTermMin,
 );
 fbGige();
 fbFlowMeter(fOffset:=fFlowOffset);
