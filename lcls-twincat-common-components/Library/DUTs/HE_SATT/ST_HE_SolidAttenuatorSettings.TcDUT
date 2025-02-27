@@ -5,8 +5,11 @@
 TYPE ST_HE_SolidAttenuatorSettings :
 STRUCT
     bEnabled : BOOL;
-    eMode : E_HE_SolidAttenuatorCalculationMode;
+    eRoundingMode : E_HE_SolidAttenuatorCalculationMode;
     bDynamicCalculation : BOOL;
+    fbDiamondOnlySiliconThicknessThreshold : FB_QuantityLREALPublic(Units := 'um');
+    fbGermaniumNeededSiliconThicknessThreshold : FB_QuantityLREALPublic(Units := 'um');
+    fbBeamPowerReductionFactorAtSATTLocation : FB_QuantityLREALPublic(Units := '1');
 END_STRUCT
 END_TYPE
 ]]></Declaration>

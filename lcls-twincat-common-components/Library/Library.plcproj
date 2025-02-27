@@ -83,9 +83,6 @@
     <Compile Include="Devices\HE_SATT\FB_HE_SolidAttenuatorHolderFilterConstantThickness.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Devices\HE_SATT\FB_HE_SolidAttenuatorState.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Devices\LIC\E_LIC_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -158,6 +155,9 @@
     <Compile Include="DUTs\HE_SATT\E_HE_SolidAttenuatorCalculationMode.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DUTs\HE_SATT\E_HE_SolidAttenuatorCommand.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DUTs\HE_SATT\E_HE_SolidAttenuatorHolderType.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -187,9 +187,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ITFs\HE_SATT\I_HE_SolidAttenuatorFilter.TcIO">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ITFs\HE_SATT\I_HE_SolidAttenuatorState.TcIO">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ITFs\HE_SATT\I_HE_SolidAttenuatorAttentuationLengthDatabase.TcIO">

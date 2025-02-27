@@ -5,14 +5,18 @@
 INTERFACE I_HE_SolidAttenuatorHolder EXTENDS I_Fallible
 ]]></Declaration>
     <Method Name="GetMaterialAtBeamPosition" Id="{4a113ab0-ee86-49ac-adfa-371a12e72394}">
-      <Declaration><![CDATA[METHOD GetMaterialAtBeamPosition
-VAR_INPUT
+      <Declaration><![CDATA[
+METHOD GetMaterialAtBeamPosition
+VAR_IN_OUT
+    Material : T_MaxString;
 END_VAR
 ]]></Declaration>
     </Method>
     <Method Name="GetThicknessAtBeamPosition" Id="{3ad15a3b-3cef-43ef-b7ea-bbf762190556}">
-      <Declaration><![CDATA[METHOD GetThicknessAtBeamPosition
+      <Declaration><![CDATA[
+METHOD GetThicknessAtBeamPosition
 VAR_INPUT
+    Thickness : I_QuantityLREALPublic;
 END_VAR
 ]]></Declaration>
     </Method>

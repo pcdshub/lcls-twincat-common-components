@@ -27,7 +27,7 @@ END_VAR
       <Implementation>
         <ST><![CDATA[
 stSettings.bEnabled := TRUE;
-stSettings.eMode := E_HE_SolidAttenuatorCalculationMode.FLOOR;
+stSettings.eRoundingMode := E_HE_SolidAttenuatorCalculationMode.FLOOR;
 HE_SolidAttenuatorSettingsMock.SetSettings(Settings := stSettings);
 HE_SolidAttenuatorSettingsMock.ClearError();
 

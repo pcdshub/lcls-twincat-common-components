@@ -63,8 +63,10 @@ aiSlot[11] := Slot11;
       </Implementation>
     </Method>
     <Method Name="GetMaterialAtBeamPosition" Id="{9cd2d32a-9e4a-4f9c-bc87-ec08f0f10fa3}">
-      <Declaration><![CDATA[METHOD GetMaterialAtBeamPosition
-VAR_INPUT
+      <Declaration><![CDATA[
+METHOD GetMaterialAtBeamPosition
+VAR_IN_OUT
+    Material : T_MaxString;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -72,8 +74,10 @@ END_VAR
       </Implementation>
     </Method>
     <Method Name="GetThicknessAtBeamPosition" Id="{c99b7cb4-92e5-4843-bac0-baa21563c2a9}">
-      <Declaration><![CDATA[METHOD GetThicknessAtBeamPosition
+      <Declaration><![CDATA[
+METHOD GetThicknessAtBeamPosition
 VAR_INPUT
+    Thickness : I_QuantityLREALPublic;
 END_VAR
 ]]></Declaration>
       <Implementation>
