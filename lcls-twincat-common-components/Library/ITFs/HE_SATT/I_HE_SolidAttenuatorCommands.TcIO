@@ -3,6 +3,11 @@
   <Itf Name="I_HE_SolidAttenuatorCommands" Id="{967cca1c-4608-4517-b99b-1a03634089ef}">
     <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorCommands EXTENDS I_Fallible
 ]]></Declaration>
+    <Method Name="GetCommand" Id="{e5b6d810-01cd-4b74-aca4-bc5646d68c48}">
+      <Declaration><![CDATA[
+METHOD GetCommand : E_HE_SolidAttenuatorCommand
+]]></Declaration>
+    </Method>
     <Method Name="HasNewCommand" Id="{edea6af5-a7ce-4df4-881e-b5ceff44004a}">
       <Declaration><![CDATA[
 METHOD HasNewCommand : BOOL

@@ -70,7 +70,9 @@ VAR_IN_OUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[
+
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="GetThicknessAtBeamPosition" Id="{c99b7cb4-92e5-4843-bac0-baa21563c2a9}">
@@ -150,7 +152,7 @@ END_IF
 
 fbTargetPositionForMoveInAxisCoordinates.Val := fbQuerySlotCenterPositionInAxisCoordinates.Val + fbOffsetFromCenterInCorrectUnits.Val;
 
-iMotionAxis.CommandMoveAbsolute(TargetPosition := fbTargetPositionForMoveInAxisCoordinates);
+//iMotionAxis.CommandMoveAbsolute(TargetPosition := fbTargetPositionForMoveInAxisCoordinates);
 ]]></ST>
       </Implementation>
     </Method>

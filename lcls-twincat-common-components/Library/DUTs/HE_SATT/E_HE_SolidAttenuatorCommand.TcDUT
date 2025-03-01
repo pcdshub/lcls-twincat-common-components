@@ -6,7 +6,8 @@
 {attribute 'to_string'}
 TYPE E_HE_SolidAttenuatorCommand :
 (
-    CALCULATE := 0
+    CALCULATE := 0,
+    GO
 );
 END_TYPE
 ]]></Declaration>

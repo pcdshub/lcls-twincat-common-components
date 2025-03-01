@@ -28,6 +28,14 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Method Name="HasSpecifiedSlot" Id="{527715e2-8472-44b2-a299-65b4071439df}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedSlot : BOOL
+VAR_INPUT
+    Slot : I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+    </Method>
     <Method Name="MoveToSpecifiedSlot" Id="{22088386-2d16-45d1-a254-d8397f1ac80e}">
       <Declaration><![CDATA[
 METHOD MoveToSpecifiedSlot

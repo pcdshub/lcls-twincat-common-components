@@ -7,7 +7,7 @@
     <ProjectGuid>{6439b808-e041-452d-8bcf-38d96753b7fb}</ProjectGuid>
     <SubObjectsSortedByName>True</SubObjectsSortedByName>
     <Name>Library</Name>
-    <ProgramVersion>3.1.4026.11</ProgramVersion>
+    <ProgramVersion>3.1.4026.13</ProgramVersion>
     <Application>{6cb57494-6c23-4081-bf9f-2628db131e5f}</Application>
     <TypeSystem>{45b483a3-fbdb-4f18-9229-a4e8b6063d31}</TypeSystem>
     <Implicit_Task_Info>{d0b4939a-4022-42ea-8bcf-e5f64bf5c43c}</Implicit_Task_Info>
@@ -81,6 +81,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\HE_SATT\FB_HE_SolidAttenuatorHolderFilterConstantThickness.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\HE_SATT\FB_MotionAxisNC.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\LIC\E_LIC_States.TcDUT">
@@ -167,13 +170,6 @@
     <Compile Include="DUTs\HE_SATT\E_HE_SolidAttenuatorState.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DUTs\HE_SATT\PL_HE_SolidAttenuatorConstants.TcGVL">
-      <SubType>Code</SubType>
-      <LinkAlways>true</LinkAlways>
-    </Compile>
-    <Compile Include="DUTs\HE_SATT\ST_HE_SolidAttenuatorHolderSettings.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="DUTs\HE_SATT\ST_HE_SolidAttenuatorOutput.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -202,6 +198,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ITFs\HE_SATT\I_HE_SolidAttenuatorXRayBeamParameters.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ITFs\HE_SATT\I_MotionAxis.TcIO">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
@@ -261,10 +260,19 @@
     <Compile Include="Tests\HE_SATT\FB_HE_SolidAttenuator_Test.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\HE_SATT\FB_HE_SolidAttenuatorHolderFilterConstantThickness_Test.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\Mocks\HE_SATT\FB_HE_SolidAttenuatorHolderMock.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\Mocks\HE_SATT\FB_HE_SolidAttenuatorSettingsMock.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Mocks\HE_SATT\FB_HE_SolidAttenuatorSlotMock.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Mocks\HE_SATT\FB_MotionAxisNCTestDouble.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\PRG_TEST.TcPOU">
@@ -375,6 +383,15 @@
                     <v>False</v>
                   </d>
                 </o>
+                <v>175</v>
+                <o>
+                  <v n="Name">"175"</v>
+                  <d n="SubKeys" t="Hashtable" />
+                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+                    <v>bActive</v>
+                    <v>False</v>
+                  </d>
+                </o>
                 <v>27</v>
                 <o>
                   <v n="Name">"27"</v>
@@ -399,7 +416,7 @@
                   <d n="SubKeys" t="Hashtable" />
                   <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
                     <v>bActive</v>
-                    <v>True</v>
+                    <v>False</v>
                   </d>
                 </o>
                 <v>4</v>

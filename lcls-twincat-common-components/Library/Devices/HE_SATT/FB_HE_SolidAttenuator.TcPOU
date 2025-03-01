@@ -34,8 +34,6 @@ VAR
     fbAbsorptionConstant : FB_QuantityLREALPublic(Units := '1/um');
     fbSiliconThicknessRequired : FB_QuantityLREALPublic(Units := 'um');
     fbDiamondThicknessRequired : FB_QuantityLREALPublic(Units := 'um');
-
-    eCommand : E_HE_SolidAttenuatorCommand;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -61,21 +59,18 @@ IF NOT iCommands.HasNewCommand() THEN
     RETURN;
 END_IF
 
-CASE eCommand OF
+CASE iCommands.GetCommand() OF
     E_HE_SolidAttenuatorCommand.CALCULATE:
-        DetermineFilterSelectionForTransmission(
+        (*DetermineFilterSelectionForTransmission(
             RequestedTransmission := iRequestedTransmission,
+            Holders := aiHolder,
             FiltersSelected := aiFiltersSelected
-        );
+        );*)
     E_HE_SolidAttenuatorCommand.GO:
-        MoveToSelectedSlots(
-            HolderA1 := aiHolder[1],
-            HolderA2 := aiHolder[2],
-            HolderA3 := aiHolder[3],
-            HolderA4 := aiHolder[4],
-            HolderA5 := aiHolder[5],
+        (*MoveToSelectedSlots(
+            Holders := aiHolder,
             FiltersSelected := aiFiltersSelected
-        );
+        );*)
 END_CASE
 ]]></ST>
     </Implementation>
@@ -187,7 +182,7 @@ FOR nIndex := 1 TO nNumHolders BY 1 DO
 
     CalculatedTransmission.Val :=
         fbCalculatedTransmissionBasedOnHolderPositionsTotal.Val *
-        afbCalculatedTransmissionBasedOnHolderPositions[nIndex];
+        afbCalculatedTransmissionBasedOnHolderPositions[nIndex].Val;
 END_FOR
 ]]></ST>
       </Implementation>
@@ -235,34 +230,34 @@ IF fbSiliconThicknessRequired.Val < stSettings.fbDiamondOnlySiliconThicknessThre
         DiamondThicknessRequired := fbDiamondThicknessRequired
     );
 
-    SelectDiamondFilters(
+    (*SelectDiamondFilters(
         ThicknessDesired := fbDiamondThicknessRequired,
         RoundingMode := stSettings.eRoundingMode,
         FiltersSelected := aiFiltersSelected,
         ThicknessSelected := fbDiamondThicknessSelected,
         TransmissionOfSelection := fbTransmissionOfSelectedDiamond
-    );
+    );*)
 
     RETURN;
 ELSIF fbSiliconThicknessRequired.Val >= stSettings.fbDiamondOnlySiliconThicknessThreshold.Val AND
-    fbSiliconThicknessRequired.Val < stSettings.fbGermaniumNeededSiliconThicknessThreshold.Val
+    fbSiliconThicknessRequired.Val < stSettings.fbGermaniumNeededSiliconThicknessThreshold.Val THEN
     // If we are above the diamond only threshold but under the germanium threshold, we use silicon only or silicon with diamond.
     // Calculate if diamond prefilter required and calculate silcon thickness required
-    CalculateSafeIncidentPowerThresholdForSiliconThickness(
+    (*CalculateSafeIncidentPowerThresholdForSiliconThickness(
         PhotonEnergy := iBeamPhotonEnergy,
         SiliconThickness := fbSiliconThicknessRequired,
         SafeIncidentPower := fbSiliconSafeIncidentPower
-    );
+    );*)
 
     IF fbCalculatedIncidentBeamPower.Val < fbSiliconSafeIncidentPower.Val THEN
         // We are OK with just the silicon.
-        SelectSiliconFilters(
+        (*SelectSiliconFilters(
             ThicknessDesired := fbSiliconThicknessRequired,
             RoundingMode := stSettings.eRoundingMode,
             FiltersSelected := aiFiltersSelected,
             ThicknessSelected := fbSiliconThicknessSelected,
             TransmissionOfSelection := fbTransmissionOfSelectedSilicon
-        );
+        );*)
 
         RETURN;
     ELSE
@@ -272,7 +267,7 @@ ELSIF fbSiliconThicknessRequired.Val >= stSettings.fbDiamondOnlySiliconThickness
         // then check if the new silicon thickness is still protected by the diamond filters,
         // iterate until all conditions are satisfied.
         WHILE fbCalculatedIncidentBeamPower.Val > fbSiliconSafeIncidentPower.Val DO
-            CalculateTransmissionRequiredForSafeFilter(
+            (*CalculateTransmissionRequiredForSafeFilter(
                 IncidentPower := fbCalculatedIncidentBeamPower,
                 SafeIncidentPower := fbSiliconSafeIncidentPower,
                 RequiredTransmissionForSafeFilter := fbRequiredTransmissionForSafeSilicon
@@ -312,7 +307,7 @@ ELSIF fbSiliconThicknessRequired.Val >= stSettings.fbDiamondOnlySiliconThickness
                 PhotonEnergy := iBeamPhotonEnergy,
                 SiliconThickness := fbSiliconThicknessRequired,
                 SafeIncidentPower := fbSiliconSafeIncidentPower
-            );
+            );*)
         END_WHILE
     END_IF
 ELSE
@@ -405,18 +400,6 @@ END_VAR
     <Method Name="RequestBeamOff" Id="{1054a9f5-9f34-4b62-bbaf-654b23a0f45b}">
       <Declaration><![CDATA[METHOD RequestBeamOff
 VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="SelectSlotsWithThickestFilters" Id="{de3a8c16-d720-451e-92cf-fb4b11929598}">
-      <Declaration><![CDATA[
-METHOD SelectSlotsWithThickestFilters
-VAR_INPUT
-    HolderSlotsSelected := aiHolderSlotsSelected,
-    TransmissionOfSelection := fbTransmissionOfSelected
 END_VAR
 ]]></Declaration>
       <Implementation>

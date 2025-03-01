@@ -17,9 +17,9 @@ END_VAR
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
-    <Method Name="FB_Init" Id="{ea5e46e8-e0ee-4e92-b45c-d071d68c270a}">
+    <Method Name="FB_Init_tmp" Id="{ea5e46e8-e0ee-4e92-b45c-d071d68c270a}">
       <Declaration><![CDATA[
-METHOD FB_Init: BOOL
+METHOD FB_Init_tmp: BOOL
 VAR_INPUT
     bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
     bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)

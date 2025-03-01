@@ -4,18 +4,18 @@
     <Declaration><![CDATA[
 FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderFilterWedge EXTENDS FB_HE_SolidAttenuatorHolderFilterConstantThickness IMPLEMENTS I_HE_SolidAttenuatorHolder
 VAR CONSTANT
-    nNumSlots : INT := 2;
+    //nNumSlots : INT := 2;
 END_VAR
 VAR
-    aiSlot : ARRAY[1..nNumSlots] OF I_HE_SolidAttenuatorSlot;
+    //aiSlot : ARRAY[1..nNumSlots] OF I_HE_SolidAttenuatorSlot;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
-    <Method Name="FB_Init" Id="{560306b4-faa8-4ad2-bce0-ea30e192b562}">
+    <Method Name="FB_Init_tmp" Id="{560306b4-faa8-4ad2-bce0-ea30e192b562}">
       <Declaration><![CDATA[
-METHOD FB_Init: BOOL
+METHOD FB_Init_tmp: BOOL
 VAR_INPUT
     bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
     bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)

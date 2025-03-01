@@ -5,27 +5,49 @@
 FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderMock EXTENDS FB_FalliblePublicMock IMPLEMENTS I_HE_SolidAttenuatorHolder
 VAR
     nNumberOfSlots : INT;
-    stSettings : ST_HE_SolidAttenuatorHolderSettings;
-
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
-    <Method Name="GetNumberOfSlots" Id="{15e4c3d3-2c46-4d34-b72d-3b65b88630ee}">
+    <Method Name="ClearError" Id="{d9a0e346-8937-4f34-aabf-e3b92ee75769}">
       <Declaration><![CDATA[{warning 'Add method implementation '}
-METHOD GetNumberOfSlots : INT
+METHOD ClearError
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
-    <Method Name="GetSettings" Id="{901c2515-f91d-4b82-8d34-c135b3a11596}">
+    <Method Name="GetError" Id="{a119292d-2024-4af1-872c-ee64148988ea}">
       <Declaration><![CDATA[{warning 'Add method implementation '}
-METHOD GetSettings
+METHOD GetError : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetErrorMsg" Id="{4830b5bc-480f-4afa-8a0c-17b52db85073}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetErrorMsg : lcls_twincat_physics.T_MaxString
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMaterialAtBeamPosition" Id="{50bfbc0b-c1e6-4263-8592-3f24be29c28c}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetMaterialAtBeamPosition
 VAR_IN_OUT
-    Settings	: ST_HE_SolidAttenuatorHolderSettings;
+    Material	: T_MaxString;
 END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetNumberOfSlots" Id="{15e4c3d3-2c46-4d34-b72d-3b65b88630ee}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetNumberOfSlots : INT
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
@@ -36,6 +58,62 @@ END_VAR
 METHOD GetSlotAt
 VAR_INPUT
     Position	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAtBeamPosition" Id="{93fc3206-ae09-451b-8e71-42cb66560ba4}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetThicknessAtBeamPosition
+VAR_INPUT
+    Thickness	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{38d2cfc5-d42e-4b86-bbd5-8a7f7b2d56e1}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter	: I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedSlot" Id="{22cd9b1d-2d00-4434-96a4-23436d7b4ce0}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD HasSpecifiedSlot : BOOL
+VAR_INPUT
+    Slot	: I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveToSpecifiedSlot" Id="{5d5b1bde-473a-4bda-baff-c0f18c8d4684}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD MoveToSpecifiedSlot
+VAR_INPUT
+    Slot	: I_HE_SolidAttenuatorSlot;
+    OffsetFromCenter	: I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetError" Id="{81f44210-a713-4e01-9895-55d66f66bced}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD SetError
+VAR_INPUT
+    Msg	: lcls_twincat_physics.T_MaxString;
 END_VAR
 ]]></Declaration>
       <Implementation>
