@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorSettingsMock" Id="{71f5b429-665c-4d1b-a946-3f8f24c210a2}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorSettingsMock EXTENDS FB_FalliblePublicMock IMPLEMENTS I_HE_SolidAttenuatorSettings
+VAR
+    stSettings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="GetSettings" Id="{f7a0c174-6648-48f4-8953-535b428fbb19}">
+      <Declaration><![CDATA[
+METHOD GetSettings
+VAR_IN_OUT
+    Settings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Settings := stSettings;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetSettings" Id="{1dc23a7c-a8d8-48d7-8d42-5147405ee320}">
+      <Declaration><![CDATA[
+METHOD SetSettings
+VAR_INPUT
+    Settings : ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+stSettings := Settings;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

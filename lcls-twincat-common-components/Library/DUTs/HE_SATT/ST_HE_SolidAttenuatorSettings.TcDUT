@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_HE_SolidAttenuatorSettings" Id="{147303cb-e30a-4a5b-9079-8e5e4423f267}">
+    <Declaration><![CDATA[
+TYPE ST_HE_SolidAttenuatorSettings :
+STRUCT
+    bEnabled : BOOL;
+    eRoundingMode : E_HE_SolidAttenuatorCalculationMode;
+    bDynamicCalculation : BOOL;
+    fbDiamondOnlySiliconThicknessThreshold : FB_QuantityLREALPublic(Units := 'um');
+    fbGermaniumNeededSiliconThicknessThreshold : FB_QuantityLREALPublic(Units := 'um');
+    fbBeamPowerReductionFactorAtSATTLocation : FB_QuantityLREALPublic(Units := '1');
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

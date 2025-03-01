@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorSlot" Id="{00460b56-1ea1-42cc-8f62-2eccd1d47e0f}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorSlot EXTENDS FB_Fallible IMPLEMENTS I_HE_SolidAttenuatorSlot
+VAR
+    iFilter : I_HE_SolidAttenuatorFilter;
+    eState : E_HE_SolidAttenuatorSlotState;
+    bEnabled : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{58f02e95-764f-4ef9-819d-ad675cb7dc1c}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    Filter : I_HE_SolidAttenuatorFilter;
+    State : E_HE_SolidAttenuatorSlotState;
+    Enabled : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iFilter := Filter;
+eState := State;
+bEnabled := Enabled;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetCenterPosition" Id="{6f9af3a0-1269-423f-a6cb-42e4f0745cf2}">
+      <Declaration><![CDATA[
+METHOD GetCenterPosition
+VAR_INPUT
+    CenterPosition : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iFilter.GetCenterPosition(CenterPosition := CenterPosition);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetLength" Id="{f422f0cc-ed5d-4a0b-834f-c85ec96acdff}">
+      <Declaration><![CDATA[
+METHOD GetLength
+VAR_INPUT
+    Length : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE eState OF
+    E_HE_SolidAttenuatorSlotState.EMPTY:
+        Length.Val := 0.0;
+    E_HE_SolidAttenuatorSlotState.FULL:
+        iFilter.GetLength(Length := Length);
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMaterial" Id="{c52d40a6-e5a0-408f-969b-1771f6a51579}">
+      <Declaration><![CDATA[
+METHOD GetMaterial
+VAR_IN_OUT
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE eState OF
+    E_HE_SolidAttenuatorSlotState.EMPTY:
+        Material := '';
+    E_HE_SolidAttenuatorSlotState.FULL:
+        iFilter.GetMaterial(Material := Material);
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetState" Id="{ec59714c-815d-4a33-9e3e-00e4b41216ef}">
+      <Declaration><![CDATA[
+METHOD GetState : E_HE_SolidAttenuatorSlotState
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+GetState := eState;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{735f6470-1a91-4cdc-9a90-02f3f22a622d}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates : I_QuantityLREAL;
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE eState OF
+    E_HE_SolidAttenuatorSlotState.EMPTY:
+        Thickness.Val := 0.0;
+    E_HE_SolidAttenuatorSlotState.FULL:
+        iFilter.GetThicknessAt(
+            QueryPointInAxisCoordinates := QueryPointInAxisCoordinates,
+            Thickness := Thickness
+        );
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{d085ce8b-1fc7-41bf-ae9b-f79bec7fd4eb}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter : I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+HasSpecifiedFilter := Filter = iFilter;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="IsEnabled" Id="{06735b14-df5e-4a98-a89c-e5027127d234}">
+      <Declaration><![CDATA[
+METHOD IsEnabled : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IsEnabled := bEnabled;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

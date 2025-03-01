@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorHolderFilterWedge" Id="{a9cb9642-4310-4d3c-9760-f3ce2f7ccfea}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderFilterWedge EXTENDS FB_HE_SolidAttenuatorHolderFilterConstantThickness IMPLEMENTS I_HE_SolidAttenuatorHolder
+VAR CONSTANT
+    //nNumSlots : INT := 2;
+END_VAR
+VAR
+    //aiSlot : ARRAY[1..nNumSlots] OF I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init_tmp" Id="{560306b4-faa8-4ad2-bce0-ea30e192b562}">
+      <Declaration><![CDATA[
+METHOD FB_Init_tmp: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    ConvertUnits : I_ConvertUnitsLREAL;
+    BeamPositionInAxisCoordinates : I_QuantityLREAL;
+    MotionAxis : I_MotionAxis;
+    Slot01 : I_HE_SolidAttenuatorSlot;
+    Slot02 : I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits := ConvertUnits;
+iBeamPositionInAxisCoordinates := BeamPositionInAxisCoordinates;
+iMotionAxis := MotionAxis;
+aiSlot[1] := Slot01;
+aiSlot[2] := Slot02;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

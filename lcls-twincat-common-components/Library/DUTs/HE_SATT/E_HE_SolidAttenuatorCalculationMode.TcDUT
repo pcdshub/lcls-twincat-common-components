@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_HE_SolidAttenuatorCalculationMode" Id="{047ac3c6-40e5-4417-84dc-5d1b4583e4de}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_HE_SolidAttenuatorCalculationMode :
+(
+    FLOOR := 0,
+    CEILING := 1,
+    WITHIN_TOLERANCE := 2
+) INT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

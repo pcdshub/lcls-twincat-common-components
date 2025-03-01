@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_BehaviorTreeActionStatus" Id="{9e69bb42-292e-4645-8385-4eb815e7c738}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_BehaviorTreeActionStatus :
+(
+    STANDBY := 0,
+    SUCCESS := 1,
+    RUNNING := 2,
+    FAILURE := 3
+) INT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

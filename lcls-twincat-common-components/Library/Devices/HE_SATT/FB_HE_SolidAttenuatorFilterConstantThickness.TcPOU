@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorFilterConstantThickness" Id="{530a2b44-a718-418a-ac99-1c6da73f59f7}" SpecialFunc="None">
+    <Declaration><![CDATA[
+{attribute 'no_explicit_call' := 'Do not call this POU directly'}
+FUNCTION_BLOCK FB_HE_SolidAttenuatorFilterConstantThickness EXTENDS FB_Fallible IMPLEMENTS I_HE_SolidAttenuatorFilter
+VAR
+    iConvertUnits : I_ConvertUnitsLREAL;
+    iCenterPointInAxisCoordinates : I_QuantityLREAL;
+    fbLength : FB_QuantityLREALPublic(Units := 'mm');
+    fbThickness : FB_QuantityLREALPublic(Units := 'um');
+    sMaterial : T_MaxString;
+
+    fbQueryPointInAxisCoordinates : FB_QuantityLREALPublic(Units := 'mm');
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{78df13ab-eeec-4a22-b20c-16d636b1efe1}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    ConvertUnits : I_ConvertUnitsLREAL;
+    CenterPointInAxisCoordinates : I_QuantityLREAL;
+    Length : LREAL; // [mm]
+    Thickness : LREAL; // [um]
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits := ConvertUnits;
+iCenterPointInAxisCoordinates := CenterPointInAxisCoordinates;
+fbLength.Val := Length;
+fbThickness.Val := Thickness;
+sMaterial := Material;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetCenterPosition" Id="{e24f7fba-26d8-4d1c-9b53-e7bf5c2c6a6d}">
+      <Declaration><![CDATA[
+METHOD GetCenterPosition
+VAR_INPUT
+    CenterPosition : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CenterPosition.Copy(QuantityToCopy := iCenterPointInAxisCoordinates);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetLength" Id="{12fdf4c3-b0b3-43c7-bae0-0b8d4ea07dc2}">
+      <Declaration><![CDATA[
+METHOD GetLength
+VAR_INPUT
+    Length : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Length.Copy(QuantityToCopy := fbLength);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMaterial" Id="{51489bc2-13c4-48c0-a8d0-03ddb1b7fa70}">
+      <Declaration><![CDATA[
+METHOD GetMaterial
+VAR_IN_OUT
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Material := sMaterial;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{b8f52c11-4c90-4350-b5ab-2bc520fdef51}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates : I_QuantityLREAL;
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits.ConvertQuantityLREAL(
+    QuantityToConvert := QueryPointInAxisCoordinates,
+    DesiredUnits := iCenterPointInAxisCoordinates.Units,
+    ConvertedQuantity := fbQueryPointInAxisCoordinates
+);
+
+IF iConvertUnits.GetError() THEN
+    SetError(Msg := 'Query point units are invalid.');
+    Thickness.SetError(Msg := GetErrorMsg());
+END_IF
+
+IF ABS(fbQueryPointInAxisCoordinates.Val - iCenterPointInAxisCoordinates.Val) <= fbLength.Val / 2.0 THEN
+    // Query point is on the filter
+    Thickness.Copy(QuantityToCopy := fbThickness);
+ELSE
+    // Query point is not on the filter
+    Thickness.Copy(QuantityToCopy := fbThickness);
+    Thickness.Val := 0.0;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

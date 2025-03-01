@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorHolder" Id="{8770de0e-d2e8-43c9-99d9-0c582407d0e4}">
+    <Declaration><![CDATA[
+INTERFACE I_HE_SolidAttenuatorHolder EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetMaterialAtBeamPosition" Id="{4a113ab0-ee86-49ac-adfa-371a12e72394}">
+      <Declaration><![CDATA[
+METHOD GetMaterialAtBeamPosition
+VAR_IN_OUT
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetThicknessAtBeamPosition" Id="{3ad15a3b-3cef-43ef-b7ea-bbf762190556}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAtBeamPosition
+VAR_INPUT
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{a23d5435-1469-4ae4-ab2f-fc9ea447fce6}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter : I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="HasSpecifiedSlot" Id="{527715e2-8472-44b2-a299-65b4071439df}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedSlot : BOOL
+VAR_INPUT
+    Slot : I_HE_SolidAttenuatorSlot;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="MoveToSpecifiedSlot" Id="{22088386-2d16-45d1-a254-d8397f1ac80e}">
+      <Declaration><![CDATA[
+METHOD MoveToSpecifiedSlot
+VAR_INPUT
+    Slot : I_HE_SolidAttenuatorSlot;
+    OffsetFromCenter : I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

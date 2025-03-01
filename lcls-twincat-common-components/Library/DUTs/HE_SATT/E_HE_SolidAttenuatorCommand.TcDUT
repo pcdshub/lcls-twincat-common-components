@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_HE_SolidAttenuatorCommand" Id="{2f764ab7-7fa2-420e-810b-7a7ca2447215}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_HE_SolidAttenuatorCommand :
+(
+    CALCULATE := 0,
+    GO
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

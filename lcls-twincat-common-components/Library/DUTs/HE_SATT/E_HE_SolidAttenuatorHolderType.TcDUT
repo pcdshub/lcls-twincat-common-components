@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_HE_SolidAttenuatorHolderType" Id="{eff5e734-5d15-44f9-8b3f-a28410766e7d}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_HE_SolidAttenuatorHolderType :
+(
+    CONSTANT_THICKNESS_FILTERS := 0,
+    WEDGE_FILTERS
+) INT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

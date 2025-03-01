@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_HE_SolidAttenuatorState" Id="{60909210-97b8-4919-98bd-c7fb10b74261}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_HE_SolidAttenuatorState :
+(
+    MONITORING_MANUAL := 0,
+    MONITORING_AUTO,
+    CALCULATING_MANUAL,
+    CALCULATING_AUTO,
+    MOVING_MANUAL,
+    MOVING_AUTO,
+    ERROR_MANUAL,
+    ERROR_AUTO
+) INT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

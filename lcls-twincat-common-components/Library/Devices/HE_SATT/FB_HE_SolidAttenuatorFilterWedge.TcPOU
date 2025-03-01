@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorFilterWedge" Id="{34e6e04e-bfdb-4ce1-8502-230b0fa09cc7}" SpecialFunc="None">
+    <Declaration><![CDATA[
+{attribute 'no_explicit_call' := 'Do not call this POU directly'}
+FUNCTION_BLOCK FB_HE_SolidAttenuatorFilterWedge EXTENDS FB_HE_SolidAttenuatorFilterConstantThickness IMPLEMENTS I_HE_SolidAttenuatorFilter
+VAR
+    fbThicknessOuter : FB_QuantityLREALPublic(Units := 'um');
+    fbThicknessInner : FB_QuantityLREALPublic(Units := 'um');
+
+    fbThicknessAtQueryPoint : FB_QuantityLREALPublic(Units := 'um');
+    fQueryPointInWedgeCoordinates : LREAL;
+    fWedgeSlope : LREAL;
+    fThicknessAtCenterPoint : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_Init_tmp" Id="{ea5e46e8-e0ee-4e92-b45c-d071d68c270a}">
+      <Declaration><![CDATA[
+METHOD FB_Init_tmp: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    ConvertUnits : I_ConvertUnitsLREAL;
+    CenterPointInAxisCoordinates : I_QuantityLREAL;
+    Length : LREAL; // [mm]
+    ThicknessOuter : LREAL; // [um]
+    ThicknessInner: LREAL; // [um]
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits := ConvertUnits;
+iCenterPointInAxisCoordinates := CenterPointInAxisCoordinates;
+fbLength.Val := Length;
+fbThicknessOuter.Val := ThicknessOuter;
+fbThicknessInner.Val := ThicknessInner;
+sMaterial := Material;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{79caf57c-4e02-4955-bc2c-b3609eee6afd}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates : I_QuantityLREAL;
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits.ConvertQuantityLREAL(
+    QuantityToConvert := QueryPointInAxisCoordinates,
+    DesiredUnits := iCenterPointInAxisCoordinates.Units,
+    ConvertedQuantity := fbQueryPointInAxisCoordinates
+);
+
+IF iConvertUnits.GetError() THEN
+    SetError(Msg := 'Query point units are invalid.');
+    Thickness.SetError(Msg := GetErrorMsg());
+END_IF
+
+fQueryPointInWedgeCoordinates := fbQueryPointInAxisCoordinates.Val - iCenterPointInAxisCoordinates.Val;
+IF ABS(fQueryPointInWedgeCoordinates) <= fbLength.Val / 2.0 THEN
+    // Query point is on the filter
+    fWedgeSlope := (fbThicknessOuter.Val - fbThicknessInner.Val) / fbLength.Val;
+    fThicknessAtCenterPoint := (fbThicknessOuter.Val - fbThicknessInner.Val) / 2.0;
+    fbThicknessAtQueryPoint.Val := fWedgeSlope * fQueryPointInWedgeCoordinates + fThicknessAtCenterPoint;
+    Thickness.Copy(QuantityToCopy := fbThicknessAtQueryPoint);
+ELSE
+    // Query point is not on the filter
+    Thickness.Copy(QuantityToCopy := fbThicknessAtQueryPoint);
+    Thickness.Val := 0.0;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

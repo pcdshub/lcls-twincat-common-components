@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorSlotMock" Id="{86233f46-6d67-46da-9131-7c8c14641465}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorSlotMock EXTENDS FB_FalliblePublicMock IMPLEMENTS I_HE_SolidAttenuatorSlot
+VAR
+    fbCenterPosition	: FB_QuantityLREALPublicMock;
+    fbLength	: FB_QuantityLREALPublicMock;
+    sMaterial	: T_MaxString;
+    eState : E_HE_SolidAttenuatorSlotState;
+    fbThickness : FB_QuantityLREALPublicMock;
+    bHasSpecifiedFilter : BOOL;
+    bIsEnabled : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="GetCenterPosition" Id="{999571a2-1076-4d04-b9ed-f0ef724e6017}">
+      <Declaration><![CDATA[
+METHOD GetCenterPosition
+VAR_INPUT
+    CenterPosition	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CenterPosition.Copy(THIS^.fbCenterPosition);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetLength" Id="{ddc8856d-aa63-4639-9f78-92c225097a06}">
+      <Declaration><![CDATA[
+METHOD GetLength
+VAR_INPUT
+    Length	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Length.Copy(THIS^.fbLength);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetMaterial" Id="{244ca2ad-1f6f-4891-ad66-5f826a45bb56}">
+      <Declaration><![CDATA[
+METHOD GetMaterial
+VAR_IN_OUT
+    Material	: T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Material := sMaterial;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetState" Id="{1eb53064-c91b-48c7-bf3c-113e2a040a11}">
+      <Declaration><![CDATA[
+METHOD GetState : E_HE_SolidAttenuatorSlotState
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+GetState := THIS^.eState;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{525137e3-4fff-4ff7-83a9-d4d1c127dbb6}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates	: I_QuantityLREAL;
+    Thickness	: I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+Thickness.Copy(THIS^.fbThickness);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HasSpecifiedFilter" Id="{c0a19c00-f294-4851-9e32-afcdd6746d37}">
+      <Declaration><![CDATA[
+METHOD HasSpecifiedFilter : BOOL
+VAR_INPUT
+    Filter	: I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+HasSpecifiedFilter := THIS^.bHasSpecifiedFilter;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="IsEnabled" Id="{afc1f2ec-a317-4b12-9c0c-ca72cc57ca32}">
+      <Declaration><![CDATA[
+METHOD IsEnabled : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IsEnabled := THIS^.bIsEnabled;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetCenterPosition" Id="{37911ff8-c0ea-455c-a59f-483856678859}">
+      <Declaration><![CDATA[
+METHOD SetCenterPosition
+VAR_INPUT
+    Result	: I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.fbCenterPosition.Copy(Result);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetHasSpecifiedFilter" Id="{2dc5d4a7-3343-4cbe-8c16-ea506a80aeb3}">
+      <Declaration><![CDATA[
+METHOD SetHasSpecifiedFilter
+VAR_INPUT
+    Result : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.bHasSpecifiedFilter := Result;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetIsEnabled" Id="{24030b06-04c2-4c78-8dd1-2a93afb38da0}">
+      <Declaration><![CDATA[
+METHOD SetIsEnabled
+VAR_INPUT
+    Result : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.bIsEnabled := Result;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetLength" Id="{d1be8611-a05f-4160-9437-7a5bc8a7ae53}">
+      <Declaration><![CDATA[
+METHOD SetLength
+VAR_INPUT
+    Result : I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.fbLength.Copy(Result);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetMaterial" Id="{61fafa1a-1ffb-4772-9ed5-c6fb727b8155}">
+      <Declaration><![CDATA[
+METHOD SetMaterial
+VAR_INPUT
+    Result : T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.sMaterial := Result;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetState" Id="{994bd3bf-5f1b-4829-9b46-2bdc15e01e3c}">
+      <Declaration><![CDATA[
+METHOD SetState
+VAR_INPUT
+    Result : E_HE_SolidAttenuatorSlotState;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.eState := Result;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetThicknessAt" Id="{41c72cfc-e4e9-462b-a814-efa2a6367375}">
+      <Declaration><![CDATA[
+METHOD SetThicknessAt
+VAR_INPUT
+    Result : I_QuantityLREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+THIS^.fbThickness.Copy(Result);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
