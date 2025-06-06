@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_IPM" Id="{5686e09b-32c7-4e77-9d6e-c0baf6046a0f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_IPM
+(*
+    Function block for Intensity Profile Monitor (IPM) controls:
+    - X, Y motion
+    - Y target states
+    - 2 thermocouples
+
+    The following IO link points are included and should be used:
+    - FB_IPM.fbThermoCouple1.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+    - FB_IPM.fbThermoCouple2.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
+*)
+VAR_IN_OUT
+    // Y motor (state select).
+    stYStage: ST_MotionStage;
+    // X motor
+    stXStage: ST_MotionStage;
+    // The fast fault output to fault to.
+    fbFFHWO: FB_HardwareFFOutput;
+    // The arbiter to request beam conditions from.
+    fbArbiter: FB_Arbiter;
+END_VAR
+VAR_INPUT
+    // Settings for the OUT state.
+    stOut: ST_PositionState;
+    // Settings for the TARGET1 state.
+    stTarget1: ST_PositionState;
+    // Settings for the TARGET2 state.
+    stTarget2: ST_PositionState;
+    // Settings for the TARGET3 state.
+    stTarget3: ST_PositionState;
+    // Settings for the TARGET4 state.
+    stTarget4: ST_PositionState;
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_IPM_States;
+    // Set this to TRUE to enable input state moves, or FALSE to disable them.
+    bEnableMotion: BOOL;
+    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
+    bEnableBeamParams: BOOL;
+    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
+    bEnablePositionLimits: BOOL;
+    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
+    sDeviceName: STRING;
+    // The name of the transition state in the PMPS database.
+    sTransitionKey: STRING;
+    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
+    bReadDBNow: BOOL;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_IPM_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR
+    bInit: BOOL;
+
+    fbYStage: FB_MotionStage;
+    fbXStage: FB_MotionStage;
+
+    fbStateDefaults: FB_PositionState_Defaults;
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..5
+    '}
+    fbStates: FB_PositionStatePMPS1D;
+    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbArrCheckWrite: FB_CheckPositionStateWrite;
+
+    {attribute 'pytmc' := 'pv: STC:01'}
+    fbThermoCouple1: FB_CC_TempSensor;
+
+    {attribute 'pytmc' := 'pv: STC:02'}
+    fbThermoCouple2: FB_CC_TempSensor;
+END_VAR
+VAR CONSTANT
+    // State defaults if not provided
+    fDelta: LREAL := 2;
+    fAccel: LREAL := 200;
+    fOutDecel: LREAL := 25;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF NOT bInit THEN
+    bInit := TRUE;
+
+    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+    stXStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
+
+    // Partial backcompat, this used to set fVelocity too but this should be set per install
+    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
+    fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget2, sNameDefault:='TARGET2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget3, sNameDefault:='TARGET3', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+    fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+END_IF
+
+stYStage.bHardwareEnable := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+fbYStage(stMotionStage:=stYStage);
+fbXStage(stMotionStage:=stXStage);
+
+// We need to update from PLC or from EPICS, but not both
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=TRUE,
+    bSave:=FALSE,
+);
+IF NOT fbArrCheckWrite.bHadWrite THEN
+    astPositionState[E_IPM_States.OUT] := stOut;
+    astPositionState[E_IPM_States.TARGET1] := stTarget1;
+    astPositionState[E_IPM_States.TARGET2] := stTarget2;
+    astPositionState[E_IPM_States.TARGET3] := stTarget3;
+    astPositionState[E_IPM_States.TARGET4] := stTarget4;
+END_IF
+
+fbStates(
+    stMotionStage:=stYStage,
+    astPositionState:=astPositionState,
+    eEnumSet:=eEnumSet,
+    eEnumGet:=eEnumGet,
+    fbFFHWO:=fbFFHWO,
+    fbArbiter:=fbArbiter,
+    bEnableMotion:=bEnableMotion,
+    bEnableBeamParams:=bEnableBeamParams,
+    bEnablePositionLimits:=bEnablePositionLimits,
+    sDeviceName:=sDeviceName,
+    sTransitionKey:=sTransitionKey,
+    bReadDBNow:=bReadDBNow,
+    stDbStateParams=>stDbStateParams,
+);
+
+fbArrCheckWrite(
+    astPositionState:=astPositionState,
+    bCheck:=FALSE,
+    bSave:=TRUE,
+);
+
+stOut := astPositionState[E_IPM_States.OUT];
+stTarget1 := astPositionState[E_IPM_States.TARGET1];
+stTarget2 := astPositionState[E_IPM_States.TARGET2];
+stTarget3 := astPositionState[E_IPM_States.TARGET3];
+stTarget4 := astPositionState[E_IPM_States.TARGET4];
+
+fbThermoCouple1(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto:=eEnumGet = E_IPM_States.OUT,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);
+fbThermoCouple2(
+    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto:=eEnumGet = E_IPM_States.OUT,
+    sDevName:=sDeviceName,
+    io_fbFFHWO:=fbFFHWO,
+);]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
