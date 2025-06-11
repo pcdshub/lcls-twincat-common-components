@@ -61,7 +61,15 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
+      <ST><![CDATA[IF NOT __ISVALIDREF(io_fbFFHWO) OR NOT __ISVALIDREF(stTopBlade)
+    OR NOT __ISVALIDREF(stBottomBlade) OR NOT __ISVALIDREF(stNorthBlade)
+    OR NOT __ISVALIDREF(stSouthBlade)THEN
+    //Log
+    fbLogger(sMsg:='Undefined References', eSevr:=TcEventSeverity.Critical);
+    RETURN;
+END_IF
+
+
 ACT_init();
 // Instantiate Function block for all the blades
 ACT_Motion();
