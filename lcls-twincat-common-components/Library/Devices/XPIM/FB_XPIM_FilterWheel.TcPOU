@@ -89,7 +89,7 @@ CASE nStep OF
     30:
         // Wait for a move request
         IF nSetPos <> nGetPos THEN
-            fbCom(sCmd:=CONCAT('pos=', INT_TO_STRING(nSetPos)),
+            fbCom(sCmd:=CONCAT('pos=', UINT_TO_STRING(nSetPos)),
                 bSend:=TRUE,
                 stIn_EL6:=stIn_EL6,
                 stOut_EL6:=stOut_EL6);
