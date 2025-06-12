@@ -108,8 +108,10 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stTarget6, sNameDefault:='TARGET6', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
+stYStage.bLimitForwardEnable := TRUE;
+stYStage.bLimitBackwardEnable := TRUE;
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
+stYStage.bPowerSelf := TRUE;
 
 // We need to update from PLC or from EPICS, but not both
 fbArrCheckWrite(
