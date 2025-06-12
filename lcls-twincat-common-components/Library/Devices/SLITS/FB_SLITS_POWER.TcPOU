@@ -58,17 +58,22 @@ VAR
 
     fbReadPMPSDB: FB_JsonDocToSafeBP;
     astTempDB: ARRAY[1..1] OF ST_DbStateParams;
+    // report once to logger in case of references issue
+    {attribute 'hide'}
+    bReportOnce : BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[IF NOT __ISVALIDREF(io_fbFFHWO) OR NOT __ISVALIDREF(stTopBlade)
     OR NOT __ISVALIDREF(stBottomBlade) OR NOT __ISVALIDREF(stNorthBlade)
     OR NOT __ISVALIDREF(stSouthBlade)THEN
-    //Log
-    fbLogger(sMsg:='Undefined References', eSevr:=TcEventSeverity.Critical);
+    IF NOT THIS^.bReportOnce THEN
+        //Log
+        fbLogger(sMsg:='Undefined References', eSevr:=TcEventSeverity.Critical);
+        THIS^.bReportOnce := TRUE;
+    END_IF
     RETURN;
 END_IF
-
 
 ACT_init();
 // Instantiate Function block for all the blades
@@ -81,8 +86,7 @@ ACT_RTDs();
     </Implementation>
     <Action Name="ACT_Init" Id="{c73db9fc-43d0-43e2-91f3-2874c0adf041}">
       <Implementation>
-        <ST><![CDATA[
-// Instantiate Function block for all the blades
+        <ST><![CDATA[// Instantiate Function block for all the blades
 ACT_Motion();
 //SET and GET the requested and Actual values
 ACT_CalculatePositions();
@@ -158,8 +162,7 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-//Keep updating the status of the apertures PMPS
+        <ST><![CDATA[//Keep updating the status of the apertures PMPS
 This^.AptArrayStatus.Height := This^.rActApertureSizeY;
 This^.AptArrayStatus.Width := This^.rActApertureSizeX;
 This^.AptArrayStatus.xOK := NOT (This^.stTopBlade.bError) AND NOT (This^.stBottomBlade.bError)
