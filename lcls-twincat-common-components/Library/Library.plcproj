@@ -39,6 +39,7 @@
     <Folder Include="Devices\XPIM" />
     <Folder Include="Devices\PPM" />
     <Folder Include="DUTs" />
+    <Folder Include="Version" />
     <Folder Include="Tests" />
     <Folder Include="POUs" />
     <Folder Include="Tests\Helpers" />
@@ -168,6 +169,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\PRG_TEST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Version\Global_Version.TcGVL">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
