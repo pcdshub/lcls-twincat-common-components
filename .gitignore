@@ -14,7 +14,13 @@ TrialLicense.tclrs
 *.library
 *.tmcRefac
 .pytmc_build
+.vs/*
+
+# In a library (no IOC, no pytmc), we don't need the tmc file
 *.tmc
+
+# An extra
+UpgradeLog.htm
 
 # Vim ignores
 *.swp

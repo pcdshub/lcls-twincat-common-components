@@ -63,10 +63,10 @@ VAR
     fHighAccel: LREAL := 0.8;
     fLowAccel: LREAL := 0.1;
 
-    stTop: DUT_PositionState;
-    stBOTTOM: DUT_PositionState;
-    stNorth: DUT_PositionState;
-    stSouth: DUT_PositionState;
+    stTop: ST_PositionState;
+    stBOTTOM: ST_PositionState;
+    stNorth: ST_PositionState;
+    stSouth: ST_PositionState;
 
     {attribute 'pytmc' := 'pv: TOP'}
     fbTop: FB_StatePTPMove;
