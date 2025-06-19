@@ -79,10 +79,10 @@ VAR
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
     {attribute 'pytmc' := 'pv: STC:01'}
-    fbThermoCouple1: FB_CC_TempSensor;
+    fbRTD1: FB_CC_TempSensor;
 
     {attribute 'pytmc' := 'pv: STC:02'}
-    fbThermoCouple2: FB_CC_TempSensor;
+    fbRTD2: FB_CC_TempSensor;
 
 END_VAR
 VAR CONSTANT
@@ -108,10 +108,10 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stTarget6, sNameDefault:='TARGET6', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
-stYStage.bLimitForwardEnable := TRUE;
-stYStage.bLimitBackwardEnable := TRUE;
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+fbYStage(stMotionStage:=stYStage);
 
 // We need to update from PLC or from EPICS, but not both
 fbArrCheckWrite(
@@ -159,13 +159,13 @@ stTarget4 := astPositionState[E_GBS_States.TARGET4];
 stTarget5 := astPositionState[E_GBS_States.TARGET5];
 stTarget6 := astPositionState[E_GBS_States.TARGET6];
 
-fbThermoCouple1(
+fbRTD1(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
     bVeto:=eEnumGet = E_GBS_States.OUT,
     sDevName:=sDeviceName,
     io_fbFFHWO:=fbFFHWO,
 );
-fbThermoCouple2(
+fbRTD2(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
     bVeto:=eEnumGet = E_GBS_States.OUT,
     sDevName:=sDeviceName,
