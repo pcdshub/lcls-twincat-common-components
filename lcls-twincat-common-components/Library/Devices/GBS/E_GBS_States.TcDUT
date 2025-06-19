@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_GBS_States" Id="{a23f1263-4eb4-41bc-9092-54ae1e43deed}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+TYPE E_GBS_States :
+(
+    Unknown := 0,
+    OUT := 1,
+    TARGET1 := 2,
+    TARGET2 := 3,
+    TARGET3 := 4,
+    TARGET4 := 5,
+    TARGET5 := 6,
+    TARGET6 := 7
+) UINT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
