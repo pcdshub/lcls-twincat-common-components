@@ -33,12 +33,6 @@ VAR_INPUT
     stTarget3: ST_PositionState;
     // Settings for the TARGET4 state.
     stTarget4: ST_PositionState;
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
-        io: io
-    '}
-    eEnumSet: E_IPM_States;
     // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
     // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
@@ -78,11 +72,18 @@ VAR
     astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbArrCheckWrite: FB_CheckPositionStateWrite;
 
-    {attribute 'pytmc' := 'pv: STC:01'}
-    fbThermoCouple1: FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: RTD:01'}
+    fbRTD1: FB_CC_TempSensor;
 
-    {attribute 'pytmc' := 'pv: STC:02'}
-    fbThermoCouple2: FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: RTD:02'}
+    fbRTD2: FB_CC_TempSensor;
+
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_IPM_States;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided
@@ -106,10 +107,13 @@ IF NOT bInit THEN
     fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
 END_IF
 
-stYStage.bLimitForwardEnable := TRUE;
-stYStage.bLimitBackwardEnable := TRUE;
 stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := TRUE;
+stYStage.bPowerSelf := FALSE;
+
+stXStage.bLimitForwardEnable := TRUE;
+stXStage.bLimitBackwardEnable := TRUE;
+stXStage.bHardwareEnable := TRUE;
+stXStage.bPowerSelf := TRUE;
 
 fbYStage(stMotionStage:=stYStage);
 fbXStage(stMotionStage:=stXStage);
@@ -156,13 +160,13 @@ stTarget2 := astPositionState[E_IPM_States.TARGET2];
 stTarget3 := astPositionState[E_IPM_States.TARGET3];
 stTarget4 := astPositionState[E_IPM_States.TARGET4];
 
-fbThermoCouple1(
+fbRTD1(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
     bVeto:=eEnumGet = E_IPM_States.OUT,
     sDevName:=sDeviceName,
     io_fbFFHWO:=fbFFHWO,
 );
-fbThermoCouple2(
+fbRTD2(
     fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
     bVeto:=eEnumGet = E_IPM_States.OUT,
     sDevName:=sDeviceName,
