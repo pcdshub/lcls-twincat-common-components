@@ -34,12 +34,6 @@ VAR_INPUT
     stTarget5: ST_PositionState;
     // Settings for the TARGET6 state.
     stTarget6: ST_PositionState;
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
-        io: io
-    '}
-    eEnumSet: E_GBS_States;
     // Set this to TRUE to enable input state moves, or FALSE to disable them.
     bEnableMotion: BOOL;
     // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
@@ -84,6 +78,12 @@ VAR
     {attribute 'pytmc' := 'pv: RTD:02'}
     fbRTD2: FB_CC_TempSensor;
 
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet: E_GBS_States;
 END_VAR
 VAR CONSTANT
     // State defaults if not provided

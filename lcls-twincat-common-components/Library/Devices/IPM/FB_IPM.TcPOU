@@ -6,11 +6,6 @@
     Function block for Intensity Profile Monitor (IPM) controls:
     - X, Y motion
     - Y target states
-    - 2 thermocouples
-
-    The following IO link points are included and should be used:
-    - FB_IPM.fbThermoCouple1.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
-    - FB_IPM.fbThermoCouple2.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding thermocouple terminal inputs.
 *)
 VAR_IN_OUT
     // Y motor (state select).
@@ -161,20 +156,7 @@ stOut := astPositionState[E_IPM_States.OUT];
 stTarget1 := astPositionState[E_IPM_States.TARGET1];
 stTarget2 := astPositionState[E_IPM_States.TARGET2];
 stTarget3 := astPositionState[E_IPM_States.TARGET3];
-stTarget4 := astPositionState[E_IPM_States.TARGET4];
-
-fbRTD1(
-    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVeto:=eEnumGet = E_IPM_States.OUT,
-    sDevName:=sDeviceName,
-    io_fbFFHWO:=fbFFHWO,
-);
-fbRTD2(
-    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVeto:=eEnumGet = E_IPM_States.OUT,
-    sDevName:=sDeviceName,
-    io_fbFFHWO:=fbFFHWO,
-);]]></ST>
+stTarget4 := astPositionState[E_IPM_States.TARGET4];]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
