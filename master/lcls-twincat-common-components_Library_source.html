@@ -16,7 +16,7 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
@@ -62,6 +62,8 @@
 <li class="toctree-l1"><a class="reference internal" href="lcls-twincat-common-components_Library_epics.html#database-records">Database Records</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DUTs</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#e-atm-states">E_ATM_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#e-gbs-states">E_GBS_States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#e-ipm-states">E_IPM_States</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#e-lic-states">E_LIC_States</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#e-ppm-states">E_PPM_States</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#e-sxr-satt-position">E_SXR_SATT_Position</a></li>
@@ -84,6 +86,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-checkpositionstatewritetest">FB_CheckPositionStateWriteTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-fdq-flowmeter">FB_FDQ_FlowMeter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-gbs">FB_GBS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fb-ipm">FB_IPM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lic">FB_LIC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-lictest">FB_LICTest</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fb-pmpsjsontesthelper">FB_PMPSJsonTestHelper</a></li>
@@ -161,6 +165,40 @@
 </ul>
 </dd>
 </dl>
+</section>
+<section id="e-gbs-states">
+<h2>E_GBS_States<a class="headerlink" href="#e-gbs-states" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;qualified_only&#39;</span><span class="p">}</span>
+<span class="n">TYPE</span> <span class="n">E_GBS_States</span> <span class="p">:</span>
+<span class="p">(</span>
+    <span class="n">Unknown</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">OUT</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">TARGET1</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">TARGET2</span> <span class="o">:=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">TARGET3</span> <span class="o">:=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">TARGET4</span> <span class="o">:=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">TARGET5</span> <span class="o">:=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">TARGET6</span> <span class="o">:=</span> <span class="mi">7</span>
+<span class="p">)</span> <span class="n">UINT</span><span class="p">;</span>
+<span class="n">END_TYPE</span>
+</pre></div>
+</div>
+</section>
+<section id="e-ipm-states">
+<h2>E_IPM_States<a class="headerlink" href="#e-ipm-states" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;qualified_only&#39;</span><span class="p">}</span>
+<span class="n">TYPE</span> <span class="n">E_IPM_States</span> <span class="p">:</span>
+<span class="p">(</span>
+    <span class="n">Unknown</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">OUT</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">TARGET1</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">TARGET2</span> <span class="o">:=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">TARGET3</span> <span class="o">:=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">TARGET4</span> <span class="o">:=</span> <span class="mi">5</span>
+<span class="p">)</span> <span class="n">UINT</span><span class="p">;</span>
+<span class="n">END_TYPE</span>
+</pre></div>
+</div>
 </section>
 <section id="e-lic-states">
 <h2>E_LIC_States<a class="headerlink" href="#e-lic-states" title="Link to this heading"></a></h2>
@@ -923,6 +961,360 @@ END_METHOD
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
 </div>
+</section>
+<section id="fb-gbs">
+<h2>FB_GBS<a class="headerlink" href="#fb-gbs" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_GBS</span>
+<span class="p">(</span><span class="o">*</span>
+    <span class="n">Function</span> <span class="n">block</span> <span class="k">for</span> <span class="n">Grating</span> <span class="n">Beam</span> <span class="n">Splitter</span> <span class="p">(</span><span class="n">GBS</span><span class="p">)</span> <span class="n">controls</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">Y</span> <span class="n">target</span> <span class="n">states</span>
+    <span class="o">-</span> <span class="mi">2</span> <span class="n">RTDs</span>
+
+    <span class="n">The</span> <span class="n">following</span> <span class="n">IO</span> <span class="n">link</span> <span class="n">points</span> <span class="n">are</span> <span class="n">included</span> <span class="ow">and</span> <span class="n">should</span> <span class="n">be</span> <span class="n">used</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">FB_GBS</span><span class="o">.</span><span class="n">fbThermoCouple1</span><span class="o">.</span><span class="n">bError</span><span class="p">,</span> <span class="n">bUnderrange</span><span class="p">,</span> <span class="n">bOverrange</span><span class="p">,</span> <span class="ow">and</span> <span class="n">iRaw</span> <span class="n">should</span> <span class="n">be</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">the</span> <span class="n">corresponding</span> <span class="n">RTD</span> <span class="n">terminal</span> <span class="n">inputs</span><span class="o">.</span>
+    <span class="o">-</span> <span class="n">FB_GBS</span><span class="o">.</span><span class="n">fbThermoCouple2</span><span class="o">.</span><span class="n">bError</span><span class="p">,</span> <span class="n">bUnderrange</span><span class="p">,</span> <span class="n">bOverrange</span><span class="p">,</span> <span class="ow">and</span> <span class="n">iRaw</span> <span class="n">should</span> <span class="n">be</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">the</span> <span class="n">corresponding</span> <span class="n">RTD</span> <span class="n">terminal</span> <span class="n">inputs</span><span class="o">.</span>
+<span class="o">*</span><span class="p">)</span>
+<span class="n">VAR_IN_OUT</span>
+    <span class="o">//</span> <span class="n">Y</span> <span class="n">motor</span> <span class="p">(</span><span class="n">state</span> <span class="n">select</span><span class="p">)</span><span class="o">.</span>
+    <span class="n">stYStage</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">fast</span> <span class="n">fault</span> <span class="n">output</span> <span class="n">to</span> <span class="n">fault</span> <span class="n">to</span><span class="o">.</span>
+    <span class="n">fbFFHWO</span><span class="p">:</span> <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">arbiter</span> <span class="n">to</span> <span class="n">request</span> <span class="n">beam</span> <span class="n">conditions</span> <span class="n">from</span><span class="o">.</span>
+    <span class="n">fbArbiter</span><span class="p">:</span> <span class="n">FB_Arbiter</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_INPUT</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">OUT</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stOut</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET1</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget1</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET2</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget2</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET3</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget3</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET4</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget4</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET5</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget5</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET6</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget6</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="nb">input</span> <span class="n">state</span> <span class="n">moves</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnableMotion</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">beam</span> <span class="n">parameter</span> <span class="n">checks</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnableBeamParams</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">position</span> <span class="n">limit</span> <span class="n">checks</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnablePositionLimits</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">device</span> <span class="k">for</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PMPS</span> <span class="n">DB</span> <span class="n">lookup</span> <span class="ow">and</span> <span class="n">diagnostic</span> <span class="n">screens</span><span class="o">.</span>
+    <span class="n">sDeviceName</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transition</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PMPS</span> <span class="n">database</span><span class="o">.</span>
+    <span class="n">sTransitionKey</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">re</span><span class="o">-</span><span class="n">read</span> <span class="n">the</span> <span class="n">loaded</span> <span class="n">database</span> <span class="n">immediately</span> <span class="p">(</span><span class="n">useful</span> <span class="k">for</span> <span class="n">debug</span><span class="p">)</span><span class="o">.</span>
+    <span class="n">bReadDBNow</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span> <span class="k">as</span> <span class="n">an</span> <span class="n">enum</span><span class="o">.</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span><span class="p">:</span><span class="n">STATE</span><span class="p">:</span><span class="n">GET</span>
+        <span class="n">io</span><span class="p">:</span> <span class="n">i</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">eEnumGet</span><span class="p">:</span> <span class="n">E_GBS_States</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">PMPS</span> <span class="n">database</span> <span class="n">lookup</span> <span class="n">associated</span> <span class="k">with</span> <span class="n">the</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stDbStateParams</span><span class="p">:</span> <span class="n">ST_DbStateParams</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+    <span class="n">bInit</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+
+    <span class="n">fbYStage</span><span class="p">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
+
+    <span class="n">fbStateDefaults</span><span class="p">:</span> <span class="n">FB_PositionState_Defaults</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span>
+        <span class="n">astPositionState</span><span class="o">.</span><span class="n">array</span><span class="p">:</span> <span class="mf">1..7</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">fbStates</span><span class="p">:</span> <span class="n">FB_PositionStatePMPS1D</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">fbArrCheckWrite</span><span class="p">:</span> <span class="n">FB_CheckPositionStateWrite</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: RTD:01&#39;</span><span class="p">}</span>
+    <span class="n">fbRTD1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: RTD:02&#39;</span><span class="p">}</span>
+    <span class="n">fbRTD2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">unknown</span> <span class="n">value</span> <span class="n">to</span> <span class="n">request</span> <span class="n">a</span> <span class="n">new</span> <span class="n">move</span><span class="o">.</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span><span class="p">:</span><span class="n">STATE</span><span class="p">:</span><span class="n">SET</span>
+        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">eEnumSet</span><span class="p">:</span> <span class="n">E_GBS_States</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span> <span class="n">CONSTANT</span>
+    <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
+    <span class="n">fDelta</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="n">fAccel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">200</span><span class="p">;</span>
+    <span class="n">fOutDecel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">25</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">IF</span> <span class="n">NOT</span> <span class="n">bInit</span> <span class="n">THEN</span>
+    <span class="n">bInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+
+    <span class="n">stYStage</span><span class="o">.</span><span class="n">nEnableMode</span> <span class="o">:=</span> <span class="n">ENUM_StageEnableMode</span><span class="o">.</span><span class="n">DURING_MOTION</span><span class="p">;</span>
+
+    <span class="o">//</span> <span class="n">Partial</span> <span class="n">backcompat</span><span class="p">,</span> <span class="n">this</span> <span class="n">used</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">fVelocity</span> <span class="n">too</span> <span class="n">but</span> <span class="n">this</span> <span class="n">should</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">per</span> <span class="n">install</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;OUT&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fOutDecel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget1</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET1&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget2</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET2&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget3</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET3&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget4</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET4&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget5</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET5&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget6</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET6&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+<span class="n">END_IF</span>
+
+<span class="n">stYStage</span><span class="o">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stYStage</span><span class="o">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+
+<span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">We</span> <span class="n">need</span> <span class="n">to</span> <span class="n">update</span> <span class="kn">from</span><span class="w"> </span><span class="nn">PLC</span> <span class="ow">or</span> <span class="kn">from</span><span class="w"> </span><span class="nn">EPICS</span><span class="p">,</span> <span class="n">but</span> <span class="ow">not</span> <span class="n">both</span>
+<span class="n">fbArrCheckWrite</span><span class="p">(</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">bCheck</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+    <span class="n">bSave</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">IF</span> <span class="n">NOT</span> <span class="n">fbArrCheckWrite</span><span class="o">.</span><span class="n">bHadWrite</span> <span class="n">THEN</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stOut</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget1</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget2</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget3</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget4</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget5</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET6</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget6</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">fbStates</span><span class="p">(</span>
+    <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">eEnumSet</span><span class="o">:=</span><span class="n">eEnumSet</span><span class="p">,</span>
+    <span class="n">eEnumGet</span><span class="o">:=</span><span class="n">eEnumGet</span><span class="p">,</span>
+    <span class="n">fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+    <span class="n">fbArbiter</span><span class="o">:=</span><span class="n">fbArbiter</span><span class="p">,</span>
+    <span class="n">bEnableMotion</span><span class="o">:=</span><span class="n">bEnableMotion</span><span class="p">,</span>
+    <span class="n">bEnableBeamParams</span><span class="o">:=</span><span class="n">bEnableBeamParams</span><span class="p">,</span>
+    <span class="n">bEnablePositionLimits</span><span class="o">:=</span><span class="n">bEnablePositionLimits</span><span class="p">,</span>
+    <span class="n">sDeviceName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">sTransitionKey</span><span class="o">:=</span><span class="n">sTransitionKey</span><span class="p">,</span>
+    <span class="n">bReadDBNow</span><span class="o">:=</span><span class="n">bReadDBNow</span><span class="p">,</span>
+    <span class="n">stDbStateParams</span><span class="o">=&gt;</span><span class="n">stDbStateParams</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">fbArrCheckWrite</span><span class="p">(</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">bCheck</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span>
+    <span class="n">bSave</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">stOut</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">];</span>
+<span class="n">stTarget1</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">];</span>
+<span class="n">stTarget2</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">];</span>
+<span class="n">stTarget3</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">];</span>
+<span class="n">stTarget4</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">];</span>
+<span class="n">stTarget5</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">];</span>
+<span class="n">stTarget6</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET6</span><span class="p">];</span>
+
+<span class="n">fbRTD1</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">fbRTD2</span><span class="p">(</span>
+    <span class="n">fFaultThreshold</span><span class="o">:=</span><span class="n">fbStates</span><span class="o">.</span><span class="n">stDbStateParams</span><span class="o">.</span><span class="n">stReactiveParams</span><span class="o">.</span><span class="n">nTempSP</span><span class="p">,</span>
+    <span class="n">bVeto</span><span class="o">:=</span><span class="n">eEnumGet</span> <span class="o">=</span> <span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">,</span>
+    <span class="n">sDevName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">io_fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#e-gbs-states">E_GBS_States</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
+<li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
+<li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="fb-ipm">
+<h2>FB_IPM<a class="headerlink" href="#fb-ipm" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_IPM</span>
+<span class="p">(</span><span class="o">*</span>
+    <span class="n">Function</span> <span class="n">block</span> <span class="k">for</span> <span class="n">Intensity</span> <span class="n">Profile</span> <span class="n">Monitor</span> <span class="p">(</span><span class="n">IPM</span><span class="p">)</span> <span class="n">controls</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="n">motion</span>
+    <span class="o">-</span> <span class="n">Y</span> <span class="n">target</span> <span class="n">states</span>
+<span class="o">*</span><span class="p">)</span>
+<span class="n">VAR_IN_OUT</span>
+    <span class="o">//</span> <span class="n">Y</span> <span class="n">motor</span> <span class="p">(</span><span class="n">state</span> <span class="n">select</span><span class="p">)</span><span class="o">.</span>
+    <span class="n">stYStage</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">X</span> <span class="n">motor</span>
+    <span class="n">stXStage</span><span class="p">:</span> <span class="n">ST_MotionStage</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">fast</span> <span class="n">fault</span> <span class="n">output</span> <span class="n">to</span> <span class="n">fault</span> <span class="n">to</span><span class="o">.</span>
+    <span class="n">fbFFHWO</span><span class="p">:</span> <span class="n">FB_HardwareFFOutput</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">arbiter</span> <span class="n">to</span> <span class="n">request</span> <span class="n">beam</span> <span class="n">conditions</span> <span class="n">from</span><span class="o">.</span>
+    <span class="n">fbArbiter</span><span class="p">:</span> <span class="n">FB_Arbiter</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_INPUT</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">OUT</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stOut</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET1</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget1</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET2</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget2</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET3</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget3</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET4</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stTarget4</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="nb">input</span> <span class="n">state</span> <span class="n">moves</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnableMotion</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">beam</span> <span class="n">parameter</span> <span class="n">checks</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnableBeamParams</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">position</span> <span class="n">limit</span> <span class="n">checks</span><span class="p">,</span> <span class="ow">or</span> <span class="n">FALSE</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">them</span><span class="o">.</span>
+    <span class="n">bEnablePositionLimits</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">device</span> <span class="k">for</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PMPS</span> <span class="n">DB</span> <span class="n">lookup</span> <span class="ow">and</span> <span class="n">diagnostic</span> <span class="n">screens</span><span class="o">.</span>
+    <span class="n">sDeviceName</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">transition</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">PMPS</span> <span class="n">database</span><span class="o">.</span>
+    <span class="n">sTransitionKey</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">re</span><span class="o">-</span><span class="n">read</span> <span class="n">the</span> <span class="n">loaded</span> <span class="n">database</span> <span class="n">immediately</span> <span class="p">(</span><span class="n">useful</span> <span class="k">for</span> <span class="n">debug</span><span class="p">)</span><span class="o">.</span>
+    <span class="n">bReadDBNow</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR_OUTPUT</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span> <span class="k">as</span> <span class="n">an</span> <span class="n">enum</span><span class="o">.</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span><span class="p">:</span><span class="n">STATE</span><span class="p">:</span><span class="n">GET</span>
+        <span class="n">io</span><span class="p">:</span> <span class="n">i</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">eEnumGet</span><span class="p">:</span> <span class="n">E_IPM_States</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">The</span> <span class="n">PMPS</span> <span class="n">database</span> <span class="n">lookup</span> <span class="n">associated</span> <span class="k">with</span> <span class="n">the</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span><span class="o">.</span>
+    <span class="n">stDbStateParams</span><span class="p">:</span> <span class="n">ST_DbStateParams</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span>
+    <span class="n">bInit</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+
+    <span class="n">fbYStage</span><span class="p">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
+    <span class="n">fbXStage</span><span class="p">:</span> <span class="n">FB_MotionStage</span><span class="p">;</span>
+
+    <span class="n">fbStateDefaults</span><span class="p">:</span> <span class="n">FB_PositionState_Defaults</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span>
+        <span class="n">astPositionState</span><span class="o">.</span><span class="n">array</span><span class="p">:</span> <span class="mf">1..5</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">fbStates</span><span class="p">:</span> <span class="n">FB_PositionStatePMPS1D</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">:</span> <span class="n">ARRAY</span><span class="p">[</span><span class="mf">1.</span><span class="o">.</span><span class="n">GeneralConstants</span><span class="o">.</span><span class="n">MAX_STATES</span><span class="p">]</span> <span class="n">OF</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">fbArrCheckWrite</span><span class="p">:</span> <span class="n">FB_CheckPositionStateWrite</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: RTD:01&#39;</span><span class="p">}</span>
+    <span class="n">fbRTD1</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;pv: RTD:02&#39;</span><span class="p">}</span>
+    <span class="n">fbRTD2</span><span class="p">:</span> <span class="n">FB_CC_TempSensor</span><span class="p">;</span>
+
+    <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">a</span> <span class="n">non</span><span class="o">-</span><span class="n">unknown</span> <span class="n">value</span> <span class="n">to</span> <span class="n">request</span> <span class="n">a</span> <span class="n">new</span> <span class="n">move</span><span class="o">.</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">MMS</span><span class="p">:</span><span class="n">STATE</span><span class="p">:</span><span class="n">SET</span>
+        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
+    <span class="s1">&#39;}</span>
+    <span class="n">eEnumSet</span><span class="p">:</span> <span class="n">E_IPM_States</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">VAR</span> <span class="n">CONSTANT</span>
+    <span class="o">//</span> <span class="n">State</span> <span class="n">defaults</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">provided</span>
+    <span class="n">fDelta</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="n">fAccel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">200</span><span class="p">;</span>
+    <span class="n">fOutDecel</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">25</span><span class="p">;</span>
+<span class="n">END_VAR</span>
+<span class="n">IF</span> <span class="n">NOT</span> <span class="n">bInit</span> <span class="n">THEN</span>
+    <span class="n">bInit</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+
+    <span class="n">stYStage</span><span class="o">.</span><span class="n">nEnableMode</span> <span class="o">:=</span> <span class="n">ENUM_StageEnableMode</span><span class="o">.</span><span class="n">DURING_MOTION</span><span class="p">;</span>
+    <span class="n">stXStage</span><span class="o">.</span><span class="n">nEnableMode</span> <span class="o">:=</span> <span class="n">ENUM_StageEnableMode</span><span class="o">.</span><span class="n">DURING_MOTION</span><span class="p">;</span>
+
+    <span class="n">stYStage</span><span class="o">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+    <span class="n">stYStage</span><span class="o">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+
+    <span class="o">//</span> <span class="n">Partial</span> <span class="n">backcompat</span><span class="p">,</span> <span class="n">this</span> <span class="n">used</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">fVelocity</span> <span class="n">too</span> <span class="n">but</span> <span class="n">this</span> <span class="n">should</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">per</span> <span class="n">install</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;OUT&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fOutDecel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget1</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET1&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget2</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET2&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget3</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET3&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget4</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET4&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+<span class="n">END_IF</span>
+
+<span class="n">stYStage</span><span class="o">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stYStage</span><span class="o">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">FALSE</span><span class="p">;</span>
+
+<span class="n">stXStage</span><span class="o">.</span><span class="n">bLimitForwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stXStage</span><span class="o">.</span><span class="n">bLimitBackwardEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stXStage</span><span class="o">.</span><span class="n">bHardwareEnable</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="n">stXStage</span><span class="o">.</span><span class="n">bPowerSelf</span> <span class="o">:=</span> <span class="n">TRUE</span><span class="p">;</span>
+
+<span class="n">fbYStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">);</span>
+<span class="n">fbXStage</span><span class="p">(</span><span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stXStage</span><span class="p">);</span>
+
+<span class="o">//</span> <span class="n">We</span> <span class="n">need</span> <span class="n">to</span> <span class="n">update</span> <span class="kn">from</span><span class="w"> </span><span class="nn">PLC</span> <span class="ow">or</span> <span class="kn">from</span><span class="w"> </span><span class="nn">EPICS</span><span class="p">,</span> <span class="n">but</span> <span class="ow">not</span> <span class="n">both</span>
+<span class="n">fbArrCheckWrite</span><span class="p">(</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">bCheck</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+    <span class="n">bSave</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span>
+<span class="p">);</span>
+<span class="n">IF</span> <span class="n">NOT</span> <span class="n">fbArrCheckWrite</span><span class="o">.</span><span class="n">bHadWrite</span> <span class="n">THEN</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stOut</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget1</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget2</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget3</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget4</span><span class="p">;</span>
+<span class="n">END_IF</span>
+
+<span class="n">fbStates</span><span class="p">(</span>
+    <span class="n">stMotionStage</span><span class="o">:=</span><span class="n">stYStage</span><span class="p">,</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">eEnumSet</span><span class="o">:=</span><span class="n">eEnumSet</span><span class="p">,</span>
+    <span class="n">eEnumGet</span><span class="o">:=</span><span class="n">eEnumGet</span><span class="p">,</span>
+    <span class="n">fbFFHWO</span><span class="o">:=</span><span class="n">fbFFHWO</span><span class="p">,</span>
+    <span class="n">fbArbiter</span><span class="o">:=</span><span class="n">fbArbiter</span><span class="p">,</span>
+    <span class="n">bEnableMotion</span><span class="o">:=</span><span class="n">bEnableMotion</span><span class="p">,</span>
+    <span class="n">bEnableBeamParams</span><span class="o">:=</span><span class="n">bEnableBeamParams</span><span class="p">,</span>
+    <span class="n">bEnablePositionLimits</span><span class="o">:=</span><span class="n">bEnablePositionLimits</span><span class="p">,</span>
+    <span class="n">sDeviceName</span><span class="o">:=</span><span class="n">sDeviceName</span><span class="p">,</span>
+    <span class="n">sTransitionKey</span><span class="o">:=</span><span class="n">sTransitionKey</span><span class="p">,</span>
+    <span class="n">bReadDBNow</span><span class="o">:=</span><span class="n">bReadDBNow</span><span class="p">,</span>
+    <span class="n">stDbStateParams</span><span class="o">=&gt;</span><span class="n">stDbStateParams</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">fbArrCheckWrite</span><span class="p">(</span>
+    <span class="n">astPositionState</span><span class="o">:=</span><span class="n">astPositionState</span><span class="p">,</span>
+    <span class="n">bCheck</span><span class="o">:=</span><span class="n">FALSE</span><span class="p">,</span>
+    <span class="n">bSave</span><span class="o">:=</span><span class="n">TRUE</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="n">stOut</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">];</span>
+<span class="n">stTarget1</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">];</span>
+<span class="n">stTarget2</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">];</span>
+<span class="n">stTarget3</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">];</span>
+<span class="n">stTarget4</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_IPM_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">];</span>
+
+<span class="n">END_FUNCTION_BLOCK</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Related:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#e-ipm-states">E_IPM_States</a></p></li>
+<li><p><a class="reference internal" href="#fb-cc-tempsensor">FB_CC_TempSensor</a></p></li>
+<li><p><a class="reference internal" href="#fb-checkpositionstatewrite">FB_CheckPositionStateWrite</a></p></li>
+<li><p><a class="reference internal" href="#fb-positionstate-defaults">FB_PositionState_Defaults</a></p></li>
+</ul>
+</dd>
+</dl>
 </section>
 <section id="fb-lic">
 <h2>FB_LIC<a class="headerlink" href="#fb-lic" title="Link to this heading"></a></h2>
