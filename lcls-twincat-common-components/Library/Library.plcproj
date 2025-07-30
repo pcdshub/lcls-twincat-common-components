@@ -33,6 +33,8 @@
     <Folder Include="Devices\WFS" />
     <Folder Include="Devices\SLITS" />
     <Folder Include="Devices\REF" />
+    <Folder Include="Devices\GBS" />
+    <Folder Include="Devices\IPM" />
     <Folder Include="Devices\XPIM" />
     <Folder Include="Devices\PPM" />
     <Folder Include="DUTs" />
@@ -94,6 +96,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\WFS\FB_WFS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\GBS\E_GBS_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\GBS\FB_GBS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\IPM\E_IPM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\IPM\FB_IPM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\E_XPIM_Filters.TcDUT">
