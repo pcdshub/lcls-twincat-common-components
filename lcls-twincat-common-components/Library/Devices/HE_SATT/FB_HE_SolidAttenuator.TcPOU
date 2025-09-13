@@ -1,0 +1,421 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuator" Id="{0308bf0b-9079-42fc-a6b3-8754767b71e7}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuator EXTENDS FB_Fallible
+VAR CONSTANT
+    nNumHolders : INT := 5;
+END_VAR
+VAR
+    iConvertUnits : I_ConvertUnitsLREAL;
+    iSettings : I_HE_SolidAttenuatorSettings;
+    iCommands : I_HE_SolidAttenuatorCommands;
+    iBeamPhotonEnergy : I_QuantityLREAL;
+    iBeamEnergy : I_QuantityLREAL;
+    iBeamRepetitionRate : I_QuantityLREAL;
+    iRequestedTransmission : I_QuantityLREAL;
+    iThicknessCalculator : I_CalcThicknessFromXRayTransmission;
+    iTransmissionCalculator : I_CalcXRayTransmissionFromThickness;
+    iAbsorptionConstantCalculator : I_CalcXRayAbsorptionConstant;
+    aiHolder : ARRAY[1..nNumHolders] OF I_HE_SolidAttenuatorHolder;
+
+    fbCalculatedTransmission : FB_QuantityLREALPublic(Units := '1');
+    fbCalculatedIncidentBeamPower : FB_QuantityLREALPublic(Units := 'W');
+    fbSiliconSafeIncidentPower : FB_QuantityLREALPublic(Units := 'W');
+    aiFiltersSelected : ARRAY[1..nNumHolders] OF I_HE_SolidAttenuatorFilter;
+
+    stSettings : ST_HE_SolidAttenuatorSettings;
+    nIndex : INT;
+    sMaterialFormula : T_MaxString;
+    fbThickness : FB_QuantityLREALPublic(Units := 'um');
+    afbCalculatedTransmissionBasedOnHolderPositions : ARRAY[1..nNumHolders] OF FB_QuantityLREALPublic(Units := '1');
+    fbCalculatedTransmissionBasedOnHolderPositionsTotal : FB_QuantityLREALPublic(Units := '1');
+
+    fbAbsorptionConstant : FB_QuantityLREALPublic(Units := '1/um');
+    fbSiliconThicknessRequired : FB_QuantityLREALPublic(Units := 'um');
+    fbDiamondThicknessRequired : FB_QuantityLREALPublic(Units := 'um');
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+GetSettings(Settings := stSettings);
+
+IF NOT stSettings.bEnabled THEN
+    RETURN;
+END_IF
+
+CalculateTransmissionBasedOnHolderPositions(
+    CalculatedTransmission := fbCalculatedTransmission
+);
+
+CalculateIncidentBeamPower(
+    BeamEnergy := iBeamEnergy,
+    BeamRepetitionRate := iBeamRepetitionRate,
+    BeamPowerReductionFactorAtSATTLocation := stSettings.fbBeamPowerReductionFactorAtSATTLocation,
+    CalculatedIncidentBeamPower := fbCalculatedIncidentBeamPower
+);
+
+IF NOT iCommands.HasNewCommand() THEN
+    RETURN;
+END_IF
+
+CASE iCommands.GetCommand() OF
+    E_HE_SolidAttenuatorCommand.CALCULATE:
+        (*DetermineFilterSelectionForTransmission(
+            RequestedTransmission := iRequestedTransmission,
+            Holders := aiHolder,
+            FiltersSelected := aiFiltersSelected
+        );*)
+    E_HE_SolidAttenuatorCommand.GO:
+        (*MoveToSelectedSlots(
+            Holders := aiHolder,
+            FiltersSelected := aiFiltersSelected
+        );*)
+END_CASE
+]]></ST>
+    </Implementation>
+    <Method Name="CalculateDiamondThicknessForSafeSilicon" Id="{00e08ca7-9f27-439f-bdfd-c5f1be874ee5}">
+      <Declaration><![CDATA[
+METHOD CalculateDiamondThicknessForSafeSilicon
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateDiamondThicknessRequiredForTransmission" Id="{ed9b5450-43f2-4302-8ff7-a671681a566e}">
+      <Declaration><![CDATA[
+METHOD CalculateDiamondThicknessRequiredForTransmission
+VAR_INPUT
+    Transmission : I_QuantityLREAL;
+    DiamondThicknessRequired : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateIncidentBeamPower" Id="{a2c28c84-8b19-4ceb-8725-dc51f2fd4c75}">
+      <Declaration><![CDATA[
+METHOD CalculateIncidentBeamPower
+VAR_INPUT
+    BeamEnergy : I_QuantityLREAL;
+    BeamRepetitionRate : I_QuantityLREAL;
+    BeamPowerReductionFactorAtSATTLocation : I_QuantityLREAL;
+    CalculatedIncidentBeamPower : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+// TODO: Unit Check
+
+CalculatedIncidentBeamPower.Val :=
+    BeamEnergy.Val *
+    BeamRepetitionRate.Val *
+    BeamPowerReductionFactorAtSATTLocation.Val;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateSiliconThicknessRequired" Id="{ed45e70f-44b7-4a8b-8c7e-9b6580e19f18}">
+      <Declaration><![CDATA[
+METHOD CalculateSiliconThicknessRequired
+VAR_INPUT
+    Transmission : I_QuantityLREAL;
+    SiliconThicknessRequired : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateThicknessRequiredForRequestedTransmission" Id="{6690e18b-82cf-4b13-97d4-ceee8473cbc3}">
+      <Declaration><![CDATA[
+METHOD CalculateThicknessRequiredForRequestedTransmission
+VAR_INPUT
+    MaterialFormula : T_MaxString;
+    RequestedTransmission : I_QuantityLREAL;
+    ThicknessRequired : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iAbsorptionConstantCalculator.Calculate(
+    MaterialFormula := MaterialFormula,
+    AbsorptionConstant := fbAbsorptionConstant
+);
+
+IF iAbsorptionConstantCalculator.GetError() THEN
+    SetError(Msg :=
+        CONCAT('Error when attempting to calculate absorption constant: ',
+        iAbsorptionConstantCalculator.GetErrorMsg()));
+    RETURN;
+END_IF
+
+// TODO handle 0 absorption constant case.
+
+ThicknessRequired.Val := LN(1.0 / RequestedTransmission.Val) / fbAbsorptionConstant.Val;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CalculateTransmissionBasedOnHolderPositions" Id="{01f62865-349d-4382-956f-50a7d7142091}">
+      <Declaration><![CDATA[
+METHOD CalculateTransmissionBasedOnHolderPositions
+VAR_INPUT
+    CalculatedTransmission : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CalculatedTransmission.Val := 1.0;
+
+FOR nIndex := 1 TO nNumHolders BY 1 DO
+    aiHolder[nIndex].GetMaterialAtBeamPosition(Material := sMaterialFormula);
+
+    aiHolder[nIndex].GetThicknessAtBeamPosition(Thickness := fbThickness);
+
+    iTransmissionCalculator.Calculate(
+        MaterialFormula := sMaterialFormula,
+        Thickness := fbThickness,
+        Transmission := afbCalculatedTransmissionBasedOnHolderPositions[nIndex]
+    );
+
+    CalculatedTransmission.Val :=
+        fbCalculatedTransmissionBasedOnHolderPositionsTotal.Val *
+        afbCalculatedTransmissionBasedOnHolderPositions[nIndex].Val;
+END_FOR
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ClearFilterSelections" Id="{9decf173-eeb3-4b61-b14c-dabc09381c40}">
+      <Declaration><![CDATA[
+METHOD PRIVATE ClearFilterSelections
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="DetermineFilterSelectionForTransmission" Id="{e7c3860a-04b1-4dad-be3e-4cea142932dd}">
+      <Declaration><![CDATA[
+METHOD DetermineFilterSelectionForTransmission
+VAR_INPUT
+    RequestedTransmission : I_QuantityLREAL;
+    FiltersSelected : ARRAY[1..nNumHolders] OF I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+GetSettings(Settings := stSettings);
+
+ClearFilterSelections();
+
+IF RequestedTransmission.Val <= 0.0 THEN
+    // Return thickest arrangement.
+    SelectThickestDiamondFilters(
+        FiltersSelected := aiFiltersSelected
+    );
+    RETURN;
+END_IF
+
+CalculateSiliconThicknessRequired(
+    Transmission := RequestedTransmission,
+    SiliconThicknessRequired := fbSiliconThicknessRequired
+);
+
+IF fbSiliconThicknessRequired.Val < stSettings.fbDiamondOnlySiliconThicknessThreshold.Val THEN
+    // If the silicon thickness required is less than the threshold, we need to only use diamond.
+    // Calculate Diamond Thickness Required
+    CalculateDiamondThicknessRequiredForTransmission(
+        Transmission := RequestedTransmission,
+        DiamondThicknessRequired := fbDiamondThicknessRequired
+    );
+
+    (*SelectDiamondFilters(
+        ThicknessDesired := fbDiamondThicknessRequired,
+        RoundingMode := stSettings.eRoundingMode,
+        FiltersSelected := aiFiltersSelected,
+        ThicknessSelected := fbDiamondThicknessSelected,
+        TransmissionOfSelection := fbTransmissionOfSelectedDiamond
+    );*)
+
+    RETURN;
+ELSIF fbSiliconThicknessRequired.Val >= stSettings.fbDiamondOnlySiliconThicknessThreshold.Val AND
+    fbSiliconThicknessRequired.Val < stSettings.fbGermaniumNeededSiliconThicknessThreshold.Val THEN
+    // If we are above the diamond only threshold but under the germanium threshold, we use silicon only or silicon with diamond.
+    // Calculate if diamond prefilter required and calculate silcon thickness required
+    (*CalculateSafeIncidentPowerThresholdForSiliconThickness(
+        PhotonEnergy := iBeamPhotonEnergy,
+        SiliconThickness := fbSiliconThicknessRequired,
+        SafeIncidentPower := fbSiliconSafeIncidentPower
+    );*)
+
+    IF fbCalculatedIncidentBeamPower.Val < fbSiliconSafeIncidentPower.Val THEN
+        // We are OK with just the silicon.
+        (*SelectSiliconFilters(
+            ThicknessDesired := fbSiliconThicknessRequired,
+            RoundingMode := stSettings.eRoundingMode,
+            FiltersSelected := aiFiltersSelected,
+            ThicknessSelected := fbSiliconThicknessSelected,
+            TransmissionOfSelection := fbTransmissionOfSelectedSilicon
+        );*)
+
+        RETURN;
+    ELSE
+        // We need diamond prefilters to protect the silicon.
+        // Calculate diamond filters required to protect silicon, then iterate on
+        // silicon thickness to get diamond filters required to achieve transmission,
+        // then check if the new silicon thickness is still protected by the diamond filters,
+        // iterate until all conditions are satisfied.
+        WHILE fbCalculatedIncidentBeamPower.Val > fbSiliconSafeIncidentPower.Val DO
+            (*CalculateTransmissionRequiredForSafeFilter(
+                IncidentPower := fbCalculatedIncidentBeamPower,
+                SafeIncidentPower := fbSiliconSafeIncidentPower,
+                RequiredTransmissionForSafeFilter := fbRequiredTransmissionForSafeSilicon
+            );
+
+            CalculateDiamondThicknessRequiredForTransmission(
+                Transmission := fbRequiredTransmissionForSafeSilicon,
+                DiamondThicknessRequired := fbDiamondThicknessRequired
+            );
+
+            SelectDiamondFilters(
+                ThicknessDesired := fbDiamondThicknessRequired,
+                RoundingMode := E_HE_SolidAttenuatorCalculationMode.CEILING,
+                FiltersSelected := aiFiltersSelected,
+                ThicknessSelected := fbDiamondThicknessSelected,
+                TransmissionOfSelection := fbTransmissionOfSelectedDiamond
+            );
+
+            fbRequiredTransmissionForSiliconAfterDiamond.Val :=
+                RequestedTransmission.Val /
+                fbTransmissionOfSelectedDiamond.Val;
+
+            CalculateSiliconThicknessRequiredForTransmission(
+                Transmission := fbRequiredTransmissionForSiliconAfterDiamond,
+                SiliconThicknessRequired := fbSiliconThicknessRequired
+            );
+
+            SelectSiliconFilters(
+                ThicknessDesired := fbSiliconThicknessRequired,
+                RoundingMode := stSettings.eRoundingMode,
+                FiltersSelected := aiFiltersSelected,
+                ThicknessSelected := fbSiliconThicknessSelected,
+                TransmissionOfSelection := fbTransmissionOfSelectedSilicon
+            );
+
+            CalculateSafeIncidentPowerThresholdForSiliconThickness(
+                PhotonEnergy := iBeamPhotonEnergy,
+                SiliconThickness := fbSiliconThicknessRequired,
+                SafeIncidentPower := fbSiliconSafeIncidentPower
+            );*)
+        END_WHILE
+    END_IF
+ELSE
+    // Calculate germanium thickness required to be used with 3000um of Silicon thickness
+
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{6acfac08-5f66-4b17-825d-f8678fa991c3}">
+      <Declaration><![CDATA[
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+    ConvertUnits : I_ConvertUnitsLREAL;
+    Settings : I_HE_SolidAttenuatorSettings;
+    Commands : I_HE_SolidAttenuatorCommands;
+    BeamPhotonEnergy : I_QuantityLREAL;
+    BeamEnergy : I_QuantityLREAL;
+    BeamRepetitionRate : I_QuantityLREAL;
+    RequestedTransmission : I_QuantityLREAL;
+    ThicknessCalculator : I_CalcThicknessFromXRayTransmission;
+    TransmissionCalculator : I_CalcXRayTransmissionFromThickness;
+    AbsorptionConstantCalculator : I_CalcXRayAbsorptionConstant;
+    HolderA1 : I_HE_SolidAttenuatorHolder;
+    HolderA2 : I_HE_SolidAttenuatorHolder;
+    HolderA3 : I_HE_SolidAttenuatorHolder;
+    HolderA4 : I_HE_SolidAttenuatorHolder;
+    HolderA5 : I_HE_SolidAttenuatorHolder;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+iConvertUnits := ConvertUnits;
+iSettings := Settings;
+iCommands := Commands;
+iBeamPhotonEnergy := BeamPhotonEnergy;
+iBeamEnergy := BeamEnergy;
+iBeamRepetitionRate := BeamRepetitionRate;
+iRequestedTransmission := RequestedTransmission;
+iThicknessCalculator := ThicknessCalculator;
+iTransmissionCalculator := TransmissionCalculator;
+iAbsorptionConstantCalculator := AbsorptionConstantCalculator;
+aiHolder[1] := HolderA1;
+aiHolder[2] := HolderA2;
+aiHolder[3] := HolderA3;
+aiHolder[4] := HolderA4;
+aiHolder[5] := HolderA5;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetSettings" Id="{2f8f58b3-5f5a-49c0-828f-a8647db0ea56}">
+      <Declaration><![CDATA[{warning 'Add method implementation '}
+METHOD GetSettings
+VAR_IN_OUT
+    Settings	: ST_HE_SolidAttenuatorSettings;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="IsBeamOff" Id="{2e887466-2078-4dcc-90df-9f9a42ba3e4f}">
+      <Declaration><![CDATA[METHOD IsBeamOff : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveToSelectedSlots" Id="{4ae30c08-7db8-4db9-a535-c51d673bd1c9}">
+      <Declaration><![CDATA[
+METHOD MoveToSelectedSlots
+VAR_INPUT
+    HolderA1 : I_HE_SolidAttenuatorHolder;
+    HolderA2 : I_HE_SolidAttenuatorHolder;
+    HolderA3 : I_HE_SolidAttenuatorHolder;
+    HolderA4 : I_HE_SolidAttenuatorHolder;
+    HolderA5 : I_HE_SolidAttenuatorHolder;
+    aiFiltersSelected : ARRAY[1..nNumHolders] OF I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RequestBeamOff" Id="{1054a9f5-9f34-4b62-bbaf-654b23a0f45b}">
+      <Declaration><![CDATA[METHOD RequestBeamOff
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SelectThickestDiamondFilters" Id="{f22dabb0-6900-4cbe-a015-f0065932f1ba}">
+      <Declaration><![CDATA[
+METHOD SelectThickestDiamondFilters
+VAR_IN_OUT
+    FiltersSelected : ARRAY[1..nNumHolders] OF I_HE_SolidAttenuatorFilter;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

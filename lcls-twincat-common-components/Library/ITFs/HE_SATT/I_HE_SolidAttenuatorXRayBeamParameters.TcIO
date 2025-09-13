@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorXRayBeamParameters" Id="{4d048882-1b8e-4c10-be92-4b7020f1ea48}">
+    <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorXRayBeamParameters EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetBeamEnergy" Id="{ed2cb71e-eed3-4446-8e41-32ffe2bdb60f}">
+      <Declaration><![CDATA[
+METHOD GetBeamEnergy
+VAR_INPUT
+    Energy : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetBeamPhotonEnergy" Id="{660d25f1-dff3-404e-9116-14d6d3aa9234}">
+      <Declaration><![CDATA[
+METHOD GetBeamPhotonEnergy
+VAR_INPUT
+    PhotonEnergy : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetBeamRepetitionRate" Id="{48c60e37-f09b-4556-a450-83975e743bda}">
+      <Declaration><![CDATA[
+METHOD GetBeamRepetitionRate
+VAR_INPUT
+    RepetitionRate : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorFilter" Id="{032eac1f-d222-4245-a784-ead19447a336}">
+    <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorFilter EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetCenterPosition" Id="{731d3cdb-270e-4cff-906f-e5973c584cf9}">
+      <Declaration><![CDATA[
+METHOD GetCenterPosition
+VAR_INPUT
+    CenterPosition : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetLength" Id="{09e64b52-ce20-4c07-9046-9f95ec96daa5}">
+      <Declaration><![CDATA[
+METHOD GetLength
+VAR_INPUT
+    Length : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetMaterial" Id="{01627194-3c3f-4ca7-bdaf-b6736b4f8407}">
+      <Declaration><![CDATA[
+METHOD GetMaterial
+VAR_IN_OUT
+    Material : T_MaxString;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="GetThicknessAt" Id="{bb7b6406-6e35-4c8c-847b-171628725a98}">
+      <Declaration><![CDATA[
+METHOD GetThicknessAt
+VAR_INPUT
+    QueryPointInAxisCoordinates : I_QuantityLREAL;
+    Thickness : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

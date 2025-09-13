@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_HE_SolidAttenuatorAttentuationLengthDatabase" Id="{06dfad59-b310-4aa0-bb9c-06b6bb0d52ba}">
+    <Declaration><![CDATA[INTERFACE I_HE_SolidAttenuatorAttentuationLengthDatabase EXTENDS I_Fallible
+]]></Declaration>
+    <Method Name="GetAttenuationLength" Id="{858654b7-988b-4231-baf6-21f5258c6a63}">
+      <Declaration><![CDATA[
+METHOD GetAttenuationLength
+VAR_INPUT
+    PhotonEnergy : I_QuantityLREAL;
+    MaterialName : T_MaxString;
+    AttenuationLengthOutput : I_QuantityLREALPublic;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

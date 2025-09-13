@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HE_SolidAttenuatorHolderFilterConstantThickness_Test" Id="{08d4dafd-2998-4216-a0c4-4d40738a5ef7}" SpecialFunc="None">
+    <Declaration><![CDATA[
+FUNCTION_BLOCK FB_HE_SolidAttenuatorHolderFilterConstantThickness_Test EXTENDS FB_TestSuiteExtended
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+TestHasSpecifiedSlotExpectCorrectResult();
+]]></ST>
+    </Implementation>
+    <Method Name="SetNominalCase" Id="{54f705f1-2d96-4098-904c-c0a2ba2e7f8c}">
+      <Declaration><![CDATA[
+METHOD PRIVATE SetNominalCase
+VAR_IN_OUT
+    fbConvertUnitsMock : FB_ConvertUnitsLREALMock;
+    fbBeamPositionInAxisCoordinatesMock : FB_QuantityLREALPublicMock;
+    fbMotionAxisNCTestDouble : FB_MotionAxisNCTestDouble;
+    fbSlot01Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot02Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot03Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot04Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot05Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot06Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot07Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot08Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot09Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot10Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot11Mock : FB_HE_SolidAttenuatorSlotMock;
+END_VAR
+VAR
+    fbCenterPosition : FB_QuantityLREALPublicMock;
+    fbLength : FB_QuantityLREALPublicMock;
+    fbThickness : FB_QuantityLREALPublicMock;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+fbBeamPositionInAxisCoordinatesMock.Val := 51.2;
+fbBeamPositionInAxisCoordinatesMock.Units := 'mm';
+
+fbSlot01Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot01Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot01Mock.SetIsEnabled(Result := TRUE);
+fbSlot01Mock.SetLength(Result := fbLength);
+fbSlot01Mock.SetMaterial(Result := 'C');
+fbSlot01Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot01Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot02Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot02Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot02Mock.SetIsEnabled(Result := TRUE);
+fbSlot02Mock.SetLength(Result := fbLength);
+fbSlot02Mock.SetMaterial(Result := 'C');
+fbSlot02Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot02Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot03Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot03Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot03Mock.SetIsEnabled(Result := TRUE);
+fbSlot03Mock.SetLength(Result := fbLength);
+fbSlot03Mock.SetMaterial(Result := 'C');
+fbSlot03Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot03Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot04Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot04Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot04Mock.SetIsEnabled(Result := TRUE);
+fbSlot04Mock.SetLength(Result := fbLength);
+fbSlot04Mock.SetMaterial(Result := 'C');
+fbSlot04Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot04Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot05Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot05Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot05Mock.SetIsEnabled(Result := TRUE);
+fbSlot05Mock.SetLength(Result := fbLength);
+fbSlot05Mock.SetMaterial(Result := 'C');
+fbSlot05Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot05Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot06Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot06Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot06Mock.SetIsEnabled(Result := TRUE);
+fbSlot06Mock.SetLength(Result := fbLength);
+fbSlot06Mock.SetMaterial(Result := 'C');
+fbSlot06Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot06Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot07Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot07Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot07Mock.SetIsEnabled(Result := TRUE);
+fbSlot07Mock.SetLength(Result := fbLength);
+fbSlot07Mock.SetMaterial(Result := 'C');
+fbSlot07Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot07Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot08Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot08Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot08Mock.SetIsEnabled(Result := TRUE);
+fbSlot08Mock.SetLength(Result := fbLength);
+fbSlot08Mock.SetMaterial(Result := 'C');
+fbSlot08Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot08Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot09Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot09Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot09Mock.SetIsEnabled(Result := TRUE);
+fbSlot09Mock.SetLength(Result := fbLength);
+fbSlot09Mock.SetMaterial(Result := 'C');
+fbSlot09Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot09Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot10Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot10Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot10Mock.SetIsEnabled(Result := TRUE);
+fbSlot10Mock.SetLength(Result := fbLength);
+fbSlot10Mock.SetMaterial(Result := 'C');
+fbSlot10Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot10Mock.SetThicknessAt(Result := fbThickness);
+
+fbSlot11Mock.SetCenterPosition(Result := fbCenterPosition);
+fbSlot11Mock.SetHasSpecifiedFilter(Result := TRUE);
+fbSlot11Mock.SetIsEnabled(Result := TRUE);
+fbSlot11Mock.SetLength(Result := fbLength);
+fbSlot11Mock.SetMaterial(Result := 'C');
+fbSlot11Mock.SetState(Result := E_HE_SolidAttenuatorSlotState.FULL);
+fbSlot11Mock.SetThicknessAt(Result := fbThickness);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestHasSpecifiedSlotExpectCorrectResult" Id="{e878b7f7-72d2-4440-8256-32d92f51d96d}">
+      <Declaration><![CDATA[
+METHOD PRIVATE TestHasSpecifiedSlotExpectCorrectResult
+VAR
+    // Expected
+    bExpected : BOOL;
+
+    // Mocks
+    fbConvertUnitsMock : FB_ConvertUnitsLREALMock;
+    fbBeamPositionInAxisCoordinatesMock : FB_QuantityLREALPublicMock;
+    fbMotionAxisNCTestDouble : FB_MotionAxisNCTestDouble;
+    fbSlot01Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot02Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot03Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot04Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot05Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot06Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot07Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot08Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot09Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot10Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlot11Mock : FB_HE_SolidAttenuatorSlotMock;
+    fbSlotNotInHolderMock : FB_HE_SolidAttenuatorSlotMock;
+
+    // Subject Under Test
+    fbHE_SolidAttenuatorHolderFilterConstantThickness : FB_HE_SolidAttenuatorHolderFilterConstantThickness(
+        ConvertUnits := fbConvertUnitsMock,
+        BeamPositionInAxisCoordinates := fbBeamPositionInAxisCoordinatesMock,
+        MotionAxis := fbMotionAxisNCTestDouble,
+        Slot01 := fbSlot01Mock,
+        Slot02 := fbSlot02Mock,
+        Slot03 := fbSlot03Mock,
+        Slot04 := fbSlot04Mock,
+        Slot05 := fbSlot05Mock,
+        Slot06 := fbSlot06Mock,
+        Slot07 := fbSlot07Mock,
+        Slot08 := fbSlot08Mock,
+        Slot09 := fbSlot09Mock,
+        Slot10 := fbSlot10Mock,
+        Slot11 := fbSlot11Mock
+    );
+    bResult : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+TEST(__POUNAME());
+
+SetNominalCase(
+    fbConvertUnitsMock := fbConvertUnitsMock,
+    fbBeamPositionInAxisCoordinatesMock := fbBeamPositionInAxisCoordinatesMock,
+    fbMotionAxisNCTestDouble := fbMotionAxisNCTestDouble,
+    fbSlot01Mock := fbSlot01Mock,
+    fbSlot02Mock := fbSlot02Mock,
+    fbSlot03Mock := fbSlot03Mock,
+    fbSlot04Mock := fbSlot04Mock,
+    fbSlot05Mock := fbSlot05Mock,
+    fbSlot06Mock := fbSlot06Mock,
+    fbSlot07Mock := fbSlot07Mock,
+    fbSlot08Mock := fbSlot08Mock,
+    fbSlot09Mock := fbSlot09Mock,
+    fbSlot10Mock := fbSlot10Mock,
+    fbSlot11Mock := fbSlot11Mock
+);
+
+bExpected := TRUE;
+bResult := fbHE_SolidAttenuatorHolderFilterConstantThickness.HasSpecifiedSlot(Slot := fbSlot02Mock);
+
+AssertNoError(Fallible := fbHE_SolidAttenuatorHolderFilterConstantThickness);
+
+AssertEquals_BOOL(
+    Expected := bExpected,
+    Actual := bResult,
+    Message := 'Expected slot to be in holder.'
+);
+
+bExpected := FALSE;
+bResult := fbHE_SolidAttenuatorHolderFilterConstantThickness.HasSpecifiedSlot(Slot := fbSlotNotInHolderMock);
+
+AssertNoError(Fallible := fbHE_SolidAttenuatorHolderFilterConstantThickness);
+
+AssertEquals_BOOL(
+    Expected := bExpected,
+    Actual := bResult,
+    Message := 'Did not expect slot to be in holder.'
+);
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
