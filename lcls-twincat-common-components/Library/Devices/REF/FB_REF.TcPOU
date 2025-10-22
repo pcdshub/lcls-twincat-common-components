@@ -43,6 +43,8 @@ VAR_INPUT
     sTransitionKey: STRING;
     // Set this to TRUE to re-read the loaded database immediately (useful for debug).
     bReadDBNow: BOOL;
+    // Passed to fbLaser.
+    fTermMax: LREAL := 200;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -129,7 +131,7 @@ fbArrCheckWrite(
 stOut := astPositionState[E_EpicsInOut.OUT];
 stIn := astPositionState[E_EpicsInOut.IN];
 
-fbLaser();]]></ST>
+fbLaser(fTermMax:=fTermMax);]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>

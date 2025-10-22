@@ -3,6 +3,10 @@
   <POU Name="FB_REF_Laser" Id="{fe34aa45-49f5-4ca6-ae16-2db42771e34d}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REF_Laser
 VAR_INPUT
+    {attribute 'pytmc' := '
+        pv: SHUTDOWN
+        io: io
+    '}
     bShutdown: BOOL;
 
     {attribute 'pytmc' := '
@@ -10,6 +14,8 @@ VAR_INPUT
         io: io
     '}
     fLaserPercent: LREAL;
+
+    fTermMax: LREAL := 200;
 END_VAR
 VAR
     iShutdownINT AT %Q*: INT;
@@ -32,13 +38,13 @@ fbSetLasPercent(
     fSafeMax:=100,
     fSafeMin:=0,
     iTermBits:=15,
-    fTermMax:=200,
+    fTermMax:=fTermMax,
     fTermMin:=0,
     iRaw=>iLaserInt);
 fbGetLasPercent(
     iRaw:=iLaserInt,
     iTermBits:=15,
-    fTermMax:=200,
+    fTermMax:=fTermMax,
     fTermMin:=0,
     fReal=>fLaserPercent);]]></ST>
     </Implementation>
