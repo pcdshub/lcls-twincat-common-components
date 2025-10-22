@@ -2473,6 +2473,8 @@ FB_REF
         sTransitionKey: STRING;
         // Set this to TRUE to re-read the loaded database immediately (useful for debug).
         bReadDBNow: BOOL;
+        // Passed to fbLaser.
+        fTermMax: LREAL := 200;
     END_VAR
     VAR_OUTPUT
         // The current position state as an enum.
@@ -2557,7 +2559,7 @@ FB_REF
     stOut := astPositionState[E_EpicsInOut.OUT];
     stIn := astPositionState[E_EpicsInOut.IN];
 
-    fbLaser();
+    fbLaser(fTermMax:=fTermMax);
 
     END_FUNCTION_BLOCK
 
@@ -2575,6 +2577,10 @@ FB_REF_Laser
 
     FUNCTION_BLOCK FB_REF_Laser
     VAR_INPUT
+        {attribute 'pytmc' := '
+            pv: SHUTDOWN
+            io: io
+        '}
         bShutdown: BOOL;
 
         {attribute 'pytmc' := '
@@ -2582,6 +2588,8 @@ FB_REF_Laser
             io: io
         '}
         fLaserPercent: LREAL;
+
+        fTermMax: LREAL := 200;
     END_VAR
     VAR
         iShutdownINT AT %Q*: INT;
@@ -2603,13 +2611,13 @@ FB_REF_Laser
         fSafeMax:=100,
         fSafeMin:=0,
         iTermBits:=15,
-        fTermMax:=200,
+        fTermMax:=fTermMax,
         fTermMin:=0,
         iRaw=>iLaserInt);
     fbGetLasPercent(
         iRaw:=iLaserInt,
         iTermBits:=15,
-        fTermMax:=200,
+        fTermMax:=fTermMax,
         fTermMin:=0,
         fReal=>fLaserPercent);
 

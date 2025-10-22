@@ -2539,6 +2539,8 @@ END_METHOD
     <span class="n">sTransitionKey</span><span class="p">:</span> <span class="n">STRING</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Set</span> <span class="n">this</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">re</span><span class="o">-</span><span class="n">read</span> <span class="n">the</span> <span class="n">loaded</span> <span class="n">database</span> <span class="n">immediately</span> <span class="p">(</span><span class="n">useful</span> <span class="k">for</span> <span class="n">debug</span><span class="p">)</span><span class="o">.</span>
     <span class="n">bReadDBNow</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
+    <span class="o">//</span> <span class="n">Passed</span> <span class="n">to</span> <span class="n">fbLaser</span><span class="o">.</span>
+    <span class="n">fTermMax</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">200</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR_OUTPUT</span>
     <span class="o">//</span> <span class="n">The</span> <span class="n">current</span> <span class="n">position</span> <span class="n">state</span> <span class="k">as</span> <span class="n">an</span> <span class="n">enum</span><span class="o">.</span>
@@ -2623,7 +2625,7 @@ END_METHOD
 <span class="n">stOut</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_EpicsInOut</span><span class="o">.</span><span class="n">OUT</span><span class="p">];</span>
 <span class="n">stIn</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_EpicsInOut</span><span class="o">.</span><span class="n">IN</span><span class="p">];</span>
 
-<span class="n">fbLaser</span><span class="p">();</span>
+<span class="n">fbLaser</span><span class="p">(</span><span class="n">fTermMax</span><span class="o">:=</span><span class="n">fTermMax</span><span class="p">);</span>
 
 <span class="n">END_FUNCTION_BLOCK</span>
 </pre></div>
@@ -2641,6 +2643,10 @@ END_METHOD
 <h2>FB_REF_Laser<a class="headerlink" href="#fb-ref-laser" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FUNCTION_BLOCK</span> <span class="n">FB_REF_Laser</span>
 <span class="n">VAR_INPUT</span>
+    <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
+        <span class="n">pv</span><span class="p">:</span> <span class="n">SHUTDOWN</span>
+        <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
+    <span class="s1">&#39;}</span>
     <span class="n">bShutdown</span><span class="p">:</span> <span class="n">BOOL</span><span class="p">;</span>
 
     <span class="p">{</span><span class="n">attribute</span> <span class="s1">&#39;pytmc&#39;</span> <span class="o">:=</span> <span class="s1">&#39;</span>
@@ -2648,6 +2654,8 @@ END_METHOD
         <span class="n">io</span><span class="p">:</span> <span class="n">io</span>
     <span class="s1">&#39;}</span>
     <span class="n">fLaserPercent</span><span class="p">:</span> <span class="n">LREAL</span><span class="p">;</span>
+
+    <span class="n">fTermMax</span><span class="p">:</span> <span class="n">LREAL</span> <span class="o">:=</span> <span class="mi">200</span><span class="p">;</span>
 <span class="n">END_VAR</span>
 <span class="n">VAR</span>
     <span class="n">iShutdownINT</span> <span class="n">AT</span> <span class="o">%</span><span class="n">Q</span><span class="o">*</span><span class="p">:</span> <span class="n">INT</span><span class="p">;</span>
@@ -2669,13 +2677,13 @@ END_METHOD
     <span class="n">fSafeMax</span><span class="o">:=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">fSafeMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">fTermMax</span><span class="o">:=</span><span class="n">fTermMax</span><span class="p">,</span>
     <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">iRaw</span><span class="o">=&gt;</span><span class="n">iLaserInt</span><span class="p">);</span>
 <span class="n">fbGetLasPercent</span><span class="p">(</span>
     <span class="n">iRaw</span><span class="o">:=</span><span class="n">iLaserInt</span><span class="p">,</span>
     <span class="n">iTermBits</span><span class="o">:=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">fTermMax</span><span class="o">:=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">fTermMax</span><span class="o">:=</span><span class="n">fTermMax</span><span class="p">,</span>
     <span class="n">fTermMin</span><span class="o">:=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">fReal</span><span class="o">=&gt;</span><span class="n">fLaserPercent</span><span class="p">);</span>
 
