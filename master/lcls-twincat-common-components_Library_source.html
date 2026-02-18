@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUTs &mdash; pcdshub/lcls-twincat-common-components  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/tree.css?v=837a00b9" />
       <link rel="stylesheet" type="text/css" href="_static/width.css?v=ab210c7a" />
 
@@ -16,8 +16,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/docs-versions-menu.js?v=3d6a1aea"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -173,12 +173,15 @@
 <span class="p">(</span>
     <span class="n">Unknown</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">OUT</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">TARGET1</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">TARGET2</span> <span class="o">:=</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="n">TARGET3</span> <span class="o">:=</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="n">TARGET4</span> <span class="o">:=</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="n">TARGET5</span> <span class="o">:=</span> <span class="mi">6</span><span class="p">,</span>
-    <span class="n">TARGET6</span> <span class="o">:=</span> <span class="mi">7</span>
+    <span class="n">TARGET1a</span> <span class="o">:=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">TARGET1b</span> <span class="o">:=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">TARGET2a</span> <span class="o">:=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">TARGET2b</span> <span class="o">:=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">TARGET3a</span> <span class="o">:=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">TARGET3b</span> <span class="o">:=</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="n">TARGET4</span> <span class="o">:=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">TARGET5</span> <span class="o">:=</span> <span class="mi">9</span><span class="p">,</span>
+    <span class="n">TARGET6</span> <span class="o">:=</span> <span class="mi">10</span>
 <span class="p">)</span> <span class="n">UINT</span><span class="p">;</span>
 <span class="n">END_TYPE</span>
 </pre></div>
@@ -986,11 +989,14 @@ END_METHOD
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">OUT</span> <span class="n">state</span><span class="o">.</span>
     <span class="n">stOut</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET1</span> <span class="n">state</span><span class="o">.</span>
-    <span class="n">stTarget1</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget1a</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget1b</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET2</span> <span class="n">state</span><span class="o">.</span>
-    <span class="n">stTarget2</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget2a</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget2b</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET3</span> <span class="n">state</span><span class="o">.</span>
-    <span class="n">stTarget3</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget3a</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
+    <span class="n">stTarget3b</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET4</span> <span class="n">state</span><span class="o">.</span>
     <span class="n">stTarget4</span><span class="p">:</span> <span class="n">ST_PositionState</span><span class="p">;</span>
     <span class="o">//</span> <span class="n">Settings</span> <span class="k">for</span> <span class="n">the</span> <span class="n">TARGET5</span> <span class="n">state</span><span class="o">.</span>
@@ -1061,9 +1067,12 @@ END_METHOD
 
     <span class="o">//</span> <span class="n">Partial</span> <span class="n">backcompat</span><span class="p">,</span> <span class="n">this</span> <span class="n">used</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">fVelocity</span> <span class="n">too</span> <span class="n">but</span> <span class="n">this</span> <span class="n">should</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">per</span> <span class="n">install</span>
     <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stOut</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;OUT&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fOutDecel</span><span class="p">);</span>
-    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget1</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET1&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
-    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget2</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET2&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
-    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget3</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET3&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget1a</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET1a&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget1b</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET1b&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget2a</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET2a&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget2b</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET2b&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget3a</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET3a&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
+    <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget3b</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET3b&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
     <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget4</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET4&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
     <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget5</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET5&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
     <span class="n">fbStateDefaults</span><span class="p">(</span><span class="n">stPositionState</span><span class="o">:=</span><span class="n">stTarget6</span><span class="p">,</span> <span class="n">sNameDefault</span><span class="o">:=</span><span class="s1">&#39;TARGET6&#39;</span><span class="p">,</span> <span class="n">fDeltaDefault</span><span class="o">:=</span><span class="n">fDelta</span><span class="p">,</span> <span class="n">fAccelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">,</span> <span class="n">fDecelDefault</span><span class="o">:=</span><span class="n">fAccel</span><span class="p">);</span>
@@ -1082,9 +1091,12 @@ END_METHOD
 <span class="p">);</span>
 <span class="n">IF</span> <span class="n">NOT</span> <span class="n">fbArrCheckWrite</span><span class="o">.</span><span class="n">bHadWrite</span> <span class="n">THEN</span>
     <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stOut</span><span class="p">;</span>
-    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget1</span><span class="p">;</span>
-    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget2</span><span class="p">;</span>
-    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget3</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1a</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget1a</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1b</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget1b</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2a</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget2a</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2b</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget2b</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3a</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget3a</span><span class="p">;</span>
+    <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3b</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget3b</span><span class="p">;</span>
     <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget4</span><span class="p">;</span>
     <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget5</span><span class="p">;</span>
     <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET6</span><span class="p">]</span> <span class="o">:=</span> <span class="n">stTarget6</span><span class="p">;</span>
@@ -1113,9 +1125,12 @@ END_METHOD
 <span class="p">);</span>
 
 <span class="n">stOut</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">OUT</span><span class="p">];</span>
-<span class="n">stTarget1</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1</span><span class="p">];</span>
-<span class="n">stTarget2</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2</span><span class="p">];</span>
-<span class="n">stTarget3</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3</span><span class="p">];</span>
+<span class="n">stTarget1a</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1a</span><span class="p">];</span>
+<span class="n">stTarget1b</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET1b</span><span class="p">];</span>
+<span class="n">stTarget2a</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2a</span><span class="p">];</span>
+<span class="n">stTarget2b</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET2b</span><span class="p">];</span>
+<span class="n">stTarget3a</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3a</span><span class="p">];</span>
+<span class="n">stTarget3b</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET3b</span><span class="p">];</span>
 <span class="n">stTarget4</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET4</span><span class="p">];</span>
 <span class="n">stTarget5</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET5</span><span class="p">];</span>
 <span class="n">stTarget6</span> <span class="o">:=</span> <span class="n">astPositionState</span><span class="p">[</span><span class="n">E_GBS_States</span><span class="o">.</span><span class="n">TARGET6</span><span class="p">];</span>
@@ -5076,7 +5091,7 @@ END_METHOD
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, SLAC National Accelerator Laboratory.</p>
+    <p>&#169; Copyright 2026, SLAC National Accelerator Laboratory.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

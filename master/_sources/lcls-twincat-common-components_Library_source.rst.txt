@@ -37,12 +37,15 @@ E_GBS_States
     (
         Unknown := 0,
         OUT := 1,
-        TARGET1 := 2,
-        TARGET2 := 3,
-        TARGET3 := 4,
-        TARGET4 := 5,
-        TARGET5 := 6,
-        TARGET6 := 7
+        TARGET1a := 2,
+        TARGET1b := 3,
+        TARGET2a := 4,
+        TARGET2b := 5,
+        TARGET3a := 6,
+        TARGET3b := 7,
+        TARGET4 := 8,
+        TARGET5 := 9,
+        TARGET6 := 10
     ) UINT;
     END_TYPE
 
@@ -908,11 +911,14 @@ FB_GBS
         // Settings for the OUT state.
         stOut: ST_PositionState;
         // Settings for the TARGET1 state.
-        stTarget1: ST_PositionState;
+        stTarget1a: ST_PositionState;
+        stTarget1b: ST_PositionState;
         // Settings for the TARGET2 state.
-        stTarget2: ST_PositionState;
+        stTarget2a: ST_PositionState;
+        stTarget2b: ST_PositionState;
         // Settings for the TARGET3 state.
-        stTarget3: ST_PositionState;
+        stTarget3a: ST_PositionState;
+        stTarget3b: ST_PositionState;
         // Settings for the TARGET4 state.
         stTarget4: ST_PositionState;
         // Settings for the TARGET5 state.
@@ -983,9 +989,12 @@ FB_GBS
 
         // Partial backcompat, this used to set fVelocity too but this should be set per install
         fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
-        fbStateDefaults(stPositionState:=stTarget1, sNameDefault:='TARGET1', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-        fbStateDefaults(stPositionState:=stTarget2, sNameDefault:='TARGET2', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-        fbStateDefaults(stPositionState:=stTarget3, sNameDefault:='TARGET3', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget1a, sNameDefault:='TARGET1a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget1b, sNameDefault:='TARGET1b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget2a, sNameDefault:='TARGET2a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget2b, sNameDefault:='TARGET2b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget3a, sNameDefault:='TARGET3a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+        fbStateDefaults(stPositionState:=stTarget3b, sNameDefault:='TARGET3b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
         fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
         fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
         fbStateDefaults(stPositionState:=stTarget6, sNameDefault:='TARGET6', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
@@ -1004,9 +1013,12 @@ FB_GBS
     );
     IF NOT fbArrCheckWrite.bHadWrite THEN
         astPositionState[E_GBS_States.OUT] := stOut;
-        astPositionState[E_GBS_States.TARGET1] := stTarget1;
-        astPositionState[E_GBS_States.TARGET2] := stTarget2;
-        astPositionState[E_GBS_States.TARGET3] := stTarget3;
+        astPositionState[E_GBS_States.TARGET1a] := stTarget1a;
+        astPositionState[E_GBS_States.TARGET1b] := stTarget1b;
+        astPositionState[E_GBS_States.TARGET2a] := stTarget2a;
+        astPositionState[E_GBS_States.TARGET2b] := stTarget2b;
+        astPositionState[E_GBS_States.TARGET3a] := stTarget3a;
+        astPositionState[E_GBS_States.TARGET3b] := stTarget3b;
         astPositionState[E_GBS_States.TARGET4] := stTarget4;
         astPositionState[E_GBS_States.TARGET5] := stTarget5;
         astPositionState[E_GBS_States.TARGET6] := stTarget6;
@@ -1035,9 +1047,12 @@ FB_GBS
     );
 
     stOut := astPositionState[E_GBS_States.OUT];
-    stTarget1 := astPositionState[E_GBS_States.TARGET1];
-    stTarget2 := astPositionState[E_GBS_States.TARGET2];
-    stTarget3 := astPositionState[E_GBS_States.TARGET3];
+    stTarget1a := astPositionState[E_GBS_States.TARGET1a];
+    stTarget1b := astPositionState[E_GBS_States.TARGET1b];
+    stTarget2a := astPositionState[E_GBS_States.TARGET2a];
+    stTarget2b := astPositionState[E_GBS_States.TARGET2b];
+    stTarget3a := astPositionState[E_GBS_States.TARGET3a];
+    stTarget3b := astPositionState[E_GBS_States.TARGET3b];
     stTarget4 := astPositionState[E_GBS_States.TARGET4];
     stTarget5 := astPositionState[E_GBS_States.TARGET5];
     stTarget6 := astPositionState[E_GBS_States.TARGET6];
