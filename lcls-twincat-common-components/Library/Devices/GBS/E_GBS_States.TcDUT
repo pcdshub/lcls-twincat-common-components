@@ -6,12 +6,15 @@ TYPE E_GBS_States :
 (
     Unknown := 0,
     OUT := 1,
-    TARGET1 := 2,
-    TARGET2 := 3,
-    TARGET3 := 4,
-    TARGET4 := 5,
-    TARGET5 := 6,
-    TARGET6 := 7
+    TARGET1a := 2,
+    TARGET1b := 3,
+    TARGET2a := 4,
+    TARGET2b := 5,
+    TARGET3a := 6,
+    TARGET3b := 7,
+    TARGET4 := 8,
+    TARGET5 := 9,
+    TARGET6 := 10
 ) UINT;
 END_TYPE
 ]]></Declaration>
