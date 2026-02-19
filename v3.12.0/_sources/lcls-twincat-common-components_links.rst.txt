@@ -1,0 +1,22 @@
+
+Links
+-----
+
+.. csv-table::
+    :header: Owner A, Item A, Owner B, Item B
+    :align: center
+
+        Library Instance, PlcTask Inputs^PRG_TEST.fbATMTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^ATM_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbLICTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^LIC_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^PPM_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbREFTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^REF_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbSATTTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^SATT_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbWFSTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^WFS_Y, Outputs^ToPlc
+        Library Instance, PlcTask Inputs^PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc, TINC^NC-Task 1 SAF^Axes^XPIM_Y, Outputs^ToPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbATMTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^ATM_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbLICTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^LIC_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbPPMTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^PPM_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbREFTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^REF_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbSATTTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^SATT_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbWFSTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^WFS_Y, Inputs^FromPlc
+        Library Instance, PlcTask Outputs^PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc, TINC^NC-Task 1 SAF^Axes^XPIM_Y, Inputs^FromPlc
