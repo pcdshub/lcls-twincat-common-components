@@ -143,7 +143,7 @@ from `Library.plcproj` so it does not compile.
 | `FB_PositionStatePMPS1D` | removed | `FB_PositionStatePMPSND` (EXTENDS `FB_PositionStateND` EXTENDS `FB_PositionStateCoreND`) |
 | `FB_PositionState1D` | removed | `FB_PositionStateND` |
 | `FB_StatePTPMove` (used by SLITS) | added to motion lib under `02_State/02_Helpers/` | same name; new contract via `I_MotionStage` + `ST_PositionState` injected through `FB_Init` |
-| `FB_PositionState_Defaults` (common-components-owned helper) | n/a | functionally replaced upstream by `FB_StateConfigurator` (one per (motor,state) pair) |
+| `FB_PositionState_Defaults` (common-components-owned helper) | n/a | obsolete (R1, R4, R8): three of five default fields (fVelocity / fAccel / fDecel) are no longer state-resident; sName is `io:i` so the operator-override branch is unreachable; the apply-once intent is owned by `FB_StateConfigurator` (one per (motor, state) pair) gated by the per-slot `bUpdated` latch. File kept on disk with obsolescence note, removed from `Library.plcproj` build. |
 | `FB_CheckPositionStateWrite` (common-components-owned helper) | n/a | obsolete (R8): `ST_PositionState` is read-only from EPICS in ND, the framework's per-slot `bUpdated` latch replaces it. File kept on disk with obsolescence note, removed from `Library.plcproj` build. |
 | `ST_PositionState` | kept | same name, compatible field set |
 | `DUT_PositionState` (SLITS only) | removed | use `ST_PositionState` |
@@ -214,18 +214,18 @@ from the motion `.sln`) before the project will resolve.
       reverted.
 - [x] `Library/Tests/FB_CheckPositionStateWriteTest.TcPOU` : same
       treatment. Excluded from build, obsolescence note at top.
-- [ ] `FB_PositionState_Defaults`: **delete** during Phase 2 (per-device).
-      Decision driver: README rule R1 means three of the five default
-      fields it handles (`fVeloDefault`, `fAccelDefault`, `fDecelDefault`)
-      are no longer state-resident : they belong on the drive layer via
-      `SetMotionParam()`. The remaining two (`sName`, `fDelta`) are
-      covered by `FB_StateConfigurator` with the right operator-override
-      semantic via the `bUpdated` latch (R4). Keeping the legacy helper
-      as a shim would force every device to do its motion-param init
-      twice (once "if zero" in the helper, once unconditionally on the
-      stage) and would not match any motion-lib idiom. Delete with the
-      first device that migrates, propagate to the remaining devices in
-      lockstep, drop the `plcproj` registration in Phase 5.
+- [x] `Library/POUs/FB_PositionState_Defaults.TcPOU` : **excluded from
+      build** in `Library.plcproj` (kept on disk with an obsolescence
+      note). Rationale (R1 + R4 + R8): three of the five default fields
+      it touches (`fVeloDefault`, `fAccelDefault`, `fDecelDefault`) have
+      no destination on `ST_PositionState` anymore (per-stage motion
+      params live on the drive layer via `SetMotionParam()`); `sName` is
+      pytmc `io:i`, so the empty-string fall-back branch guarding against
+      an EPICS operator edit is unreachable; the remaining apply-once
+      intent is owned by `FB_StateConfigurator` with explicit re-apply
+      via `bForceUpdate := TRUE`. Each Phase 2 device PR drops its
+      `fbStateDefaults` member and the corresponding body call sequence.
+      No test POU exists for this helper.
 
 ### Phase 2 - Per-device migration
 

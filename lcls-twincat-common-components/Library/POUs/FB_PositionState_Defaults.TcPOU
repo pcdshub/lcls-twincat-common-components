@@ -1,7 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PositionState_Defaults" Id="{5f326ffa-3869-4f51-b9bc-bdf476cd3f65}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_PositionState_Defaults
+    <Declaration><![CDATA[(* OBSOLETE under the LCLS_Tc_Motion (ND) framework. Kept on disk for
+   history and rebase clarity, excluded from the build via Library.plcproj.
+
+   Premise of this helper: "if a position-state slot field is empty/zero,
+   fill it with a PLC-side default; otherwise leave the EPICS-edited value
+   alone." That premise does not survive in the ND framework:
+
+   1. ST_PositionState no longer carries fVelocity / fAccel / fDecel. Per-
+      stage motion params live on the drive layer (FB_MotionStageNC,
+      MotionCmd, SetMotionParam()). Three of this FB's five default inputs
+      have no destination on the struct anymore.
+   2. sName on ST_PositionState is pytmc io:i (PLC-write-only / EPICS read-
+      only). The "EPICS might have overwritten the default" branch the
+      empty-string check guards against cannot happen in ND.
+   3. The remaining intent ("apply PLC defaults to each (motor, state)
+      slot once") is owned by FB_StateConfigurator, instantiated as a
+      per-(motor, state) array and gated by the per-slot bUpdated latch
+      set by FB_PositionStateInternalND. Re-application is explicit via
+      bForceUpdate := TRUE rather than implicit via "field looks empty".
+
+   Each Phase 2 device PR drops its `fbStateDefaults: FB_PositionState_Defaults`
+   member and replaces the cycle-body call sequence with an
+   `afbStateConfig : ARRAY[1..nMotors] OF ARRAY[1..nStates] OF
+   FB_StateConfigurator[(...)]` instantiation. See docs/migration-motion-nd.md
+   rules R1, R4, R8. *)
+FUNCTION_BLOCK FB_PositionState_Defaults
 VAR_IN_OUT
     stPositionState: ST_PositionState;
 END_VAR
