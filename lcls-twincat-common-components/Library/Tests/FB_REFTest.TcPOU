@@ -3,20 +3,39 @@
   <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    (* Caller-owned dependencies of FB_REF (passed by REFERENCE at FB_Init). *)
-    axRef     : AXIS_REF;
-    fbPDS     : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
-    fbFFHWO   : FB_HardwareFFOutput;
-    fbArbiter : FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    afbMotorsNC : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF FB_MotionStageNC[
+        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y'),
+        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := ''),
+        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := ''),
+        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := '')
+    ];
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage
+                  := [afbMotorsNC[1], afbMotorsNC[2], afbMotorsNC[3], afbMotorsNC[4]];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..2
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    (* UINT bridge for the state enum. Callers assign with E_REF_States
+       symbols (UNKNOWN/OUT/IN) -- both sides are UINT-underlying. *)
+    eSet, eGet : UINT;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
 
     bFileBusy : BOOL;
     bFileErr  : BOOL;
 
-    (* Caller-owned per-cycle vars (REFERENCE TO ... fields of FB_REF). *)
-    stOut, stIn           : ST_PositionState;
-    eSet, eGet            : E_REF_States;
-    stDbStateParams       : ST_DbStateParams;
+    (* Per-cycle caller-owned BOOL flags passed by reference to FB_REF. *)
     bEnableMotion         : BOOL;
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
@@ -24,24 +43,21 @@ VAR
     fTermMax              : LREAL := 200;
 
     fbREF : FB_REF(
-        AxisRef                := axRef,
-        iPersistentDataStorage := fbPDS,
-        sDeviceName            := 'TST:REF',
-        sTransitionKey         := 'TST:REF-TRANSITION',
-        bFileReaderBusy        := bFileBusy,
-        bFileReaderError       := bFileErr,
-        fbFFHWO                := fbFFHWO,
-        fbArbiter              := fbArbiter,
-        stOut                  := stOut,
-        stIn                   := stIn,
-        eEnumSet               := eSet,
-        eEnumGet               := eGet,
-        stDbStateParams        := stDbStateParams,
-        bEnableMotion          := bEnableMotion,
-        bEnableBeamParams      := bEnableBeamParams,
-        bEnablePositionLimits  := bEnablePositionLimits,
-        bReadDBNow             := bReadDBNow,
-        fTermMax               := fTermMax
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        eEnumSet              := eSet,
+        eEnumGet              := eGet,
+        bFileReaderBusy       := bFileBusy,
+        bFileReaderError      := bFileErr,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := 'TST:REF',
+        sTransitionKey        := 'TST:REF-TRANSITION',
+        bEnableMotion         := bEnableMotion,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        fTermMax              := fTermMax
     );
 
     bInit : BOOL;
@@ -54,21 +70,24 @@ fbSubSysIO(
     FFO := fbFFHWO
 );
 
-(* One-shot per-state config and enables. *)
+(* One-shot per-state config and enables. Caller owns astPositionState
+   so all per-state values are set directly here. *)
 IF NOT bInit THEN
-    stOut.fPosition  := 10;
-    stOut.fDelta     := 0.5;
-    stOut.sName      := 'OUT';
-    stOut.sPmpsState := 'T0';
-    stOut.bMoveOk    := TRUE;
-    stOut.bValid     := TRUE;
+    astPositionState[1][E_REF_States.OUT].fPosition  := 10;
+    astPositionState[1][E_REF_States.OUT].fDelta     := FB_REF.fDelta;
+    astPositionState[1][E_REF_States.OUT].sName      := 'OUT';
+    astPositionState[1][E_REF_States.OUT].sPmpsState := 'T0';
+    astPositionState[1][E_REF_States.OUT].bMoveOk    := TRUE;
+    astPositionState[1][E_REF_States.OUT].bValid     := TRUE;
+    astPositionState[1][E_REF_States.OUT].bUpdated   := TRUE;
 
-    stIn.fPosition   := 20;
-    stIn.fDelta      := 0.5;
-    stIn.sName       := 'T1';
-    stIn.sPmpsState  := 'T1';
-    stIn.bMoveOk     := TRUE;
-    stIn.bValid      := TRUE;
+    astPositionState[1][E_REF_States.IN].fPosition   := 20;
+    astPositionState[1][E_REF_States.IN].fDelta      := FB_REF.fDelta;
+    astPositionState[1][E_REF_States.IN].sName       := 'T1';
+    astPositionState[1][E_REF_States.IN].sPmpsState  := 'T1';
+    astPositionState[1][E_REF_States.IN].bMoveOk     := TRUE;
+    astPositionState[1][E_REF_States.IN].bValid      := TRUE;
+    astPositionState[1][E_REF_States.IN].bUpdated    := TRUE;
 
     bEnableMotion         := TRUE;
     bEnableBeamParams     := TRUE;
@@ -78,6 +97,7 @@ END_IF
 bReadDBNow := NOT bInit;
 
 fbPDS();
+afbMotorsNC[1]();
 fbREF();
 
 TestStateMove();
