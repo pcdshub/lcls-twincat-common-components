@@ -27,7 +27,8 @@ VAR
     fbArbiter  : FB_Arbiter(1);
     fbSubSysIO : FB_DummyArbIO;
 
-    (* Per-cycle caller-owned BOOL flags passed by reference to FB_REF. *)
+    (* Per-cycle caller-owned BOOL flags, written into FB_REF via
+       VAR_INPUT call syntax in the cyclic body below. *)
     bEnableMotion         : BOOL;
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
@@ -44,11 +45,7 @@ VAR
         fbFFHWO               := fbFFHWO,
         fbArbiter             := fbArbiter,
         sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey,
-        bEnableMotion         := bEnableMotion,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow
+        sTransitionKey        := sTransitionKey
     );
 
     (* Per-install PMPS-side state config (caller-owned). Mirrors what
@@ -119,7 +116,12 @@ bReadDBNow := NOT bInit;
 
 fbPDS();
 fbMotorY();
-fbREF();
+fbREF(
+    bEnableMotion         := bEnableMotion,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow
+);
 
 TestStateMove();
 

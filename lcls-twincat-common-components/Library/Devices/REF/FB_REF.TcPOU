@@ -12,8 +12,12 @@
     Motors, motion-stage interface array, position-state slot array,
     fast-fault output and arbiter are caller-owned; FB_REF receives
     them by FB_Init REFERENCE TO and forwards them to fbStates via
-    inline-init. The state enum bridge (eEnumSet / eEnumGet) is
-    device-specific and lives on FB_REF as classic VAR_INPUT UINTs.
+    inline-init. The state enum bridge (eEnumSet / eEnumGet) and the
+    four run-time toggles (bEnableMotion / bEnableBeamParams /
+    bEnablePositionLimits / bReadDBNow, plain BOOL) are device-specific
+    and live on FB_REF as classic VAR_INPUT; the caller writes them
+    each cycle (or pins them at startup) and the body re-forwards them
+    into fbStates.
 
     Per-state configuration is split across two configurators that
     co-operate on each ST_PositionState slot:
@@ -45,6 +49,14 @@ VAR_INPUT
        their UINT underlying). *)
     eEnumSet : UINT;
     eEnumGet : UINT;
+
+    (* Run-time toggles forwarded into fbStates each cycle. PMPSND
+       captures these by value in its own FB_Init, so the body
+       re-writes fbStates.* every cycle to track live caller changes. *)
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
 END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -85,14 +97,6 @@ VAR
     sDeviceName           : REFERENCE TO STRING;
     {attribute 'no_copy'}
     sTransitionKey        : REFERENCE TO STRING;
-    {attribute 'no_copy'}
-    bEnableMotion         : REFERENCE TO BOOL;
-    {attribute 'no_copy'}
-    bEnableBeamParams     : REFERENCE TO BOOL;
-    {attribute 'no_copy'}
-    bEnablePositionLimits : REFERENCE TO BOOL;
-    {attribute 'no_copy'}
-    bReadDBNow            : REFERENCE TO BOOL;
 
     (* Plain-value backing field for the FB_Init-supplied fTermMax
        (laser dimmer termination max). Has a sensible device default
@@ -127,11 +131,7 @@ IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter)
    OR NOT __ISVALIDREF(sDeviceName)
-   OR NOT __ISVALIDREF(sTransitionKey)
-   OR NOT __ISVALIDREF(bEnableMotion)
-   OR NOT __ISVALIDREF(bEnableBeamParams)
-   OR NOT __ISVALIDREF(bEnablePositionLimits)
-   OR NOT __ISVALIDREF(bReadDBNow) THEN
+   OR NOT __ISVALIDREF(sTransitionKey) THEN
     RETURN;
 END_IF
 
@@ -142,8 +142,8 @@ FOR i := 1 TO 2 DO
 END_FOR
 
 (* PMPSND captures these in FB_Init only. fbStates' inline-init above
-   forwards them once at construction; re-write into the public VAR
-   fields each cycle so caller's REFERENCE TO BOOLs take effect live. *)
+   forwarded them once at construction; re-write each cycle so live
+   VAR_INPUT writes from the caller propagate. *)
 fbStates.bEnableBeamParams     := bEnableBeamParams;
 fbStates.bEnablePositionLimits := bEnablePositionLimits;
 fbStates.bReadDBNow            := bReadDBNow;
@@ -173,24 +173,16 @@ VAR_INPUT
     fbArbiter              : REFERENCE TO FB_Arbiter;
     sDeviceName            : REFERENCE TO STRING;
     sTransitionKey         : REFERENCE TO STRING;
-    bEnableMotion          : REFERENCE TO BOOL;
-    bEnableBeamParams      : REFERENCE TO BOOL;
-    bEnablePositionLimits  : REFERENCE TO BOOL;
-    bReadDBNow             : REFERENCE TO BOOL;
     fTermMax               : LREAL := 200;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
-THIS^.astPositionState      REF= astPositionState;
-THIS^.fbFFHWO               REF= fbFFHWO;
-THIS^.fbArbiter             REF= fbArbiter;
-THIS^.sDeviceName           REF= sDeviceName;
-THIS^.sTransitionKey        REF= sTransitionKey;
-THIS^.bEnableMotion         REF= bEnableMotion;
-THIS^.bEnableBeamParams     REF= bEnableBeamParams;
-THIS^.bEnablePositionLimits REF= bEnablePositionLimits;
-THIS^.bReadDBNow            REF= bReadDBNow;
-THIS^.fTermMax               := fTermMax;]]></ST>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.fbArbiter        REF= fbArbiter;
+THIS^.sDeviceName      REF= sDeviceName;
+THIS^.sTransitionKey   REF= sTransitionKey;
+THIS^.fTermMax          := fTermMax;]]></ST>
       </Implementation>
     </Method>
     <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
