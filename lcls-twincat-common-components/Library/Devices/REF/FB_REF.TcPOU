@@ -10,9 +10,10 @@
     FB_REF is a thin wrapper. It owns only what it ticks each cycle
     (fbStates, fbLaser, and the per-state device-default configurators).
     Motors, motion-stage interface array, position-state slot array,
-    enum bridge UINTs, fast-fault output and arbiter are caller-owned;
-    FB_REF receives them by FB_Init REFERENCE TO and forwards them to
-    fbStates via inline-init.
+    fast-fault output and arbiter are caller-owned; FB_REF receives
+    them by FB_Init REFERENCE TO and forwards them to fbStates via
+    inline-init. The state enum bridge (eEnumSet / eEnumGet) is
+    device-specific and lives on FB_REF as classic VAR_INPUT UINTs.
 
     Per-state configuration is split across two configurators that
     co-operate on each ST_PositionState slot:
@@ -35,6 +36,16 @@
 *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_REF
+VAR_INPUT
+    (* Device-specific state-enum bridges. Underlying type UINT so they
+       can be bound directly to FB_PositionStatePMPSND's
+       REFERENCE TO UINT params via inline-init below. Callers drive
+       moves with `fbREF.eEnumSet := E_REF_States.OUT;` and read
+       `fbREF.eEnumGet` (E_REF_States values auto-convert to/from
+       their UINT underlying). *)
+    eEnumSet : UINT;
+    eEnumGet : UINT;
+END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
@@ -66,10 +77,6 @@ VAR
     {attribute 'no_copy'}
     astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    {attribute 'no_copy'}
-    eEnumSet              : REFERENCE TO UINT;
-    {attribute 'no_copy'}
-    eEnumGet              : REFERENCE TO UINT;
     {attribute 'no_copy'}
     fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
@@ -117,8 +124,6 @@ END_VAR]]></Declaration>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
 IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
-   OR NOT __ISVALIDREF(eEnumSet)
-   OR NOT __ISVALIDREF(eEnumGet)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter)
    OR NOT __ISVALIDREF(sDeviceName)
@@ -164,8 +169,6 @@ VAR_INPUT
     aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    eEnumSet               : REFERENCE TO UINT;
-    eEnumGet               : REFERENCE TO UINT;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
     sDeviceName            : REFERENCE TO STRING;
@@ -179,8 +182,6 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
 THIS^.astPositionState      REF= astPositionState;
-THIS^.eEnumSet              REF= eEnumSet;
-THIS^.eEnumGet              REF= eEnumGet;
 THIS^.fbFFHWO               REF= fbFFHWO;
 THIS^.fbArbiter             REF= fbArbiter;
 THIS^.sDeviceName           REF= sDeviceName;

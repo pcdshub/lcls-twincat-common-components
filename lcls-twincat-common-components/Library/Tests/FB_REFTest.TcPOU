@@ -23,10 +23,6 @@ VAR
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
-    (* UINT bridge for the state enum. Callers assign with E_REF_States
-       symbols (UNKNOWN/OUT/IN) -- both sides are UINT-underlying. *)
-    eSet, eGet : UINT;
-
     fbFFHWO    : FB_HardwareFFOutput;
     fbArbiter  : FB_Arbiter(1);
     fbSubSysIO : FB_DummyArbIO;
@@ -45,8 +41,6 @@ VAR
     fbREF : FB_REF(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
-        eEnumSet              := eSet,
-        eEnumGet              := eGet,
         fbFFHWO               := fbFFHWO,
         fbArbiter             := fbArbiter,
         sDeviceName           := sDeviceName,
@@ -150,9 +144,9 @@ TEST('TestREFStateMove');
 tonTimer(IN := TRUE, PT := T#10s);
 
 (* Start in Unknown, then go through the state positions one by one. *)
-IF eGet = nIterState THEN
-    nIterState := nIterState + 1;
-    eSet       := nIterState;
+IF fbREF.eEnumGet = nIterState THEN
+    nIterState     := nIterState + 1;
+    fbREF.eEnumSet := nIterState;
 END_IF
 
 IF tonTimer.Q OR nIterState > nLastState THEN

@@ -3,78 +3,153 @@
   <POU Name="FB_LICTest" Id="{ef79d59f-e709-422b-8451-9f985c309542}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_LICTest EXTENDS FB_TestSuite
 VAR
-    fbLIC: FB_LIC;
-    stYStage: ST_MotionStage;
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    (* FB_LIC is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_LIC.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..4
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    (* Per-cycle caller-owned BOOL flags passed by reference to FB_LIC. *)
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    (* Device-name strings bound to FB_LIC as REFERENCE TO STRING --
+       a literal cannot be REF-bound, so they live as locals here. *)
+    sDeviceName    : STRING := 'TST:LIC';
+    sTransitionKey : STRING := 'TST:LIC-TRANSITION';
+
+    fbLIC : FB_LIC(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
+        bEnableMotion         := bEnableMotion,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    (* Per-install PMPS-side state config (caller-owned). Mirrors what
+       a real PRG_xxL0_LIC would declare. stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbLIC subsequently overrides per-state sName and
+       fDelta via its own FB_CC_DeviceStateDefaults array. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
 
-    bInit: BOOL;
+    afbStatePMPS : ARRAY[1..4] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_LIC_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:LIC-OUT'),
+        (stPositionState := astPositionState[1][E_LIC_States.MIRROR1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:LIC-MIRROR1'),
+        (stPositionState := astPositionState[1][E_LIC_States.MIRROR2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:LIC-MIRROR2'),
+        (stPositionState := astPositionState[1][E_LIC_States.TARGET],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:LIC-TARGET')
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
+      <ST><![CDATA[(* Fake PMPS handling. *)
 fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
+    LA  := fbArbiter,
+    FFO := fbFFHWO
 );
 
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+(* Caller-side PMPS configurators (per-install). *)
+FOR i := 1 TO 4 DO
+    afbStatePMPS[i]();
+END_FOR
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbLIC.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbLIC.stMirror1, sName:='T1', fPosition:=20, sPmpsState:='T1');
-fbSetup(stPositionState:=fbLIC.stMirror2, sName:='T2', fPosition:=30, sPmpsState:='T2');
+(* One-shot motor setup + initial caller-owned enables. Limits,
+   brake/enable modes, home cmd, user/hardware enables, default
+   velocity; skip NC param restore. *)
+IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
 
-// Standard FB call
-fbLIC(
-    stYStage:=stYStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
-);
+    bEnableMotion         := TRUE;
+    bEnableBeamParams     := TRUE;
+    bEnablePositionLimits := TRUE;
+    bReadDBNow            := TRUE;
+
+    bFirstScan := FALSE;
+END_IF
+
+fbPDS();
+fbMotorY();
+fbLIC();
 
 TestStateMove();
-
-bInit := TRUE;
 ]]></ST>
     </Implementation>
     <Method Name="TestStateMove" Id="{dad8b7bd-1e01-4691-a16a-4b540b1b11f0}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
+    tonTimer   : TON;
+    nIterState : UINT := 0;
 END_VAR
 VAR CONSTANT
-    nLastState: UINT := E_LIC_States.MIRROR2;
+    nLastState : UINT := 4; (* E_LIC_States.TARGET *)
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
+(* Sanity check: can we at least move to every named state? *)
 TEST('TestLICStateMove');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
-// Start in Unknown, then go through the state positions one by one
+(* Start in Unknown, then go through the state positions one by one. *)
 IF fbLIC.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
+    nIterState     := nIterState + 1;
     fbLIC.eEnumSet := nIterState;
 END_IF
 
