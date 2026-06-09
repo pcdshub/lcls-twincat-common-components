@@ -3,141 +3,180 @@
   <POU Name="FB_WFSTest" Id="{d781df70-ea58-464c-9c90-20fbc2746e0a}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_WFSTest EXTENDS FB_TestSuite
 VAR
-    fbWFS: FB_WFS;
-    stYStage: ST_MotionStage;
-    stZStage: ST_MotionStage;
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    (* FB_WFS is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_WFS.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..6
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    (* Per-cycle caller-owned BOOL flags, written into FB_WFS via
+       VAR_INPUT call syntax in the cyclic body below. *)
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    (* Device-name strings bound to FB_WFS as REFERENCE TO STRING --
+       a literal cannot be REF-bound, so they live as locals here. *)
+    sDeviceName    : STRING := 'TST:WFS';
+    sTransitionKey : STRING := 'TST:WFS-TRANSITION';
+
+    fbWFS : FB_WFS(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    (* Per-install PMPS-side state config (caller-owned). Mirrors what
+       a real PRG_xxL0_WFS would declare. stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbWFS subsequently overrides per-state sName and
+       fDelta via its own FB_CC_DeviceStateDefaults array. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
 
-    bInit: BOOL;
+    afbStatePMPS : ARRAY[1..6] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_WFS_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:WFS-OUT'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:WFS-TARGET1'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:WFS-TARGET2'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET3],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:WFS-TARGET3'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET4],
+         stDefault       := stDefault,
+         fPosition       := 50,
+         sPmpsState      := 'TST:WFS-TARGET4'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET5],
+         stDefault       := stDefault,
+         fPosition       := 60,
+         sPmpsState      := 'TST:WFS-TARGET5')
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
+      <ST><![CDATA[(* Fake PMPS handling. *)
 fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
+    LA  := fbArbiter,
+    FFO := fbFFHWO
 );
 
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+(* Caller-side PMPS configurators (per-install). *)
+FOR i := 1 TO 6 DO
+    afbStatePMPS[i]();
+END_FOR
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbWFS.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbWFS.stTarget1, sName:='T1', fPosition:=20, sPmpsState:='T1');
-fbSetup(stPositionState:=fbWFS.stTarget2, sName:='T2', fPosition:=30, sPmpsState:='T2');
-fbSetup(stPositionState:=fbWFS.stTarget3, sName:='T3', fPosition:=40, sPmpsState:='T3');
-fbSetup(stPositionState:=fbWFS.stTarget4, sName:='T4', fPosition:=50, sPmpsState:='T4');
-fbSetup(stPositionState:=fbWFS.stTarget5, sName:='T5', fPosition:=60, sPmpsState:='T5');
+(* One-shot motor setup + initial caller-owned enables. Limits,
+   brake/enable modes, home cmd, user/hardware enables, default
+   velocity; skip NC param restore. *)
+IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
 
-// Standard FB call
+    bEnableMotion         := TRUE;
+    bEnableBeamParams     := TRUE;
+    bEnablePositionLimits := TRUE;
+    bReadDBNow            := TRUE;
+
+    bFirstScan := FALSE;
+END_IF
+
+fbPDS();
+fbMotorY();
 fbWFS(
-    stYStage:=stYStage,
-    stZStage:=stZStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
+    bEnableMotion         := bEnableMotion,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow
 );
 
 TestStateMove();
 TestTempFFO();
-
-bInit := TRUE;
 ]]></ST>
     </Implementation>
-    <Method Name="AssertBothTempFault" Id="{19b10529-75b5-4949-b147-faeee7848238}">
-      <Declaration><![CDATA[METHOD AssertBothTempFault
-VAR_INPUT
-    Message: STRING;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[
-AssertFalse(
-    fbWFS.fbThermoCouple1.FFO.i_xOK,
-    CONCAT('WFS TC1 expected fault: ', Message),
-);
-AssertFalse(
-    fbWFS.fbThermoCouple2.FFO.i_xOK,
-    CONCAT('WFS TC2 expected fault: ', Message),
-);
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="AssertNeitherTempFault" Id="{da95bb00-7c28-4764-9d51-ad88bce02340}">
-      <Declaration><![CDATA[METHOD AssertNeitherTempFault
-VAR_INPUT
-    Message: STRING;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[
-AssertTrue(
-    fbWFS.fbThermoCouple1.FFO.i_xOK,
-    CONCAT('WFS TC1 expected ok: ', Message),
-);
-AssertTrue(
-    fbWFS.fbThermoCouple1.FFO.i_xOK,
-    CONCAT('WFS TC2 sensor expected ok: ', Message),
-);
-]]></ST>
-      </Implementation>
-    </Method>
     <Method Name="SetWFSTemp" Id="{d1268d1a-3c93-46a7-bd70-abc42ffcf929}">
       <Declaration><![CDATA[METHOD SetWFSTemp
 VAR_INPUT
-    iTempC: INT;
+    iTempC : INT;
 END_VAR
 VAR
-    ptr: POINTER TO INT;
-END_VAR
-]]></Declaration>
+    ptr : POINTER TO INT;
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-ptr := ADR(fbWFS.fbThermoCouple1.iRaw);
+        <ST><![CDATA[ptr  := ADR(fbWFS.fbThermoCouple1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbWFS.fbThermoCouple2.iRaw);
-ptr^ := iTempC * 10;
-]]></ST>
+ptr  := ADR(fbWFS.fbThermoCouple2.iRaw);
+ptr^ := iTempC * 10;]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{a0e8e497-91d8-4707-b6b1-4494ed854f9c}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
+    tonTimer   : TON;
+    nIterState : UINT := 0;
 END_VAR
 VAR CONSTANT
-    nLastState: UINT := E_WFS_States.TARGET5;
+    nLastState : UINT := 6; (* E_WFS_States.TARGET5 *)
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
+(* Sanity check: can we at least move to every named state? *)
 TEST('TestWFSStateMove');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
-// Start in Unknown, then go through the state positions one by one
+(* Start in Unknown, then go through the state positions one by one. *)
 IF fbWFS.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
+    nIterState     := nIterState + 1;
     fbWFS.eEnumSet := nIterState;
 END_IF
 
@@ -151,48 +190,70 @@ END_IF
     <Method Name="TestTempFFO" Id="{1b4ac7c4-07b0-4d1a-97dd-2dfd68cd11c9}">
       <Declaration><![CDATA[METHOD TestTempFFO
 VAR_INST
-    tonTimer: TON;
-    nStep: UINT := 0;
-    bOutChecked: BOOL := FALSE;
-    bInChecked: BOOL := FALSE;
+    tonTimer    : TON;
+    nStep       : UINT := 0;
+    bOutChecked : BOOL := FALSE;
+    bInChecked  : BOOL := FALSE;
 END_VAR
 VAR CONSTANT
-    nLastStep: UINT := 3;
+    nLastStep : UINT := 3;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Do we fault at the correct times?
-// Parasitically depends on state move test
+(* Do we fault at the correct times?
+   Parasitically depends on state move test. *)
 TEST('TestWFSTempFFO');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
 CASE nStep OF
     0:
-        // Set the thermocouple temperatures to crazy high number
+        (* Set both thermocouple temperatures to crazy high number. *)
         SetWFSTemp(100);
         nStep := nStep + 1;
     1:
-        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        (* Wait till we see "OUT" state and one other state (OUT
+           should be no fault). *)
         IF fbWFS.eEnumGet = E_WFS_States.OUT THEN
-            AssertNeitherTempFault('was in out position');
+            AssertTrue(
+                fbWFS.fbThermoCouple1.FFO.i_xOK,
+                'TC1 faulted even in out position!'
+            );
+            AssertTrue(
+                fbWFS.fbThermoCouple2.FFO.i_xOK,
+                'TC2 faulted even in out position!'
+            );
             bOutChecked := TRUE;
         ELSIF fbWFS.eEnumGet <> E_WFS_States.Unknown THEN
-            AssertBothTempFault('was in a target position');
+            AssertFalse(
+                fbWFS.fbThermoCouple1.FFO.i_xOK,
+                'TC1 no fault even for an in position!'
+            );
+            AssertFalse(
+                fbWFS.fbThermoCouple2.FFO.i_xOK,
+                'TC2 no fault even for an in position!'
+            );
             bInChecked := TRUE;
         END_IF
         IF bOutChecked AND bInChecked THEN
             nStep := nStep + 1;
         END_IF
     2:
-        // Set the thermocouple temperatures to low again
+        (* Set both thermocouple temperatures to low again. *)
         SetWFSTemp(0);
         nStep := nStep + 1;
     3:
-        AssertNeitherTempFault('has low temp reading');
+        AssertTrue(
+            fbWFS.fbThermoCouple1.FFO.i_xOK,
+            'TC1 faulted even with low temp!'
+        );
+        AssertTrue(
+            fbWFS.fbThermoCouple2.FFO.i_xOK,
+            'TC2 faulted even with low temp!'
+        );
         nStep := nStep + 1;
-END_CASE;
+END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout in WFS temp FFO test');

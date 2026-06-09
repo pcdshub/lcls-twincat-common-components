@@ -41,14 +41,14 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_REF
 VAR_INPUT
-    (* Device-specific state-enum bridges. Underlying type UINT so they
-       can be bound directly to FB_PositionStatePMPSND's
-       REFERENCE TO UINT params via inline-init below. Callers drive
-       moves with `fbREF.eEnumSet := E_REF_States.OUT;` and read
-       `fbREF.eEnumGet` (E_REF_States values auto-convert to/from
-       their UINT underlying). *)
-    eEnumSet : UINT;
-    eEnumGet : UINT;
+    (* Device-specific state-enum bridges. Typed as E_REF_States (UINT
+       base) so the caller surface is enum-checked; the inline-init
+       below binds them to FB_PositionStatePMPSND's REFERENCE TO UINT
+       params via the shared UINT base. Callers drive moves with
+       `fbREF.eEnumSet := E_REF_States.OUT;` and read
+       `fbREF.eEnumGet`. *)
+    eEnumSet : E_REF_States;
+    eEnumGet : E_REF_States;
 
     (* Run-time toggles forwarded into fbStates each cycle. PMPSND
        captures these by value in its own FB_Init, so the body
