@@ -1,188 +1,269 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_GBS" Id="{0c826496-bbe5-4d0f-95cc-b97d4fbafab2}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_GBS
-(*
-    Function block for Grating Beam Splitter (GBS) controls:
-    - Y target states
-    - 2 RTDs
+    <Declaration><![CDATA[(*
+    Function block for Grating Beam Splitter (GBS) controls under the
+    LCLS_Tc_Motion (ND) framework:
+    - Y target-state mover via FB_PositionStatePMPSND with ten states
+      (OUT, TARGET1a/b, TARGET2a/b, TARGET3a/b, TARGET4, TARGET5, TARGET6)
+    - 2 in-beam RTD thermocouples (FB_CC_TempSensor) gated on the
+      current state and driven by the PMPS DB temp setpoint
+
+    FB_GBS is a thin wrapper for the state-mover plumbing and a tick
+    site for the two RTDs. Motors, motion-stage interface array,
+    position-state slot array, fast-fault output and arbiter are
+    caller-owned; FB_GBS receives them by FB_Init REFERENCE TO and
+    forwards them to fbStates via inline-init. The state enum bridge
+    (eEnumSet / eEnumGet, UINT) is device-specific and lives as
+    classic VAR_INPUT.
+
+    Per-state configuration is split across two configurators that
+    co-operate on each ST_PositionState slot:
+      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
+        in the caller PRG) wraps motion-lib's FB_StateSetup and writes
+        fPosition + sPmpsState plus a caller-owned stDefault baseline
+        (bMoveOk / bValid / bUseRawCounts / template fDelta).
+      - FB_GBS.afbStateDefaults (device-side, hardcoded here) writes
+        per-state sName and fDelta last, overriding the template
+        baseline that FB_StateSetup just laid down. Ordering matters:
+        the integrator must tick its PMPS array BEFORE calling fbGBS.
+    Both configurators are idempotent once the parent state FB sets
+    stPositionState.bUpdated := TRUE.
 
     The following IO link points are included and should be used:
-    - FB_GBS.fbThermoCouple1.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding RTD terminal inputs.
-    - FB_GBS.fbThermoCouple2.bError, bUnderrange, bOverrange, and iRaw should be linked to the corresponding RTD terminal inputs.
+    - FB_GBS.fbRTD1.{bError,bUnderrange,bOverrange,iRaw} -> RTD #1
+      thermocouple terminal inputs
+    - FB_GBS.fbRTD2.{bError,bUnderrange,bOverrange,iRaw} -> RTD #2
+      thermocouple terminal inputs
 *)
-VAR_IN_OUT
-    // Y motor (state select).
-    stYStage: ST_MotionStage;
-    // The fast fault output to fault to.
-    fbFFHWO: FB_HardwareFFOutput;
-    // The arbiter to request beam conditions from.
-    fbArbiter: FB_Arbiter;
-END_VAR
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_GBS
 VAR_INPUT
-    // Settings for the OUT state.
-    stOut: ST_PositionState;
-    // Settings for the TARGET1 state.
-    stTarget1a: ST_PositionState;
-    stTarget1b: ST_PositionState;
-    // Settings for the TARGET2 state.
-    stTarget2a: ST_PositionState;
-    stTarget2b: ST_PositionState;
-    // Settings for the TARGET3 state.
-    stTarget3a: ST_PositionState;
-    stTarget3b: ST_PositionState;
-    // Settings for the TARGET4 state.
-    stTarget4: ST_PositionState;
-    // Settings for the TARGET5 state.
-    stTarget5: ST_PositionState;
-    // Settings for the TARGET6 state.
-    stTarget6: ST_PositionState;
-    // Set this to TRUE to enable input state moves, or FALSE to disable them.
-    bEnableMotion: BOOL;
-    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
-    bEnableBeamParams: BOOL;
-    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
-    bEnablePositionLimits: BOOL;
-    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
-    sDeviceName: STRING;
-    // The name of the transition state in the PMPS database.
-    sTransitionKey: STRING;
-    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
-    bReadDBNow: BOOL;
-END_VAR
-VAR_OUTPUT
-    // The current position state as an enum.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:GET
-        io: i
-    '}
-    eEnumGet: E_GBS_States;
-    // The PMPS database lookup associated with the current position state.
-    stDbStateParams: ST_DbStateParams;
+    (* Device-specific state-enum bridges. Underlying type UINT so they
+       can be bound directly to FB_PositionStatePMPSND's
+       REFERENCE TO UINT params via inline-init below. Callers drive
+       moves with `fbGBS.eEnumSet := E_GBS_States.TARGET2a;` and read
+       `fbGBS.eEnumGet` (E_GBS_States values auto-convert to/from
+       their UINT underlying). *)
+    eEnumSet : UINT;
+    eEnumGet : UINT;
 END_VAR
 VAR
-    bInit: BOOL;
-
-    fbYStage: FB_MotionStage;
-
-    fbStateDefaults: FB_PositionState_Defaults;
-
-    {attribute 'pytmc' := '
-        pv: MMS
-        astPositionState.array: 1..7
-    '}
-    fbStates: FB_PositionStatePMPS1D;
-    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    fbArrCheckWrite: FB_CheckPositionStateWrite;
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
 
     {attribute 'pytmc' := 'pv: RTD:01'}
-    fbRTD1: FB_CC_TempSensor;
+    fbRTD1 : FB_CC_TempSensor;
 
     {attribute 'pytmc' := 'pv: RTD:02'}
-    fbRTD2: FB_CC_TempSensor;
+    fbRTD2 : FB_CC_TempSensor;
 
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
-        io: io
-    '}
-    eEnumSet: E_GBS_States;
+    (* REFERENCE TO backing fields populated by FB_Init. Same names as
+       FB_Init params; THIS^. disambiguates inside FB_Init.
+       Live-bound to caller storage for the lifetime of the FB. *)
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+    {attribute 'no_copy'}
+    sDeviceName           : REFERENCE TO STRING;
+    {attribute 'no_copy'}
+    sTransitionKey        : REFERENCE TO STRING;
+    {attribute 'no_copy'}
+    bEnableMotion         : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bEnableBeamParams     : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bEnablePositionLimits : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bReadDBNow            : REFERENCE TO BOOL;
+
+    (* One configurator per GBS state (OUT + 9 targets). Writes the
+       per-state sName and fDelta. Ticked cyclically in the body AFTER
+       fbStates so its writes win over the template baseline
+       FB_StateSetup applied via FB_CC_StatePMPSConfig. Idempotent once
+       stPositionState.bUpdated trips. *)
+    afbStateDefaults : ARRAY[1..10] OF FB_CC_DeviceStateDefaults[
+        (stPositionState := astPositionState[1][E_GBS_States.OUT],
+         sName           := 'OUT',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET1a],
+         sName           := 'TARGET1a',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET1b],
+         sName           := 'TARGET1b',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET2a],
+         sName           := 'TARGET2a',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET2b],
+         sName           := 'TARGET2b',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET3a],
+         sName           := 'TARGET3a',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET3b],
+         sName           := 'TARGET3b',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET4],
+         sName           := 'TARGET4',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET5],
+         sName           := 'TARGET5',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_GBS_States.TARGET6],
+         sName           := 'TARGET6',
+         fDelta          := FDELTA_DEFAULT)
+    ];
+
+    i : UINT;
 END_VAR
 VAR CONSTANT
-    // State defaults if not provided
-    fDelta: LREAL := 2;
-    fAccel: LREAL := 200;
-    fOutDecel: LREAL := 25;
+    (* GBS-wide default tolerance for state in-position detection,
+       applied per-state by afbStateDefaults. *)
+    FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-IF NOT bInit THEN
-    bInit := TRUE;
-
-    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
-
-    // Partial backcompat, this used to set fVelocity too but this should be set per install
-    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fOutDecel);
-    fbStateDefaults(stPositionState:=stTarget1a, sNameDefault:='TARGET1a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget1b, sNameDefault:='TARGET1b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget2a, sNameDefault:='TARGET2a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget2b, sNameDefault:='TARGET2b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget3a, sNameDefault:='TARGET3a', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget3b, sNameDefault:='TARGET3b', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget4, sNameDefault:='TARGET4', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget5, sNameDefault:='TARGET5', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stTarget6, sNameDefault:='TARGET6', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
+IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(fbArbiter)
+   OR NOT __ISVALIDREF(sDeviceName)
+   OR NOT __ISVALIDREF(sTransitionKey)
+   OR NOT __ISVALIDREF(bEnableMotion)
+   OR NOT __ISVALIDREF(bEnableBeamParams)
+   OR NOT __ISVALIDREF(bEnablePositionLimits)
+   OR NOT __ISVALIDREF(bReadDBNow) THEN
+    RETURN;
 END_IF
 
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
+(* Apply device-side per-state defaults each cycle. Sleeps once the
+   parent state FB sets stPositionState.bUpdated := TRUE. *)
+FOR i := 1 TO 10 DO
+    afbStateDefaults[i]();
+END_FOR
 
-fbYStage(stMotionStage:=stYStage);
+(* PMPSND captures these in FB_Init only. fbStates' inline-init above
+   forwards them once at construction; re-write into the public VAR
+   fields each cycle so caller's REFERENCE TO BOOLs take effect live. *)
+fbStates.bEnableBeamParams     := bEnableBeamParams;
+fbStates.bEnablePositionLimits := bEnablePositionLimits;
+fbStates.bReadDBNow            := bReadDBNow;
 
-// We need to update from PLC or from EPICS, but not both
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=TRUE,
-    bSave:=FALSE,
-);
-IF NOT fbArrCheckWrite.bHadWrite THEN
-    astPositionState[E_GBS_States.OUT] := stOut;
-    astPositionState[E_GBS_States.TARGET1a] := stTarget1a;
-    astPositionState[E_GBS_States.TARGET1b] := stTarget1b;
-    astPositionState[E_GBS_States.TARGET2a] := stTarget2a;
-    astPositionState[E_GBS_States.TARGET2b] := stTarget2b;
-    astPositionState[E_GBS_States.TARGET3a] := stTarget3a;
-    astPositionState[E_GBS_States.TARGET3b] := stTarget3b;
-    astPositionState[E_GBS_States.TARGET4] := stTarget4;
-    astPositionState[E_GBS_States.TARGET5] := stTarget5;
-    astPositionState[E_GBS_States.TARGET6] := stTarget6;
-END_IF
+fbStates(bEnableMotion := bEnableMotion);
 
-fbStates(
-    stMotionStage:=stYStage,
-    astPositionState:=astPositionState,
-    eEnumSet:=eEnumSet,
-    eEnumGet:=eEnumGet,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=bEnableMotion,
-    bEnableBeamParams:=bEnableBeamParams,
-    bEnablePositionLimits:=bEnablePositionLimits,
-    sDeviceName:=sDeviceName,
-    sTransitionKey:=sTransitionKey,
-    bReadDBNow:=bReadDBNow,
-    stDbStateParams=>stDbStateParams,
-);
-
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=FALSE,
-    bSave:=TRUE,
-);
-
-stOut := astPositionState[E_GBS_States.OUT];
-stTarget1a := astPositionState[E_GBS_States.TARGET1a];
-stTarget1b := astPositionState[E_GBS_States.TARGET1b];
-stTarget2a := astPositionState[E_GBS_States.TARGET2a];
-stTarget2b := astPositionState[E_GBS_States.TARGET2b];
-stTarget3a := astPositionState[E_GBS_States.TARGET3a];
-stTarget3b := astPositionState[E_GBS_States.TARGET3b];
-stTarget4 := astPositionState[E_GBS_States.TARGET4];
-stTarget5 := astPositionState[E_GBS_States.TARGET5];
-stTarget6 := astPositionState[E_GBS_States.TARGET6];
-
+(* In-beam RTDs: only fault when something is actually in the beam
+   (i.e. not OUT). Driven by the PMPS DB temp setpoint. *)
 fbRTD1(
-    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVeto:=eEnumGet = E_GBS_States.OUT,
-    sDevName:=sDeviceName,
-    io_fbFFHWO:=fbFFHWO,
+    fFaultThreshold := fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto           := eEnumGet = E_GBS_States.OUT,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 fbRTD2(
-    fFaultThreshold:=fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVeto:=eEnumGet = E_GBS_States.OUT,
-    sDevName:=sDeviceName,
-    io_fbFFHWO:=fbFFHWO,
+    fFaultThreshold := fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVeto           := eEnumGet = E_GBS_States.OUT,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );]]></ST>
     </Implementation>
+    <Method Name="CallAfterInit" Id="{0c826497-bbe5-4d0f-95cc-b97d4fbafab3}">
+      <Declaration><![CDATA[(*
+    {attribute 'call_after_init'} on FB_GBS causes TwinCAT to auto-fire
+    THIS^.CallAfterInit() after FB_GBS.FB_Init completes.
+
+    fbStates was constructed via inline-init in FB_GBS's VAR section,
+    which ran BEFORE FB_GBS.FB_Init bound the REF fields on THIS^.
+    Consequently fbStates' inline-init forwarded nil REFs into
+    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
+    on those nil REFs and bails. This method re-supplies the now-valid
+    refs through fbStates.CallAfterInitEx, which re-binds them and runs
+    the full child-FB wiring chain (Core / ND / PMPSND).
+*)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{0c826498-bbe5-4d0f-95cc-b97d4fbafab4}">
+      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
+   input is REFERENCE TO and is REF= bound for the lifetime of the FB
+   (matches the rule: non-interface FB_Init inputs are taken by ref).
+   Inline-init of fbStates above runs first, capturing the FB_Init
+   params at construction time; this method then records the same
+   references on THIS^ for body-side use and live caller writes.
+   The file-reader busy/error inputs are bound straight to
+   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : REFERENCE TO STRING;
+    sTransitionKey         : REFERENCE TO STRING;
+    bEnableMotion          : REFERENCE TO BOOL;
+    bEnableBeamParams      : REFERENCE TO BOOL;
+    bEnablePositionLimits  : REFERENCE TO BOOL;
+    bReadDBNow             : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
+THIS^.astPositionState      REF= astPositionState;
+THIS^.fbFFHWO               REF= fbFFHWO;
+THIS^.fbArbiter             REF= fbArbiter;
+THIS^.sDeviceName           REF= sDeviceName;
+THIS^.sTransitionKey        REF= sTransitionKey;
+THIS^.bEnableMotion         REF= bEnableMotion;
+THIS^.bEnableBeamParams     REF= bEnableBeamParams;
+THIS^.bEnablePositionLimits REF= bEnablePositionLimits;
+THIS^.bReadDBNow            REF= bReadDBNow;]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
