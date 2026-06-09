@@ -1,7 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CheckPositionStateWriteTest" Id="{b175a6be-c3c4-40f4-b64f-a3c7b0cdcfa8}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_CheckPositionStateWriteTest EXTENDS FB_TestSuite
+    <Declaration><![CDATA[(*
+    OBSOLETE. Test suite for FB_CheckPositionStateWrite, which is itself
+    obsolete under the LCLS_Tc_Motion (ND) framework. See the obsolescence
+    note in FB_CheckPositionStateWrite.TcPOU for the rationale. File kept
+    on disk for history; excluded from Library.plcproj so it does not
+    compile.
+*)
+FUNCTION_BLOCK FB_CheckPositionStateWriteTest EXTENDS FB_TestSuite
 VAR
 END_VAR
 ]]></Declaration>

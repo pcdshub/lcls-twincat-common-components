@@ -135,9 +135,6 @@
     <Compile Include="POUs\FB_CC_TempSensor.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_CheckPositionStateWrite.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FB_FDQ_FlowMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -154,9 +151,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_SATTTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_CheckPositionStateWriteTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_LICTest.TcPOU">
@@ -197,9 +191,9 @@
       <DefaultResolution>LCLS General, * (SLAC)</DefaultResolution>
       <Namespace>LCLS_General</Namespace>
     </PlaceholderReference>
-    <PlaceholderReference Include="lcls-twincat-motion">
-      <DefaultResolution>lcls-twincat-motion, * (SLAC)</DefaultResolution>
-      <Namespace>lcls_twincat_motion</Namespace>
+    <PlaceholderReference Include="LCLS_Tc_Motion">
+      <DefaultResolution>LCLS_Tc_Motion, * (SLAC - LCLS)</DefaultResolution>
+      <Namespace>LCLS_Tc_Motion</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="lcls-twincat-physics">
       <DefaultResolution>lcls-twincat-physics, * (SLAC)</DefaultResolution>
