@@ -8,14 +8,13 @@ VAR
     axRef    : AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    afbMotorsNC : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF FB_MotionStageNC[
-        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y'),
-        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := ''),
-        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := ''),
-        (AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := '')
-    ];
-    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage
-                  := [afbMotorsNC[1], afbMotorsNC[2], afbMotorsNC[3], afbMotorsNC[4]];
+    (* FB_REF is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_REF.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     {attribute 'pytmc' := '
         pv: MMS
@@ -32,50 +31,55 @@ VAR
     fbArbiter  : FB_Arbiter(1);
     fbSubSysIO : FB_DummyArbIO;
 
-    bFileBusy : BOOL;
-    bFileErr  : BOOL;
-
     (* Per-cycle caller-owned BOOL flags passed by reference to FB_REF. *)
     bEnableMotion         : BOOL;
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
-    fTermMax              : LREAL := 200;
+
+    (* Device-name strings bound to FB_REF as REFERENCE TO STRING --
+       a literal cannot be REF-bound, so they live as locals here. *)
+    sDeviceName    : STRING := 'TST:REF';
+    sTransitionKey : STRING := 'TST:REF-TRANSITION';
 
     fbREF : FB_REF(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
         eEnumSet              := eSet,
         eEnumGet              := eGet,
-        bFileReaderBusy       := bFileBusy,
-        bFileReaderError      := bFileErr,
         fbFFHWO               := fbFFHWO,
         fbArbiter             := fbArbiter,
-        sDeviceName           := 'TST:REF',
-        sTransitionKey        := 'TST:REF-TRANSITION',
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
         bEnableMotion         := bEnableMotion,
         bEnableBeamParams     := bEnableBeamParams,
         bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        fTermMax              := fTermMax
+        bReadDBNow            := bReadDBNow
     );
 
     (* Per-install PMPS-side state config (caller-owned). Mirrors what
-       a real PRG_xxL0_REF would declare. Each slot binds a REF to
-       fbREF.stDefault to pick up the REF-wide bMoveOk / bValid /
-       bUseRawCounts baseline; fbREF writes sName and fDelta internally
-       via its own FB_CC_DeviceStateDefaults array. *)
+       a real PRG_xxL0_REF would declare. stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbREF subsequently overrides per-state sName and
+       fDelta via its own FB_CC_DeviceStateDefaults array. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
     afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
-         stDefault       := fbREF.stDefault,
+         stDefault       := stDefault,
          fPosition       := 10,
          sPmpsState      := 'TST:REF-OUT'),
         (stPositionState := astPositionState[1][E_REF_States.IN],
-         stDefault       := fbREF.stDefault,
+         stDefault       := stDefault,
          fPosition       := 20,
          sPmpsState      := 'TST:REF-IN')
     ];
 
+    bFirstScan : BOOL := TRUE;
     bInit : BOOL;
     i     : UINT;
 END_VAR
@@ -92,16 +96,35 @@ FOR i := 1 TO 2 DO
     afbStatePMPS[i]();
 END_FOR
 
-IF NOT bInit THEN
+(* One-shot motor setup + initial caller-owned enables. Limits,
+   brake/enable modes, home cmd, user/hardware enables, default
+   velocity; skip NC param restore. *)
+IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
+
     bEnableMotion         := TRUE;
     bEnableBeamParams     := TRUE;
     bEnablePositionLimits := TRUE;
+
+    bFirstScan := FALSE;
 END_IF
 
 bReadDBNow := NOT bInit;
 
 fbPDS();
-afbMotorsNC[1]();
+fbMotorY();
 fbREF();
 
 TestStateMove();

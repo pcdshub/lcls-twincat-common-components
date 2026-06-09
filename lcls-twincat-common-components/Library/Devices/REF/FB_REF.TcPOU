@@ -18,9 +18,8 @@
     co-operate on each ST_PositionState slot:
       - integrator's FB_CC_StatePMPSConfig array (per-install, declared
         in the caller PRG) wraps motion-lib's FB_StateSetup and writes
-        fPosition + sPmpsState plus the REF-wide baseline from
-        FB_REF.stDefault (bMoveOk / bValid / bUseRawCounts / template
-        fDelta).
+        fPosition + sPmpsState plus a caller-owned stDefault baseline
+        (bMoveOk / bValid / bUseRawCounts / template fDelta).
       - FB_REF.afbStateDefaults (device-side, hardcoded here) writes
         per-state sName and fDelta last, overriding the template
         baseline that FB_StateSetup just laid down. Ordering matters:
@@ -34,6 +33,7 @@
     - FB_REF.fbLaser.iLaserINT should be linked to the output for the
       laser dimmer's dimmer.
 *)
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_REF
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -42,13 +42,13 @@ VAR
         nActiveMotorCount     := 1,
         eEnumSet              := eEnumSet,
         eEnumGet              := eEnumGet,
-        bEnableMotion         := FALSE,
+        bEnableMotion         := bEnableMotion,
         eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := FALSE,
-        bEnablePositionLimits := FALSE,
-        bReadDBNow            := FALSE,
-        bFileReaderBusy       := bFileReaderBusy,
-        bFileReaderError      := bFileReaderError,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
         fbFFHWO               := fbFFHWO,
         fbArbiter             := fbArbiter,
         sDeviceName           := sDeviceName,
@@ -59,50 +59,74 @@ VAR
     fbLaser : FB_REF_Laser;
 
     (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init. *)
+       FB_Init params; THIS^. disambiguates inside FB_Init.
+       Live-bound to caller storage for the lifetime of the FB. *)
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    eEnumSet              : REFERENCE TO UINT;
+    {attribute 'no_copy'}
+    eEnumGet              : REFERENCE TO UINT;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+    {attribute 'no_copy'}
+    sDeviceName           : REFERENCE TO STRING;
+    {attribute 'no_copy'}
+    sTransitionKey        : REFERENCE TO STRING;
+    {attribute 'no_copy'}
     bEnableMotion         : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
     bEnableBeamParams     : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
     bEnablePositionLimits : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
     bReadDBNow            : REFERENCE TO BOOL;
-    fTermMax              : REFERENCE TO LREAL;
 
-    (* Device-common stDefault template. Exposed publicly so the
-       integrator's FB_CC_StatePMPSConfig array can bind a REF to it.
-       FB_StateSetup inside that helper preloads its VAR_INPUTs from
-       this template each call, so the fields here are the REF-wide
-       baseline for every state slot. Per-state sName and fDelta
-       are subsequently overridden by afbStateDefaults below; sName
-       is left blank here on purpose. *)
-    stDefault : ST_PositionState := (
-        fDelta        := 2,
-        bMoveOk       := TRUE,
-        bValid        := TRUE,
-        bUseRawCounts := FALSE
-    );
+    (* Plain-value backing field for the FB_Init-supplied fTermMax
+       (laser dimmer termination max). Has a sensible device default
+       so the caller may omit it; passed by value at construction. *)
+    fTermMax              : LREAL;
 
     (* One configurator per REF state (OUT, IN). Writes the per-state
-       sName and (optionally per-state) fDelta. Ticked cyclically in
-       the body AFTER fbStates so its writes win over the template
-       baseline FB_StateSetup applied via FB_CC_StatePMPSConfig.
-       Idempotent once stPositionState.bUpdated trips. *)
+       sName and fDelta. Ticked cyclically in the body AFTER fbStates
+       so its writes win over the template baseline FB_StateSetup
+       applied via FB_CC_StatePMPSConfig. Idempotent once
+       stPositionState.bUpdated trips. *)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
          sName           := 'OUT',
-         fDelta          := 2),
+         fDelta          := FDELTA_DEFAULT),
         (stPositionState := astPositionState[1][E_REF_States.IN],
          sName           := 'IN',
-         fDelta          := 2)
+         fDelta          := FDELTA_DEFAULT)
     ];
 
     i : UINT;
+END_VAR
+VAR CONSTANT
+    (* REF-wide default tolerance for state in-position detection,
+       applied per-state by afbStateDefaults. *)
+    FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
-IF NOT __ISVALIDREF(bEnableMotion)
+IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(eEnumSet)
+   OR NOT __ISVALIDREF(eEnumGet)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(fbArbiter)
+   OR NOT __ISVALIDREF(sDeviceName)
+   OR NOT __ISVALIDREF(sTransitionKey)
+   OR NOT __ISVALIDREF(bEnableMotion)
    OR NOT __ISVALIDREF(bEnableBeamParams)
    OR NOT __ISVALIDREF(bEnablePositionLimits)
-   OR NOT __ISVALIDREF(bReadDBNow)
-   OR NOT __ISVALIDREF(fTermMax) THEN
+   OR NOT __ISVALIDREF(bReadDBNow) THEN
     RETURN;
 END_IF
 
@@ -112,7 +136,8 @@ FOR i := 1 TO 2 DO
     afbStateDefaults[i]();
 END_FOR
 
-(* PMPSND captures these in FB_Init only. Re-write into its public VAR
+(* PMPSND captures these in FB_Init only. fbStates' inline-init above
+   forwards them once at construction; re-write into the public VAR
    fields each cycle so caller's REFERENCE TO BOOLs take effect live. *)
 fbStates.bEnableBeamParams     := bEnableBeamParams;
 fbStates.bEnablePositionLimits := bEnablePositionLimits;
@@ -123,11 +148,14 @@ fbStates(bEnableMotion := bEnableMotion);
 fbLaser(fTermMax := fTermMax);]]></ST>
     </Implementation>
     <Method Name="FB_init" Id="{b5f8c2d1-2e3f-5d4b-ac7d-1e9f8a2b3c4d}">
-      <Declaration><![CDATA[(* Stores per-cycle REFERENCE TO inputs into instance fields. The
-   construction-time params (aiMotionStage, astPositionState, eEnumSet,
-   eEnumGet, fbFFHWO, fbArbiter, bFileReaderBusy, bFileReaderError,
-   sDeviceName, sTransitionKey) are consumed directly by the inline-init
-   of fbStates above and need no further wiring here. *)
+      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
+   input is REFERENCE TO and is REF= bound for the lifetime of the FB
+   (matches the rule: non-interface FB_Init inputs are taken by ref).
+   Inline-init of fbStates / fbLaser above runs first, capturing the
+   FB_Init params at construction time; this method then records the
+   same references on THIS^ for body-side use and live caller writes.
+   The file-reader busy/error inputs are bound straight to
+   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
@@ -138,25 +166,66 @@ VAR_INPUT
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     eEnumSet               : REFERENCE TO UINT;
     eEnumGet               : REFERENCE TO UINT;
-    bFileReaderBusy        : REFERENCE TO BOOL;
-    bFileReaderError       : REFERENCE TO BOOL;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : STRING;
-    sTransitionKey         : STRING;
+    sDeviceName            : REFERENCE TO STRING;
+    sTransitionKey         : REFERENCE TO STRING;
     bEnableMotion          : REFERENCE TO BOOL;
     bEnableBeamParams      : REFERENCE TO BOOL;
     bEnablePositionLimits  : REFERENCE TO BOOL;
     bReadDBNow             : REFERENCE TO BOOL;
-    fTermMax               : REFERENCE TO LREAL;
+    fTermMax               : LREAL := 200;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.bEnableMotion         REF= bEnableMotion;
+        <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
+THIS^.astPositionState      REF= astPositionState;
+THIS^.eEnumSet              REF= eEnumSet;
+THIS^.eEnumGet              REF= eEnumGet;
+THIS^.fbFFHWO               REF= fbFFHWO;
+THIS^.fbArbiter             REF= fbArbiter;
+THIS^.sDeviceName           REF= sDeviceName;
+THIS^.sTransitionKey        REF= sTransitionKey;
+THIS^.bEnableMotion         REF= bEnableMotion;
 THIS^.bEnableBeamParams     REF= bEnableBeamParams;
 THIS^.bEnablePositionLimits REF= bEnablePositionLimits;
 THIS^.bReadDBNow            REF= bReadDBNow;
-THIS^.fTermMax              REF= fTermMax;]]></ST>
+THIS^.fTermMax               := fTermMax;]]></ST>
       </Implementation>
     </Method>
-  </POU>
-</TcPlcObject>
+    <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
+      <Declaration><![CDATA[(*
+    {attribute 'call_after_init'} on FB_REF causes TwinCAT to auto-fire
+    THIS^.CallAfterInit() after FB_REF.FB_Init completes.
+
+    fbStates was constructed via inline-init in FB_REF's VAR section,
+    which ran BEFORE FB_REF.FB_Init bound the REF fields on THIS^.
+    Consequently fbStates' inline-init forwarded nil REFs into
+    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
+    on those nil REFs and bails. This method re-supplies the now-valid
+    refs through fbStates.CallAfterInitEx, which re-binds them and runs
+    the full child-FB wiring chain (Core / ND / PMPSND).
+*)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey
+);]]></ST>
+      </Implementation>
+    </Method>

@@ -9,9 +9,8 @@
     FB_REF), one instance per state, both fields hardcoded inside
     the device FB.
 
-    Disjoint from FB_CC_StatePMPSConfig (which writes fPosition,
-    sPmpsState, and the device-common bools from its stDefault
-    template), so call order does not matter.
+    Other slot fields inherit from the device FB's stDefault
+    template via FB_CC_StatePMPSConfig's FB_StateSetup preload.
 
     Body re-applies cyclically until FB_PositionStateInternalND sets
     stPositionState.bUpdated := TRUE inside the parent state FB; from
