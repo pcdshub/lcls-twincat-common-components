@@ -272,6 +272,123 @@ Per-device checklist (applies to every entry below):
 - [ ] `Library/Devices/SATT/FB_SXR_SATT_Stage.TcPOU` (1 stage, uses
       `FB_PositionState1D` not PMPS variant)
 
+#### Pre-flight audit results
+
+Pre-flight read of all nine device FBs (commit cc244b8 baseline, before any
+Phase 2 edits). Key cross-cutting facts confirmed:
+
+- **R2 already satisfied across the whole library.** Every state enum
+  (`E_ATM_States`, `E_GBS_States`, `E_IPM_States`, `E_LIC_States`,
+  `E_PPM_States`, `E_WFS_States`, `E_XPIM_States`, `E_SXR_SATT_Position`,
+  plus `E_EpicsInOut` used by REF) already places `Unknown` (or
+  `UNKNOWN`) at index 0 and `OUT` at index 1. `E_SXR_SATT_Position`
+  even carries the inline comment `// UNKNOWN must be in slot 0 or the
+  FB breaks`. No renumber required, no API break. Phase 2 PRs only need
+  a one-line `// verified R2: Unknown=0` audit note.
+- **State-select motor count is 1 for every device.** Multi-stage devices
+  (ATM: X+Y, IPM: X+Y, WFS: Y+Z, XPIM: Y+Zoom+Focus) wire the state mover
+  to `stYStage` only; the other stages are free-motion auxiliaries
+  (alignment, zoom, focus) that pass through their own `FB_MotionStage`
+  but never enter `fbStates`. After migration each device's
+  `aiMotionStage` therefore has length 1 for the state mover; auxiliary
+  stages stay as separate `FB_MotionStageNC` members. `MAX_STATE_MOTORS`
+  in the project-wide constants gives plenty of headroom; per-device
+  declarations should still use the constant for forward compatibility
+  and apply R7 `nc-optional: true` to unused slots.
+- **One uniform template across 7 PMPS devices** (ATM, GBS, IPM, LIC,
+  PPM, REF, WFS, XPIM). Each has the same shape: `fbStateDefaults` calls
+  in the `IF NOT bInit` block, `fbArrCheckWrite` with the `bCheck` /
+  `bSave` two-pass dance around `fbStates: FB_PositionStatePMPS1D`,
+  manual `astPositionState[E_*.X] := stX` copies before and after.
+  Migration of the body is mechanical and near-identical per device:
+  - Delete `fbStateDefaults` member and its first-scan calls.
+  - Delete `fbArrCheckWrite` member and both two-pass call sites.
+  - Delete the pre- and post-`fbStates` manual copies between
+    `stOut`/`stTargetN` and `astPositionState[E_*.X]`.
+  - Reshape `astPositionState : ARRAY[1..GeneralConstants.MAX_STATES] OF
+    ST_PositionState` to
+    `ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState`.
+  - Add `afbMotorsNC : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF
+    FB_MotionStageNC[(...)];` and the corresponding
+    `aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF
+    I_MotionStage := [afbMotorsNC[1], ...];`.
+  - Add `afbStateConfig : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+    OF ARRAY[1..<n>] OF FB_StateConfigurator[(...)];` inline-init that
+    materializes the same defaults `fbStateDefaults` used to apply.
+  - Swap `fbStates : FB_PositionStatePMPS1D` to
+    `fbStates : FB_PositionStatePMPSND` with the ND wiring contract
+    (`aiMotionStage`, `astPositionState`, `nActiveMotorCount := 1`,
+    `eEnumSet`, `eEnumGet`, `bEnableMotion`, `eMotionRequestPolicy`).
+  - Drop the `VAR_IN_OUT stYStage : ST_MotionStage` and remove
+    `stYStage.bHardwareEnable := TRUE` etc.; replicate that intent on
+    `afbMotorsNC[1]` properties (`HardwareEnable`, `PowerSelf`,
+    `LimitForwardEnable`, etc.). Same for X / Z / Zoom / Focus
+    auxiliary stages, each as its own `FB_MotionStageNC` member.
+  - Replace `ENUM_StageEnableMode.DURING_MOTION` ->
+    `E_StageEnableMode.DURING_MOTION` (same member name, new enum).
+    Same for `ENUM_StageBrakeMode.NO_BRAKE` ->
+    `E_StageBrakeMode.NO_BRAKE` and `ENUM_EpicsHomeCmd.{NONE,LOW_LIMIT}`
+    -> `E_EpicsHomeCmd.{NONE,LOW_LIMIT}` (XPIM, SATT).
+- **SATT is the odd one out.** It uses `FB_PositionState1D` (non-PMPS),
+  performs its own PMPS DB lookup via `fbReadPMPSDB:
+  FB_JsonDocToSafeBP` against `astPickedDB : ARRAY[1..1] OF
+  ST_DbStateParams`, raises its own fast-fault via `fbFF: FB_FastFault`
+  on the `Moving AND NOT UNKNOWN` predicate, and computes filter
+  transmission downstream of `eEnumGet`. Migration target is
+  `FB_PositionStateND` (non-PMPS). R5 / R6 do not apply to SATT
+  (no `fbPMPS` ever existed there; the FF + DB lookup machinery stays
+  in the device FB).
+
+#### Per-device delta
+
+Columns: `States` = enum slot count incl. `Unknown`/`OUT`;
+`State-select` = motor wired to `fbStates`; `Aux stages` = free-motion
+stages kept as their own `FB_MotionStageNC`; `Mover` = ND replacement
+class; `R5/R6` = whether the upstream PMPS rewire applies; `Removed
+enum members in use` = which `ENUM_*` references each FB will need to
+swap to `E_*`.
+
+| Device | States | State-select | Aux stages | Mover | R5/R6 | Removed enum members in use |
+|---|---|---|---|---|---|---|
+| ATM | 7 (Unknown, OUT, TARGET1..5) | Y | X | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` x2 |
+| GBS | 11 (Unknown, OUT, TARGET1a/1b/2a/2b/3a/3b/4/5/6) | Y | (none) | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` |
+| IPM | 6 (Unknown, OUT, TARGET1..4) | Y | X | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` x2 |
+| LIC | 5 (Unknown, OUT, MIRROR1, MIRROR2, TARGET) | Y | (none) | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` |
+| PPM | 5 (Unknown, OUT, POWERMETER, YAG1, YAG2) | Y | (none) | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` |
+| REF | 3 (Unknown, OUT, IN via `E_EpicsInOut`) | Y | (none) | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` |
+| WFS | 7 (Unknown, OUT, TARGET1..5) | Y | Z | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` x2 |
+| XPIM | 5 (Unknown, OUT, YAG, DIAMOND, RETICLE) | Y | Zoom, Focus | `FB_PositionStatePMPSND` | yes | `ENUM_StageEnableMode.DURING_MOTION` x3, `ENUM_EpicsHomeCmd.LOW_LIMIT` x2 |
+| SATT | 10 (UNKNOWN, OUT, FILTER1..8) | Y (`stAxis`) | (none) | `FB_PositionStateND` | no | `ENUM_StageBrakeMode.NO_BRAKE`, `ENUM_EpicsHomeCmd.NONE` |
+
+Recommended PR order (smallest blast radius first):
+1. `REF` : only 3 states, single stage, no auxiliaries, no children
+   beyond `fbLaser`. Lowest test surface; ideal template build.
+2. `LIC` : single stage, 5 states, no children. Validates the GBS-shape
+   (lots of states, single mover).
+3. `PPM` : single stage, 5 states, several non-motion children
+   (`fbPowerMeter`, `fbGige`, `fbFlowMeter`, `fbYagTempSensor`,
+   `fbFlowSwitch`). Exercises "device with rich subsystem siblings".
+4. `GBS` : single stage, 11 states (largest enum). Stresses
+   `FB_StateConfigurator` array sizing.
+5. `ATM`, `IPM`, `WFS` : 2-stage devices (state-select Y + free-motion
+   alignment X or focus Z). First exposure of the "aux stages as
+   independent `FB_MotionStageNC` members" pattern.
+6. `XPIM` : 3-stage device with extra `bZoomLock` / `bFocusLock`
+   semantics and `ENUM_EpicsHomeCmd.LOW_LIMIT` references.
+7. `SATT` : different mover class (`FB_PositionStateND`), in-device
+   PMPS DB lookup, transmission math. Migrate last so the PMPS template
+   is well-understood before touching the non-PMPS variant.
+
+#### Per-PR slot template
+
+Each Phase 2 device PR carries:
+1. A one-line `// verified R2: Unknown=0, OUT=1` audit note above the
+   enum DUT.
+2. The device-FB rewrite (this section).
+3. The matching test-FB rewrite (Phase 4 row for that device).
+4. A `compile_error.txt`-style smoke-run note from the human after
+   activate, if a clean build is achievable on the dev VM.
+
 ### Phase 3 - SLITS special case
 
 - [ ] `Library/Devices/SLITS/FB_SLITS.TcPOU` (4 blade stages)
