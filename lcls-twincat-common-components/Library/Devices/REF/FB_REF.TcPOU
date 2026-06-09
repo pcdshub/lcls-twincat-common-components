@@ -16,10 +16,12 @@
 
     Per-state configuration is split across two configurators that touch
     disjoint fields of each ST_PositionState slot:
+      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
+        in the caller PRG) is the primary writer. It takes a REFERENCE
+        TO this FB's stDefault template and writes fPosition, sPmpsState,
+        fDelta, bMoveOk, bValid, bUseRawCounts.
       - FB_REF.afbStateDefaults (device-side, hardcoded here) writes the
-        REF-common fields: sName, fDelta, bMoveOk, bValid, bUseRawCounts.
-      - integrator's FB_CC_StatePMPSConfig array (per-install, declared in
-        the caller PRG) writes fPosition and sPmpsState.
+        per-state sName that the caller cannot supply per-install.
     Both configurators are idempotent once the parent state FB sets
     stPositionState.bUpdated := TRUE.
 
@@ -63,8 +65,9 @@ VAR
 
     (* Device-side default template for every REF state slot. Hardcodes
        the REF Y-stage common config (tolerance, default move-ok and
-       valid flags, raw-counts mode). Per-install overrides happen via
-       the caller's FB_CC_StatePMPSConfig array, not here. *)
+       valid flags, raw-counts mode). The caller passes this in by
+       reference to its FB_CC_StatePMPSConfig array via
+       stDefault := fbREF.stDefault. *)
     stDefault : ST_PositionState := (
         fDelta        := 2,
         bMoveOk       := TRUE,
@@ -72,14 +75,13 @@ VAR
         bUseRawCounts := FALSE
     );
 
-    (* One configurator per REF state (OUT, IN). Ticked cyclically in
-       the body; idempotent once bUpdated trips. *)
+    (* One sName writer per REF state (OUT, IN). Ticked cyclically in
+       the body; idempotent once bUpdated trips. Caller's PMPS config
+       handles fDelta / bMoveOk / bValid / bUseRawCounts via stDefault. *)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
-         stDefault       := stDefault,
          sName           := 'OUT'),
         (stPositionState := astPositionState[1][E_REF_States.IN],
-         stDefault       := stDefault,
          sName           := 'IN')
     ];
 
