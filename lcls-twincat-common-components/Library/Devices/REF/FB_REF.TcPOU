@@ -8,10 +8,20 @@
     - laser power and dimmer via FB_REF_Laser
 
     FB_REF is a thin wrapper. It owns only what it ticks each cycle
-    (fbStates and fbLaser). Motors, motion-stage interface array,
-    position-state slot array, enum bridge UINTs, fast-fault output
-    and arbiter are caller-owned; FB_REF receives them by FB_Init
-    REFERENCE TO and forwards them to fbStates via inline-init.
+    (fbStates, fbLaser, and the per-state device-default configurators).
+    Motors, motion-stage interface array, position-state slot array,
+    enum bridge UINTs, fast-fault output and arbiter are caller-owned;
+    FB_REF receives them by FB_Init REFERENCE TO and forwards them to
+    fbStates via inline-init.
+
+    Per-state configuration is split across two configurators that touch
+    disjoint fields of each ST_PositionState slot:
+      - FB_REF.afbStateDefaults (device-side, hardcoded here) writes the
+        REF-common fields: sName, fDelta, bMoveOk, bValid, bUseRawCounts.
+      - integrator's FB_CC_StatePMPSConfig array (per-install, declared in
+        the caller PRG) writes fPosition and sPmpsState.
+    Both configurators are idempotent once the parent state FB sets
+    stPositionState.bUpdated := TRUE.
 
     The following IO link points are included and should be used:
     - FB_REF.fbLaser.iShutdownINT should be linked to the output for the
@@ -50,12 +60,30 @@ VAR
     bEnablePositionLimits : REFERENCE TO BOOL;
     bReadDBNow            : REFERENCE TO BOOL;
     fTermMax              : REFERENCE TO LREAL;
-END_VAR
-VAR CONSTANT
-    (* Suggested default delta for REF state slots. Callers may read
-       this when configuring their own astPositionState entries:
-         stOut.fDelta := FB_REF.fDelta;  // or hardcode their own *)
-    fDelta : LREAL := 2;
+
+    (* Device-side default template for every REF state slot. Hardcodes
+       the REF Y-stage common config (tolerance, default move-ok and
+       valid flags, raw-counts mode). Per-install overrides happen via
+       the caller's FB_CC_StatePMPSConfig array, not here. *)
+    stDefault : ST_PositionState := (
+        fDelta        := 2,
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
+    (* One configurator per REF state (OUT, IN). Ticked cyclically in
+       the body; idempotent once bUpdated trips. *)
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
+        (stPositionState := astPositionState[1][E_REF_States.OUT],
+         stDefault       := stDefault,
+         sName           := 'OUT'),
+        (stPositionState := astPositionState[1][E_REF_States.IN],
+         stDefault       := stDefault,
+         sName           := 'IN')
+    ];
+
+    i : UINT;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
@@ -66,6 +94,12 @@ IF NOT __ISVALIDREF(bEnableMotion)
    OR NOT __ISVALIDREF(fTermMax) THEN
     RETURN;
 END_IF
+
+(* Apply device-side per-state defaults each cycle. Sleeps once the
+   parent state FB sets stPositionState.bUpdated := TRUE. *)
+FOR i := 1 TO 2 DO
+    afbStateDefaults[i]();
+END_FOR
 
 (* PMPSND captures these in FB_Init only. Re-write into its public VAR
    fields each cycle so caller's REFERENCE TO BOOLs take effect live. *)

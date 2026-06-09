@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_StatePMPSConfig" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b53}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Per-(state) writer of the per-install PMPS-side fields of a single
+    ST_PositionState slot. Owned by the integrator PRG. Hardcodes the
+    physical position and the PMPS DB state key for one state.
+
+    The device FB does NOT touch these fields; it writes only the
+    common defaults via FB_CC_DeviceStateDefaults. The two helpers
+    write disjoint slot fields so call order does not matter.
+
+    Body re-applies the config cyclically until FB_PositionStateInternalND
+    sets stPositionState.bUpdated := TRUE inside the parent state FB; from
+    then on the helper sleeps. bForceUpdate is a runtime escape hatch.
+*)
+FUNCTION_BLOCK FB_CC_StatePMPSConfig
+VAR_INPUT
+    bForceUpdate : BOOL;
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stPositionState : REFERENCE TO ST_PositionState;
+    fPosition       : LREAL;
+    sPmpsState      : STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) THEN
+    RETURN;
+END_IF
+
+IF bForceUpdate OR NOT stPositionState.bUpdated THEN
+    stPositionState.fPosition  := fPosition;
+    stPositionState.sPmpsState := sPmpsState;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b54}">
+      <Declaration><![CDATA[(* Stores the slot reference plus per-install fPosition + sPmpsState
+   at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains    : BOOL;
+    bInCopyCode     : BOOL;
+    stPositionState : REFERENCE TO ST_PositionState;
+    fPosition       : LREAL;
+    sPmpsState      : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.fPosition        := fPosition;
+THIS^.sPmpsState       := sPmpsState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

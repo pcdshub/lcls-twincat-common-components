@@ -60,7 +60,20 @@ VAR
         fTermMax              := fTermMax
     );
 
+    (* Per-install PMPS-side state config (caller-owned). Mirrors what
+       a real PRG_xxL0_REF would declare. fbREF writes the device-side
+       defaults internally via its own FB_CC_DeviceStateDefaults array. *)
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_REF_States.OUT],
+         fPosition       := 10,
+         sPmpsState      := 'TST:REF-OUT'),
+        (stPositionState := astPositionState[1][E_REF_States.IN],
+         fPosition       := 20,
+         sPmpsState      := 'TST:REF-IN')
+    ];
+
     bInit : BOOL;
+    i     : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -70,25 +83,12 @@ fbSubSysIO(
     FFO := fbFFHWO
 );
 
-(* One-shot per-state config and enables. Caller owns astPositionState
-   so all per-state values are set directly here. *)
+(* Caller-side PMPS configurators (per-install). *)
+FOR i := 1 TO 2 DO
+    afbStatePMPS[i]();
+END_FOR
+
 IF NOT bInit THEN
-    astPositionState[1][E_REF_States.OUT].fPosition  := 10;
-    astPositionState[1][E_REF_States.OUT].fDelta     := FB_REF.fDelta;
-    astPositionState[1][E_REF_States.OUT].sName      := 'OUT';
-    astPositionState[1][E_REF_States.OUT].sPmpsState := 'T0';
-    astPositionState[1][E_REF_States.OUT].bMoveOk    := TRUE;
-    astPositionState[1][E_REF_States.OUT].bValid     := TRUE;
-    astPositionState[1][E_REF_States.OUT].bUpdated   := TRUE;
-
-    astPositionState[1][E_REF_States.IN].fPosition   := 20;
-    astPositionState[1][E_REF_States.IN].fDelta      := FB_REF.fDelta;
-    astPositionState[1][E_REF_States.IN].sName       := 'T1';
-    astPositionState[1][E_REF_States.IN].sPmpsState  := 'T1';
-    astPositionState[1][E_REF_States.IN].bMoveOk     := TRUE;
-    astPositionState[1][E_REF_States.IN].bValid      := TRUE;
-    astPositionState[1][E_REF_States.IN].bUpdated    := TRUE;
-
     bEnableMotion         := TRUE;
     bEnableBeamParams     := TRUE;
     bEnablePositionLimits := TRUE;

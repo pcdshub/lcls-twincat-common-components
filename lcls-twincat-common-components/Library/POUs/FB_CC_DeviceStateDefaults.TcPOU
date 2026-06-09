@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_DeviceStateDefaults" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a31}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Per-(state) writer of the device-side "common" fields of a single
+    ST_PositionState slot. Owned by the device FB (e.g. FB_REF). The
+    device FB declares one stDefault : ST_PositionState template that
+    fixes the device-wide tolerance / move-ok / valid / raw-counts
+    convention, and one configurator per state that pairs the slot
+    reference with a hardcoded sName.
+
+    The integrator (caller PRG) does NOT touch these fields. Per-install
+    knobs (fPosition, sPmpsState) live on FB_CC_StatePMPSConfig instead;
+    the two helpers write disjoint slot fields so order does not matter.
+
+    Body re-applies the config cyclically until FB_PositionStateInternalND
+    sets stPositionState.bUpdated := TRUE inside the parent state FB; from
+    then on the helper sleeps. bForceUpdate is a runtime escape hatch.
+*)
+FUNCTION_BLOCK FB_CC_DeviceStateDefaults
+VAR_INPUT
+    bForceUpdate : BOOL;
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stPositionState : REFERENCE TO ST_PositionState;
+    {attribute 'no_copy'}
+    stDefault       : REFERENCE TO ST_PositionState;
+    sName           : STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) OR NOT __ISVALIDREF(stDefault) THEN
+    RETURN;
+END_IF
+
+IF bForceUpdate OR NOT stPositionState.bUpdated THEN
+    stPositionState.sName         := sName;
+    stPositionState.fDelta        := stDefault.fDelta;
+    stPositionState.bMoveOk       := stDefault.bMoveOk;
+    stPositionState.bValid        := stDefault.bValid;
+    stPositionState.bUseRawCounts := stDefault.bUseRawCounts;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a32}">
+      <Declaration><![CDATA[(* Stores the slot and default-template references plus the per-state name
+   at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains    : BOOL;
+    bInCopyCode     : BOOL;
+    stPositionState : REFERENCE TO ST_PositionState;
+    stDefault       : REFERENCE TO ST_PositionState;
+    sName           : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.stDefault       REF= stDefault;
+THIS^.sName            := sName;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
