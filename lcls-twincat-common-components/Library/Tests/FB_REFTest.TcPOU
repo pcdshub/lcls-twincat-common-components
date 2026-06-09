@@ -3,51 +3,82 @@
   <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    fbREF: FB_REF;
-    stYStage: ST_MotionStage;
-
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
-    );
-    fbSetup: FB_StateSetupHelper;
-
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
+    (* Caller-owned dependencies of FB_REF (passed by REFERENCE at FB_Init). *)
+    axRef     : AXIS_REF;
+    fbPDS     : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+    fbFFHWO   : FB_HardwareFFOutput;
+    fbArbiter : FB_Arbiter(1);
     fbSubSysIO: FB_DummyArbIO;
 
-    bInit: BOOL;
+    bFileBusy : BOOL;
+    bFileErr  : BOOL;
+
+    (* Caller-owned per-cycle vars (REFERENCE TO ... fields of FB_REF). *)
+    stOut, stIn           : ST_PositionState;
+    eSet, eGet            : E_REF_States;
+    stDbStateParams       : ST_DbStateParams;
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+    fTermMax              : LREAL := 200;
+
+    fbREF : FB_REF(
+        AxisRef                := axRef,
+        iPersistentDataStorage := fbPDS,
+        sDeviceName            := 'TST:REF',
+        sTransitionKey         := 'TST:REF-TRANSITION',
+        bFileReaderBusy        := bFileBusy,
+        bFileReaderError       := bFileErr,
+        fbFFHWO                := fbFFHWO,
+        fbArbiter              := fbArbiter,
+        stOut                  := stOut,
+        stIn                   := stIn,
+        eEnumSet               := eSet,
+        eEnumGet               := eGet,
+        stDbStateParams        := stDbStateParams,
+        bEnableMotion          := bEnableMotion,
+        bEnableBeamParams      := bEnableBeamParams,
+        bEnablePositionLimits  := bEnablePositionLimits,
+        bReadDBNow             := bReadDBNow,
+        fTermMax               := fTermMax
+    );
+
+    bInit : BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
+      <ST><![CDATA[(* Fake PMPS handling. *)
 fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
+    LA  := fbArbiter,
+    FFO := fbFFHWO
 );
 
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+(* One-shot per-state config and enables. *)
+IF NOT bInit THEN
+    stOut.fPosition  := 10;
+    stOut.fDelta     := 0.5;
+    stOut.sName      := 'OUT';
+    stOut.sPmpsState := 'T0';
+    stOut.bMoveOk    := TRUE;
+    stOut.bValid     := TRUE;
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbREF.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbREF.stIn, sName:='T1', fPosition:=20, sPmpsState:='T1');
+    stIn.fPosition   := 20;
+    stIn.fDelta      := 0.5;
+    stIn.sName       := 'T1';
+    stIn.sPmpsState  := 'T1';
+    stIn.bMoveOk     := TRUE;
+    stIn.bValid      := TRUE;
 
-// Standard FB call
-fbREF(
-    stYStage:=stYStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
-);
+    bEnableMotion         := TRUE;
+    bEnableBeamParams     := TRUE;
+    bEnablePositionLimits := TRUE;
+END_IF
+
+bReadDBNow := NOT bInit;
+
+fbPDS();
+fbREF();
 
 TestStateMove();
 
@@ -57,24 +88,24 @@ bInit := TRUE;
     <Method Name="TestStateMove" Id="{3a2a7314-4b65-4375-be43-beb65ac4cd39}">
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
-    tonTimer: TON;
+    tonTimer  : TON;
     nIterState: UINT := 0;
 END_VAR
 VAR CONSTANT
-    nLastState: UINT := E_EpicsInOut.IN;
+    nLastState: UINT := 2; (* E_REF_States.IN *)
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
+(* Sanity check: can we at least move to every named state? *)
 TEST('TestREFStateMove');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
-// Start in Unknown, then go through the state positions one by one
-IF fbREF.eEnumGet = nIterState THEN
+(* Start in Unknown, then go through the state positions one by one. *)
+IF eGet = nIterState THEN
     nIterState := nIterState + 1;
-    fbREF.eEnumSet := nIterState;
+    eSet       := nIterState;
 END_IF
 
 IF tonTimer.Q OR nIterState > nLastState THEN

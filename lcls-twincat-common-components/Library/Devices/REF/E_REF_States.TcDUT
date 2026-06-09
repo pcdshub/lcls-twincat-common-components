@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_REF_States" Id="{a4e7b1c0-1f2d-4e3a-9b6c-0d8e7f1a2b3c}">
+    <Declaration><![CDATA[(* REF state-select enum. UINT-typed so REFERENCE TO E_REF_States
+   is bridge-compatible with the ND mover's REFERENCE TO UINT. *)
+{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_REF_States :
+(
+    UNKNOWN := 0,
+    OUT     := 1,
+    IN      := 2
+) UINT;
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

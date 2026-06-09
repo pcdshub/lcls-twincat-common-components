@@ -1,137 +1,197 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
-(*
-    Function block for reference laser (REF) controls:
-    - Y motion
-    - Y in and out states
-    - laser power and dimmer
+    <Declaration><![CDATA[(*
+    Function block for reference laser (REF) controls under the
+    LCLS_Tc_Motion (ND) framework:
+    - Y motion (single state-select motor, stage slot 1)
+    - Y in/out states via FB_PositionStatePMPSND
+    - laser power and dimmer (FB_REF_Laser)
+
+    All caller-mutable wiring is injected via FB_Init. Non-interface
+    parameters arrive as REFERENCE TO so the caller can update them per
+    cycle without re-instantiating the FB.
 
     The following IO link points are included and should be used:
-    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the laser dimmer's shutdown voltage
-    - FB_REF.fbLaser.iLaserINT should be linked to the output for the laser dimmer's dimmer
+    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the
+      laser dimmer's shutdown voltage.
+    - FB_REF.fbLaser.iLaserINT should be linked to the output for the
+      laser dimmer's dimmer.
 *)
-VAR_IN_OUT
-    // Y motor (state select).
-    stYStage: ST_MotionStage;
-    // The fast fault output to fault to.
-    fbFFHWO: FB_HardwareFFOutput;
-    // The arbiter to request beam conditions from.
-    fbArbiter: FB_Arbiter;
-END_VAR
-VAR_INPUT
-    // Settings for the OUT state.
-    stOut: ST_PositionState;
-    // Settings for the IN state.
-    stIn: ST_PositionState;
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
-        io: io
-    '}
-    eEnumSet: E_EpicsInOut;
-    // Set this to TRUE to enable input state moves, or FALSE to disable them.
-    bEnableMotion: BOOL;
-    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
-    bEnableBeamParams: BOOL;
-    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
-    bEnablePositionLimits: BOOL;
-    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
-    sDeviceName: STRING;
-    // The name of the transition state in the PMPS database.
-    sTransitionKey: STRING;
-    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
-    bReadDBNow: BOOL;
-    // Passed to fbLaser.
-    fTermMax: LREAL := 200;
-END_VAR
-VAR_OUTPUT
-    // The current position state as an enum.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:GET
-        io: i
-    '}
-    eEnumGet: E_EpicsInOut;
-    // The PMPS database lookup associated with the current position state.
-    stDbStateParams: ST_DbStateParams;
-END_VAR
+FUNCTION_BLOCK FB_REF
 VAR
-    bInit: BOOL;
+    (* Padding axes so unused stage slots (2..4) have a valid AxisRef
+       reference at FB_MotionStageNC.FB_Init time. Their bodies are not
+       called. *)
+    AxisRefPad : ARRAY[2..MotionConstants.MAX_STATE_MOTORS] OF AXIS_REF;
 
-    fbYStage: FB_MotionStage;
+    afbMotorsNC : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF FB_MotionStageNC[
+        (AxisRef := AxisRef,        iPersistentDataStorage := iPersistentDataStorage, sName := 'Y'),
+        (AxisRef := AxisRefPad[2],  iPersistentDataStorage := iPersistentDataStorage, sName := ''),
+        (AxisRef := AxisRefPad[3],  iPersistentDataStorage := iPersistentDataStorage, sName := ''),
+        (AxisRef := AxisRefPad[4],  iPersistentDataStorage := iPersistentDataStorage, sName := '')
+    ];
 
-    fbStateDefaults: FB_PositionState_Defaults;
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage
+                  := [afbMotorsNC[1], afbMotorsNC[2], afbMotorsNC[3], afbMotorsNC[4]];
 
     {attribute 'pytmc' := '
         pv: MMS
         astPositionState.array: 1..2
     '}
-    fbStates: FB_PositionStatePMPS1D;
-    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    fbArrCheckWrite: FB_CheckPositionStateWrite;
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    (* UINT bridge: PMPSND wants REFERENCE TO UINT for the state enum;
+       the caller's REFERENCE TO E_REF_States is type-distinct at bind
+       time, so we copy values through these locals each cycle. *)
+    eEnumSetUint : UINT;
+    eEnumGetUint : UINT;
+
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSetUint,
+        eEnumGet              := eEnumGetUint,
+        bEnableMotion         := FALSE,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := FALSE,
+        bEnablePositionLimits := FALSE,
+        bReadDBNow            := FALSE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
 
     {attribute 'pytmc' := 'pv: LAS'}
-    fbLaser: FB_REF_Laser;
+    fbLaser    : FB_REF_Laser;
+
+    bFirstScan : BOOL := TRUE;
+
+    (* REFERENCE TO backing fields populated by FB_Init. Same names as
+       FB_Init params; THIS^. disambiguates inside FB_Init. *)
+    stOut                 : REFERENCE TO ST_PositionState;
+    stIn                  : REFERENCE TO ST_PositionState;
+    eEnumSet              : REFERENCE TO E_REF_States;
+    eEnumGet              : REFERENCE TO E_REF_States;
+    stDbStateParams       : REFERENCE TO ST_DbStateParams;
+    bEnableMotion         : REFERENCE TO BOOL;
+    bEnableBeamParams     : REFERENCE TO BOOL;
+    bEnablePositionLimits : REFERENCE TO BOOL;
+    bReadDBNow            : REFERENCE TO BOOL;
+    fTermMax              : REFERENCE TO LREAL;
 END_VAR
 VAR CONSTANT
-    fDelta: LREAL := 2;
-    fAccel: LREAL := 10;
+    fAccel : LREAL := 10;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-IF NOT bInit THEN
-    bInit := TRUE;
-
-    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
-
-    // Partial backcompat, this used to set fVelocity too but this should be set per install
-    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stIn, sNameDefault:='IN', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
+IF NOT __ISVALIDREF(stOut)
+   OR NOT __ISVALIDREF(stIn)
+   OR NOT __ISVALIDREF(eEnumSet)
+   OR NOT __ISVALIDREF(eEnumGet)
+   OR NOT __ISVALIDREF(stDbStateParams)
+   OR NOT __ISVALIDREF(bEnableMotion)
+   OR NOT __ISVALIDREF(bEnableBeamParams)
+   OR NOT __ISVALIDREF(bEnablePositionLimits)
+   OR NOT __ISVALIDREF(bReadDBNow)
+   OR NOT __ISVALIDREF(fTermMax) THEN
+    RETURN;
 END_IF
 
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
+(* Bridge caller's typed enum into the parent's REFERENCE TO UINT slot. *)
+eEnumSetUint := eEnumSet;
 
-fbYStage(stMotionStage:=stYStage);
+(* Copy caller's per-state config into the slot array; latch bUpdated
+   so the ND mover treats the slot as live each cycle. *)
+astPositionState[1][E_REF_States.OUT]          := stOut;
+astPositionState[1][E_REF_States.OUT].bUpdated := TRUE;
+astPositionState[1][E_REF_States.IN]           := stIn;
+astPositionState[1][E_REF_States.IN].bUpdated  := TRUE;
 
-// We need to update from PLC or from EPICS, but not both
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=TRUE,
-    bSave:=FALSE,
-);
-IF NOT fbArrCheckWrite.bHadWrite THEN
-    astPositionState[E_EpicsInOut.OUT] := stOut;
-    astPositionState[E_EpicsInOut.IN] := stIn;
+(* First-scan: configure the Y stage. *)
+IF bFirstScan THEN
+    afbMotorsNC[1].SetMotionParam(
+        Velocity     := 5,
+        Acceleration := fAccel,
+        Deceleration := fAccel,
+        Jerk         := 0
+    );
+    afbMotorsNC[1].SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    bFirstScan := FALSE;
 END_IF
 
-fbStates(
-    stMotionStage:=stYStage,
-    astPositionState:=astPositionState,
-    eEnumSet:=eEnumSet,
-    eEnumGet:=eEnumGet,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=bEnableMotion,
-    bEnableBeamParams:=bEnableBeamParams,
-    bEnablePositionLimits:=bEnablePositionLimits,
-    sDeviceName:=sDeviceName,
-    sTransitionKey:=sTransitionKey,
-    bReadDBNow:=bReadDBNow,
-    stDbStateParams=>stDbStateParams,
-);
+afbMotorsNC[1]();
 
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=FALSE,
-    bSave:=TRUE,
-);
+(* PMPSND captures these in FB_Init only. Re-write into its public VAR
+   fields each cycle so caller's REFERENCE TO BOOLs take effect live. *)
+fbStates.bEnableBeamParams     := bEnableBeamParams;
+fbStates.bEnablePositionLimits := bEnablePositionLimits;
+fbStates.bReadDBNow            := bReadDBNow;
 
-stOut := astPositionState[E_EpicsInOut.OUT];
-stIn := astPositionState[E_EpicsInOut.IN];
+fbStates(bEnableMotion := bEnableMotion);
 
-fbLaser(fTermMax:=fTermMax);]]></ST>
+fbLaser(fTermMax := fTermMax);
+
+(* Publish outputs back through the caller's references. *)
+eEnumGet        := eEnumGetUint;
+stDbStateParams := fbStates.stDbStateParams;]]></ST>
     </Implementation>
+    <Method Name="FB_init" Id="{b5f8c2d1-2e3f-5d4b-ac7d-1e9f8a2b3c4d}">
+      <Declaration><![CDATA[(* Stores injected dependencies into instance fields. AxisRef,
+   iPersistentDataStorage, fbFFHWO, fbArbiter, sDeviceName,
+   sTransitionKey, bFileReaderBusy and bFileReaderError are consumed
+   directly by inline-init of afbMotorsNC and fbStates above; the
+   per-cycle REFERENCE TO fields are bound here. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    AxisRef                : REFERENCE TO AXIS_REF;
+    iPersistentDataStorage : LCLS_Tc_DevAbs.I_PersistentDataStorage;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    stOut                  : REFERENCE TO ST_PositionState;
+    stIn                   : REFERENCE TO ST_PositionState;
+    eEnumSet               : REFERENCE TO E_REF_States;
+    eEnumGet               : REFERENCE TO E_REF_States;
+    stDbStateParams        : REFERENCE TO ST_DbStateParams;
+    bEnableMotion          : REFERENCE TO BOOL;
+    bEnableBeamParams      : REFERENCE TO BOOL;
+    bEnablePositionLimits  : REFERENCE TO BOOL;
+    bReadDBNow             : REFERENCE TO BOOL;
+    fTermMax               : REFERENCE TO LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stOut                 REF= stOut;
+THIS^.stIn                  REF= stIn;
+THIS^.eEnumSet              REF= eEnumSet;
+THIS^.eEnumGet              REF= eEnumGet;
+THIS^.stDbStateParams       REF= stDbStateParams;
+THIS^.bEnableMotion         REF= bEnableMotion;
+THIS^.bEnableBeamParams     REF= bEnableBeamParams;
+THIS^.bEnablePositionLimits REF= bEnablePositionLimits;
+THIS^.bReadDBNow            REF= bReadDBNow;
+THIS^.fTermMax              REF= fTermMax;]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
