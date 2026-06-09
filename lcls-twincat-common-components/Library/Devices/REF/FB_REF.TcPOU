@@ -14,12 +14,17 @@
     FB_REF receives them by FB_Init REFERENCE TO and forwards them to
     fbStates via inline-init.
 
-    Per-state configuration is split across two configurators that touch
-    disjoint fields of each ST_PositionState slot:
-      - FB_REF.afbStateDefaults (device-side, hardcoded here) writes the
-        REF-common fields: sName, fDelta, bMoveOk, bValid, bUseRawCounts.
-      - integrator's FB_CC_StatePMPSConfig array (per-install, declared in
-        the caller PRG) writes fPosition and sPmpsState.
+    Per-state configuration is split across two configurators that
+    co-operate on each ST_PositionState slot:
+      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
+        in the caller PRG) wraps motion-lib's FB_StateSetup and writes
+        fPosition + sPmpsState plus the REF-wide baseline from
+        FB_REF.stDefault (bMoveOk / bValid / bUseRawCounts / template
+        fDelta).
+      - FB_REF.afbStateDefaults (device-side, hardcoded here) writes
+        per-state sName and fDelta last, overriding the template
+        baseline that FB_StateSetup just laid down. Ordering matters:
+        the integrator must tick its PMPS array BEFORE calling fbREF.
     Both configurators are idempotent once the parent state FB sets
     stPositionState.bUpdated := TRUE.
 
@@ -61,9 +66,13 @@ VAR
     bReadDBNow            : REFERENCE TO BOOL;
     fTermMax              : REFERENCE TO LREAL;
 
-    (* Device-side default template for every REF state slot. Hardcodes
-       the REF Y-stage common config (tolerance, default move-ok and
-       valid flags, raw-counts mode). Applied by afbStateDefaults below. *)
+    (* Device-common stDefault template. Exposed publicly so the
+       integrator's FB_CC_StatePMPSConfig array can bind a REF to it.
+       FB_StateSetup inside that helper preloads its VAR_INPUTs from
+       this template each call, so the fields here are the REF-wide
+       baseline for every state slot. Per-state sName and fDelta
+       are subsequently overridden by afbStateDefaults below; sName
+       is left blank here on purpose. *)
     stDefault : ST_PositionState := (
         fDelta        := 2,
         bMoveOk       := TRUE,
@@ -71,15 +80,18 @@ VAR
         bUseRawCounts := FALSE
     );
 
-    (* One configurator per REF state (OUT, IN). Ticked cyclically in
-       the body; idempotent once bUpdated trips. *)
+    (* One configurator per REF state (OUT, IN). Writes the per-state
+       sName and (optionally per-state) fDelta. Ticked cyclically in
+       the body AFTER fbStates so its writes win over the template
+       baseline FB_StateSetup applied via FB_CC_StatePMPSConfig.
+       Idempotent once stPositionState.bUpdated trips. *)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
-         stDefault       := stDefault,
-         sName           := 'OUT'),
+         sName           := 'OUT',
+         fDelta          := 2),
         (stPositionState := astPositionState[1][E_REF_States.IN],
-         stDefault       := stDefault,
-         sName           := 'IN')
+         sName           := 'IN',
+         fDelta          := 2)
     ];
 
     i : UINT;

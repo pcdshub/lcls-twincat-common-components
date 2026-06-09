@@ -61,13 +61,17 @@ VAR
     );
 
     (* Per-install PMPS-side state config (caller-owned). Mirrors what
-       a real PRG_xxL0_REF would declare. fbREF writes the device-side
-       defaults internally via its own FB_CC_DeviceStateDefaults array. *)
+       a real PRG_xxL0_REF would declare. Each slot binds a REF to
+       fbREF.stDefault to pick up the REF-wide bMoveOk / bValid /
+       bUseRawCounts baseline; fbREF writes sName and fDelta internally
+       via its own FB_CC_DeviceStateDefaults array. *)
     afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
+         stDefault       := fbREF.stDefault,
          fPosition       := 10,
          sPmpsState      := 'TST:REF-OUT'),
         (stPositionState := astPositionState[1][E_REF_States.IN],
+         stDefault       := fbREF.stDefault,
          fPosition       := 20,
          sPmpsState      := 'TST:REF-IN')
     ];

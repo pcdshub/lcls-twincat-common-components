@@ -2,19 +2,25 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_StatePMPSConfig" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b53}" SpecialFunc="None">
     <Declaration><![CDATA[(*
-    Per-(state) writer of the per-install PMPS-side fields of a single
-    ST_PositionState slot. Owned by the integrator PRG. Hardcodes the
-    physical position and the PMPS DB state key for one state.
+    Per-(state) writer of an ST_PositionState slot. Owned by the
+    integrator PRG. Stripped-down counterpart of motion-lib's
+    FB_PMPSStateConfigurator: composes motion-lib's FB_StateSetup
+    (rather than EXTENDS-ing FB_StateConfigurator) and exposes only
+    the two per-install knobs (fPosition, sPmpsState). All other
+    slot fields (sName, fDelta, bMoveOk, bValid, bUseRawCounts,
+    bLocked, nEncoderCount) inherit from the stDefault template
+    via FB_StateSetup's preload mechanism.
 
-    The device FB does NOT touch these fields; it writes the
-    device-common defaults (sName, fDelta, bMoveOk, bValid,
-    bUseRawCounts) via its own FB_CC_DeviceStateDefaults array. The two
-    helpers write disjoint slot fields so call order does not matter.
+    Per-state sName and fDelta are completed by
+    FB_CC_DeviceStateDefaults on the device-FB side; it must run
+    after this helper each cycle so its writes win over the
+    template baseline FB_StateSetup applied.
 
-    Body re-applies the config cyclically until FB_PositionStateInternalND
-    sets stPositionState.bUpdated := TRUE inside the parent state FB; from
+    Body re-applies cyclically until FB_PositionStateInternalND sets
+    stPositionState.bUpdated := TRUE inside the parent state FB; from
     then on the helper sleeps. bForceUpdate is a runtime escape hatch.
 *)
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_CC_StatePMPSConfig
 VAR_INPUT
     bForceUpdate : BOOL;
@@ -22,33 +28,61 @@ END_VAR
 VAR
     {attribute 'no_copy'}
     stPositionState : REFERENCE TO ST_PositionState;
+    {attribute 'no_copy'}
+    stDefault       : REFERENCE TO ST_PositionState;
     fPosition       : LREAL;
     sPmpsState      : STRING;
+    fbStateSetup    : FB_StateSetup(
+        stDefault       := stDefault,
+        stPositionState := stPositionState,
+        bSetDefault     := TRUE
+    );
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) THEN
+      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) OR NOT __ISVALIDREF(stDefault) THEN
     RETURN;
 END_IF
 
+fbStateSetup(
+    bForceUpdate := bForceUpdate,
+    fPosition    := fPosition
+);
+
 IF bForceUpdate OR NOT stPositionState.bUpdated THEN
-    stPositionState.fPosition  := fPosition;
     stPositionState.sPmpsState := sPmpsState;
 END_IF]]></ST>
     </Implementation>
+    <Method Name="CallAfterInit" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b55}">
+      <Declaration><![CDATA[(* Re-binds the inner FB_StateSetup's REFs after FB_Init. Mirrors
+   motion-lib's FB_StateConfigurator.CallAfterInit. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStateSetup.CallAfterInit(
+    stDefault       := THIS^.stDefault,
+    stPositionState := THIS^.stPositionState,
+    bSetDefault     := TRUE
+);]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="FB_Init" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b54}">
-      <Declaration><![CDATA[(* Stores the slot reference plus per-install fPosition + sPmpsState
-   at instantiation. *)
+      <Declaration><![CDATA[(* Stores the slot reference, the device-common stDefault template
+   REF, plus the per-install fPosition + sPmpsState at instantiation. *)
 METHOD FB_Init : BOOL
 VAR_INPUT
     bInitRetains    : BOOL;
     bInCopyCode     : BOOL;
     stPositionState : REFERENCE TO ST_PositionState;
+    stDefault       : REFERENCE TO ST_PositionState;
     fPosition       : LREAL;
     sPmpsState      : STRING;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.stDefault       REF= stDefault;
 THIS^.fPosition        := fPosition;
 THIS^.sPmpsState       := sPmpsState;]]></ST>
       </Implementation>

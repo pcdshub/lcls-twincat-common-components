@@ -2,16 +2,16 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_DeviceStateDefaults" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a31}" SpecialFunc="None">
     <Declaration><![CDATA[(*
-    Per-(state) writer of the device-common fields of a single
-    ST_PositionState slot. Owned by the device FB (e.g. FB_REF), one
-    instance per state, with sName hardcoded. The device FB also
-    declares a single stDefault : ST_PositionState template that fixes
-    the device-wide tolerance / move-ok / valid / raw-counts convention
-    and passes it in by reference.
+    Per-(state) writer of the device-FB-side fields of an
+    ST_PositionState slot that FB_CC_StatePMPSConfig does not
+    touch. Completes the init by writing sName (per-state label)
+    and fDelta (per-state tolerance). Owned by the device FB (e.g.
+    FB_REF), one instance per state, both fields hardcoded inside
+    the device FB.
 
-    Per-install knobs (fPosition, sPmpsState) live on
-    FB_CC_StatePMPSConfig instead; the two helpers write disjoint slot
-    fields so call order does not matter.
+    Disjoint from FB_CC_StatePMPSConfig (which writes fPosition,
+    sPmpsState, and the device-common bools from its stDefault
+    template), so call order does not matter.
 
     Body re-applies cyclically until FB_PositionStateInternalND sets
     stPositionState.bUpdated := TRUE inside the parent state FB; from
@@ -24,39 +24,35 @@ END_VAR
 VAR
     {attribute 'no_copy'}
     stPositionState : REFERENCE TO ST_PositionState;
-    {attribute 'no_copy'}
-    stDefault       : REFERENCE TO ST_PositionState;
     sName           : STRING;
+    fDelta          : LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) OR NOT __ISVALIDREF(stDefault) THEN
+      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) THEN
     RETURN;
 END_IF
 
 IF bForceUpdate OR NOT stPositionState.bUpdated THEN
-    stPositionState.sName         := sName;
-    stPositionState.fDelta        := stDefault.fDelta;
-    stPositionState.bMoveOk       := stDefault.bMoveOk;
-    stPositionState.bValid        := stDefault.bValid;
-    stPositionState.bUseRawCounts := stDefault.bUseRawCounts;
+    stPositionState.sName  := sName;
+    stPositionState.fDelta := fDelta;
 END_IF]]></ST>
     </Implementation>
     <Method Name="FB_Init" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a32}">
-      <Declaration><![CDATA[(* Stores the slot and default-template references plus the per-state
-   name at instantiation. *)
+      <Declaration><![CDATA[(* Stores the slot reference plus the per-state sName and fDelta
+   at instantiation. *)
 METHOD FB_Init : BOOL
 VAR_INPUT
     bInitRetains    : BOOL;
     bInCopyCode     : BOOL;
     stPositionState : REFERENCE TO ST_PositionState;
-    stDefault       : REFERENCE TO ST_PositionState;
     sName           : STRING;
+    fDelta          : LREAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
-THIS^.stDefault       REF= stDefault;
-THIS^.sName            := sName;]]></ST>
+THIS^.sName            := sName;
+THIS^.fDelta           := fDelta;]]></ST>
       </Implementation>
     </Method>
   </POU>
