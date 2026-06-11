@@ -1,151 +1,190 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWERTest" Id="{e999be49-2915-49c2-8ad1-4a5692f33436}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
 VAR
-    fbSlitsPower: FB_SLITS_POWER;
-    M1: ST_MotionStage;
-    M2: ST_MotionStage;
-    M3: ST_MotionStage;
-    M4: ST_MotionStage;
-    bExecuteMotion: BOOL := FALSE;
+    (* Caller-owned AxisRefs and persistent storage. In a real PRG the
+       AxisRefs come from MAIN.Mxx. *)
+    axRefTop    : AXIS_REF;
+    axRefBottom : AXIS_REF;
+    axRefNorth  : AXIS_REF;
+    axRefSouth  : AXIS_REF;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    (* Four blade motors. *)
+    fbMotorTop    : FB_MotionStageNC(AxisRef := axRefTop,    iPersistentDataStorage := fbPDS, sName := 'Top');
+    fbMotorBottom : FB_MotionStageNC(AxisRef := axRefBottom, iPersistentDataStorage := fbPDS, sName := 'Bottom');
+    fbMotorNorth  : FB_MotionStageNC(AxisRef := axRefNorth,  iPersistentDataStorage := fbPDS, sName := 'North');
+    fbMotorSouth  : FB_MotionStageNC(AxisRef := axRefSouth,  iPersistentDataStorage := fbPDS, sName := 'South');
+
+    (* I_MotionStage array bound into FB_SLITS / FB_SLITS_POWER via
+       FB_Init. Order matches FB_SLITS' IDX_TOP / IDX_BOTTOM /
+       IDX_NORTH / IDX_SOUTH constants (1..4). *)
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        fbMotorTop,
+        fbMotorBottom,
+        fbMotorNorth,
+        fbMotorSouth
+    ];
+
+    fbFFHWO     : FB_HardwareFFOutput;
+    sDeviceName : STRING := 'TST:SLITS';
+
+    fbSlitsPower : FB_SLITS_POWER(
+        aiMotionStage := aiMotionStage,
+        fbFFHWO       := fbFFHWO,
+        sDeviceName   := sDeviceName
+    );
+
+    bFirstScan : BOOL := TRUE;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbSlitsPower(
-    stTopBlade:=M1,
-    stBottomBlade:=M2,
-    stNorthBlade:=M3,
-    stSouthBlade:=M4,
-    bExecuteMotion:=bExecuteMotion,
-    i_DevName:='DEVICE',
-    sPmpsState:='T1',
-    io_fbFFHWO := fbFFHWO,
-    fbArbiter := fbArbiter,
-);
+      <ST><![CDATA[// SetMotionParam / SetModeEnableLimits are now owned by FB_SLITS
+// itself (applied on its first scan via M_Init). The integrator only
+// needs to set the concrete-FB-only fields (RestoreMotionParams,
+// DoNotRestoreNcParameters) which are not on I_MotionStage.
+IF bFirstScan THEN
+    fbMotorTop.RestoreMotionParams         := FALSE;
+    fbMotorTop.DoNotRestoreNcParameters    := TRUE;
+    fbMotorBottom.RestoreMotionParams      := FALSE;
+    fbMotorBottom.DoNotRestoreNcParameters := TRUE;
+    fbMotorNorth.RestoreMotionParams       := FALSE;
+    fbMotorNorth.DoNotRestoreNcParameters  := TRUE;
+    fbMotorSouth.RestoreMotionParams       := FALSE;
+    fbMotorSouth.DoNotRestoreNcParameters  := TRUE;
 
-TestTempFFO();]]></ST>
+    bFirstScan := FALSE;
+END_IF
+
+fbPDS();
+fbMotorTop();
+fbMotorBottom();
+fbMotorNorth();
+fbMotorSouth();
+
+fbSlitsPower(bMoveOk := TRUE, sPmpsState := 'T1');
+
+TestTempFFO();
+]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
       <Declaration><![CDATA[METHOD AssertAllTempFault
 VAR_INPUT
-    Message: STRING;
+    Message : STRING;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-AssertFalse(
+        <ST><![CDATA[AssertFalse(
     fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
-    CONCAT('Slits Top 1 RTD expected fault: ', Message),
+    CONCAT('Slits Top 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
-    CONCAT('Slits Top 2 RTD expected fault: ', Message),
+    CONCAT('Slits Top 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
-    CONCAT('Slits Bottom 1 RTD expected fault: ', Message),
+    CONCAT('Slits Bottom 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
-    CONCAT('Slits Bottom 2 RTD expected fault: ', Message),
+    CONCAT('Slits Bottom 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_North_1.FFO.i_xOK,
-    CONCAT('Slits North 1 RTD expected fault: ', Message),
+    CONCAT('Slits North 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_North_2.FFO.i_xOK,
-    CONCAT('Slits North 2 RTD expected fault: ', Message),
+    CONCAT('Slits North 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_South_1.FFO.i_xOK,
-    CONCAT('Slits South 1 RTD expected fault: ', Message),
+    CONCAT('Slits South 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_South_2.FFO.i_xOK,
-    CONCAT('Slits South 2 1 RTD expected fault: ', Message),
-);]]></ST>
+    CONCAT('Slits South 2 RTD expected fault: ', Message)
+);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="AssertNoneTempFault" Id="{7927d348-8b24-4e84-9bb0-a49691bff10c}">
       <Declaration><![CDATA[METHOD AssertNoneTempFault
 VAR_INPUT
-    Message: STRING;
+    Message : STRING;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-AssertTrue(
+        <ST><![CDATA[AssertTrue(
     fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
-    CONCAT('Slits Top 1 RTD expected ok: ', Message),
+    CONCAT('Slits Top 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
-    CONCAT('Slits Top 2 RTD expected ok: ', Message),
+    CONCAT('Slits Top 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
-    CONCAT('Slits Bottom 1 RTD expected ok: ', Message),
+    CONCAT('Slits Bottom 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
-    CONCAT('Slits Bottom 2 RTD expected ok: ', Message),
+    CONCAT('Slits Bottom 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_North_1.FFO.i_xOK,
-    CONCAT('Slits North 1 RTD expected ok: ', Message),
+    CONCAT('Slits North 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_North_2.FFO.i_xOK,
-    CONCAT('Slits North 2 RTD expected ok: ', Message),
+    CONCAT('Slits North 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_South_1.FFO.i_xOK,
-    CONCAT('Slits South 1 RTD expected ok: ', Message),
+    CONCAT('Slits South 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_South_2.FFO.i_xOK,
-    CONCAT('Slits South 2 1 RTD expected ok: ', Message),
-);]]></ST>
+    CONCAT('Slits South 2 RTD expected ok: ', Message)
+);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="SetSlitsTemp" Id="{1f9cef68-eb11-4206-b1d9-ee7921d5c884}">
       <Declaration><![CDATA[METHOD SetSlitsTemp
 VAR_INPUT
-    iTempC: INT;
+    iTempC : INT;
 END_VAR
 VAR
-    ptr: POINTER TO INT;
+    ptr : POINTER TO INT;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-ptr := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
+        <ST><![CDATA[ptr  := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_North_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_North_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_North_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_North_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_South_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_South_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_South_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_South_2.iRaw);
 ptr^ := iTempC * 10;
 ]]></ST>
       </Implementation>
@@ -153,47 +192,45 @@ ptr^ := iTempC * 10;
     <Method Name="TestTempFFO" Id="{449fe1eb-ccc2-4b89-a3aa-28398aabab9d}">
       <Declaration><![CDATA[METHOD TestTempFFO
 VAR_INST
-    tonTimer: TON;
-    nStep: UINT := 0;
+    tonTimer : TON;
+    nStep    : UINT := 0;
 END_VAR
 VAR CONSTANT
-    nLastStep: UINT := 4;
-END_VAR]]></Declaration>
+    nLastStep : UINT := 4;
+END_VAR
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Do we fault at the correct times?
+        <ST><![CDATA[// Do we fault at the correct times?
 TEST('TestSlitsTempFFO');
 
 // Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
-
+tonTimer(IN := TRUE, PT := T#10s);
 
 CASE nStep OF
     0:
-        // Hold until the PMPS DB is ready
-        // Most tests don't need this because they start by waiting for a move
+        // Hold until the PMPS DB is ready.
         IF fbSlitsPower.RTD_TOP_1.fFaultThreshold > 0 THEN
             nStep := nStep + 1;
         END_IF
     1:
-        // Set the thermocouple temperatures to crazy high number
+        // Set the thermocouple temperatures to a crazy-high number.
         SetSlitsTemp(100);
         nStep := nStep + 1;
     2:
-        // We should see faults on all RTDs at 100C
+        // We should see faults on all RTDs at 100C.
         AssertAllTempFault('has high temp reading');
         nStep := nStep + 1;
     3:
-        // Set the thermocouple temperatures to low again
+        // Set the thermocouple temperatures back to low.
         SetSlitsTemp(0);
         nStep := nStep + 1;
     4:
         AssertNoneTempFault('has low temp reading');
         nStep := nStep + 1;
-END_CASE;
+END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
-    AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
+    AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>
