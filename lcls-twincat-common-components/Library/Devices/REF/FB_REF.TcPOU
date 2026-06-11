@@ -241,3 +241,5 @@ aiMotionStage[1].SetMotionParam(
 );]]></ST>
       </Implementation>
     </Method>
+  </POU>
+</TcPlcObject>
