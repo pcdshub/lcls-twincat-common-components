@@ -136,6 +136,17 @@ VAR CONSTANT
     (* ATM-wide default tolerance for state in-position detection,
        applied per-state by afbStateDefaults. *)
     FDELTA_DEFAULT : LREAL := 2;
+
+    (* ATM-wide default acceleration / deceleration applied to the
+       active motion stage in CallAfterInit. Legacy: fAccel := 200
+       (used for both accel and decel). The legacy per-state
+       fOutDecel := 25 soft-landing on OUT is lost in the ND framework,
+       which has no per-state accel/decel fields on ST_PositionState.
+       Velocity stays integrator-owned per the legacy comment "this
+       should be set per install"; the device call preserves whatever
+       the integrator wrote via SetVelocity. *)
+    FACCEL_DEFAULT : LREAL := 200;
+    FDECEL_DEFAULT : LREAL := 200;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
@@ -208,6 +219,16 @@ METHOD CallAfterInit
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
     sTransitionKey        := sTransitionKey
+);
+
+(* Apply device-canonical accel / decel to the active motion stage.
+   Velocity preserved from MotionParamsCmd (integrator-set via
+   SetVelocity, legacy per-install convention); Jerk := 0. *)
+aiMotionStage[1].SetMotionParam(
+    Velocity     := aiMotionStage[1].MotionParamsCmd.Velocity,
+    Acceleration := FACCEL_DEFAULT,
+    Deceleration := FDECEL_DEFAULT,
+    Jerk         := 0
 );]]></ST>
       </Implementation>
     </Method>
