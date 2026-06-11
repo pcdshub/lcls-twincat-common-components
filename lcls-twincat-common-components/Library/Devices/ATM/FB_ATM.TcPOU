@@ -165,14 +165,8 @@ FOR i := 1 TO 6 DO
     afbStateDefaults[i]();
 END_FOR
 
-(* PMPSND captures these in FB_Init only. fbStates' inline-init above
-   forwarded them once at construction; re-write each cycle so live
-   VAR_INPUT writes from the caller propagate. *)
-fbStates.bEnableBeamParams     := bEnableBeamParams;
-fbStates.bEnablePositionLimits := bEnablePositionLimits;
-fbStates.bReadDBNow            := bReadDBNow;
 
-fbStates(bEnableMotion := bEnableMotion);
+fbStates();
 
 (* In-beam thermocouple: only faults when something is actually in the
    beam (i.e. not OUT). Driven by the PMPS DB temp setpoint. *)
@@ -210,6 +204,11 @@ METHOD CallAfterInit
     eEnumGet              := eEnumGet,
     bEnableMotion         := bEnableMotion,
     eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitExEx(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
@@ -220,16 +219,7 @@ METHOD CallAfterInit
     sDeviceName           := sDeviceName,
     sTransitionKey        := sTransitionKey
 );
-
-(* Apply device-canonical accel / decel to the active motion stage.
-   Velocity preserved from MotionParamsCmd (integrator-set via
-   SetVelocity, legacy per-install convention); Jerk := 0. *)
-aiMotionStage[1].SetMotionParam(
-    Velocity     := aiMotionStage[1].MotionParamsCmd.Velocity,
-    Acceleration := FACCEL_DEFAULT,
-    Deceleration := FDECEL_DEFAULT,
-    Jerk         := 0
-);]]></ST>
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{2f5a266e-a319-48e1-b797-55a7489c835a}">

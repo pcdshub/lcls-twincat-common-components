@@ -223,6 +223,11 @@ METHOD CallAfterInit
     eEnumGet              := eEnumGet,
     bEnableMotion         := bEnableMotion,
     eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitExEx(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
@@ -233,16 +238,7 @@ METHOD CallAfterInit
     sDeviceName           := sDeviceName,
     sTransitionKey        := sTransitionKey
 );
-
-(* Apply device-canonical accel / decel to the active motion stage.
-   Velocity preserved from MotionParamsCmd (integrator-set via
-   SetVelocity, legacy per-install convention); Jerk := 0. *)
-aiMotionStage[1].SetMotionParam(
-    Velocity     := aiMotionStage[1].MotionParamsCmd.Velocity,
-    Acceleration := FACCEL_DEFAULT,
-    Deceleration := FDECEL_DEFAULT,
-    Jerk         := 0
-);]]></ST>
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{0c826498-bbe5-4d0f-95cc-b97d4fbafab4}">

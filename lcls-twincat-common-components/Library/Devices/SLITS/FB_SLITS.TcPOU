@@ -73,23 +73,38 @@ VAR_INPUT
 END_VAR
 VAR
     (* Per-blade scratch ST_PositionState. Static fields seeded here;
-       fPosition and bMoveOk are refreshed each cycle in the body.
-       The bound FB_StatePTPMove reads via REFERENCE TO. *)
-    stTop    : ST_PositionState := (sName := 'Top',    fDelta := 0.01, bValid := TRUE, bUseRawCounts := FALSE);
-    stBottom : ST_PositionState := (sName := 'Bottom', fDelta := 0.01, bValid := TRUE, bUseRawCounts := FALSE);
-    stNorth  : ST_PositionState := (sName := 'North',  fDelta := 0.01, bValid := TRUE, bUseRawCounts := FALSE);
-    stSouth  : ST_PositionState := (sName := 'South',  fDelta := 0.01, bValid := TRUE, bUseRawCounts := FALSE);
+       fPosition and bMoveOk are refreshed each cycle in the body. *)
+        (*Motion Parameters*)
+    fSmallDelta: LREAL := 0.01;
+    fBigDelta: LREAL := 10;
+
+    stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE);
+    stBottom : ST_PositionState := (sName := 'Bottom', bValid := TRUE, bUseRawCounts := FALSE);
+    stNorth  : ST_PositionState := (sName := 'North',  bValid := TRUE, bUseRawCounts := FALSE);
+    stSouth  : ST_PositionState := (sName := 'South',  bValid := TRUE, bUseRawCounts := FALSE);
 
     (* Per-blade PTP movers. iMotionStage is wired in CallAfterInit;
        FB_StatePTPMove tolerates a nil interface until then. *)
     {attribute 'pytmc' := 'pv: TOP'}
-    fbTop    : FB_StatePTPMove(stPositionState := stTop);
+    fbTop    : FB_StatePTPMove(
+        stPositionState := stTop,
+        iMotionStage:=aiMotionStage[IDX_TOP]
+    );
     {attribute 'pytmc' := 'pv: BOTTOM'}
-    fbBottom : FB_StatePTPMove(stPositionState := stBottom);
+    fbBottom : FB_StatePTPMove(
+        stPositionState := stBottom,
+        iMotionStage:=aiMotionStage[IDX_BOTTOM]
+    );
     {attribute 'pytmc' := 'pv: NORTH'}
-    fbNorth  : FB_StatePTPMove(stPositionState := stNorth);
+    fbNorth  : FB_StatePTPMove(
+        stPositionState := stNorth,
+        iMotionStage:=aiMotionStage[IDX_NORTH]
+    );
     {attribute 'pytmc' := 'pv: SOUTH'}
-    fbSouth  : FB_StatePTPMove(stPositionState := stSouth);
+    fbSouth  : FB_StatePTPMove(
+        stPositionState := stSouth,
+        iMotionStage:=aiMotionStage[IDX_SOUTH]
+    );
 
     (* Aperture-math intermediate targets. *)
     fPosTopBlade    : LREAL;
@@ -202,6 +217,7 @@ VAR
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
     sDeviceName   : REFERENCE TO STRING;
+    nMotor : UINT;
 END_VAR
 VAR CONSTANT
     IDX_TOP    : UDINT := 1;
@@ -225,74 +241,93 @@ END_VAR
 END_IF
 
 IF bInit THEN
-    M_Init();
+
+    FOR nMotor := 1 TO 4 DO
+        aiMotionStage[nMotor].SetMotionParam(
+            Velocity     := FVEL_BLADE,
+            Acceleration := FACCEL_BLADE,
+            Deceleration := FDECEL_BLADE,
+            Jerk         := 0
+        );
+        aiMotionStage[nMotor].SetModeEnableLimits(
+            LimBackward    := TRUE,
+            LimForward     := TRUE,
+            HomeEnable     := FALSE,
+            BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+            EnableMode     := E_StageEnableMode.DURING_MOTION,
+            HomeMode       := E_EpicsHomeCmd.NONE,
+            UserEnable     := TRUE,
+            HardwareEnable := TRUE
+        );
+    END_FOR
+
+    FFO.i_DevName := sDeviceName;
+
     bInit := FALSE;
 END_IF
 
-M_HandleRequests();
+HandleRequests();
 M_CalculatePositions();
 M_Motion();
 ]]></ST>
     </Implementation>
-    <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91098}">
+    <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
       <Declaration><![CDATA[(*
-    First-scan init (legacy ACT_Init equivalent, ND framework).
+    {attribute 'call_after_init'} on FB_SXR_SATT_Stage causes TwinCAT
+    to auto-fire THIS^.CallAfterInit() after FB_SXR_SATT_Stage.FB_Init
+    completes.
 
-    Wires the four per-blade I_MotionStage interfaces into each
-    FB_StatePTPMove's iMotionStage field (no setter exists; the field
-    is just read each cycle), pushes the device-canonical motion
-    parameters (velocity, accel, decel) and mode / enable / limit
-    configuration onto each blade motor through the I_MotionStage
-    methods, and populates FFO.i_DevName.
-
-    Legacy ACT_Init forced bHardwareEnable / bPowerSelf / nBrakeMode
-    := NO_BRAKE on each blade stage and the maintainers later moved
-    fVelocity / fAccel to the integrator. The ND framework's
-    ST_PositionState has no per-state velocity / accel fields, so
-    those values are now device constants (FVEL_BLADE / FACCEL_BLADE
-    / FDECEL_BLADE in the VAR CONSTANT block) rather than legacy
-    per-state ST_MotionStage parameters.
+    fbStates was constructed via inline-init in this FB's VAR section,
+    which ran BEFORE FB_Init bound the REF fields on THIS^.
+    Consequently fbStates' inline-init forwarded nil REFs into
+    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
+    on those nil REFs and bails. This method re-supplies the now-valid
+    refs through fbStates.CallAfterInitEx, which re-binds them and
+    runs the Core / ND child-FB wiring chain.
 *)
-METHOD M_Init
-VAR
-    i : UDINT;
-END_VAR
+{attribute 'call_after_init'}
+METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[fbTop.iMotionStage    := aiMotionStage[IDX_TOP];
-fbBottom.iMotionStage := aiMotionStage[IDX_BOTTOM];
-fbNorth.iMotionStage  := aiMotionStage[IDX_NORTH];
-fbSouth.iMotionStage  := aiMotionStage[IDX_SOUTH];
+        <ST><![CDATA[
+fbTop.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_TOP]);
+fbBottom.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_BOTTOM]);
+fbNorth.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_NORTH]);
+fbSouth.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_SOUTH]);
 
-FOR i := 1 TO 4 DO
-    aiMotionStage[i].SetMotionParam(
-        Velocity     := FVEL_BLADE,
-        Acceleration := FACCEL_BLADE,
-        Deceleration := FDECEL_BLADE,
-        Jerk         := 0
-    );
-    aiMotionStage[i].SetModeEnableLimits(
-        LimBackward    := TRUE,
-        LimForward     := TRUE,
-        HomeEnable     := FALSE,
-        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
-        EnableMode     := E_StageEnableMode.DURING_MOTION,
-        HomeMode       := E_EpicsHomeCmd.NONE,
-        UserEnable     := TRUE,
-        HardwareEnable := TRUE
-    );
-END_FOR
-
-FFO.i_DevName := sDeviceName;
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_HandleRequests" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91099}">
+    <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
+      <Declaration><![CDATA[(*
+    REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
+    sDeviceName at instantiation. Interface wiring into each blade
+    mover happens in M_Init on the first scan (after the body's
+    nil-guard validates the REFs).
+*)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains  : BOOL;
+    bInCopyCode   : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : REFERENCE TO STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   REF= sDeviceName;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HandleRequests" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91099}">
       <Declaration><![CDATA[(*
     Consume the EPICS Open / Close / Block rising-edge requests and
     self-clear the flags. No preset move is dispatched (legacy stub).
 *)
-METHOD M_HandleRequests
+METHOD HandleRequests
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[rTrig_Block(CLK := bBlock);
@@ -405,15 +440,19 @@ METHOD M_Motion
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[stTop.fPosition    := fPosTopBlade;
+stTop.fDelta := fSmallDelta;
 stTop.bMoveOk      := bMoveOk;
 
 stBottom.fPosition := fPosBottomBlade;
+stBottom.fDelta    := fSmallDelta;
 stBottom.bMoveOk   := bMoveOk;
 
 stNorth.fPosition  := fPosNorthBlade;
+stNorth.fDelta    := fSmallDelta;
 stNorth.bMoveOk    := bMoveOk;
 
 stSouth.fPosition  := fPosSouthBlade;
+stSouth.fDelta    := fSmallDelta;
 stSouth.bMoveOk    := bMoveOk;
 
 IF bExecuteMotionY THEN
@@ -431,30 +470,6 @@ fbTop(bMoveOk    := bMoveOk);
 fbBottom(bMoveOk := bMoveOk);
 fbNorth(bMoveOk  := bMoveOk);
 fbSouth(bMoveOk  := bMoveOk);
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
-      <Declaration><![CDATA[(*
-    REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
-    sDeviceName at instantiation. Interface wiring into each blade
-    mover happens in M_Init on the first scan (after the body's
-    nil-guard validates the REFs).
-*)
-{attribute 'analysis' := '-33'}
-METHOD FB_Init : BOOL
-VAR_INPUT
-    bInitRetains  : BOOL;
-    bInCopyCode   : BOOL;
-    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
-    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
-    sDeviceName   : REFERENCE TO STRING;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
-THIS^.fbFFHWO       REF= fbFFHWO;
-THIS^.sDeviceName   REF= sDeviceName;
 ]]></ST>
       </Implementation>
     </Method>

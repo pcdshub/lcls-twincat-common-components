@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_StatePMPSConfig" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b53}" SpecialFunc="None">
     <Declaration><![CDATA[(*
@@ -50,7 +50,7 @@ fbStateSetup(
 );
 
 IF bForceUpdate OR NOT stPositionState.bUpdated THEN
-    stPositionState.sPmpsState := sPmpsState;
+    stPositionState.stPMPS.sPmpsState := sPmpsState;
 END_IF]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b55}">

@@ -57,6 +57,7 @@ VAR_INPUT
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+    fTermMax               : LREAL := 200;
 END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -98,16 +99,10 @@ VAR
     {attribute 'no_copy'}
     sTransitionKey        : REFERENCE TO STRING;
 
-    (* Plain-value backing field for the FB_Init-supplied fTermMax
-       (laser dimmer termination max). Has a sensible device default
-       so the caller may omit it; passed by value at construction. *)
-    fTermMax              : LREAL;
-
     (* One configurator per REF state (OUT, IN). Writes the per-state
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
        so its writes win over the template baseline FB_StateSetup
-       applied via FB_CC_StatePMPSConfig. Idempotent once
-       stPositionState.bUpdated trips. *)
+       applied via FB_CC_StatePMPSConfig *)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
          sName           := 'OUT',
@@ -150,50 +145,10 @@ FOR i := 1 TO 2 DO
     afbStateDefaults[i]();
 END_FOR
 
-(* PMPSND captures these in FB_Init only. fbStates' inline-init above
-   forwarded them once at construction; re-write each cycle so live
-   VAR_INPUT writes from the caller propagate. *)
-fbStates.bEnableBeamParams     := bEnableBeamParams;
-fbStates.bEnablePositionLimits := bEnablePositionLimits;
-fbStates.bReadDBNow            := bReadDBNow;
-
-fbStates(bEnableMotion := bEnableMotion);
+fbStates();
 
 fbLaser(fTermMax := fTermMax);]]></ST>
     </Implementation>
-    <Method Name="FB_init" Id="{b5f8c2d1-2e3f-5d4b-ac7d-1e9f8a2b3c4d}">
-      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
-   input is REFERENCE TO and is REF= bound for the lifetime of the FB
-   (matches the rule: non-interface FB_Init inputs are taken by ref).
-   Inline-init of fbStates / fbLaser above runs first, capturing the
-   FB_Init params at construction time; this method then records the
-   same references on THIS^ for body-side use and live caller writes.
-   The file-reader busy/error inputs are bound straight to
-   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
-{attribute 'analysis' := '-33'}
-METHOD FB_Init : BOOL
-VAR_INPUT
-    bInitRetains           : BOOL;
-    bInCopyCode            : BOOL;
-    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
-    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
-                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
-    fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : REFERENCE TO STRING;
-    sTransitionKey         : REFERENCE TO STRING;
-    fTermMax               : LREAL := 200;
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
-THIS^.astPositionState REF= astPositionState;
-THIS^.fbFFHWO          REF= fbFFHWO;
-THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      REF= sDeviceName;
-THIS^.sTransitionKey   REF= sTransitionKey;
-THIS^.fTermMax          := fTermMax;]]></ST>
-      </Implementation>
-    </Method>
     <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
       <Declaration><![CDATA[(*
     {attribute 'call_after_init'} on FB_REF causes TwinCAT to auto-fire
@@ -219,6 +174,11 @@ METHOD CallAfterInit
     eEnumGet              := eEnumGet,
     bEnableMotion         := bEnableMotion,
     eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitExEx(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
@@ -229,16 +189,40 @@ METHOD CallAfterInit
     sDeviceName           := sDeviceName,
     sTransitionKey        := sTransitionKey
 );
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{b5f8c2d1-2e3f-5d4b-ac7d-1e9f8a2b3c4d}">
+      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
+   input is REFERENCE TO and is REF= bound for the lifetime of the FB
+   (matches the rule: non-interface FB_Init inputs are taken by ref).
+   Inline-init of fbStates / fbLaser above runs first, capturing the
+   FB_Init params at construction time; this method then records the
+   same references on THIS^ for body-side use and live caller writes.
+   The file-reader busy/error inputs are bound straight to
+   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : REFERENCE TO STRING;
+    sTransitionKey         : REFERENCE TO STRING;
 
-(* Apply device-canonical accel / decel to the active motion stage.
-   Velocity preserved from MotionParamsCmd (integrator-set via
-   SetVelocity, legacy per-install convention); Jerk := 0. *)
-aiMotionStage[1].SetMotionParam(
-    Velocity     := aiMotionStage[1].MotionParamsCmd.Velocity,
-    Acceleration := FACCEL_DEFAULT,
-    Deceleration := FDECEL_DEFAULT,
-    Jerk         := 0
-);]]></ST>
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.fbArbiter        REF= fbArbiter;
+THIS^.sDeviceName      REF= sDeviceName;
+THIS^.sTransitionKey   REF= sTransitionKey;
+]]></ST>
       </Implementation>
     </Method>
   </POU>

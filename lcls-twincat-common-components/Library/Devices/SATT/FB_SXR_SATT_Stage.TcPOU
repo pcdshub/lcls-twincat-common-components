@@ -201,9 +201,7 @@ FOR i := 1 TO 9 DO
     afbStateDefaults[i]();
 END_FOR
 
-(* FB_PositionStateND captures bEnableMotion in FB_Init only;
-   re-write each cycle so live caller writes propagate. *)
-fbStates(bEnableMotion := bEnableMotion);
+fbStates();
 
 (* Filter index is offset by one because E_SXR_SATT_Position.OUT
    occupies slot 1 and FILTER1..FILTER8 occupy slots 2..9. *)
@@ -306,14 +304,15 @@ METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
-    aiMotionStage        := aiMotionStage,
-    astPositionState     := astPositionState,
-    nActiveMotorCount    := 1,
-    eEnumSet             := eEnumSet,
-    eEnumGet             := eEnumGet,
-    bEnableMotion        := bEnableMotion,
-    eMotionRequestPolicy := E_MotionRequestPolicy.INTERRUPT
-);]]></ST>
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{7fb611c9-2215-4e8f-8a28-e51a98acae9c}">

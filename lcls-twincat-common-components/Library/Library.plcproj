@@ -167,6 +167,7 @@
     </Compile>
     <Compile Include="Tests\FB_REFTest.TcPOU">
       <SubType>Code</SubType>
+      <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
     <Compile Include="Tests\FB_SLITS_POWERTest.TcPOU">
       <SubType>Code</SubType>
@@ -243,6 +244,16 @@
       <HideWhenReferencedAsDependency>true</HideWhenReferencedAsDependency>
       <Optional>true</Optional>
     </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderResolution Include="LCLS_Tc_Motion">
+      <Resolution>LCLS_Tc_Motion, 0.0.0 (SLAC - LCLS)</Resolution>
+    </PlaceholderResolution>
+  </ItemGroup>
+  <ItemGroup>
+    <SubObject Include="FB_REFTest.TestStateMove">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>

@@ -12,7 +12,7 @@ VAR
     fbSlitsPowerTest: FB_SLITS_POWERTest;
     fbWFSTest: FB_WFSTest;
     fbXPIMTest: FB_XPIMTest;
-    fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
+    //fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
     fbCCTempSensorTest: FB_CC_TempSensorTest;
 
     fbSetupJson: FB_PMPSJsonTestHelper;

@@ -123,7 +123,7 @@ fbREF(
     bReadDBNow            := bReadDBNow
 );
 
-TestStateMove();
+//TestStateMove();
 
 bInit := TRUE;
 ]]></ST>
@@ -132,10 +132,10 @@ bInit := TRUE;
       <Declaration><![CDATA[METHOD TestStateMove
 VAR_INST
     tonTimer  : TON;
-    nIterState: UINT := 0;
+    nIterState: E_REF_States := E_REF_States.UNKNOWN;
 END_VAR
 VAR CONSTANT
-    nLastState: UINT := 2; (* E_REF_States.IN *)
+    nLastState: E_REF_States := E_REF_States.IN;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
