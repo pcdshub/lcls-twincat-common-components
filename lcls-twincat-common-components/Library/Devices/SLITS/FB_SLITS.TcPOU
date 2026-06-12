@@ -17,13 +17,22 @@
     happen there once REFs are bound).
 
     The integrator PRG instantiates the four FB_MotionStageNC blade
-    motors (passing AxisRef + iPersistentDataStorage + sName) and
-    hands them to FB_SLITS through FB_Init; the device then owns its
-    own canonical velocity / accel / decel + mode + enable / limit
-    configuration, applied per-blade on the first scan via
-    SetMotionParam + SetModeEnableLimits. The integrator only needs
-    to take care of concrete-FB-only fields (RestoreMotionParams,
+    motors (passing AxisRef + iPersistentDataStorage + sName), seeds
+    motion parameters (Velocity / Accel / Decel / Jerk) via
+    SetMotionParam on each motor before the first scan, and hands the
+    interfaces to FB_SLITS through FB_Init. FB_SLITS owns only the
+    blade mode + enable / limit configuration, exposed via the M_Init
+    method (one-shot, latched). The integrator also handles
+    concrete-FB-only fields (RestoreMotionParams,
     DoNotRestoreNcParameters) on each motor before the first scan.
+
+    Dispatch ownership mirrors legacy: the base FB_SLITS body consumes
+    only the EPICS Open / Close / Block edge-triggers (legacy stubs).
+    M_Init, M_CalculatePositions and M_Motion are NOT invoked by the
+    base body; they are called from the FB_SLITS_POWER subclass body
+    (the only intended integration point). FB_SLITS used standalone
+    therefore performs no blade motion: the device is meaningful only
+    via FB_SLITS_POWER.
 
     PMPS aperture-safety FFO and request-vs-actual reconciliation live
     on the FB_SLITS_POWER subclass via M_UpdatePMPS, which the
@@ -224,51 +233,13 @@ VAR CONSTANT
     IDX_BOTTOM : UDINT := 2;
     IDX_NORTH  : UDINT := 3;
     IDX_SOUTH  : UDINT := 4;
-
-    (* Canonical blade motion parameters, applied to every injected
-       motor on the first scan. Legacy: fMaxVelocity := 0.2,
-       fHighAccel := 0.8 (used for both accel and decel). *)
-    FVEL_BLADE   : LREAL := 0.2;
-    FACCEL_BLADE : LREAL := 0.8;
-    FDECEL_BLADE : LREAL := 0.8;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
-   OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(sDeviceName) THEN
-    RETURN;
-END_IF
-
-IF bInit THEN
-
-    FOR nMotor := 1 TO 4 DO
-        aiMotionStage[nMotor].SetMotionParam(
-            Velocity     := FVEL_BLADE,
-            Acceleration := FACCEL_BLADE,
-            Deceleration := FDECEL_BLADE,
-            Jerk         := 0
-        );
-        aiMotionStage[nMotor].SetModeEnableLimits(
-            LimBackward    := TRUE,
-            LimForward     := TRUE,
-            HomeEnable     := FALSE,
-            BrakeMode      := E_StageBrakeMode.NO_BRAKE,
-            EnableMode     := E_StageEnableMode.DURING_MOTION,
-            HomeMode       := E_EpicsHomeCmd.NONE,
-            UserEnable     := TRUE,
-            HardwareEnable := TRUE
-        );
-    END_FOR
-
-    FFO.i_DevName := sDeviceName;
-
-    bInit := FALSE;
-END_IF
-
+      <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
+// Block edge-triggers. Blade init + motion dispatch lives on the
+// FB_SLITS_POWER subclass body.
 HandleRequests();
-M_CalculatePositions();
-M_Motion();
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
@@ -421,6 +392,45 @@ rActCenterY := LREAL_TO_REAL(
     ((aiMotionStage[IDX_TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
    + (aiMotionStage[IDX_BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
 );
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109c}">
+      <Declaration><![CDATA[(*
+    One-shot first-scan blade init: applies SetModeEnableLimits to
+    each blade motor (UserEnable, HardwareEnable, both limits, brake
+    disabled, enable-during-motion, home disabled) and sets FFO's
+    device name from the injected sDeviceName.
+
+    Latches bInit FALSE after the first run; subsequent calls are
+    no-ops. Caller (FB_SLITS_POWER body) must hold the REF nil-guard
+    before invoking. Motion params (Velocity / Accel / Decel / Jerk)
+    are integrator-owned and seeded on each motor via SetMotionParam
+    before the first scan, NOT here.
+*)
+METHOD M_Init
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT bInit THEN
+    RETURN;
+END_IF
+
+FOR nMotor := 1 TO 4 DO
+    aiMotionStage[nMotor].SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.NONE,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+END_FOR
+
+FFO.i_DevName := sDeviceName;
+
+bInit := FALSE;
 ]]></ST>
       </Implementation>
     </Method>

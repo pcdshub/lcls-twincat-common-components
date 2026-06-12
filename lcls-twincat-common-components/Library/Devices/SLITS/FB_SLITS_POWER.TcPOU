@@ -13,10 +13,12 @@
 
     EXTENDS FB_SLITS so the per-blade FB_StatePTPMove movers, aperture
     math, EPICS request / actual PVs and PMPS aperture-safety FFO live
-    on the parent. The parent's body is invoked via SUPER^() at the
-    top of this FB's body so blade moves still happen each cycle; the
-    parent's first-scan M_Init wires the per-blade I_MotionStage
-    interfaces.
+    on the parent. Dispatch ownership mirrors the legacy ACT-based
+    layout: the parent's body only consumes the EPICS edge-triggers
+    (via HandleRequests); this subclass body invokes SUPER^() to run
+    that trigger consumption, then drives the parent's M_Init /
+    M_CalculatePositions / M_Motion dispatch directly, after a REF
+    nil-guard that gates every REF-touching call.
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
@@ -58,8 +60,24 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Parent's body first: per-blade movers, aperture math, etc.
+      <ST><![CDATA[// Parent body: EPICS edge-trigger consumption only (no REF touch).
 SUPER^();
+
+// REF nil-guard for every REF-touching call below (init + dispatch +
+// PMPS DB + RTDs all consume sDeviceName / fbFFHWO; M_Init and
+// M_CalculatePositions also index aiMotionStage). The parent's body
+// no longer holds this guard so we must.
+IF NOT __ISVALIDREF(THIS^.aiMotionStage)
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO)
+   OR NOT __ISVALIDREF(THIS^.sDeviceName) THEN
+    RETURN;
+END_IF
+
+// Inherited dispatch (parity with legacy FB_SLITS_POWER body
+// invoking ACT_init / ACT_CalculatePositions / ACT_Motion).
+M_Init();
+M_CalculatePositions();
+M_Motion();
 
 // PMPS reactive temperature DB lookup.
 astTempDB[1].sPmpsState := sPmpsState;
