@@ -2,55 +2,37 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
     <Declaration><![CDATA[(*
-    Integration test suite for FB_REF (REFlector device) under TcUnit.
+    Single integration smoke for FB_REF. Goal: prove the FB_REF wiring
+    (REFERENCE TO refs, CallAfterInit / CallAfterInitEx / CallAfterInitExEx
+    chain, inline-init of fbStates, per-state name/fDelta defaults,
+    PMPS state-key registration) still drives FB_MotionStageNC into the
+    configured fPosition for a commanded state.
 
-    Pattern (adapted from
-    lcls-twincat-motion-abstraction/Test/01_Drive/06_Stages/FB_MotionStageNC_Test.TcPOU):
+    The motion-stack itself (FB_MotionStageNC, FB_PositionStatePMPSND,
+    FB_StateSetup, FB_AtPositionState, ...) is fully covered by the
+    lcls-twincat-motion-abstraction test suite. This test only checks
+    that the CC FB_REF wrapper does not break the contract.
 
-    - One concrete SUT (fbREF + fbMotorY + axRef) shared by every test
-      method in this suite. The CC NC config exposes exactly one
-      virtual NC axis per test FB (Library.xti), so we cannot follow
-      motion-lib's "fresh SUT per test" pattern; tests run T01..TNN
-      sequentially and each test method drives the SUT through its
-      own VAR_INST nStep state machine.
-
-    - Test method names follow motion-lib convention:
-        TNN_<Operation>_<Condition>_<ExpectedResult>
-      and use `TEST(__POUNAME())` so the assertion log carries the
-      method name automatically.
-
-    - Each test method owns:
-        nTestStep   : INT
-        fbTestTimer : TON (watchdog; fires AssertTrue(FALSE) +
-                           TEST_FINISHED on Q)
-        a CASE block on nTestStep that advances on observed conditions
-      and is invoked from the FB body sequentially every cycle. TcUnit
-      ensures only the currently-active TEST() actually executes its
-      body.
-
-    - The body's first-scan block primes the motor (SetModeEnableLimits +
-      SetVelocity + skip-NC-restore) and asserts the caller-owned
-      enable flags. Motor / PMPS plumbing (fbPDS / fbMotorY / fbREF /
-      fbSubSysIO) ticks cyclically OUTSIDE the test methods.
-
-    - PMPS DB lookups resolve against the fake JSON document seeded
-      once by FB_CC_PMPSTestSetup in PRG_TEST (keys: 'TST:REF',
-      'TST:REF-TRANSITION', 'TST:REF-OUT', 'TST:REF-IN').
+    Procedure:
+        1. Wait for first-scan motor setup + PMPS DB loaded.
+        2. Command IN (configured fPosition = 20.0, fDelta = 2.0).
+        3. Wait for eEnumGet = IN AND |fActPosition - 20.0| <= fDelta.
+        4. TEST_FINISHED.
+    On watchdog expiry: AssertTrue(FALSE, ...) with the step + observed
+    eEnumGet + observed fActPosition so the failure mode is obvious in
+    the TcUnit log.
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    (* Caller-owned axis, persistent storage, and Y motor. In a real
-       PRG the AxisRef would come from MAIN.Mxx. *)
     axRef    : AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    (* FB_REF is single-axis (nActiveMotorCount := 1), so only slot 1
-       holds a real motor. aiMotionStage is sized to
-       MotionConstants.MAX_STATE_MOTORS to match FB_REF.FB_Init's
-       fixed-size signature; slots 2-4 default-init to a nil interface
-       and are never touched. *)
     fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+
+    (* FB_REF is single-motor (nActiveMotorCount := 1) but FB_Init takes
+       a full MAX_STATE_MOTORS-sized array; slots 2..N stay as nil
+       interfaces and are never indexed. *)
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     {attribute 'pytmc' := '
@@ -64,29 +46,28 @@ VAR
     fbArbiter  : FB_Arbiter(1);
     fbSubSysIO : FB_DummyArbIO;
 
-    (* Per-cycle caller-owned BOOL flags, written into FB_REF via
-       VAR_INPUT call syntax in the cyclic body. *)
     bEnableMotion         : BOOL;
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
 
-    (* Device-name strings bound to FB_REF as REFERENCE TO STRING:
-       a literal cannot be REF-bound, so they live as locals here. *)
+    (* Bound to FB_REF as REFERENCE TO STRING. *)
     sDeviceName    : STRING := 'TST:REF';
     sTransitionKey : STRING := 'TST:REF-TRANSITION';
 
     fbREF : FB_REF(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        fbArbiter        := fbArbiter,
+        sDeviceName      := sDeviceName,
+        sTransitionKey   := sTransitionKey
     );
 
-    (* Per-install PMPS-side state config (caller-owned). Mirrors what
-       a real PRG_xxL0_REF would declare. *)
+    (* Caller-owned per-install PMPS configurators. Match the FB_REF
+       device-side defaults (sName / fDelta) declared inside FB_REF
+       (OUT/IN, fDelta = 2.0). PMPS DB keys must match the fake doc
+       seeded by FB_CC_PMPSTestSetup: 'TST:REF-OUT', 'TST:REF-IN'. *)
     stDefault : ST_PositionState := (
         bMoveOk       := TRUE,
         bValid        := TRUE,
@@ -96,35 +77,25 @@ VAR
     afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
         (stPositionState := astPositionState[1][E_REF_States.OUT],
          stDefault       := stDefault,
-         fPosition       := 10,
+         fPosition       := 10.0,
          sPmpsState      := 'TST:REF-OUT'),
         (stPositionState := astPositionState[1][E_REF_States.IN],
          stDefault       := stDefault,
-         fPosition       := 20,
+         fPosition       := 20.0,
          sPmpsState      := 'TST:REF-IN')
     ];
 
     bFirstScan : BOOL := TRUE;
-    bInit      : BOOL;
     i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Fake PMPS handling. *)
-fbSubSysIO(
-    LA  := fbArbiter,
-    FFO := fbFFHWO
-);
+      <ST><![CDATA[fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 
-(* Caller-side PMPS configurators (per-install). *)
 FOR i := 1 TO 2 DO
     afbStatePMPS[i]();
 END_FOR
 
-(* One-shot motor setup + initial caller-owned enables. Limits,
-   brake/enable modes, home cmd, user/hardware enables, default
-   velocity; skip NC param restore so the sim NC axis keeps its
-   default tuning. *)
 IF bFirstScan THEN
     fbMotorY.SetModeEnableLimits(
         LimBackward    := TRUE,
@@ -143,15 +114,10 @@ IF bFirstScan THEN
     bEnableMotion         := TRUE;
     bEnableBeamParams     := TRUE;
     bEnablePositionLimits := TRUE;
+    bReadDBNow            := TRUE;
 
     bFirstScan := FALSE;
 END_IF
-
-(* bReadDBNow stays FALSE for exactly one cycle so the PMPSND mover's
-   inner FB_MotionReadPMPSDBND sees a rising edge on cycle 2, then
-   stays asserted. Mirrors how a real PRG defers the first DB read
-   by one cycle to let the parser warm up. *)
-bReadDBNow := NOT bInit;
 
 fbPDS();
 fbMotorY();
@@ -162,30 +128,26 @@ fbREF(
     bReadDBNow            := bReadDBNow
 );
 
-(* Test dispatch. Every method is invoked every cycle; TcUnit's
-   TEST(__POUNAME()) gate ensures only the currently-active test
-   actually executes its body. Tests run in declaration order. *)
-T01_StateMove_FromUnknown_ReachesOut();
-T02_StateMove_OutToIn_ReachesIn();
-T03_StateMove_InToOut_ReachesOut();
-T04_StateMove_PmpsBlocked_DoesNotReachTarget();
-T05_StateMove_MotionDisabled_DoesNotReachTarget();
-T06_StateMove_InvalidEnum_DoesNotReachTarget();
-
-bInit := TRUE;
+T01_StateMove_RequestIn_MotorReachesConfiguredPosition();
 ]]></ST>
     </Implementation>
-    <Method Name="T01_StateMove_FromUnknown_ReachesOut" Id="{bc00a201-0000-0000-0000-000000000001}">
+    <Method Name="T01_StateMove_RequestIn_MotorReachesConfiguredPosition" Id="{bc00a201-0000-0000-0000-000000000001}">
       <Declaration><![CDATA[(*
-    From cold start (eEnumGet = UNKNOWN), request OUT and verify the
-    device reaches OUT. Validates the full PMPS DB lookup +
-    arbitration + ND motion-stage handshake on the very first
-    transition.
+    Wiring smoke for FB_REF. Commands IN (configured fPosition = 20.0)
+    and asserts (a) eEnumGet reports IN and (b) the Y motor's actual
+    position lands within fDelta (2.0) of the configured set point.
+
+    Watchdog: 60s. Fail message includes the step number, the observed
+    eEnumGet, and the observed fActPosition so a failure points at
+    which part of the wiring chain broke.
 *)
-METHOD PRIVATE T01_StateMove_FromUnknown_ReachesOut
+METHOD PRIVATE T01_StateMove_RequestIn_MotorReachesConfiguredPosition
 VAR_INST
     fbTestTimer : TON := (IN := TRUE, PT := T#60S);
     nTestStep   : INT;
+    fGoal       : LREAL := 20.0;
+    fTolerance  : LREAL := 2.0;
+    fObserved   : LREAL;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -194,169 +156,24 @@ END_VAR
 CASE nTestStep OF
     0:
         (* Wait for cold-start stabilisation: PMPS DB parsed, motor
-           ready, no residual error. *)
+           ready to accept moves, no residual error. *)
         IF NOT MOTION_GVL.fbPmpsFileReader.bBusy
            AND NOT MOTION_GVL.fbPmpsFileReader.bError
-           AND fbMotorY.MotionStatus.bReady THEN
-            fbREF.eEnumSet := E_REF_States.OUT;
-            nTestStep      := 1;
-        END_IF
-
-    1:
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
-            AssertEquals_UDINT(
-                Expected := TO_UDINT(E_REF_States.OUT),
-                Actual   := TO_UDINT(fbREF.eEnumGet),
-                Message  := 'T01: REF did not reach OUT from UNKNOWN');
-            nTestStep := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT('T01: timed out at step: ', TO_STRING(nTestStep)));
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="T02_StateMove_OutToIn_ReachesIn" Id="{bc00a201-0000-0000-0000-000000000002}">
-      <Declaration><![CDATA[(*
-    From OUT (left by T01), request IN and verify the device reaches
-    IN. Validates a second arbitration cycle from a known starting
-    state.
-*)
-METHOD PRIVATE T02_StateMove_OutToIn_ReachesIn
-VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
-    nTestStep   : INT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        (* Precondition: device sitting at OUT (T01 outcome). *)
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
+           AND fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
             fbREF.eEnumSet := E_REF_States.IN;
             nTestStep      := 1;
         END_IF
 
     1:
-        IF fbREF.eEnumGet = E_REF_States.IN THEN
-            AssertEquals_UDINT(
-                Expected := TO_UDINT(E_REF_States.IN),
-                Actual   := TO_UDINT(fbREF.eEnumGet),
-                Message  := 'T02: REF did not reach IN from OUT');
-            nTestStep := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT('T02: timed out at step: ', TO_STRING(nTestStep)));
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="T03_StateMove_InToOut_ReachesOut" Id="{bc00a201-0000-0000-0000-000000000003}">
-      <Declaration><![CDATA[(*
-    From IN (left by T02), request OUT and verify the device reaches
-    OUT. Closes the bidirectional-transition loop OUT->IN->OUT.
-*)
-METHOD PRIVATE T03_StateMove_InToOut_ReachesOut
-VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
-    nTestStep   : INT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        IF fbREF.eEnumGet = E_REF_States.IN THEN
-            fbREF.eEnumSet := E_REF_States.OUT;
-            nTestStep      := 1;
-        END_IF
-
-    1:
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
-            AssertEquals_UDINT(
-                Expected := TO_UDINT(E_REF_States.OUT),
-                Actual   := TO_UDINT(fbREF.eEnumGet),
-                Message  := 'T03: REF did not reach OUT from IN');
-            nTestStep := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT('T03: timed out at step: ', TO_STRING(nTestStep)));
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="T04_StateMove_PmpsBlocked_DoesNotReachTarget" Id="{bc00a201-0000-0000-0000-000000000004}">
-      <Declaration><![CDATA[(*
-    Re-write bMoveOk := FALSE on the IN state slot every cycle so
-    PMPS arbitration rejects a move into IN. Request IN; after a
-    stabilisation window, verify the device has NOT reached IN.
-
-    The caller-owned FB_CC_StatePMPSConfig refreshes bMoveOk from
-    stDefault each cycle (stDefault.bMoveOk = TRUE), so the test must
-    re-assert FALSE every cycle until teardown.
-
-    Starting state: OUT (T03 outcome).
-*)
-METHOD PRIVATE T04_StateMove_PmpsBlocked_DoesNotReachTarget
-VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#15S);
-    fbSettle    : TON := (PT := T#5S);
-    nTestStep   : INT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
-            astPositionState[1][E_REF_States.IN].bMoveOk := FALSE;
-            fbREF.eEnumSet := E_REF_States.IN;
-            fbSettle(IN := TRUE);
-            nTestStep := 1;
-        END_IF
-
-    1:
-        astPositionState[1][E_REF_States.IN].bMoveOk := FALSE;
-        fbSettle();
-        IF fbSettle.Q THEN
+        fObserved := fbMotorY.stMotionStatus.fActPosition;
+        IF fbREF.eEnumGet = E_REF_States.IN
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - fGoal) <= fTolerance THEN
             AssertTrue(
-                Condition := fbREF.eEnumGet <> E_REF_States.IN,
-                Message   := 'T04: REF reached IN despite bMoveOk = FALSE');
-            (* Teardown: unblock IN so later tests can transition
-               freely; cancel the pending request. *)
-            fbREF.eEnumSet := E_REF_States.OUT;
-            nTestStep      := 2;
+                Condition := TRUE,
+                Message   := 'T01: REF reached IN within tolerance');
+            nTestStep := 2;
         END_IF
 END_CASE
 
@@ -367,118 +184,11 @@ IF nTestStep = 2 THEN
 ELSIF fbTestTimer.Q THEN
     AssertTrue(
         Condition := FALSE,
-        Message   := CONCAT('T04: timed out at step: ', TO_STRING(nTestStep)));
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="T05_StateMove_MotionDisabled_DoesNotReachTarget" Id="{bc00a201-0000-0000-0000-000000000005}">
-      <Declaration><![CDATA[(*
-    Drop bEnableMotion to FALSE, request IN, verify the device does
-    NOT reach IN. Restore bEnableMotion := TRUE on teardown.
-
-    Starting state: OUT (T04 teardown).
-*)
-METHOD PRIVATE T05_StateMove_MotionDisabled_DoesNotReachTarget
-VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#15S);
-    fbSettle    : TON := (PT := T#5S);
-    nTestStep   : INT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
-            bEnableMotion  := FALSE;
-            fbREF.eEnumSet := E_REF_States.IN;
-            fbSettle(IN := TRUE);
-            nTestStep      := 1;
-        END_IF
-
-    1:
-        fbSettle();
-        IF fbSettle.Q THEN
-            AssertTrue(
-                Condition := fbREF.eEnumGet <> E_REF_States.IN,
-                Message   := 'T05: REF reached IN despite bEnableMotion = FALSE');
-            bEnableMotion  := TRUE;
-            fbREF.eEnumSet := E_REF_States.OUT;
-            nTestStep      := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT('T05: timed out at step: ', TO_STRING(nTestStep)));
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="T06_StateMove_InvalidEnum_DoesNotReachTarget" Id="{bc00a201-0000-0000-0000-000000000006}">
-      <Declaration><![CDATA[(*
-    Write an out-of-range value into eEnumSet via a UINT pointer
-    (the {attribute 'strict'} on E_REF_States blocks direct literal
-    out-of-range assignment but does not protect against pointer
-    aliasing on the same base type). The PMPSND mover indexes
-    astPositionState by enum value; an unknown index must NOT
-    produce a successful transition, so eEnumGet must remain at
-    the prior state.
-
-    Starting state: OUT (T05 teardown).
-*)
-METHOD PRIVATE T06_StateMove_InvalidEnum_DoesNotReachTarget
-VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#15S);
-    fbSettle    : TON := (PT := T#5S);
-    nTestStep   : INT;
-    eStartState : E_REF_States;
-    nBadEnum    : UINT := 99;
-    pEnumSet    : POINTER TO UINT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        IF fbREF.eEnumGet = E_REF_States.OUT THEN
-            eStartState := fbREF.eEnumGet;
-            pEnumSet    := ADR(fbREF.eEnumSet);
-            pEnumSet^   := nBadEnum;
-            fbSettle(IN := TRUE);
-            nTestStep   := 1;
-        END_IF
-
-    1:
-        fbSettle();
-        IF fbSettle.Q THEN
-            AssertEquals_UDINT(
-                Expected := TO_UDINT(eStartState),
-                Actual   := TO_UDINT(fbREF.eEnumGet),
-                Message  := 'T06: REF transitioned on out-of-range enum value');
-            fbREF.eEnumSet := eStartState;
-            nTestStep      := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT('T06: timed out at step: ', TO_STRING(nTestStep)));
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbREF.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>

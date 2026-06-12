@@ -37,6 +37,12 @@
 
     Call this in PRG_TEST BEFORE TcUnit.RUN() each cycle. After bDone
     latches, subsequent calls are no-ops.
+
+    Single point of truth: every device test runs concurrently and
+    PMPS_GVL.BP_jsonDoc is global. Seeding MUST happen here, once,
+    before any test FB ticks. Do not move per-device seeding into
+    individual test FBs: concurrent writes to BP_jsonDoc on the same
+    cycle will race and corrupt the document.
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_CC_PMPSTestSetup
@@ -123,14 +129,23 @@ astParams_PPM[3].stBeamParams       := PMPS_GVL.cstFullBeam;
 astParams_PPM[4].sPmpsState         := 'TST:PPM-YAG2';
 astParams_PPM[4].stBeamParams       := PMPS_GVL.cstFullBeam;
 
-(* ---- TST:REF (transition + 2 named states) ---- *)
-astParams_REF[0].sPmpsState         := 'TST:REF-TRANSITION';
-astParams_REF[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_REF[0].stBeamParams.nRate := 0;
-astParams_REF[1].sPmpsState         := 'TST:REF-OUT';
-astParams_REF[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_REF[2].sPmpsState         := 'TST:REF-IN';
-astParams_REF[2].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:REF (transition + 2 named states)
+   REF is a reference / alignment laser, not an X-ray attenuator: both
+   OUT and IN are authorised under cstFullBeam. The transition row
+   drops nRate to 0 as a conservative beam-down default while the Y
+   motor is between named states. Distinct nRequestAssertionID per
+   state so arbitration traces in the FFO log are identifiable.
+   Consumed by FB_REFTest. ---- *)
+astParams_REF[0].sPmpsState          := 'TST:REF-TRANSITION';
+astParams_REF[0].nRequestAssertionID := 500;
+astParams_REF[0].stBeamParams        := PMPS_GVL.cstFullBeam;
+astParams_REF[0].stBeamParams.nRate  := 0;
+astParams_REF[1].sPmpsState          := 'TST:REF-OUT';
+astParams_REF[1].nRequestAssertionID := 501;
+astParams_REF[1].stBeamParams        := PMPS_GVL.cstFullBeam;
+astParams_REF[2].sPmpsState          := 'TST:REF-IN';
+astParams_REF[2].nRequestAssertionID := 502;
+astParams_REF[2].stBeamParams        := PMPS_GVL.cstFullBeam;
 
 (* ---- TST:GBS (transition + 10 named states) ---- *)
 astParams_GBS[0].sPmpsState         := 'TST:GBS-TRANSITION';
