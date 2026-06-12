@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PMPSJsonTestHelperEx" Id="{cc000001-7ef9-4d1e-b527-97690572779e}" SpecialFunc="None">
+    <Declaration><![CDATA[
+(*
+    Creates an in-memory PMPS JSON document for unit testing.
+
+    PMPS_GVL.BP_jsonDoc holds devices directly at the root level, matching
+    how FB_Standard_PMPSDB produces the parsed document after navigating
+    into the PLC name level from the raw JSON file:
+        { "sDevName": { "sPmpsState": { ... }, ... }, ... }
+
+    When bNewDoc=TRUE, creates a fresh document (use for first device).
+    When bNewDoc=FALSE, appends a new device to the existing document root.
+                       All devices share the same root.
+
+    Writes the result to PMPS_GVL.BP_jsonDoc on the rising edge of bExecute.
+
+    Vendored from lcls-twincat-motion-abstraction
+    (POUs/FBs/03_PMPS/07_Helpers/FB_PMPSJsonTestHelperEx.TcPOU) so the
+    CC test suite can stand up a multi-device fake DB. Distinct from the
+    legacy FB_PMPSJsonTestHelper, which always opens a fresh document.
+*)
+FUNCTION_BLOCK FB_PMPSJsonTestHelperEx
+VAR_IN_OUT
+    astBeamParams : ARRAY[*] OF ST_DbStateParams;
+END_VAR
+VAR_INPUT
+    bExecute : BOOL;
+    sDevName : STRING;
+    bNewDoc  : BOOL := TRUE;
+END_VAR
+VAR
+    rtExec     : R_TRIG;
+    jsonRoot   : SJsonValue;
+    jsonDevice : SJsonValue;
+    ajsonState : ARRAY[0..GeneralConstants.MAX_STATES] OF SJsonValue;
+    fbJson     : FB_JsonDomParser;
+    nIter      : DINT;
+    nId        : DINT;
+    aseVRange  : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+    asRate     : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+    asBCRange  : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+    asTran     : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+    asReactiveTemp     : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+    asReactivePressure : ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+rtExec(CLK := bExecute);
+IF NOT rtExec.Q THEN
+    RETURN;
+END_IF
+
+IF bNewDoc THEN
+    jsonRoot := fbJson.NewDocument();
+ELSE
+    jsonRoot := PMPS_GVL.BP_jsonDoc;
+END_IF
+
+jsonDevice := fbJson.AddObjectMember(jsonRoot, sDevName);
+
+FOR nIter := LOWER_BOUND(astBeamParams, 1) TO UPPER_BOUND(astBeamParams, 1) DO
+    ajsonState[nIter] := fbJson.AddObjectMember(jsonDevice, astBeamParams[nIter].sPmpsState);
+
+    nId := nId + 1;
+    fbJson.AddIntMember(
+        v      := ajsonState[nIter],
+        member := 'id',
+        value  := nId);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'beamline',
+        value  := 'tst');
+
+    aseVRange[nIter] := bitmaskToString(astBeamParams[nIter].stBeamParams.neVRange, 32);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'neVRange',
+        value  := aseVRange[nIter]);
+
+    asRate[nIter] := UDINT_TO_STRING(astBeamParams[nIter].stBeamParams.nRate);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'nRate',
+        value  := asRate[nIter]);
+
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'ap_ygap',           value := '');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'ap_xgap',           value := '');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'damage_limit',      value := '');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'notes',             value := '');
+
+    (* Reactive temperature / pressure are populated from
+       stReactiveParams so device tests that exercise the temperature
+       FFO (e.g. ATM / PPM / SLITS_POWER RTDs) see a non-zero
+       threshold. Legacy CC PMPSJsonTestHelper wrote these as empty
+       strings; the Ex variant promotes them to real values. *)
+    asReactiveTemp[nIter] := UDINT_TO_STRING(astBeamParams[nIter].stReactiveParams.nTempSP);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'reactive_temp',
+        value  := asReactiveTemp[nIter]);
+    asReactivePressure[nIter] := UDINT_TO_STRING(astBeamParams[nIter].stReactiveParams.nPressureSP);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'reactive_pressure',
+        value  := asReactivePressure[nIter]);
+
+    asBCRange[nIter] := bitmaskToString(astBeamParams[nIter].stBeamParams.nBCRange, 15);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'nBeamClassRange',
+        value  := asBCRange[nIter]);
+
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'name',
+        value  := astBeamParams[nIter].sPmpsState);
+
+    asTran[nIter] := REAL_TO_STRING(astBeamParams[nIter].stBeamParams.nTran);
+    fbJson.AddStringMember(
+        v      := ajsonState[nIter],
+        member := 'nTran',
+        value  := asTran[nIter]);
+
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'ap_name',      value := 'None');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'ap_ycenter',   value := '');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'ap_xcenter',   value := '');
+    fbJson.AddStringMember(v := ajsonState[nIter], member := 'pulse_energy', value := '');
+    fbJson.AddBoolMember(  v := ajsonState[nIter], member := 'special',      value := FALSE);
+END_FOR
+
+PMPS_GVL.BP_jsonDoc := jsonRoot;
+]]></ST>
+    </Implementation>
+    <Method Name="bitmaskToString" Id="{cc000001-6ba6-421f-b050-648aa1a93695}">
+      <Declaration><![CDATA[(*
+    Converts a DWORD bitmask to a binary string representation.
+    Used to format neVRange and nBeamClassRange fields in the JSON.
+*)
+METHOD bitmaskToString : STRING
+VAR_INPUT
+    nBitmask : DWORD;
+    nBits    : UINT;
+END_VAR
+VAR
+    nIter : UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+bitmaskToString := '';
+FOR nIter := 1 TO nBits DO
+    bitmaskToString := CONCAT(DWORD_TO_STRING(SHR(nBitmask, nIter - 1) AND 1), bitmaskToString);
+END_FOR
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
