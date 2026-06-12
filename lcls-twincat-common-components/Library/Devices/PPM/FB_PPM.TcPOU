@@ -162,17 +162,6 @@ VAR CONSTANT
     (* PPM-wide default tolerance for state in-position detection,
        applied per-state by afbStateDefaults. *)
     FDELTA_DEFAULT : LREAL := 2;
-
-    (* PPM-wide default acceleration / deceleration applied to the
-       active motion stage in CallAfterInit. Legacy: fAccel := 200
-       (used for both accel and decel). The legacy per-state
-       fOutDecel := 25 soft-landing on OUT is lost in the ND framework,
-       which has no per-state accel/decel fields on ST_PositionState.
-       Velocity stays integrator-owned per the legacy comment "this
-       should be set per install"; the device call preserves whatever
-       the integrator wrote via SetVelocity. *)
-    FACCEL_DEFAULT : LREAL := 200;
-    FDECEL_DEFAULT : LREAL := 200;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)

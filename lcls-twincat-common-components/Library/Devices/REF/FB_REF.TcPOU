@@ -118,15 +118,6 @@ VAR CONSTANT
     (* REF-wide default tolerance for state in-position detection,
        applied per-state by afbStateDefaults. *)
     FDELTA_DEFAULT : LREAL := 2;
-
-    (* REF-wide default acceleration / deceleration applied to the
-       active motion stage in CallAfterInit. Legacy: fAccel := 10
-       (REF reflector is intentionally slow), used for both accel and
-       decel. Velocity stays integrator-owned per the legacy comment
-       "this should be set per install"; the device call preserves
-       whatever the integrator wrote via SetVelocity. *)
-    FACCEL_DEFAULT : LREAL := 10;
-    FDECEL_DEFAULT : LREAL := 10;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
