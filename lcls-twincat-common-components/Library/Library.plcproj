@@ -181,9 +181,6 @@
     <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelperEx.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Tests\Helpers\FB_CC_PMPSTestSetup.TcPOU">
       <SubType>Code</SubType>
     </Compile>

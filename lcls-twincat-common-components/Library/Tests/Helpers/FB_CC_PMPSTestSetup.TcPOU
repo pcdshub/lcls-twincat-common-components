@@ -3,46 +3,28 @@
   <POU Name="FB_CC_PMPSTestSetup" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6b}" SpecialFunc="None">
     <Declaration><![CDATA[
 (*
-    One-shot PMPS fake-DB seeder for the CC test suite. Runs once at
-    PLC startup; on the first scan it writes a single in-memory JSON
-    document into PMPS_GVL.BP_jsonDoc containing every device the test
-    suite touches:
+    One-shot PMPS fake-DB seeder for the CC test suite. Mirrors
+    LCLS_Tc_Motion.FB_PMPSTestSetup: one FB_PMPSJsonTestHelperEx
+    instance per device, first call uses bNewDoc := TRUE, the rest
+    use bNewDoc := FALSE so the document at PMPS_GVL.BP_jsonDoc
+    accumulates every test device:
 
-        { "TST:ATM":   { "TST:ATM-TRANSITION": {...}, "TST:ATM-OUT": {...}, ... },
-          "TST:LIC":   { ... },
-          "TST:PPM":   { ... },
-          "TST:REF":   { ... },
-          "TST:GBS":   { ... },
-          "TST:IPM":   { ... },
-          "TST:WFS":   { ... },
-          "TST:XPIM":  { ... },
-          "TST:SATT":  { ... },
-          "TST:SLITS": { ... } }
+        { "TST:ATM": { "TST:ATM-TRANSITION": {...}, ... },
+          "TST:LIC": { ... }, ... }
 
-    Mirrors how a real device PRG sees BP_jsonDoc after EPICS uploads
-    the JSON file and FB_Standard_PMPSDB has parsed it down to the
-    "PLC name" level.
+    Only sPmpsState is populated per row. The helper fills the rest
+    of the JSON shape with default-zero values, which is enough for
+    the wiring smoke tests to look up state keys and request a move.
+    Tests that need richer beam params (rate, beam class, eV range,
+    reactive temperature) set them on the relevant astParams_XXX
+    entries before this FB ticks, or extend it.
 
-    Per-state beam params:
-      stBeamParams.nRate / nBeamClass / neVRange / nTran / nMachineMode
-      drive the PMPS arbitration path.
-    Per-state reactive params:
-      stReactiveParams.nTempSP feeds FB_CC_TempSensor /
-      FB_JsonDocToSafeBP for ATM / PPM / SLITS_POWER RTD thresholds.
+    Call once per cycle in PRG_TEST BEFORE TcUnit.RUN(). After bDone
+    latches on the first cycle, subsequent calls are no-ops.
 
-    Design follows lcls-twincat-motion-abstraction.FB_PMPSTestSetup:
-    one helper instance per device, first call uses bNewDoc := TRUE,
-    every subsequent call uses bNewDoc := FALSE so the root document
-    accumulates devices instead of being replaced.
-
-    Call this in PRG_TEST BEFORE TcUnit.RUN() each cycle. After bDone
-    latches, subsequent calls are no-ops.
-
-    Single point of truth: every device test runs concurrently and
-    PMPS_GVL.BP_jsonDoc is global. Seeding MUST happen here, once,
-    before any test FB ticks. Do not move per-device seeding into
-    individual test FBs: concurrent writes to BP_jsonDoc on the same
-    cycle will race and corrupt the document.
+    Single point of truth: PMPS_GVL.BP_jsonDoc is global and test
+    FBs run concurrently. Seeding stays here so per-device writes
+    cannot race on the same cycle.
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_CC_PMPSTestSetup
@@ -58,8 +40,8 @@ VAR
     fbJsonHelper_SATT  : FB_PMPSJsonTestHelperEx;
     fbJsonHelper_SLITS : FB_PMPSJsonTestHelperEx;
 
-    (* Per-device beam-param arrays. astParams_XXX[0] is the
-       transition key, rest are named-state keys in enum order. *)
+    (* astParams_XXX[0] is the transition key; the rest are named-state
+       keys in enum order. *)
     astParams_ATM   : ARRAY[0..6] OF ST_DbStateParams;
     astParams_LIC   : ARRAY[0..4] OF ST_DbStateParams;
     astParams_PPM   : ARRAY[0..4] OF ST_DbStateParams;
@@ -72,7 +54,6 @@ VAR
     astParams_SLITS : ARRAY[0..0] OF ST_DbStateParams;
 
     bDone : BOOL := FALSE;
-    nIter : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -81,158 +62,80 @@ IF bDone THEN
     RETURN;
 END_IF
 
-(* ---- TST:ATM (transition + 6 named states) ---- *)
-astParams_ATM[0].sPmpsState                := 'TST:ATM-TRANSITION';
-astParams_ATM[0].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[0].stBeamParams.nRate        := 0;
-astParams_ATM[1].sPmpsState                := 'TST:ATM-OUT';
-astParams_ATM[1].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[2].sPmpsState                := 'TST:ATM-TARGET1';
-astParams_ATM[2].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[3].sPmpsState                := 'TST:ATM-TARGET2';
-astParams_ATM[3].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[4].sPmpsState                := 'TST:ATM-TARGET3';
-astParams_ATM[4].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[5].sPmpsState                := 'TST:ATM-TARGET4';
-astParams_ATM[5].stBeamParams              := PMPS_GVL.cstFullBeam;
-astParams_ATM[6].sPmpsState                := 'TST:ATM-TARGET5';
-astParams_ATM[6].stBeamParams              := PMPS_GVL.cstFullBeam;
-(* ATM has a thermocouple FFO: seed a reactive_temp setpoint that the
-   test can drive raw temperature above to force a fault. *)
-FOR nIter := 0 TO 6 DO
-    astParams_ATM[nIter].stReactiveParams.nTempSP := 50;
-END_FOR
+(* ---- TST:ATM ---- *)
+astParams_ATM[0].sPmpsState := 'TST:ATM-TRANSITION';
+astParams_ATM[1].sPmpsState := 'TST:ATM-OUT';
+astParams_ATM[2].sPmpsState := 'TST:ATM-TARGET1';
+astParams_ATM[3].sPmpsState := 'TST:ATM-TARGET2';
+astParams_ATM[4].sPmpsState := 'TST:ATM-TARGET3';
+astParams_ATM[5].sPmpsState := 'TST:ATM-TARGET4';
+astParams_ATM[6].sPmpsState := 'TST:ATM-TARGET5';
 
-(* ---- TST:LIC (transition + 4 named states) ---- *)
-astParams_LIC[0].sPmpsState         := 'TST:LIC-TRANSITION';
-astParams_LIC[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_LIC[0].stBeamParams.nRate := 0;
-astParams_LIC[1].sPmpsState         := 'TST:LIC-OUT';
-astParams_LIC[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_LIC[2].sPmpsState         := 'TST:LIC-MIRROR1';
-astParams_LIC[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_LIC[3].sPmpsState         := 'TST:LIC-MIRROR2';
-astParams_LIC[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_LIC[4].sPmpsState         := 'TST:LIC-TARGET';
-astParams_LIC[4].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:LIC ---- *)
+astParams_LIC[0].sPmpsState := 'TST:LIC-TRANSITION';
+astParams_LIC[1].sPmpsState := 'TST:LIC-OUT';
+astParams_LIC[2].sPmpsState := 'TST:LIC-MIRROR1';
+astParams_LIC[3].sPmpsState := 'TST:LIC-MIRROR2';
+astParams_LIC[4].sPmpsState := 'TST:LIC-TARGET';
 
-(* ---- TST:PPM (transition + 4 named states) ---- *)
-astParams_PPM[0].sPmpsState         := 'TST:PPM-TRANSITION';
-astParams_PPM[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_PPM[0].stBeamParams.nRate := 0;
-astParams_PPM[1].sPmpsState         := 'TST:PPM-OUT';
-astParams_PPM[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_PPM[2].sPmpsState         := 'TST:PPM-POWERMETER';
-astParams_PPM[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_PPM[3].sPmpsState         := 'TST:PPM-YAG1';
-astParams_PPM[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_PPM[4].sPmpsState         := 'TST:PPM-YAG2';
-astParams_PPM[4].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:PPM ---- *)
+astParams_PPM[0].sPmpsState := 'TST:PPM-TRANSITION';
+astParams_PPM[1].sPmpsState := 'TST:PPM-OUT';
+astParams_PPM[2].sPmpsState := 'TST:PPM-POWERMETER';
+astParams_PPM[3].sPmpsState := 'TST:PPM-YAG1';
+astParams_PPM[4].sPmpsState := 'TST:PPM-YAG2';
 
-(* ---- TST:REF (transition + 2 named states)
-   REF is a reference / alignment laser, not an X-ray attenuator: both
-   OUT and IN are authorised under cstFullBeam. The transition row
-   drops nRate to 0 as a conservative beam-down default while the Y
-   motor is between named states. Distinct nRequestAssertionID per
-   state so arbitration traces in the FFO log are identifiable.
-   Consumed by FB_REFTest. ---- *)
-astParams_REF[0].sPmpsState          := 'TST:REF-TRANSITION';
-astParams_REF[0].nRequestAssertionID := 500;
-astParams_REF[0].stBeamParams        := PMPS_GVL.cstFullBeam;
-astParams_REF[0].stBeamParams.nRate  := 0;
-astParams_REF[1].sPmpsState          := 'TST:REF-OUT';
-astParams_REF[1].nRequestAssertionID := 501;
-astParams_REF[1].stBeamParams        := PMPS_GVL.cstFullBeam;
-astParams_REF[2].sPmpsState          := 'TST:REF-IN';
-astParams_REF[2].nRequestAssertionID := 502;
-astParams_REF[2].stBeamParams        := PMPS_GVL.cstFullBeam;
+(* ---- TST:REF ---- *)
+astParams_REF[0].sPmpsState := 'TST:REF-TRANSITION';
+astParams_REF[1].sPmpsState := 'TST:REF-OUT';
+astParams_REF[2].sPmpsState := 'TST:REF-IN';
 
-(* ---- TST:GBS (transition + 10 named states) ---- *)
-astParams_GBS[0].sPmpsState         := 'TST:GBS-TRANSITION';
-astParams_GBS[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[0].stBeamParams.nRate := 0;
-astParams_GBS[1].sPmpsState         := 'TST:GBS-OUT';
-astParams_GBS[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[2].sPmpsState         := 'TST:GBS-TARGET1a';
-astParams_GBS[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[3].sPmpsState         := 'TST:GBS-TARGET1b';
-astParams_GBS[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[4].sPmpsState         := 'TST:GBS-TARGET2a';
-astParams_GBS[4].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[5].sPmpsState         := 'TST:GBS-TARGET2b';
-astParams_GBS[5].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[6].sPmpsState         := 'TST:GBS-TARGET3a';
-astParams_GBS[6].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[7].sPmpsState         := 'TST:GBS-TARGET3b';
-astParams_GBS[7].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[8].sPmpsState         := 'TST:GBS-TARGET4';
-astParams_GBS[8].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[9].sPmpsState         := 'TST:GBS-TARGET5';
-astParams_GBS[9].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_GBS[10].sPmpsState        := 'TST:GBS-TARGET6';
-astParams_GBS[10].stBeamParams      := PMPS_GVL.cstFullBeam;
+(* ---- TST:GBS ---- *)
+astParams_GBS[0].sPmpsState  := 'TST:GBS-TRANSITION';
+astParams_GBS[1].sPmpsState  := 'TST:GBS-OUT';
+astParams_GBS[2].sPmpsState  := 'TST:GBS-TARGET1a';
+astParams_GBS[3].sPmpsState  := 'TST:GBS-TARGET1b';
+astParams_GBS[4].sPmpsState  := 'TST:GBS-TARGET2a';
+astParams_GBS[5].sPmpsState  := 'TST:GBS-TARGET2b';
+astParams_GBS[6].sPmpsState  := 'TST:GBS-TARGET3a';
+astParams_GBS[7].sPmpsState  := 'TST:GBS-TARGET3b';
+astParams_GBS[8].sPmpsState  := 'TST:GBS-TARGET4';
+astParams_GBS[9].sPmpsState  := 'TST:GBS-TARGET5';
+astParams_GBS[10].sPmpsState := 'TST:GBS-TARGET6';
 
-(* ---- TST:IPM (transition + 5 named states) ---- *)
-astParams_IPM[0].sPmpsState         := 'TST:IPM-TRANSITION';
-astParams_IPM[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_IPM[0].stBeamParams.nRate := 0;
-astParams_IPM[1].sPmpsState         := 'TST:IPM-OUT';
-astParams_IPM[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_IPM[2].sPmpsState         := 'TST:IPM-TARGET1';
-astParams_IPM[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_IPM[3].sPmpsState         := 'TST:IPM-TARGET2';
-astParams_IPM[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_IPM[4].sPmpsState         := 'TST:IPM-TARGET3';
-astParams_IPM[4].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_IPM[5].sPmpsState         := 'TST:IPM-TARGET4';
-astParams_IPM[5].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:IPM ---- *)
+astParams_IPM[0].sPmpsState := 'TST:IPM-TRANSITION';
+astParams_IPM[1].sPmpsState := 'TST:IPM-OUT';
+astParams_IPM[2].sPmpsState := 'TST:IPM-TARGET1';
+astParams_IPM[3].sPmpsState := 'TST:IPM-TARGET2';
+astParams_IPM[4].sPmpsState := 'TST:IPM-TARGET3';
+astParams_IPM[5].sPmpsState := 'TST:IPM-TARGET4';
 
-(* ---- TST:WFS (transition + 6 named states) ---- *)
-astParams_WFS[0].sPmpsState         := 'TST:WFS-TRANSITION';
-astParams_WFS[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[0].stBeamParams.nRate := 0;
-astParams_WFS[1].sPmpsState         := 'TST:WFS-OUT';
-astParams_WFS[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[2].sPmpsState         := 'TST:WFS-TARGET1';
-astParams_WFS[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[3].sPmpsState         := 'TST:WFS-TARGET2';
-astParams_WFS[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[4].sPmpsState         := 'TST:WFS-TARGET3';
-astParams_WFS[4].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[5].sPmpsState         := 'TST:WFS-TARGET4';
-astParams_WFS[5].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_WFS[6].sPmpsState         := 'TST:WFS-TARGET5';
-astParams_WFS[6].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:WFS ---- *)
+astParams_WFS[0].sPmpsState := 'TST:WFS-TRANSITION';
+astParams_WFS[1].sPmpsState := 'TST:WFS-OUT';
+astParams_WFS[2].sPmpsState := 'TST:WFS-TARGET1';
+astParams_WFS[3].sPmpsState := 'TST:WFS-TARGET2';
+astParams_WFS[4].sPmpsState := 'TST:WFS-TARGET3';
+astParams_WFS[5].sPmpsState := 'TST:WFS-TARGET4';
+astParams_WFS[6].sPmpsState := 'TST:WFS-TARGET5';
 
-(* ---- TST:XPIM (transition + 5 named states) ---- *)
-astParams_XPIM[0].sPmpsState         := 'TST:XPIM-TRANSITION';
-astParams_XPIM[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_XPIM[0].stBeamParams.nRate := 0;
-astParams_XPIM[1].sPmpsState         := 'TST:XPIM-OUT';
-astParams_XPIM[1].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_XPIM[2].sPmpsState         := 'TST:XPIM-DIAMOND';
-astParams_XPIM[2].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_XPIM[3].sPmpsState         := 'TST:XPIM-RETICLE';
-astParams_XPIM[3].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_XPIM[4].sPmpsState         := 'TST:XPIM-YAG';
-astParams_XPIM[4].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_XPIM[5].sPmpsState         := 'TST:XPIM-POWERMETER';
-astParams_XPIM[5].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:XPIM ---- *)
+astParams_XPIM[0].sPmpsState := 'TST:XPIM-TRANSITION';
+astParams_XPIM[1].sPmpsState := 'TST:XPIM-OUT';
+astParams_XPIM[2].sPmpsState := 'TST:XPIM-DIAMOND';
+astParams_XPIM[3].sPmpsState := 'TST:XPIM-RETICLE';
+astParams_XPIM[4].sPmpsState := 'TST:XPIM-YAG';
+astParams_XPIM[5].sPmpsState := 'TST:XPIM-POWERMETER';
 
-(* ---- TST:SATT (only keys currently exercised by FB_SATTTest) ---- *)
-astParams_SATT[0].sPmpsState         := 'TST:SATT-TRANSITION';
-astParams_SATT[0].stBeamParams       := PMPS_GVL.cstFullBeam;
-astParams_SATT[0].stBeamParams.nRate := 0;
-astParams_SATT[1].sPmpsState         := 'TST:SATT-FILTER1';
-astParams_SATT[1].stBeamParams       := PMPS_GVL.cstFullBeam;
+(* ---- TST:SATT ---- *)
+astParams_SATT[0].sPmpsState := 'TST:SATT-TRANSITION';
+astParams_SATT[1].sPmpsState := 'TST:SATT-FILTER1';
 
 (* ---- TST:SLITS (single PMPS key, aperture geometry not state-keyed) ---- *)
-astParams_SLITS[0].sPmpsState                  := 'TST:SLITS';
-astParams_SLITS[0].stBeamParams                := PMPS_GVL.cstFullBeam;
-astParams_SLITS[0].stReactiveParams.nTempSP    := 50;
+astParams_SLITS[0].sPmpsState := 'TST:SLITS';
 
-(* ---- Write the document. First helper creates a fresh root; the
-   rest append to it. ---- *)
+(* First helper creates the root document, the rest append. *)
 fbJsonHelper_ATM(
     astBeamParams := astParams_ATM,
     bExecute      := TRUE,
