@@ -49,7 +49,8 @@ VAR_INPUT
        `fbREF.eEnumGet`. *)
     eEnumSet : E_REF_States;
     eEnumGet : E_REF_States;
-
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
     (* Run-time toggles forwarded into fbStates each cycle. PMPSND
        captures these by value in its own FB_Init, so the body
        re-writes fbStates.* every cycle to track live caller changes. *)
@@ -60,24 +61,7 @@ VAR_INPUT
     fTermMax               : LREAL := 200;
 END_VAR
 VAR
-    fbStates : FB_PositionStatePMPSND(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        nActiveMotorCount     := 1,
-        eEnumSet              := eEnumSet,
-        eEnumGet              := eEnumGet,
-        bEnableMotion         := bEnableMotion,
-        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
-    );
+
 
     {attribute 'pytmc' := 'pv: LAS'}
     fbLaser : FB_REF_Laser;
@@ -95,9 +79,9 @@ VAR
     {attribute 'no_copy'}
     fbArbiter             : REFERENCE TO FB_Arbiter;
     {attribute 'no_copy'}
-    sDeviceName           : REFERENCE TO STRING;
+    sDeviceName           : STRING;
     {attribute 'no_copy'}
-    sTransitionKey        : REFERENCE TO STRING;
+    sTransitionKey        : STRING;
 
     (* One configurator per REF state (OUT, IN). Writes the per-state
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
@@ -112,6 +96,24 @@ VAR
          fDelta          := FDELTA_DEFAULT)
     ];
 
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
     i : UINT;
 END_VAR
 VAR CONSTANT
@@ -120,18 +122,13 @@ VAR CONSTANT
     FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
-IF NOT __ISVALIDREF(aiMotionStage)
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(fbArbiter)
-   OR NOT __ISVALIDREF(sDeviceName)
-   OR NOT __ISVALIDREF(sTransitionKey) THEN
+   OR NOT __ISVALIDREF(fbArbiter) THEN
     RETURN;
 END_IF
 
-(* Apply device-side per-state defaults each cycle. Sleeps once the
-   parent state FB sets stPositionState.bUpdated := TRUE. *)
 FOR i := 1 TO 2 DO
     afbStateDefaults[i]();
 END_FOR
@@ -155,9 +152,19 @@ fbLaser(fTermMax := fTermMax);]]></ST>
 *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
+VAR
+    i : UINT;
+END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
+    stPositionState := astPositionState[1][E_REF_States.OUT]
+);
+afbStateDefaults[2].CallAfterInit(
+    stPositionState := astPositionState[1][E_REF_States.OUT]
+);
+
+THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -183,20 +190,15 @@ THIS^.fbStates.CallAfterInitExEx(
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="FB_init" Id="{b5f8c2d1-2e3f-5d4b-ac7d-1e9f8a2b3c4d}">
-      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
-   input is REFERENCE TO and is REF= bound for the lifetime of the FB
-   (matches the rule: non-interface FB_Init inputs are taken by ref).
-   Inline-init of fbStates / fbLaser above runs first, capturing the
-   FB_Init params at construction time; this method then records the
-   same references on THIS^ for body-side use and live caller writes.
-   The file-reader busy/error inputs are bound straight to
-   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
-{attribute 'analysis' := '-33'}
-METHOD FB_Init : BOOL
+    <Method Name="FB_Init" Id="{7da30f35-8f99-4688-81ce-5ec9994a1d33}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
 VAR_INPUT
-    bInitRetains           : BOOL;
-    bInCopyCode            : BOOL;
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
     aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
@@ -204,15 +206,14 @@ VAR_INPUT
     fbArbiter              : REFERENCE TO FB_Arbiter;
     sDeviceName            : REFERENCE TO STRING;
     sTransitionKey         : REFERENCE TO STRING;
-
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
 THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      REF= sDeviceName;
-THIS^.sTransitionKey   REF= sTransitionKey;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
 ]]></ST>
       </Implementation>
     </Method>

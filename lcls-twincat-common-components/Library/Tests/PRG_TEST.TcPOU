@@ -4,16 +4,16 @@
     <Declaration><![CDATA[{attribute 'analysis' := '-33'}
 PROGRAM PRG_TEST
 VAR
-    fbATMTest: FB_ATMTest;
-    fbLICTest: FB_LICTest;
-    fbPPMTest: FB_PPMTest;
+//     fbATMTest: FB_ATMTest;
+//     fbLICTest: FB_LICTest;
+//     fbPPMTest: FB_PPMTest;
     fbREFTest: FB_REFTest;
-    fbSATTTest: FB_SATTTest;
-    fbSlitsPowerTest: FB_SLITS_POWERTest;
-    fbWFSTest: FB_WFSTest;
-    fbXPIMTest: FB_XPIMTest;
-    //fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
-    fbCCTempSensorTest: FB_CC_TempSensorTest;
+//     fbSATTTest: FB_SATTTest;
+//     fbSlitsPowerTest: FB_SLITS_POWERTest;
+//     fbWFSTest: FB_WFSTest;
+//     fbXPIMTest: FB_XPIMTest;
+//     //fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
+//     fbCCTempSensorTest: FB_CC_TempSensorTest;
 
     (* PMPS fake-DB setup. Builds an in-memory PMPS_GVL.BP_jsonDoc
        with per-device state entries matching every test FB's

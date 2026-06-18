@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_PROD" Id="{05a6132d-5b1f-403b-a290-a7c7bf7a78b8}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+PROGRAM PRG_PROD
+VAR
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    fbMotorY : FB_MotionStageNC(AxisRef := GVL_Axes.Axes[1], iPersistentDataStorage := fbPDS, sName := 'Y');
+
+
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..2
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO     : FB_HardwareFFOutput;
+    fbArbiter   : FB_Arbiter(1);
+    fbArbiterIO : FB_SubSysToArbiter_IO;
+
+    fbStandardPMPSDB : FB_Standard_PMPSDB(
+        sPlcName  := 'plc-tst-motion',
+        sDirectory := '/home/ecs-user/pmpsdb/',
+        io_fbFFHWO:=fbFFHWO
+    );
+
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL := TRUE;
+    bEnablePositionLimits : BOOL := TRUE;
+    bReadDBNow            : BOOL;
+
+    sDeviceName    : STRING := 'TST:REF';
+    sTransitionKey : STRING := 'TST:REF-TRANSITION';
+
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_REF_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10.0,
+         sPmpsState      := 'TST:REF-OUT'),
+        (stPositionState := astPositionState[1][E_REF_States.IN],
+         stDefault       := stDefault,
+         fPosition       := 20.0,
+         sPmpsState      := 'TST:REF-IN')
+    ];
+
+    fbREF : FB_REF(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        fbArbiter        := fbArbiter,
+        sDeviceName      := sDeviceName,
+        sTransitionKey   := sTransitionKey
+    );
+
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    nTestStep   : INT;
+    fGoal       : LREAL := 20.0;
+    fTolerance  : LREAL := 2.0;
+    fObserved   : LREAL;
+    bFirstScan : BOOL := TRUE;
+    i	: UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR i := 1 TO 2 DO
+    afbStatePMPS[i]();
+END_FOR
+
+fbPDS();
+fbMotorY();
+
+fbREF(
+    bEnableMotion         := bEnableMotion,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy		  := MOTION_GVL.fbPmpsFileReader.bBusy,
+    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+);
+
+fbArbiterIO(
+    i_bVeto:=FALSE,
+    Arbiter:=fbArbiter,
+    fbFFHWO:=fbFFHWO
+);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

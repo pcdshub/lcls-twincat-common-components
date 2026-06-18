@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SATTTest" Id="{383787d3-728f-42f6-950b-c99d26391aa0}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SATTTest EXTENDS FB_TestSuite
@@ -16,10 +16,7 @@ VAR
     fbMotorY      : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
-    {attribute 'pytmc' := '
-        pv: MMS
-        astPositionState.array: 1..9
-    '}
+
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 

@@ -30,9 +30,7 @@ VAR
 
     fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
 
-    (* FB_REF is single-motor (nActiveMotorCount := 1) but FB_Init takes
-       a full MAX_STATE_MOTORS-sized array; slots 2..N stay as nil
-       interfaces and are never indexed. *)
+
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     {attribute 'pytmc' := '
@@ -51,23 +49,9 @@ VAR
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
 
-    (* Bound to FB_REF as REFERENCE TO STRING. *)
     sDeviceName    : STRING := 'TST:REF';
     sTransitionKey : STRING := 'TST:REF-TRANSITION';
 
-    fbREF : FB_REF(
-        aiMotionStage    := aiMotionStage,
-        astPositionState := astPositionState,
-        fbFFHWO          := fbFFHWO,
-        fbArbiter        := fbArbiter,
-        sDeviceName      := sDeviceName,
-        sTransitionKey   := sTransitionKey
-    );
-
-    (* Caller-owned per-install PMPS configurators. Match the FB_REF
-       device-side defaults (sName / fDelta) declared inside FB_REF
-       (OUT/IN, fDelta = 2.0). PMPS DB keys must match the fake doc
-       seeded by FB_CC_PMPSTestSetup: 'TST:REF-OUT', 'TST:REF-IN'. *)
     stDefault : ST_PositionState := (
         bMoveOk       := TRUE,
         bValid        := TRUE,
@@ -85,42 +69,91 @@ VAR
          sPmpsState      := 'TST:REF-IN')
     ];
 
+    fbREF : FB_REF(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        fbArbiter        := fbArbiter,
+        sDeviceName      := sDeviceName,
+        sTransitionKey   := sTransitionKey
+    );
+
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    nTestStep   : INT;
+    fGoal       : LREAL := 20.0;
+    fTolerance  : LREAL := 2.0;
+    fObserved   : LREAL;
     bFirstScan : BOOL := TRUE;
-    i          : UINT;
+    i	: UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
+      <ST><![CDATA[TEST(__POUNAME());
+
+CASE nTestStep OF
+    0:
+
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+
+            bEnableMotion         := TRUE;
+            bEnableBeamParams     := TRUE;
+            bEnablePositionLimits := TRUE;
+            bReadDBNow            := TRUE;
+            fbREF(
+                bFileReaderBusy  := TRUE,
+                bFileReaderError := FALSE
+            );
+            bFirstScan := FALSE;
+
+        END_IF
+        nTestStep      := 1;
+    1:
+        fbREF(
+            bFileReaderBusy  := FALSE,
+            bFileReaderError := FALSE
+        );
+        nTestStep      := 2;
+    2:
+        (* Wait for cold-start stabilisation: PMPS DB parsed, motor
+           ready to accept moves, no residual error. *)
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbREF.eEnumSet := E_REF_States.IN;
+            nTestStep      := 3;
+        END_IF
+
+    3:
+        fObserved := fbMotorY.stMotionStatus.fActPosition;
+        IF fbREF.eEnumGet = E_REF_States.IN
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - fGoal) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'T01: REF reached IN within tolerance');
+            nTestStep := 4;
+        END_IF
+END_CASE
 
 FOR i := 1 TO 2 DO
     afbStatePMPS[i]();
 END_FOR
 
-IF bFirstScan THEN
-    fbMotorY.SetModeEnableLimits(
-        LimBackward    := TRUE,
-        LimForward     := TRUE,
-        HomeEnable     := FALSE,
-        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
-        EnableMode     := E_StageEnableMode.DURING_MOTION,
-        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
-        UserEnable     := TRUE,
-        HardwareEnable := TRUE
-    );
-    fbMotorY.SetVelocity(Velocity := 15.5);
-    fbMotorY.RestoreMotionParams      := FALSE;
-    fbMotorY.DoNotRestoreNcParameters := TRUE;
-
-    bEnableMotion         := TRUE;
-    bEnableBeamParams     := TRUE;
-    bEnablePositionLimits := TRUE;
-    bReadDBNow            := TRUE;
-
-    bFirstScan := FALSE;
-END_IF
-
 fbPDS();
 fbMotorY();
+
 fbREF(
     bEnableMotion         := bEnableMotion,
     bEnableBeamParams     := bEnableBeamParams,
@@ -128,7 +161,21 @@ fbREF(
     bReadDBNow            := bReadDBNow
 );
 
-T01_StateMove_RequestIn_MotorReachesConfiguredPosition();
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
+fbTestTimer();
+
+IF nTestStep = 4 THEN
+    TEST_FINISHED();
+ELSIF fbTestTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbREF.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
+    TEST_FINISHED();
+END_IF
 ]]></ST>
     </Implementation>
     <Method Name="T01_StateMove_RequestIn_MotorReachesConfiguredPosition" Id="{bc00a201-0000-0000-0000-000000000001}">
@@ -143,55 +190,11 @@ T01_StateMove_RequestIn_MotorReachesConfiguredPosition();
 *)
 METHOD PRIVATE T01_StateMove_RequestIn_MotorReachesConfiguredPosition
 VAR_INST
-    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
-    nTestStep   : INT;
-    fGoal       : LREAL := 20.0;
-    fTolerance  : LREAL := 2.0;
-    fObserved   : LREAL;
+
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[TEST(__POUNAME());
-
-CASE nTestStep OF
-    0:
-        (* Wait for cold-start stabilisation: PMPS DB parsed, motor
-           ready to accept moves, no residual error. *)
-        IF NOT MOTION_GVL.fbPmpsFileReader.bBusy
-           AND NOT MOTION_GVL.fbPmpsFileReader.bError
-           AND fbMotorY.stMotionStatus.bStageReady
-           AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbREF.eEnumSet := E_REF_States.IN;
-            nTestStep      := 1;
-        END_IF
-
-    1:
-        fObserved := fbMotorY.stMotionStatus.fActPosition;
-        IF fbREF.eEnumGet = E_REF_States.IN
-           AND NOT fbMotorY.stMotionStatus.bMoving
-           AND ABS(fObserved - fGoal) <= fTolerance THEN
-            AssertTrue(
-                Condition := TRUE,
-                Message   := 'T01: REF reached IN within tolerance');
-            nTestStep := 2;
-        END_IF
-END_CASE
-
-fbTestTimer();
-
-IF nTestStep = 2 THEN
-    TEST_FINISHED();
-ELSIF fbTestTimer.Q THEN
-    AssertTrue(
-        Condition := FALSE,
-        Message   := CONCAT(
-            CONCAT(
-                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
-                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbREF.eEnumGet)))),
-            CONCAT(', fActPos=', TO_STRING(fObserved))));
-    TEST_FINISHED();
-END_IF
-]]></ST>
+        <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
   </POU>
