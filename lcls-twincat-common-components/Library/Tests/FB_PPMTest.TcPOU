@@ -89,10 +89,8 @@ fbSubSysIO(
     FFO := fbFFHWO
 );
 
-(* Caller-side PMPS configurators (per-install). *)
-FOR i := 1 TO 4 DO
-    afbStatePMPS[i]();
-END_FOR
+(* Caller-side PMPS configurators write each slot once in
+   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
 
 (* One-shot motor setup + initial caller-owned enables. Limits,
    brake/enable modes, home cmd, user/hardware enables, default

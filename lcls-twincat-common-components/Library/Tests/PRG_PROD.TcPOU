@@ -72,9 +72,8 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[FOR i := 1 TO 2 DO
-    afbStatePMPS[i]();
-END_FOR
+      <ST><![CDATA[(* Caller-side PMPS configurators write each slot once in
+   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
 
 fbPDS();
 fbMotorY();

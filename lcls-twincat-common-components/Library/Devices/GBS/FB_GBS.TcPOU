@@ -157,11 +157,8 @@ IF NOT __ISVALIDREF(aiMotionStage)
     RETURN;
 END_IF
 
-(* Apply device-side per-state defaults each cycle. Sleeps once the
-   parent state FB sets stPositionState.bUpdated := TRUE. *)
-FOR i := 1 TO 10 DO
-    afbStateDefaults[i]();
-END_FOR
+(* Device-side per-state defaults (afbStateDefaults) are written
+   once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
 
 (* PMPSND captures these in FB_Init only. fbStates' inline-init above
    forwarded them once at construction; re-write each cycle so live

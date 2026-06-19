@@ -162,12 +162,8 @@ IF NOT __ISVALIDREF(aiMotionStage)
     RETURN;
 END_IF
 
-(* Apply device-side per-state defaults each cycle. Sleeps once the
-   parent state FB sets stPositionState.bUpdated := TRUE. *)
-FOR i := 1 TO 4 DO
-    afbStateDefaults[i]();
-END_FOR
-
+(* Device-side per-state defaults (afbStateDefaults) are written
+   once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
 fbStates();
 
 (* Serial filter wheel: bExecute := TRUE keeps the comm state machine

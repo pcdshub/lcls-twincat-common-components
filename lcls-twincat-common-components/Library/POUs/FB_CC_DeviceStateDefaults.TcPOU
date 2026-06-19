@@ -4,21 +4,22 @@
     <Declaration><![CDATA[(*
     Per-(state) writer of the device-FB-side fields of an
     ST_PositionState slot that FB_CC_StatePMPSConfig does not
-    touch. Completes the init by writing sName (per-state label)
-    and fDelta (per-state tolerance). Owned by the device FB (e.g.
-    FB_REF), one instance per state, both fields hardcoded inside
-    the device FB.
+    touch. Performs a one-shot direct write of sName (per-state
+    label) and fDelta (per-state tolerance) from CallAfterInit.
+    Owned by the device FB (e.g. FB_ATM), one instance per state,
+    both fields hardcoded inside the device FB.
 
-    Other slot fields inherit from the device FB's stDefault
-    template via FB_CC_StatePMPSConfig's FB_StateSetup preload.
+    Other slot fields (fPosition, sPmpsState, and the
+    safety/baseline fields) are owned by FB_CC_StatePMPSConfig on
+    the integrator side; the two helpers' writes do not overlap so
+    their CallAfterInit ordering is irrelevant.
 
-    Body re-applies cyclically until FB_PositionStateInternalND sets
-    stPositionState.bUpdated := TRUE inside the parent state FB; from
-    then on the helper sleeps. bForceUpdate is a runtime escape hatch.
+    The FB body is empty; the slot is never touched cyclically, so
+    online-view edits persist.
 *)
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_CC_DeviceStateDefaults
 VAR_INPUT
-    bForceUpdate : BOOL;
 END_VAR
 VAR
     {attribute 'no_copy'}
@@ -28,23 +29,20 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(stPositionState) THEN
-    RETURN;
-END_IF
-
-IF bForceUpdate OR NOT stPositionState.bUpdated THEN
-    stPositionState.sName  := sName;
-    stPositionState.fDelta := fDelta;
-END_IF]]></ST>
+      <ST><![CDATA[]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{aa6ca063-ddfd-4f28-83a1-576c0b66e12b}">
-      <Declaration><![CDATA[METHOD CallAfterInit
+      <Declaration><![CDATA[(* One-shot write of the device-owned per-state fields (sName,
+   fDelta) into the slot. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
 VAR_INPUT
-    stPositionState : REFERENCE TO ST_PositionState;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
-]]></ST>
+        <ST><![CDATA[IF __ISVALIDREF(THIS^.stPositionState) THEN
+    THIS^.stPositionState.sName  := THIS^.sName;
+    THIS^.stPositionState.fDelta := THIS^.fDelta;
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_Init" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a32}">
