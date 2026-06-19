@@ -87,14 +87,14 @@ VAR
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
        so its writes win over the template baseline FB_StateSetup
        applied via FB_CC_StatePMPSConfig *)
-    afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
-        (stPositionState := astPositionState[1][E_REF_States.OUT],
-         sName           := 'OUT',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_REF_States.IN],
-         sName           := 'IN',
-         fDelta          := FDELTA_DEFAULT)
-    ];
+//     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
+//         (stPositionState := astPositionState[1][E_REF_States.OUT],
+//          sName           := 'OUT',
+//          fDelta          := FDELTA_DEFAULT),
+//         (stPositionState := astPositionState[1][E_REF_States.IN],
+//          sName           := 'IN',
+//          fDelta          := FDELTA_DEFAULT)
+//     ];
 
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
@@ -128,14 +128,15 @@ END_VAR]]></Declaration>
    OR NOT __ISVALIDREF(fbArbiter) THEN
     RETURN;
 END_IF
-
-FOR i := 1 TO 2 DO
-    afbStateDefaults[i]();
-END_FOR
+//
+// FOR i := 1 TO 2 DO
+//     afbStateDefaults[i]();
+// END_FOR
 
 fbStates();
 
-fbLaser(fTermMax := fTermMax);]]></ST>
+fbLaser(fTermMax := fTermMax);
+]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
       <Declaration><![CDATA[(*
@@ -157,12 +158,12 @@ VAR
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
-    stPositionState := astPositionState[1][E_REF_States.OUT]
-);
-afbStateDefaults[2].CallAfterInit(
-    stPositionState := astPositionState[1][E_REF_States.OUT]
-);
+        <ST><![CDATA[// afbStateDefaults[1].CallAfterInit(
+//     stPositionState := astPositionState[1][E_REF_States.OUT]
+// );
+// afbStateDefaults[2].CallAfterInit(
+//     stPositionState := astPositionState[1][E_REF_States.OUT]
+// );
 
 THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
@@ -217,5 +218,24 @@ THIS^.sTransitionKey   := sTransitionKey;
 ]]></ST>
       </Implementation>
     </Method>
+    <Property Name="MaintMode" Id="{666c9def-1031-444c-b052-5be27153dffd}">
+      <Declaration><![CDATA[PROPERTY MaintMode : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e61914cd-8c2b-465a-8c3f-ee9ed709699d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[MaintMode := fbStates.stPMPSEpicsToPlc.bMaintMode;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{14311ec0-b236-48d5-af42-be1d3ad373fa}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[fbStates.stPMPSEpicsToPlc.bMaintMode := MaintMode;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

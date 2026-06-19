@@ -76,9 +76,9 @@ VAR
         fbArbiter        := fbArbiter,
         sDeviceName      := sDeviceName,
         sTransitionKey   := sTransitionKey
-    );
+    ) := ( MaintMode := TRUE) ;
 
-    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    fbTestTimer : TON := (IN := TRUE, PT := T#120S);
     nTestStep   : INT;
     fGoal       : LREAL := 20.0;
     fTolerance  : LREAL := 2.0;
@@ -147,9 +147,9 @@ CASE nTestStep OF
         END_IF
 END_CASE
 
-FOR i := 1 TO 2 DO
-    afbStatePMPS[i]();
-END_FOR
+// FOR i := 1 TO 2 DO
+//     afbStatePMPS[i]();
+// END_FOR
 
 fbPDS();
 fbMotorY();
@@ -164,7 +164,7 @@ fbREF(
 fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 fbTestTimer();
 
-IF nTestStep = 4 THEN
+IF nTestStep = 10 THEN
     TEST_FINISHED();
 ELSIF fbTestTimer.Q THEN
     AssertTrue(

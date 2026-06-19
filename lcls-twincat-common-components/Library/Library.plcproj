@@ -180,6 +180,7 @@
     </Compile>
     <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
       <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
     </Compile>
     <Compile Include="Tests\Helpers\FB_CC_PMPSTestSetup.TcPOU">
       <SubType>Code</SubType>
@@ -204,10 +205,22 @@
     <PlaceholderReference Include="LCLS General">
       <DefaultResolution>LCLS General, * (SLAC)</DefaultResolution>
       <Namespace>LCLS_General</Namespace>
+      <Parameters>
+        <Parameter ListName="GENERALCONSTANTS" xmlns="">
+          <Key>MAX_STATES</Key>
+          <Value>4</Value>
+        </Parameter>
+      </Parameters>
     </PlaceholderReference>
     <PlaceholderReference Include="LCLS_Tc_Motion">
       <DefaultResolution>LCLS_Tc_Motion, * (SLAC - LCLS)</DefaultResolution>
       <Namespace>LCLS_Tc_Motion</Namespace>
+      <Parameters>
+        <Parameter ListName="MOTIONCONSTANTS" xmlns="">
+          <Key>MAX_STATE_MOTORS</Key>
+          <Value>1</Value>
+        </Parameter>
+      </Parameters>
     </PlaceholderReference>
     <PlaceholderReference Include="LCLS_Tc_DevAbs">
       <DefaultResolution>LCLS_Tc_DevAbs, * (SLAC - LCLS)</DefaultResolution>

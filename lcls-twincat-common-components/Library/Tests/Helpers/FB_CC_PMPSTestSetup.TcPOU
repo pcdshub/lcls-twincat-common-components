@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_PMPSTestSetup" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6b}" SpecialFunc="None">
     <Declaration><![CDATA[
@@ -63,96 +63,96 @@ IF bDone THEN
 END_IF
 
 (* ---- TST:ATM ---- *)
-astParams_ATM[0].sPmpsState := 'TST:ATM-TRANSITION';
-astParams_ATM[1].sPmpsState := 'TST:ATM-OUT';
-astParams_ATM[2].sPmpsState := 'TST:ATM-TARGET1';
-astParams_ATM[3].sPmpsState := 'TST:ATM-TARGET2';
-astParams_ATM[4].sPmpsState := 'TST:ATM-TARGET3';
-astParams_ATM[5].sPmpsState := 'TST:ATM-TARGET4';
-astParams_ATM[6].sPmpsState := 'TST:ATM-TARGET5';
-
-(* ---- TST:LIC ---- *)
-astParams_LIC[0].sPmpsState := 'TST:LIC-TRANSITION';
-astParams_LIC[1].sPmpsState := 'TST:LIC-OUT';
-astParams_LIC[2].sPmpsState := 'TST:LIC-MIRROR1';
-astParams_LIC[3].sPmpsState := 'TST:LIC-MIRROR2';
-astParams_LIC[4].sPmpsState := 'TST:LIC-TARGET';
-
-(* ---- TST:PPM ---- *)
-astParams_PPM[0].sPmpsState := 'TST:PPM-TRANSITION';
-astParams_PPM[1].sPmpsState := 'TST:PPM-OUT';
-astParams_PPM[2].sPmpsState := 'TST:PPM-POWERMETER';
-astParams_PPM[3].sPmpsState := 'TST:PPM-YAG1';
-astParams_PPM[4].sPmpsState := 'TST:PPM-YAG2';
+// astParams_ATM[0].sPmpsState := 'TST:ATM-TRANSITION';
+// astParams_ATM[1].sPmpsState := 'TST:ATM-OUT';
+// astParams_ATM[2].sPmpsState := 'TST:ATM-TARGET1';
+// astParams_ATM[3].sPmpsState := 'TST:ATM-TARGET2';
+// astParams_ATM[4].sPmpsState := 'TST:ATM-TARGET3';
+// astParams_ATM[5].sPmpsState := 'TST:ATM-TARGET4';
+// astParams_ATM[6].sPmpsState := 'TST:ATM-TARGET5';
+//
+// (* ---- TST:LIC ---- *)
+// astParams_LIC[0].sPmpsState := 'TST:LIC-TRANSITION';
+// astParams_LIC[1].sPmpsState := 'TST:LIC-OUT';
+// astParams_LIC[2].sPmpsState := 'TST:LIC-MIRROR1';
+// astParams_LIC[3].sPmpsState := 'TST:LIC-MIRROR2';
+// astParams_LIC[4].sPmpsState := 'TST:LIC-TARGET';
+//
+// (* ---- TST:PPM ---- *)
+// astParams_PPM[0].sPmpsState := 'TST:PPM-TRANSITION';
+// astParams_PPM[1].sPmpsState := 'TST:PPM-OUT';
+// astParams_PPM[2].sPmpsState := 'TST:PPM-POWERMETER';
+// astParams_PPM[3].sPmpsState := 'TST:PPM-YAG1';
+// astParams_PPM[4].sPmpsState := 'TST:PPM-YAG2';
 
 (* ---- TST:REF ---- *)
 astParams_REF[0].sPmpsState := 'TST:REF-TRANSITION';
 astParams_REF[1].sPmpsState := 'TST:REF-OUT';
 astParams_REF[2].sPmpsState := 'TST:REF-IN';
 
-(* ---- TST:GBS ---- *)
-astParams_GBS[0].sPmpsState  := 'TST:GBS-TRANSITION';
-astParams_GBS[1].sPmpsState  := 'TST:GBS-OUT';
-astParams_GBS[2].sPmpsState  := 'TST:GBS-TARGET1a';
-astParams_GBS[3].sPmpsState  := 'TST:GBS-TARGET1b';
-astParams_GBS[4].sPmpsState  := 'TST:GBS-TARGET2a';
-astParams_GBS[5].sPmpsState  := 'TST:GBS-TARGET2b';
-astParams_GBS[6].sPmpsState  := 'TST:GBS-TARGET3a';
-astParams_GBS[7].sPmpsState  := 'TST:GBS-TARGET3b';
-astParams_GBS[8].sPmpsState  := 'TST:GBS-TARGET4';
-astParams_GBS[9].sPmpsState  := 'TST:GBS-TARGET5';
-astParams_GBS[10].sPmpsState := 'TST:GBS-TARGET6';
-
-(* ---- TST:IPM ---- *)
-astParams_IPM[0].sPmpsState := 'TST:IPM-TRANSITION';
-astParams_IPM[1].sPmpsState := 'TST:IPM-OUT';
-astParams_IPM[2].sPmpsState := 'TST:IPM-TARGET1';
-astParams_IPM[3].sPmpsState := 'TST:IPM-TARGET2';
-astParams_IPM[4].sPmpsState := 'TST:IPM-TARGET3';
-astParams_IPM[5].sPmpsState := 'TST:IPM-TARGET4';
-
-(* ---- TST:WFS ---- *)
-astParams_WFS[0].sPmpsState := 'TST:WFS-TRANSITION';
-astParams_WFS[1].sPmpsState := 'TST:WFS-OUT';
-astParams_WFS[2].sPmpsState := 'TST:WFS-TARGET1';
-astParams_WFS[3].sPmpsState := 'TST:WFS-TARGET2';
-astParams_WFS[4].sPmpsState := 'TST:WFS-TARGET3';
-astParams_WFS[5].sPmpsState := 'TST:WFS-TARGET4';
-astParams_WFS[6].sPmpsState := 'TST:WFS-TARGET5';
-
-(* ---- TST:XPIM ---- *)
-astParams_XPIM[0].sPmpsState := 'TST:XPIM-TRANSITION';
-astParams_XPIM[1].sPmpsState := 'TST:XPIM-OUT';
-astParams_XPIM[2].sPmpsState := 'TST:XPIM-DIAMOND';
-astParams_XPIM[3].sPmpsState := 'TST:XPIM-RETICLE';
-astParams_XPIM[4].sPmpsState := 'TST:XPIM-YAG';
-astParams_XPIM[5].sPmpsState := 'TST:XPIM-POWERMETER';
-
-(* ---- TST:SATT ---- *)
-astParams_SATT[0].sPmpsState := 'TST:SATT-TRANSITION';
-astParams_SATT[1].sPmpsState := 'TST:SATT-FILTER1';
+// (* ---- TST:GBS ---- *)
+// astParams_GBS[0].sPmpsState  := 'TST:GBS-TRANSITION';
+// astParams_GBS[1].sPmpsState  := 'TST:GBS-OUT';
+// astParams_GBS[2].sPmpsState  := 'TST:GBS-TARGET1a';
+// astParams_GBS[3].sPmpsState  := 'TST:GBS-TARGET1b';
+// astParams_GBS[4].sPmpsState  := 'TST:GBS-TARGET2a';
+// astParams_GBS[5].sPmpsState  := 'TST:GBS-TARGET2b';
+// astParams_GBS[6].sPmpsState  := 'TST:GBS-TARGET3a';
+// astParams_GBS[7].sPmpsState  := 'TST:GBS-TARGET3b';
+// astParams_GBS[8].sPmpsState  := 'TST:GBS-TARGET4';
+// astParams_GBS[9].sPmpsState  := 'TST:GBS-TARGET5';
+// astParams_GBS[10].sPmpsState := 'TST:GBS-TARGET6';
+//
+// (* ---- TST:IPM ---- *)
+// astParams_IPM[0].sPmpsState := 'TST:IPM-TRANSITION';
+// astParams_IPM[1].sPmpsState := 'TST:IPM-OUT';
+// astParams_IPM[2].sPmpsState := 'TST:IPM-TARGET1';
+// astParams_IPM[3].sPmpsState := 'TST:IPM-TARGET2';
+// astParams_IPM[4].sPmpsState := 'TST:IPM-TARGET3';
+// astParams_IPM[5].sPmpsState := 'TST:IPM-TARGET4';
+//
+// (* ---- TST:WFS ---- *)
+// astParams_WFS[0].sPmpsState := 'TST:WFS-TRANSITION';
+// astParams_WFS[1].sPmpsState := 'TST:WFS-OUT';
+// astParams_WFS[2].sPmpsState := 'TST:WFS-TARGET1';
+// astParams_WFS[3].sPmpsState := 'TST:WFS-TARGET2';
+// astParams_WFS[4].sPmpsState := 'TST:WFS-TARGET3';
+// astParams_WFS[5].sPmpsState := 'TST:WFS-TARGET4';
+// astParams_WFS[6].sPmpsState := 'TST:WFS-TARGET5';
+//
+// (* ---- TST:XPIM ---- *)
+// astParams_XPIM[0].sPmpsState := 'TST:XPIM-TRANSITION';
+// astParams_XPIM[1].sPmpsState := 'TST:XPIM-OUT';
+// astParams_XPIM[2].sPmpsState := 'TST:XPIM-DIAMOND';
+// astParams_XPIM[3].sPmpsState := 'TST:XPIM-RETICLE';
+// astParams_XPIM[4].sPmpsState := 'TST:XPIM-YAG';
+// astParams_XPIM[5].sPmpsState := 'TST:XPIM-POWERMETER';
+//
+// (* ---- TST:SATT ---- *)
+// astParams_SATT[0].sPmpsState := 'TST:SATT-TRANSITION';
+// astParams_SATT[1].sPmpsState := 'TST:SATT-FILTER1';
 
 (* ---- TST:SLITS (single PMPS key, aperture geometry not state-keyed) ---- *)
-astParams_SLITS[0].sPmpsState := 'TST:SLITS';
+// astParams_SLITS[0].sPmpsState := 'TST:SLITS';
 
 (* First helper creates the root document, the rest append. *)
-fbJsonHelper_ATM(
-    astBeamParams := astParams_ATM,
-    bExecute      := TRUE,
-    sDevName      := 'TST:ATM',
-    bNewDoc       := TRUE);
-
-fbJsonHelper_LIC(
-    astBeamParams := astParams_LIC,
-    bExecute      := TRUE,
-    sDevName      := 'TST:LIC',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_PPM(
-    astBeamParams := astParams_PPM,
-    bExecute      := TRUE,
-    sDevName      := 'TST:PPM',
-    bNewDoc       := FALSE);
+// fbJsonHelper_ATM(
+//     astBeamParams := astParams_ATM,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:ATM',
+//     bNewDoc       := TRUE);
+//
+// fbJsonHelper_LIC(
+//     astBeamParams := astParams_LIC,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:LIC',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_PPM(
+//     astBeamParams := astParams_PPM,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:PPM',
+//     bNewDoc       := FALSE);
 
 fbJsonHelper_REF(
     astBeamParams := astParams_REF,
@@ -160,41 +160,41 @@ fbJsonHelper_REF(
     sDevName      := 'TST:REF',
     bNewDoc       := FALSE);
 
-fbJsonHelper_GBS(
-    astBeamParams := astParams_GBS,
-    bExecute      := TRUE,
-    sDevName      := 'TST:GBS',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_IPM(
-    astBeamParams := astParams_IPM,
-    bExecute      := TRUE,
-    sDevName      := 'TST:IPM',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_WFS(
-    astBeamParams := astParams_WFS,
-    bExecute      := TRUE,
-    sDevName      := 'TST:WFS',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_XPIM(
-    astBeamParams := astParams_XPIM,
-    bExecute      := TRUE,
-    sDevName      := 'TST:XPIM',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_SATT(
-    astBeamParams := astParams_SATT,
-    bExecute      := TRUE,
-    sDevName      := 'TST:SATT',
-    bNewDoc       := FALSE);
-
-fbJsonHelper_SLITS(
-    astBeamParams := astParams_SLITS,
-    bExecute      := TRUE,
-    sDevName      := 'TST:SLITS',
-    bNewDoc       := FALSE);
+// fbJsonHelper_GBS(
+//     astBeamParams := astParams_GBS,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:GBS',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_IPM(
+//     astBeamParams := astParams_IPM,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:IPM',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_WFS(
+//     astBeamParams := astParams_WFS,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:WFS',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_XPIM(
+//     astBeamParams := astParams_XPIM,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:XPIM',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_SATT(
+//     astBeamParams := astParams_SATT,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:SATT',
+//     bNewDoc       := FALSE);
+//
+// fbJsonHelper_SLITS(
+//     astBeamParams := astParams_SLITS,
+//     bExecute      := TRUE,
+//     sDevName      := 'TST:SLITS',
+//     bNewDoc       := FALSE);
 
 bDone := TRUE;
 ]]></ST>
