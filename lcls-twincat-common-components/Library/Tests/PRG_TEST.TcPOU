@@ -15,19 +15,11 @@ VAR
 //     //fbCheckPositionStateWriteTest: FB_CheckPositionStateWriteTest;
 //     fbCCTempSensorTest: FB_CC_TempSensorTest;
 
-    (* PMPS fake-DB setup. Builds an in-memory PMPS_GVL.BP_jsonDoc
-       with per-device state entries matching every test FB's
-       sDeviceName / sTransitionKey / sPmpsState wiring (TST:ATM-OUT,
-       TST:REF-IN, etc.) so device tests see real PMPS lookup data
-       instead of empty / DB-not-ready paths. *)
-    fbPmpsTestSetup: FB_CC_PMPSTestSetup;
+
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[
-// Setup a fake PMPS DB export covering every test suite. One-shot:
-// after the first cycle the FB latches bDone and returns immediately.
-fbPmpsTestSetup();
 
 // Run the tests
 TcUnit.RUN();]]></ST>

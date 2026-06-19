@@ -73,19 +73,29 @@ VAR
         bEnableBeamParams     := TRUE,
         bEnablePositionLimits := TRUE,
         bReadDBNow := FALSE
-    ) := ( MaintMode := TRUE) ;
+    );
 
     fbTestTimer : TON := (IN := TRUE, PT := T#60S);
     nTestStep   : INT;
     fGoal       : LREAL := 20.0;
     fTolerance  : LREAL := 2.0;
     fObserved   : LREAL;
-    bFirstScan : BOOL := TRUE;
+    bFirstScan  : BOOL := TRUE;
     i	: UINT;
+    (* PMPS fake-DB setup. Builds an in-memory PMPS_GVL.BP_jsonDoc
+       with per-device state entries matching every test FB's
+       sDeviceName / sTransitionKey / sPmpsState wiring (TST:ATM-OUT,
+       TST:REF-IN, etc.) so device tests see real PMPS lookup data
+       instead of empty / DB-not-ready paths. *)
+    fbPmpsTestSetup: FB_CC_PMPSTestSetup;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[TEST(__POUNAME());
+
+// Setup a fake PMPS DB export covering every test suite. One-shot:
+// after the first cycle the FB latches bDone and returns immediately.
+fbPmpsTestSetup();
 
 CASE nTestStep OF
     0:

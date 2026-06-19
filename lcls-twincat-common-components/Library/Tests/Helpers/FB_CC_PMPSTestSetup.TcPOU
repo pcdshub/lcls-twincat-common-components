@@ -86,9 +86,30 @@ END_IF
 // astParams_PPM[4].sPmpsState := 'TST:PPM-YAG2';
 
 (* ---- TST:REF ---- *)
-astParams_REF[0].sPmpsState := 'TST:REF-TRANSITION';
-astParams_REF[1].sPmpsState := 'TST:REF-OUT';
-astParams_REF[2].sPmpsState := 'TST:REF-IN';
+astParams_REF[0].sPmpsState	:= 'TST:REF-TRANSITION';
+astParams_REF[0].nRequestAssertionID	:= 600;
+astParams_REF[0].stBeamParams.nBeamClass := 2#0000_1000;
+astParams_REF[0].stBeamParams.neVRange   := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[0].stBeamParams.nRate   		:= 1;
+astParams_REF[0].stBeamParams.nTran     		:= 0;
+astParams_REF[0].stBeamParams.nMachineMode	:= 1;
+
+astParams_REF[1].sPmpsState	:= 'TST:REF-OUT';
+astParams_REF[1].nRequestAssertionID	:= 601;
+astParams_REF[1].stBeamParams.nBeamClass := 2#0000_0001;
+astParams_REF[1].stBeamParams.neVRange   := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[1].stBeamParams.nRate	:= 10;
+astParams_REF[1].stBeamParams.nTran	:= 12;
+astParams_REF[1].stBeamParams.nMachineMode	:= 2;
+
+astParams_REF[2].sPmpsState	:= 'TST:REF-IN';
+astParams_REF[2].nRequestAssertionID	:= 602;
+astParams_REF[2].stBeamParams.nBeamClass := 2#1000_0000;
+astParams_REF[2].stBeamParams.neVRange   := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[2].stBeamParams.nRate	:= 110;
+astParams_REF[2].stBeamParams.nTran	:= 12.5;
+astParams_REF[2].stBeamParams.nMachineMode	:= 1;
+
 
 // (* ---- TST:GBS ---- *)
 // astParams_GBS[0].sPmpsState  := 'TST:GBS-TRANSITION';
@@ -136,11 +157,17 @@ astParams_REF[2].sPmpsState := 'TST:REF-IN';
 // astParams_SLITS[0].sPmpsState := 'TST:SLITS';
 
 (* First helper creates the root document, the rest append. *)
+fbJsonHelper_REF(
+    astBeamParams := astParams_REF,
+    bExecute      := TRUE,
+    sDevName      := 'TST:REF',
+    bNewDoc       := TRUE
+);
 // fbJsonHelper_ATM(
 //     astBeamParams := astParams_ATM,
 //     bExecute      := TRUE,
 //     sDevName      := 'TST:ATM',
-//     bNewDoc       := TRUE);
+//     bNewDoc       := FALSE);
 //
 // fbJsonHelper_LIC(
 //     astBeamParams := astParams_LIC,
@@ -154,11 +181,8 @@ astParams_REF[2].sPmpsState := 'TST:REF-IN';
 //     sDevName      := 'TST:PPM',
 //     bNewDoc       := FALSE);
 
-fbJsonHelper_REF(
-    astBeamParams := astParams_REF,
-    bExecute      := TRUE,
-    sDevName      := 'TST:REF',
-    bNewDoc       := FALSE);
+
+
 
 // fbJsonHelper_GBS(
 //     astBeamParams := astParams_GBS,
