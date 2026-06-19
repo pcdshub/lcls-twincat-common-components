@@ -57,14 +57,6 @@ VAR_INPUT
        `fbXPIM.eEnumGet`. *)
     eEnumSet : E_XPIM_States;
     eEnumGet : E_XPIM_States;
-
-    (* Run-time toggles forwarded into fbStates each cycle. PMPSND
-       captures these by value in its own FB_Init, so the body
-       re-writes fbStates.* every cycle to track live caller changes. *)
-    bEnableMotion         : BOOL;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
 END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -110,10 +102,12 @@ VAR
     fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
     fbArbiter             : REFERENCE TO FB_Arbiter;
-    {attribute 'no_copy'}
-    sDeviceName           : REFERENCE TO STRING;
-    {attribute 'no_copy'}
-    sTransitionKey        : REFERENCE TO STRING;
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
     (* EL6 serial terminal buffers, caller-owned and physically linked
        to the EL6xxx terminal IO. Passed through to FB_XPIM_FilterWheel
        via VAR_IN_OUT each cycle. *)
@@ -155,8 +149,6 @@ IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter)
-   OR NOT __ISVALIDREF(sDeviceName)
-   OR NOT __ISVALIDREF(sTransitionKey)
    OR NOT __ISVALIDREF(stEl6In)
    OR NOT __ISVALIDREF(stEl6Out) THEN
     RETURN;
@@ -195,7 +187,12 @@ fbFlowSwitch();]]></ST>
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_XPIM_States.OUT]);
+afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_XPIM_States.YAG]);
+afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_XPIM_States.DIAMOND]);
+afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_XPIM_States.RETICLE]);
+
+THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -239,8 +236,11 @@ VAR_INPUT
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : REFERENCE TO STRING;
-    sTransitionKey         : REFERENCE TO STRING;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
     stEl6In                : REFERENCE TO EL6inData22b;
     stEl6Out               : REFERENCE TO EL6outData22b;
 END_VAR]]></Declaration>
@@ -249,8 +249,11 @@ END_VAR]]></Declaration>
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
 THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      REF= sDeviceName;
-THIS^.sTransitionKey   REF= sTransitionKey;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams     := bEnableBeamParams;
+THIS^.bEnablePositionLimits := bEnablePositionLimits;
+THIS^.bReadDBNow            := bReadDBNow;
 THIS^.stEl6In          REF= stEl6In;
 THIS^.stEl6Out         REF= stEl6Out;]]></ST>
       </Implementation>

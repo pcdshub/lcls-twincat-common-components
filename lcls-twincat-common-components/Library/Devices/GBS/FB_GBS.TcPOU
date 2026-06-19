@@ -49,14 +49,6 @@ VAR_INPUT
        `fbGBS.eEnumGet`. *)
     eEnumSet : E_GBS_States;
     eEnumGet : E_GBS_States;
-
-    (* Run-time toggles forwarded into fbStates each cycle. PMPSND
-       captures these by value in its own FB_Init, so the body
-       re-writes fbStates.* every cycle to track live caller changes. *)
-    bEnableMotion         : BOOL;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
 END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -96,10 +88,12 @@ VAR
     fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
     fbArbiter             : REFERENCE TO FB_Arbiter;
-    {attribute 'no_copy'}
-    sDeviceName           : REFERENCE TO STRING;
-    {attribute 'no_copy'}
-    sTransitionKey        : REFERENCE TO STRING;
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
 
     (* One configurator per GBS state (OUT + 9 targets). Writes the
        per-state sName and fDelta. Ticked cyclically in the body AFTER
@@ -151,23 +145,13 @@ END_VAR]]></Declaration>
 IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(fbArbiter)
-   OR NOT __ISVALIDREF(sDeviceName)
-   OR NOT __ISVALIDREF(sTransitionKey) THEN
+   OR NOT __ISVALIDREF(fbArbiter) THEN
     RETURN;
 END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
    once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
-
-(* PMPSND captures these in FB_Init only. fbStates' inline-init above
-   forwarded them once at construction; re-write each cycle so live
-   VAR_INPUT writes from the caller propagate. *)
-fbStates.bEnableBeamParams     := bEnableBeamParams;
-fbStates.bEnablePositionLimits := bEnablePositionLimits;
-fbStates.bReadDBNow            := bReadDBNow;
-
-fbStates(bEnableMotion := bEnableMotion);
+fbStates();
 
 (* In-beam RTDs: only fault when something is actually in the beam
    (i.e. not OUT). Driven by the PMPS DB temp setpoint. *)
@@ -201,7 +185,18 @@ fbRTD2(
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.OUT]);
+afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET1a]);
+afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET1b]);
+afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET2a]);
+afbStateDefaults[5].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET2b]);
+afbStateDefaults[6].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET3a]);
+afbStateDefaults[7].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET3b]);
+afbStateDefaults[8].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET4]);
+afbStateDefaults[9].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET5]);
+afbStateDefaults[10].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET6]);
+
+THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -246,16 +241,22 @@ VAR_INPUT
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : REFERENCE TO STRING;
-    sTransitionKey         : REFERENCE TO STRING;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
 THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      REF= sDeviceName;
-THIS^.sTransitionKey   REF= sTransitionKey;]]></ST>
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams     := bEnableBeamParams;
+THIS^.bEnablePositionLimits := bEnablePositionLimits;
+THIS^.bReadDBNow            := bReadDBNow;]]></ST>
       </Implementation>
     </Method>
   </POU>

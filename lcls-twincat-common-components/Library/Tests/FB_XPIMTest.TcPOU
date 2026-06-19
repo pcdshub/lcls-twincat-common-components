@@ -34,15 +34,6 @@ VAR
     stEl6In  : EL6inData22b;
     stEl6Out : EL6outData22b;
 
-    (* Per-cycle caller-owned BOOL flags, written into FB_XPIM via
-       VAR_INPUT call syntax in the cyclic body below. *)
-    bEnableMotion         : BOOL;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
-
-    (* Device-name strings bound to FB_XPIM as REFERENCE TO STRING --
-       a literal cannot be REF-bound, so they live as locals here. *)
     sDeviceName    : STRING := 'TST:XPIM';
     sTransitionKey : STRING := 'TST:XPIM-TRANSITION';
 
@@ -53,6 +44,9 @@ VAR
         fbArbiter             := fbArbiter,
         sDeviceName           := sDeviceName,
         sTransitionKey        := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
         stEl6In               := stEl6In,
         stEl6Out              := stEl6Out
     );
@@ -119,22 +113,12 @@ IF bFirstScan THEN
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
 
-    bEnableMotion         := TRUE;
-    bEnableBeamParams     := TRUE;
-    bEnablePositionLimits := TRUE;
-    bReadDBNow            := TRUE;
-
     bFirstScan := FALSE;
 END_IF
 
 fbPDS();
 fbMotorY();
-fbXPIM(
-    bEnableMotion         := bEnableMotion,
-    bEnableBeamParams     := bEnableBeamParams,
-    bEnablePositionLimits := bEnablePositionLimits,
-    bReadDBNow            := bReadDBNow
-);
+fbXPIM();
 
 TestStateMove();
 ]]></ST>

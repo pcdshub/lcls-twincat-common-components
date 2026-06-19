@@ -41,14 +41,6 @@ VAR_INPUT
        `fbLIC.eEnumGet`. *)
     eEnumSet : E_LIC_States;
     eEnumGet : E_LIC_States;
-
-    (* Run-time toggles forwarded into fbStates each cycle. PMPSND
-       captures these by value in its own FB_Init, so the body
-       re-writes fbStates.* every cycle to track live caller changes. *)
-    bEnableMotion         : BOOL;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
 END_VAR
 VAR
     fbStates : FB_PositionStatePMPSND(
@@ -82,10 +74,12 @@ VAR
     fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
     fbArbiter             : REFERENCE TO FB_Arbiter;
-    {attribute 'no_copy'}
-    sDeviceName           : REFERENCE TO STRING;
-    {attribute 'no_copy'}
-    sTransitionKey        : REFERENCE TO STRING;
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
 
     (* One configurator per LIC state (OUT, MIRROR1, MIRROR2, TARGET).
        Writes the per-state sName and fDelta. Ticked cyclically in the
@@ -119,9 +113,7 @@ END_VAR]]></Declaration>
 IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(fbArbiter)
-   OR NOT __ISVALIDREF(sDeviceName)
-   OR NOT __ISVALIDREF(sTransitionKey) THEN
+   OR NOT __ISVALIDREF(fbArbiter) THEN
     RETURN;
 END_IF
 
@@ -146,7 +138,12 @@ fbStates();]]></ST>
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_LIC_States.OUT]);
+afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_LIC_States.MIRROR1]);
+afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_LIC_States.MIRROR2]);
+afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_LIC_States.TARGET]);
+
+THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -191,16 +188,22 @@ VAR_INPUT
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : REFERENCE TO STRING;
-    sTransitionKey         : REFERENCE TO STRING;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
 THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      REF= sDeviceName;
-THIS^.sTransitionKey   REF= sTransitionKey;]]></ST>
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams     := bEnableBeamParams;
+THIS^.bEnablePositionLimits := bEnablePositionLimits;
+THIS^.bReadDBNow            := bReadDBNow;]]></ST>
       </Implementation>
     </Method>
   </POU>

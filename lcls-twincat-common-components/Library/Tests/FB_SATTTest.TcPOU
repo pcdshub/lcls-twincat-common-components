@@ -22,13 +22,6 @@ VAR
 
     fbFFHWO : FB_HardwareFFOutput;
 
-    (* Per-cycle caller-owned BOOL flag, written into FB_SATT via
-       VAR_INPUT call syntax in the cyclic body below. SATT has no
-       PMPS toggles (no beam-params / position-limits / DB-now). *)
-    bEnableMotion : BOOL;
-
-    (* Device-name string bound to FB_SATT as REFERENCE TO STRING --
-       a literal cannot be REF-bound, so it lives as a local here. *)
     sDeviceName : STRING := 'TST:SATT';
 
     fbSATT : FB_SXR_SATT_Stage(
@@ -117,14 +110,12 @@ IF bFirstScan THEN
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
 
-    bEnableMotion := TRUE;
-
     bFirstScan := FALSE;
 END_IF
 
 fbPDS();
 fbMotorY();
-fbSATT(bEnableMotion := bEnableMotion);
+fbSATT();
 
 TestStateMove();
 TestTempFFO();

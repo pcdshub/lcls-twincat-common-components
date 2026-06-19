@@ -48,12 +48,6 @@ VAR_INPUT
     eEnumSet : E_SXR_SATT_Position;
     eEnumGet : E_SXR_SATT_Position;
 
-    (* Run-time enable for state-mover dispatch. FB_PositionStateND
-       captures this in its own FB_Init, so the body re-writes
-       fbStates.bEnableMotion every cycle via VAR_INPUT call syntax
-       to track live caller changes. *)
-    bEnableMotion : BOOL;
-
     (* Per-filter material / thickness table. Used by the transmission
        calculation. Index 1 corresponds to FILTER1 (which is the
        state at slot 2 in astPositionState, since OUT lives at slot 1
@@ -138,8 +132,8 @@ VAR
                                           OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     {attribute 'no_copy'}
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
-    {attribute 'no_copy'}
-    sDeviceName      : REFERENCE TO STRING;
+    sDeviceName      : STRING;
+    bEnableMotion    : BOOL := TRUE;
 
     (* One configurator per SATT state (OUT + 8 filters). Writes the
        per-state sName and fDelta. Ticked cyclically in the body
@@ -190,8 +184,7 @@ END_VAR]]></Declaration>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
 IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
-   OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(sDeviceName) THEN
+   OR NOT __ISVALIDREF(fbFFHWO) THEN
     RETURN;
 END_IF
 
@@ -299,7 +292,17 @@ fTemp2 := fbRTD_2.fTemp;]]></ST>
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitEx(
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.OUT]);
+afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER1]);
+afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER2]);
+afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER3]);
+afbStateDefaults[5].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER4]);
+afbStateDefaults[6].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER5]);
+afbStateDefaults[7].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER6]);
+afbStateDefaults[8].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER7]);
+afbStateDefaults[9].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER8]);
+
+THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -326,13 +329,13 @@ VAR_INPUT
     astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                           OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
-    sDeviceName      : REFERENCE TO STRING;
+    sDeviceName      : STRING;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
-THIS^.sDeviceName      REF= sDeviceName;]]></ST>
+THIS^.sDeviceName      := sDeviceName;]]></ST>
       </Implementation>
     </Method>
   </POU>
