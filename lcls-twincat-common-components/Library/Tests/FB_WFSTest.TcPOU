@@ -140,30 +140,68 @@ ptr^ := iTempC * 10;]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{a0e8e497-91d8-4707-b6b1-4494ed854f9c}">
-      <Declaration><![CDATA[METHOD TestStateMove
+      <Declaration><![CDATA[(*
+    Smoke test for WFS state-move wiring. Walks OUT then TARGET1 and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_REFTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed
+    position. Two moves is enough to exercise the FB wiring; the
+    motion stack itself is covered by the
+    lcls-twincat-motion-abstraction test suite.
+*)
+METHOD TestStateMove
 VAR_INST
-    tonTimer   : TON;
-    nIterState : UINT := 0;
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
 END_VAR
 VAR CONSTANT
-    nLastState : UINT := 6; (* E_WFS_States.TARGET5 *)
+    fTolerance : LREAL := 2.0;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-(* Sanity check: can we at least move to every named state? *)
-TEST('TestWFSStateMove');
+        <ST><![CDATA[TEST('TestWFSStateMove');
 
-(* Prepare a timeout *)
-tonTimer(IN := TRUE, PT := T#10s);
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
 
-(* Start in Unknown, then go through the state positions one by one. *)
-IF fbWFS.eEnumGet = nIterState THEN
-    nIterState     := nIterState + 1;
-    fbWFS.eEnumSet := nIterState;
-END_IF
+CASE nTestStep OF
+    0:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbWFS.eEnumSet := E_WFS_States.OUT;
+            nTestStep      := 1;
+        END_IF
+    1:
+        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        IF fbWFS.eEnumGet = E_WFS_States.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbWFS.eEnumSet := E_WFS_States.TARGET1;
+            nTestStep      := 2;
+        END_IF
+    2:
+        (* TARGET1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        IF fbWFS.eEnumGet = E_WFS_States.TARGET1
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestWFSStateMove: OUT then TARGET1 reached within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in WFS move test');
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestWFSStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbWFS.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>

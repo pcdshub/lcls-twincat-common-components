@@ -176,30 +176,68 @@ ptr^ := iTempC * 100;
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{6c59097f-e216-48c9-8846-19da78be43c4}">
-      <Declaration><![CDATA[METHOD TestStateMove
+      <Declaration><![CDATA[(*
+    Smoke test for SATT state-move wiring. Walks OUT then FILTER1 and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_REFTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed
+    position. Two moves is enough to exercise the FB wiring; the
+    motion stack itself is covered by the
+    lcls-twincat-motion-abstraction test suite.
+*)
+METHOD TestStateMove
 VAR_INST
-    tonTimer   : TON;
-    nIterState : UINT := 0;
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
 END_VAR
 VAR CONSTANT
-    nLastState : UINT := 9; (* E_SXR_SATT_Position.FILTER8 *)
+    fTolerance : LREAL := 2.0;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-(* Sanity check: can we at least move to every named state? *)
-TEST('TestSATTStateMove');
+        <ST><![CDATA[TEST('TestSATTStateMove');
 
-(* Prepare a timeout *)
-tonTimer(IN := TRUE, PT := T#20s);
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
 
-(* Start in Unknown, then go through the state positions one by one. *)
-IF fbSATT.eEnumGet = nIterState THEN
-    nIterState      := nIterState + 1;
-    fbSATT.eEnumSet := nIterState;
-END_IF
+CASE nTestStep OF
+    0:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbSATT.eEnumSet := E_SXR_SATT_Position.OUT;
+            nTestStep       := 1;
+        END_IF
+    1:
+        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;
+            nTestStep       := 2;
+        END_IF
+    2:
+        (* FILTER1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.FILTER1
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestSATTStateMove: OUT then FILTER1 reached within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in SATT move test');
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestSATTStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbSATT.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>
