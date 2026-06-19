@@ -54,10 +54,6 @@ VAR_INPUT
     (* Run-time toggles forwarded into fbStates each cycle. PMPSND
        captures these by value in its own FB_Init, so the body
        re-writes fbStates.* every cycle to track live caller changes. *)
-    bEnableMotion         : BOOL;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
     fTermMax               : LREAL := 200;
 END_VAR
 VAR
@@ -78,23 +74,25 @@ VAR
     fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
     {attribute 'no_copy'}
     fbArbiter             : REFERENCE TO FB_Arbiter;
-    {attribute 'no_copy'}
-    sDeviceName           : STRING;
-    {attribute 'no_copy'}
-    sTransitionKey        : STRING;
 
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
     (* One configurator per REF state (OUT, IN). Writes the per-state
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
        so its writes win over the template baseline FB_StateSetup
        applied via FB_CC_StatePMPSConfig *)
-//     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
-//         (stPositionState := astPositionState[1][E_REF_States.OUT],
-//          sName           := 'OUT',
-//          fDelta          := FDELTA_DEFAULT),
-//         (stPositionState := astPositionState[1][E_REF_States.IN],
-//          sName           := 'IN',
-//          fDelta          := FDELTA_DEFAULT)
-//     ];
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
+        (stPositionState := astPositionState[1][E_REF_States.OUT],
+         sName           := 'OUT',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_REF_States.IN],
+         sName           := 'IN',
+         fDelta          := FDELTA_DEFAULT)
+    ];
 
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
@@ -158,12 +156,12 @@ VAR
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[// afbStateDefaults[1].CallAfterInit(
-//     stPositionState := astPositionState[1][E_REF_States.OUT]
-// );
-// afbStateDefaults[2].CallAfterInit(
-//     stPositionState := astPositionState[1][E_REF_States.OUT]
-// );
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_REF_States.OUT]
+);
+afbStateDefaults[2].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_REF_States.IN]
+);
 
 THIS^.fbStates.CallAfterInitEx(
     aiMotionStage         := aiMotionStage,
@@ -181,8 +179,8 @@ THIS^.fbStates.CallAfterInitExEx(
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
     fbFFHWO               := fbFFHWO,
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
@@ -205,8 +203,11 @@ VAR_INPUT
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
     fbArbiter              : REFERENCE TO FB_Arbiter;
-    sDeviceName            : REFERENCE TO STRING;
-    sTransitionKey         : REFERENCE TO STRING;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
@@ -215,6 +216,10 @@ THIS^.fbFFHWO          REF= fbFFHWO;
 THIS^.fbArbiter        REF= fbArbiter;
 THIS^.sDeviceName      := sDeviceName;
 THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams    := bEnableBeamParams;
+THIS^.bEnablePositionLimits:= bEnablePositionLimits;
+THIS^.bReadDBNow           := bReadDBNow;
+
 ]]></ST>
       </Implementation>
     </Method>

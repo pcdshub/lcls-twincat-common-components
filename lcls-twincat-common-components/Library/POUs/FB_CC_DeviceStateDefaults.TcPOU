@@ -17,7 +17,6 @@
     The FB body is empty; the slot is never touched cyclically, so
     online-view edits persist.
 *)
-{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_CC_DeviceStateDefaults
 VAR_INPUT
 END_VAR
@@ -34,12 +33,14 @@ END_VAR
     <Method Name="CallAfterInit" Id="{aa6ca063-ddfd-4f28-83a1-576c0b66e12b}">
       <Declaration><![CDATA[(* One-shot write of the device-owned per-state fields (sName,
    fDelta) into the slot. *)
-{attribute 'call_after_init'}
 METHOD CallAfterInit
 VAR_INPUT
+    stPositionState : REFERENCE TO ST_PositionState;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF __ISVALIDREF(THIS^.stPositionState) THEN
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+
+IF __ISVALIDREF(THIS^.stPositionState) THEN
     THIS^.stPositionState.sName  := THIS^.sName;
     THIS^.stPositionState.fDelta := THIS^.fDelta;
 END_IF]]></ST>

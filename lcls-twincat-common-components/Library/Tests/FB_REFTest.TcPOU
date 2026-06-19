@@ -29,14 +29,8 @@ VAR
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
     fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
-
-
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
-    {attribute 'pytmc' := '
-        pv: MMS
-        astPositionState.array: 1..2
-    '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
@@ -75,10 +69,13 @@ VAR
         fbFFHWO          := fbFFHWO,
         fbArbiter        := fbArbiter,
         sDeviceName      := sDeviceName,
-        sTransitionKey   := sTransitionKey
+        sTransitionKey   := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow := FALSE
     ) := ( MaintMode := TRUE) ;
 
-    fbTestTimer : TON := (IN := TRUE, PT := T#120S);
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
     nTestStep   : INT;
     fGoal       : LREAL := 20.0;
     fTolerance  : LREAL := 2.0;
@@ -147,24 +144,15 @@ CASE nTestStep OF
         END_IF
 END_CASE
 
-// FOR i := 1 TO 2 DO
-//     afbStatePMPS[i]();
-// END_FOR
-
 fbPDS();
 fbMotorY();
 
-fbREF(
-    bEnableMotion         := bEnableMotion,
-    bEnableBeamParams     := bEnableBeamParams,
-    bEnablePositionLimits := bEnablePositionLimits,
-    bReadDBNow            := bReadDBNow
-);
+fbREF();
 
 fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 fbTestTimer();
 
-IF nTestStep = 10 THEN
+IF nTestStep = 4 THEN
     TEST_FINISHED();
 ELSIF fbTestTimer.Q THEN
     AssertTrue(
