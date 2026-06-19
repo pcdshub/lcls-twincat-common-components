@@ -4,6 +4,12 @@
     <Declaration><![CDATA[{attribute 'analysis' := '-33'}
 PROGRAM PRG_TEST
 VAR
+    (* Seeds PMPS_GVL.BP_jsonDoc with the fake test PMPS DB in
+       CallAfterInit, before any test FB body runs. Declared here
+       (not inside a test FB) so seeding happens exactly once at
+       PLC startup, independent of TcUnit suite-invocation order. *)
+    fbPmpsTestSetup: FB_CC_PMPSTestSetup;
+
 //     fbATMTest: FB_ATMTest;
 //     fbLICTest: FB_LICTest;
 //     fbPPMTest: FB_PPMTest;

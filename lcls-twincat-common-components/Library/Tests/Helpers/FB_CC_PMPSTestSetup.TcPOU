@@ -19,13 +19,15 @@
     reactive temperature) set them on the relevant astParams_XXX
     entries before this FB ticks, or extend it.
 
-    Call once per cycle in PRG_TEST BEFORE TcUnit.RUN(). After bDone
-    latches on the first cycle, subsequent calls are no-ops.
+    The seeding runs once in CallAfterInit, before any test suite
+    body executes. The cyclic body is empty: no scheduling order
+    dependency between this FB and the test FBs.
 
     Single point of truth: PMPS_GVL.BP_jsonDoc is global and test
     FBs run concurrently. Seeding stays here so per-device writes
     cannot race on the same cycle.
 *)
+{attribute 'call_after_init'}
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_CC_PMPSTestSetup
 VAR
@@ -52,16 +54,18 @@ VAR
     astParams_XPIM  : ARRAY[0..5] OF ST_DbStateParams;
     astParams_SATT  : ARRAY[0..1] OF ST_DbStateParams;
     astParams_SLITS : ARRAY[0..0] OF ST_DbStateParams;
-
-    bDone : BOOL := FALSE;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[
-IF bDone THEN
-    RETURN;
-END_IF
-
+(* Seeding runs once at instantiation in CallAfterInit; body is a no-op. *)
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6c}">
+      <Declaration><![CDATA[METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
 (* ---- TST:ATM ---- *)
 // astParams_ATM[0].sPmpsState := 'TST:ATM-TRANSITION';
 // astParams_ATM[1].sPmpsState := 'TST:ATM-OUT';
@@ -219,9 +223,8 @@ fbJsonHelper_REF(
 //     bExecute      := TRUE,
 //     sDevName      := 'TST:SLITS',
 //     bNewDoc       := FALSE);
-
-bDone := TRUE;
 ]]></ST>
-    </Implementation>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
