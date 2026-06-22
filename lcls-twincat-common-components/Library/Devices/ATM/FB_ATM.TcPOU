@@ -50,28 +50,14 @@ VAR_INPUT
        params via the shared UINT base. Callers drive moves with
        `fbATM.eEnumSet := E_ATM_States.TARGET1;` and read
        `fbATM.eEnumGet`. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
     eEnumSet : E_ATM_States;
-    eEnumGet : E_ATM_States;
 END_VAR
 VAR
-    fbStates : FB_PositionStatePMPSND(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        nActiveMotorCount     := 1,
-        eEnumSet              := eEnumSet,
-        eEnumGet              := eEnumGet,
-        bEnableMotion         := bEnableMotion,
-        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
-    );
 
     {attribute 'pytmc' := 'pv: STC:01'}
     fbTempSensor1 : FB_CC_TempSensor;
@@ -97,6 +83,8 @@ VAR
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
 
     (* One configurator per ATM state (OUT + 5 targets). Writes the
        per-state sName and fDelta. Ticked cyclically in the body AFTER
@@ -124,7 +112,36 @@ VAR
          fDelta          := FDELTA_DEFAULT)
     ];
 
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
     i : UINT;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_ATM_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR CONSTANT
     (* ATM-wide default tolerance for state in-position detection,
@@ -142,7 +159,7 @@ END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
    once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
-fbStates();
+fbStates(stDbStateParams=> stDbStateParams);
 
 (* In-beam thermocouple: only faults when something is actually in the
    beam (i.e. not OUT). Driven by the PMPS DB temp setpoint. *)
@@ -195,8 +212,8 @@ THIS^.fbStates.CallAfterInitPMPS(
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
     fbFFHWO               := fbFFHWO,
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
@@ -229,6 +246,8 @@ VAR_INPUT
     bEnableBeamParams      : BOOL;
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
@@ -239,7 +258,9 @@ THIS^.sDeviceName      := sDeviceName;
 THIS^.sTransitionKey   := sTransitionKey;
 THIS^.bEnableBeamParams     := bEnableBeamParams;
 THIS^.bEnablePositionLimits := bEnablePositionLimits;
-THIS^.bReadDBNow            := bReadDBNow;]]></ST>
+THIS^.bReadDBNow            := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
   </POU>

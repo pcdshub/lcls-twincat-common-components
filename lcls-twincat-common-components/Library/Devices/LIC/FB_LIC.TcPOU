@@ -33,34 +33,14 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_LIC
 VAR_INPUT
-    (* Device-specific state-enum bridges. Typed as E_LIC_States (UINT
-       base) so the caller surface is enum-checked; the inline-init
-       below binds them to FB_PositionStatePMPSND's REFERENCE TO UINT
-       params via the shared UINT base. Callers drive moves with
-       `fbLIC.eEnumSet := E_LIC_States.OUT;` and read
-       `fbLIC.eEnumGet`. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
     eEnumSet : E_LIC_States;
-    eEnumGet : E_LIC_States;
 END_VAR
 VAR
-    fbStates : FB_PositionStatePMPSND(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        nActiveMotorCount     := 1,
-        eEnumSet              := eEnumSet,
-        eEnumGet              := eEnumGet,
-        bEnableMotion         := bEnableMotion,
-        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
-    );
 
     (* REFERENCE TO backing fields populated by FB_Init. Same names as
        FB_Init params; THIS^. disambiguates inside FB_Init.
@@ -80,6 +60,9 @@ VAR
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
 
     (* One configurator per LIC state (OUT, MIRROR1, MIRROR2, TARGET).
        Writes the per-state sName and fDelta. Ticked cyclically in the
@@ -101,7 +84,36 @@ VAR
          fDelta          := FDELTA_DEFAULT)
     ];
 
+    {attribute 'pytmc' := 'pv: MMS'} 
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
     i : UINT;
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_LIC_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
 END_VAR
 VAR CONSTANT
     (* LIC-wide default tolerance for state in-position detection,
@@ -119,7 +131,7 @@ END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
    once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
-fbStates();]]></ST>
+fbStates(stDbStateParams=> stDbStateParams);]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{c48154b6-8669-4368-9217-42352a16b40f}">
       <Declaration><![CDATA[(*
@@ -159,8 +171,8 @@ THIS^.fbStates.CallAfterInitPMPS(
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
     fbFFHWO               := fbFFHWO,
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
@@ -193,6 +205,8 @@ VAR_INPUT
     bEnableBeamParams      : BOOL;
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
@@ -203,7 +217,9 @@ THIS^.sDeviceName      := sDeviceName;
 THIS^.sTransitionKey   := sTransitionKey;
 THIS^.bEnableBeamParams     := bEnableBeamParams;
 THIS^.bEnablePositionLimits := bEnablePositionLimits;
-THIS^.bReadDBNow            := bReadDBNow;]]></ST>
+THIS^.bReadDBNow            := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
   </POU>

@@ -30,6 +30,12 @@ VAR
     sDeviceName    : STRING := 'TST:LIC';
     sTransitionKey : STRING := 'TST:LIC-TRANSITION';
 
+    (* Caller-owned file-reader status, bound to FB_LIC by REFERENCE
+       TO. In a real PRG these point at MOTION_GVL.fbPmpsFileReader;
+       here they stay FALSE so the DB read proceeds. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
     fbLIC : FB_LIC(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
@@ -39,7 +45,9 @@ VAR
         sTransitionKey        := sTransitionKey,
         bEnableBeamParams     := TRUE,
         bEnablePositionLimits := TRUE,
-        bReadDBNow            := TRUE
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
     );
 
     (* Per-install PMPS-side state config (caller-owned). Mirrors what

@@ -41,16 +41,18 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_REF
 VAR_INPUT
-    (* Device-specific state-enum bridges. Typed as E_REF_States (UINT
+    (* Device-specific state-enum bridges. Typed as E_EpicsInOut (UINT
        base) so the caller surface is enum-checked; the inline-init
        below binds them to FB_PositionStatePMPSND's REFERENCE TO UINT
        params via the shared UINT base. Callers drive moves with
-       `fbREF.eEnumSet := E_REF_States.OUT;` and read
+       `fbREF.eEnumSet := E_EpicsInOut.OUT;` and read
        `fbREF.eEnumGet`. *)
-    eEnumSet : E_REF_States;
-    eEnumGet : E_REF_States;
-    bFileReaderBusy  : BOOL;
-    bFileReaderError : BOOL;
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet : E_EpicsInOut;
     (* Run-time toggles forwarded into fbStates each cycle. PMPSND
        captures these by value in its own FB_Init, so the body
        re-writes fbStates.* every cycle to track live caller changes. *)
@@ -86,14 +88,14 @@ VAR
        so its writes win over the template baseline FB_StateSetup
        applied via FB_CC_StatePMPSConfig *)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
-        (stPositionState := astPositionState[1][E_REF_States.OUT],
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
          sName           := 'OUT',
          fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_REF_States.IN],
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
          sName           := 'IN',
          fDelta          := FDELTA_DEFAULT)
     ];
-
+    {attribute 'pytmc' := 'pv: MMS'}
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
@@ -114,6 +116,16 @@ VAR
     );
     i : UINT;
 END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+     eEnumGet : E_EpicsInOut;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
 VAR CONSTANT
     (* REF-wide default tolerance for state in-position detection,
        applied per-state by afbStateDefaults. *)
@@ -126,12 +138,8 @@ END_VAR]]></Declaration>
    OR NOT __ISVALIDREF(fbArbiter) THEN
     RETURN;
 END_IF
-//
-// FOR i := 1 TO 2 DO
-//     afbStateDefaults[i]();
-// END_FOR
 
-fbStates();
+fbStates(stDbStateParams=> stDbStateParams);
 
 fbLaser(fTermMax := fTermMax);
 ]]></ST>
@@ -157,10 +165,10 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
-    stPositionState := THIS^.astPositionState[1][E_REF_States.OUT]
+    stPositionState := THIS^.astPositionState[1][E_EpicsInOut.OUT]
 );
 afbStateDefaults[2].CallAfterInit(
-    stPositionState := THIS^.astPositionState[1][E_REF_States.IN]
+    stPositionState := THIS^.astPositionState[1][E_EpicsInOut.IN]
 );
 
 THIS^.fbStates.CallAfterInitStateMover(
@@ -208,6 +216,8 @@ VAR_INPUT
     bEnableBeamParams      : BOOL;
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;   
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
@@ -219,8 +229,8 @@ THIS^.sTransitionKey   := sTransitionKey;
 THIS^.bEnableBeamParams    := bEnableBeamParams;
 THIS^.bEnablePositionLimits:= bEnablePositionLimits;
 THIS^.bReadDBNow           := bReadDBNow;
-
-]]></ST>
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
     <Property Name="MaintMode" Id="{666c9def-1031-444c-b052-5be27153dffd}">

@@ -37,6 +37,12 @@ VAR
     sDeviceName    : STRING := 'TST:XPIM';
     sTransitionKey : STRING := 'TST:XPIM-TRANSITION';
 
+    (* Caller-owned file-reader status, bound to FB_XPIM by REFERENCE
+       TO. In a real PRG these point at MOTION_GVL.fbPmpsFileReader;
+       here they stay FALSE so the DB read proceeds. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
     fbXPIM : FB_XPIM(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
@@ -47,6 +53,8 @@ VAR
         bEnableBeamParams     := TRUE,
         bEnablePositionLimits := TRUE,
         bReadDBNow            := TRUE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
         stEl6In               := stEl6In,
         stEl6Out              := stEl6Out
     );

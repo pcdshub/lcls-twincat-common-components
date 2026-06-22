@@ -49,34 +49,14 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_XPIM
 VAR_INPUT
-    (* Device-specific state-enum bridges. Typed as E_XPIM_States (UINT
-       base) so the caller surface is enum-checked; the inline-init
-       below binds them to FB_PositionStatePMPSND's REFERENCE TO UINT
-       params via the shared UINT base. Callers drive moves with
-       `fbXPIM.eEnumSet := E_XPIM_States.YAG;` and read
-       `fbXPIM.eEnumGet`. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
     eEnumSet : E_XPIM_States;
-    eEnumGet : E_XPIM_States;
 END_VAR
 VAR
-    fbStates : FB_PositionStatePMPSND(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        nActiveMotorCount     := 1,
-        eEnumSet              := eEnumSet,
-        eEnumGet              := eEnumGet,
-        bEnableMotion         := bEnableMotion,
-        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
-    );
 
     {attribute 'pytmc' := 'pv: MFW'}
     fbFilterWheel : FB_XPIM_FilterWheel;
@@ -108,6 +88,30 @@ VAR
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+    {attribute 'no_copy'}
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bFileReaderError      : REFERENCE TO BOOL;
+
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
+
     (* EL6 serial terminal buffers, caller-owned and physically linked
        to the EL6xxx terminal IO. Passed through to FB_XPIM_FilterWheel
        via VAR_IN_OUT each cycle. *)
@@ -138,6 +142,17 @@ VAR
 
     i : UINT;
 END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:GET
+        io: i
+    '}
+    eEnumGet: E_XPIM_States;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+
 VAR CONSTANT
     (* XPIM-wide default tolerance for state in-position detection,
        applied per-state by afbStateDefaults. *)
@@ -156,7 +171,7 @@ END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
    once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
-fbStates();
+fbStates(stDbStateParams=> stDbStateParams);
 
 (* Serial filter wheel: bExecute := TRUE keeps the comm state machine
    running continuously. *)
@@ -208,8 +223,8 @@ THIS^.fbStates.CallAfterInitPMPS(
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
     fbFFHWO               := fbFFHWO,
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
@@ -241,8 +256,11 @@ VAR_INPUT
     bEnableBeamParams      : BOOL;
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
     stEl6In                : REFERENCE TO EL6inData22b;
     stEl6Out               : REFERENCE TO EL6outData22b;
+
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
@@ -254,6 +272,8 @@ THIS^.sTransitionKey   := sTransitionKey;
 THIS^.bEnableBeamParams     := bEnableBeamParams;
 THIS^.bEnablePositionLimits := bEnablePositionLimits;
 THIS^.bReadDBNow            := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;
 THIS^.stEl6In          REF= stEl6In;
 THIS^.stEl6Out         REF= stEl6Out;]]></ST>
       </Implementation>

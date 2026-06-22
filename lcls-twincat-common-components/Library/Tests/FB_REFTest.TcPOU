@@ -46,6 +46,12 @@ VAR
     sDeviceName    : STRING := 'TST:REF';
     sTransitionKey : STRING := 'TST:REF-TRANSITION';
 
+    (* Caller-owned file-reader status, bound to FB_REF by REFERENCE
+       TO. Driven from the body to simulate the reader going busy then
+       idle during cold start. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
     stDefault : ST_PositionState := (
         bMoveOk       := TRUE,
         bValid        := TRUE,
@@ -53,11 +59,11 @@ VAR
     );
 
     afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
-        (stPositionState := astPositionState[1][E_REF_States.OUT],
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
          stDefault       := stDefault,
          fPosition       := 10.0,
          sPmpsState      := 'TST:REF-OUT'),
-        (stPositionState := astPositionState[1][E_REF_States.IN],
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
          stDefault       := stDefault,
          fPosition       := 20.0,
          sPmpsState      := 'TST:REF-IN')
@@ -72,7 +78,9 @@ VAR
         sTransitionKey   := sTransitionKey,
         bEnableBeamParams     := TRUE,
         bEnablePositionLimits := TRUE,
-        bReadDBNow := FALSE
+        bReadDBNow := FALSE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
     );
 
     fbTestTimer : TON := (IN := TRUE, PT := T#60S);
@@ -109,32 +117,28 @@ CASE nTestStep OF
             bEnableBeamParams     := TRUE;
             bEnablePositionLimits := TRUE;
             bReadDBNow            := TRUE;
-            fbREF(
-                bFileReaderBusy  := TRUE,
-                bFileReaderError := FALSE
-            );
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
             bFirstScan := FALSE;
 
         END_IF
         nTestStep      := 1;
     1:
-        fbREF(
-            bFileReaderBusy  := FALSE,
-            bFileReaderError := FALSE
-        );
+        bFileReaderBusy  := FALSE;
+        bFileReaderError := FALSE;
         nTestStep      := 2;
     2:
         (* Wait for cold-start stabilisation: PMPS DB parsed, motor
            ready to accept moves, no residual error. *)
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbREF.eEnumSet := E_REF_States.IN;
+            fbREF.eEnumSet := E_EpicsInOut.IN;
             nTestStep      := 3;
         END_IF
 
     3:
         fObserved := fbMotorY.stMotionStatus.fActPosition;
-        IF fbREF.eEnumGet = E_REF_States.IN
+        IF fbREF.eEnumGet = E_EpicsInOut.IN
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - fGoal) <= fTolerance THEN
             AssertTrue(
