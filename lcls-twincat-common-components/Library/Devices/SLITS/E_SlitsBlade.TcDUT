@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_SlitsBlade" Id="{b3d9f4a1-2c5e-4a7b-9d61-7e8f0a1b2c3d}">
+    <Declaration><![CDATA[(* Blade index into the four-element slit motion-stage array
+   (Top / Bottom / North / South). Values 1..4 match the array bounds. *)
+{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SlitsBlade :
+(
+    TOP    := 1,
+    BOTTOM := 2,
+    NORTH  := 3,
+    SOUTH  := 4
+) UDINT;
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -16,9 +16,10 @@
     on the parent. Dispatch ownership mirrors the legacy ACT-based
     layout: the parent's body only consumes the EPICS edge-triggers
     (via HandleRequests); this subclass body invokes SUPER^() to run
-    that trigger consumption, then drives the parent's M_Init /
+    that trigger consumption, then drives the parent's
     M_CalculatePositions / M_Motion dispatch directly, after a REF
-    nil-guard that gates every REF-touching call.
+    nil-guard that gates every REF-touching call. Blade configuration
+    runs once in the parent's CallAfterInit (M_Init).
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
@@ -63,10 +64,10 @@ END_VAR
       <ST><![CDATA[// Parent body: EPICS edge-trigger consumption only (no REF touch).
 SUPER^();
 
-// REF nil-guard for every REF-touching call below (init + dispatch +
-// PMPS DB + RTDs all consume sDeviceName / fbFFHWO; M_Init and
-// M_CalculatePositions also index aiMotionStage). The parent's body
-// no longer holds this guard so we must.
+// REF nil-guard for every REF-touching call below (dispatch + PMPS DB
+// + RTDs all consume sDeviceName / fbFFHWO; M_CalculatePositions also
+// indexes aiMotionStage). The parent's body no longer holds this
+// guard so we must.
 IF NOT __ISVALIDREF(THIS^.aiMotionStage)
    OR NOT __ISVALIDREF(THIS^.fbFFHWO)
    OR NOT __ISVALIDREF(THIS^.sDeviceName) THEN
@@ -74,8 +75,8 @@ IF NOT __ISVALIDREF(THIS^.aiMotionStage)
 END_IF
 
 // Inherited dispatch (parity with legacy FB_SLITS_POWER body
-// invoking ACT_init / ACT_CalculatePositions / ACT_Motion).
-M_Init();
+// invoking ACT_CalculatePositions / ACT_Motion). Blade mode / enable
+// / limits ran once in the parent's CallAfterInit via M_Init.
 M_CalculatePositions();
 M_Motion();
 
@@ -164,10 +165,10 @@ END_VAR
 THIS^.AptArrayStatus.Height := THIS^.rActApertureSizeY;
 THIS^.AptArrayStatus.Width  := THIS^.rActApertureSizeX;
 THIS^.AptArrayStatus.xOK    :=
-        NOT (THIS^.aiMotionStage[IDX_TOP   ].MotionStatus.bError)
-    AND NOT (THIS^.aiMotionStage[IDX_BOTTOM].MotionStatus.bError)
-    AND NOT (THIS^.aiMotionStage[IDX_NORTH ].MotionStatus.bError)
-    AND NOT (THIS^.aiMotionStage[IDX_SOUTH ].MotionStatus.bError);
+        NOT (THIS^.aiMotionStage[E_SlitsBlade.TOP   ].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.NORTH ].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.SOUTH ].MotionStatus.bError);
 
 // Aperture-envelope evaluation.
 IF ( THIS^.rActApertureSizeX > (AptArrayReq.Width  - (2 * ABS(THIS^.rActCenterX)))

@@ -41,11 +41,16 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// SetMotionParam / SetModeEnableLimits are now owned by FB_SLITS
-// itself (applied on its first scan via M_Init). The integrator only
-// needs to set the concrete-FB-only fields (RestoreMotionParams,
-// DoNotRestoreNcParameters) which are not on I_MotionStage.
+      <ST><![CDATA[// FB_SLITS owns SetModeEnableLimits (applied once in its
+// CallAfterInit via M_Init). The integrator seeds the per-blade
+// motion parameters (Velocity / Accel / Decel / Jerk) and the
+// concrete-FB-only restore flags, which are not on I_MotionStage.
 IF bFirstScan THEN
+    fbMotorTop.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+    fbMotorBottom.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+    fbMotorNorth.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+    fbMotorSouth.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+
     fbMotorTop.RestoreMotionParams         := FALSE;
     fbMotorTop.DoNotRestoreNcParameters    := TRUE;
     fbMotorBottom.RestoreMotionParams      := FALSE;

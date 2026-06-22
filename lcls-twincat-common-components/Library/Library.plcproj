@@ -90,6 +90,9 @@
     <Compile Include="Devices\SATT\ST_SATT_Filter.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\SLITS\E_SlitsBlade.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\SLITS\FB_SLITS.TcPOU">
       <SubType>Code</SubType>
     </Compile>

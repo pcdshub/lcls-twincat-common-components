@@ -20,19 +20,19 @@
     motors (passing AxisRef + iPersistentDataStorage + sName), seeds
     motion parameters (Velocity / Accel / Decel / Jerk) via
     SetMotionParam on each motor before the first scan, and hands the
-    interfaces to FB_SLITS through FB_Init. FB_SLITS owns only the
-    blade mode + enable / limit configuration, exposed via the M_Init
-    method (one-shot, latched). The integrator also handles
-    concrete-FB-only fields (RestoreMotionParams,
+    interfaces to FB_SLITS through FB_Init. FB_SLITS owns the blade
+    mode + enable / limit configuration via M_Init, which runs once
+    from CallAfterInit (after FB_Init binds the REFs). The integrator
+    also handles concrete-FB-only fields (RestoreMotionParams,
     DoNotRestoreNcParameters) on each motor before the first scan.
 
     Dispatch ownership mirrors legacy: the base FB_SLITS body consumes
     only the EPICS Open / Close / Block edge-triggers (legacy stubs).
-    M_Init, M_CalculatePositions and M_Motion are NOT invoked by the
-    base body; they are called from the FB_SLITS_POWER subclass body
-    (the only intended integration point). FB_SLITS used standalone
-    therefore performs no blade motion: the device is meaningful only
-    via FB_SLITS_POWER.
+    M_Init runs once from CallAfterInit. M_CalculatePositions and
+    M_Motion are NOT invoked by the base body; they are called from the
+    FB_SLITS_POWER subclass body (the only intended integration point).
+    FB_SLITS used standalone therefore performs no blade motion: the
+    device is meaningful only via FB_SLITS_POWER.
 
     PMPS aperture-safety FFO and request-vs-actual reconciliation live
     on the FB_SLITS_POWER subclass via M_UpdatePMPS, which the
@@ -97,22 +97,22 @@ VAR
     {attribute 'pytmc' := 'pv: TOP'}
     fbTop    : FB_StatePTPMove(
         stPositionState := stTop,
-        iMotionStage:=aiMotionStage[IDX_TOP]
+        iMotionStage:=aiMotionStage[E_SlitsBlade.TOP]
     );
     {attribute 'pytmc' := 'pv: BOTTOM'}
     fbBottom : FB_StatePTPMove(
         stPositionState := stBottom,
-        iMotionStage:=aiMotionStage[IDX_BOTTOM]
+        iMotionStage:=aiMotionStage[E_SlitsBlade.BOTTOM]
     );
     {attribute 'pytmc' := 'pv: NORTH'}
     fbNorth  : FB_StatePTPMove(
         stPositionState := stNorth,
-        iMotionStage:=aiMotionStage[IDX_NORTH]
+        iMotionStage:=aiMotionStage[E_SlitsBlade.NORTH]
     );
     {attribute 'pytmc' := 'pv: SOUTH'}
     fbSouth  : FB_StatePTPMove(
         stPositionState := stSouth,
-        iMotionStage:=aiMotionStage[IDX_SOUTH]
+        iMotionStage:=aiMotionStage[E_SlitsBlade.SOUTH]
     );
 
     (* Aperture-math intermediate targets. *)
@@ -203,9 +203,6 @@ VAR
     bExecuteMotionX : BOOL;
     bExecuteMotionY : BOOL;
 
-    (* First-scan guard for M_Init. *)
-    bInit : BOOL := TRUE;
-
     fbLogger : FB_LogMessage := (eSubsystem := E_SubSystem.MOTION);
 
     (* PMPS aperture-safety fault (driven by FB_SLITS_POWER.M_UpdatePMPS). *)
@@ -228,12 +225,6 @@ VAR
     sDeviceName   : REFERENCE TO STRING;
     nMotor : UINT;
 END_VAR
-VAR CONSTANT
-    IDX_TOP    : UDINT := 1;
-    IDX_BOTTOM : UDINT := 2;
-    IDX_NORTH  : UDINT := 3;
-    IDX_SOUTH  : UDINT := 4;
-END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
@@ -244,28 +235,24 @@ HandleRequests();
     </Implementation>
     <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
       <Declaration><![CDATA[(*
-    {attribute 'call_after_init'} on FB_SXR_SATT_Stage causes TwinCAT
-    to auto-fire THIS^.CallAfterInit() after FB_SXR_SATT_Stage.FB_Init
-    completes.
-
-    fbStates was constructed via inline-init in this FB's VAR section,
-    which ran BEFORE FB_Init bound the REF fields on THIS^.
-    Consequently fbStates' inline-init forwarded nil REFs into
-    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
-    on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitStateMover, which re-binds them and
-    runs the Core / ND child-FB wiring chain.
+    Auto-fired by TwinCAT once, after FB_Init binds the REF fields on
+    THIS^. The four FB_StatePTPMove blade movers were inline-init'd in
+    the VAR section before FB_Init ran, so they captured nil interface
+    refs. This method re-supplies each blade's now-valid interface and
+    scratch ST_PositionState, then runs M_Init to apply the per-blade
+    mode / enable / limit configuration and set the FFO device name.
 *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-fbTop.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_TOP]);
-fbBottom.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_BOTTOM]);
-fbNorth.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_NORTH]);
-fbSouth.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_SOUTH]);
+        <ST><![CDATA[fbTop.CallAfterInit(    stPositionState := stTop,    iMotionStage := aiMotionStage[E_SlitsBlade.TOP]);
+fbBottom.CallAfterInit( stPositionState := stBottom, iMotionStage := aiMotionStage[E_SlitsBlade.BOTTOM]);
+fbNorth.CallAfterInit(  stPositionState := stNorth,  iMotionStage := aiMotionStage[E_SlitsBlade.NORTH]);
+fbSouth.CallAfterInit(  stPositionState := stSouth,  iMotionStage := aiMotionStage[E_SlitsBlade.SOUTH]);
 
+// Blade mode / enable / limits + FFO device name, once at init.
+M_Init();
 ]]></ST>
       </Implementation>
     </Method>
@@ -273,8 +260,8 @@ fbSouth.CallAfterInit( stPositionState := stTop,iMotionStage:=aiMotionStage[IDX_
       <Declaration><![CDATA[(*
     REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
     sDeviceName at instantiation. Interface wiring into each blade
-    mover happens in M_Init on the first scan (after the body's
-    nil-guard validates the REFs).
+    mover, and the one-shot M_Init blade configuration, run from
+    CallAfterInit once these REFs are bound.
 *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
@@ -377,45 +364,40 @@ fPosSouthBlade  := -(rReqApertureSizeX / 2) + (rReqCenterX + rEncoderOffsetSouth
 
 // Actual aperture geometry feedback from caller-owned motors.
 rActApertureSizeX := LREAL_TO_REAL(
-    (aiMotionStage[IDX_NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
-  - (aiMotionStage[IDX_SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)
+    (aiMotionStage[E_SlitsBlade.NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
+  - (aiMotionStage[E_SlitsBlade.SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)
 );
 rActApertureSizeY := LREAL_TO_REAL(
-    (aiMotionStage[IDX_TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
-  - (aiMotionStage[IDX_BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)
+    (aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
+  - (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)
 );
 rActCenterX := LREAL_TO_REAL(
-    ((aiMotionStage[IDX_NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
-   + (aiMotionStage[IDX_SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)) / 2
+    ((aiMotionStage[E_SlitsBlade.NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
+   + (aiMotionStage[E_SlitsBlade.SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)) / 2
 );
 rActCenterY := LREAL_TO_REAL(
-    ((aiMotionStage[IDX_TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
-   + (aiMotionStage[IDX_BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
+    ((aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
+   + (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
 );
 ]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109c}">
       <Declaration><![CDATA[(*
-    One-shot first-scan blade init: applies SetModeEnableLimits to
-    each blade motor (UserEnable, HardwareEnable, both limits, brake
-    disabled, enable-during-motion, home disabled) and sets FFO's
-    device name from the injected sDeviceName.
+    One-shot blade init, called from CallAfterInit: applies
+    SetModeEnableLimits to each blade motor (UserEnable,
+    HardwareEnable, both limits, brake disabled, enable-during-motion,
+    home disabled) and sets FFO's device name from the injected
+    sDeviceName.
 
-    Latches bInit FALSE after the first run; subsequent calls are
-    no-ops. Caller (FB_SLITS_POWER body) must hold the REF nil-guard
-    before invoking. Motion params (Velocity / Accel / Decel / Jerk)
-    are integrator-owned and seeded on each motor via SetMotionParam
+    Motion params (Velocity / Accel / Decel / Jerk) are
+    integrator-owned and seeded on each motor via SetMotionParam
     before the first scan, NOT here.
 *)
 METHOD M_Init
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF NOT bInit THEN
-    RETURN;
-END_IF
-
-FOR nMotor := 1 TO 4 DO
+        <ST><![CDATA[FOR nMotor := 1 TO 4 DO
     aiMotionStage[nMotor].SetModeEnableLimits(
         LimBackward    := TRUE,
         LimForward     := TRUE,
@@ -429,8 +411,6 @@ FOR nMotor := 1 TO 4 DO
 END_FOR
 
 FFO.i_DevName := sDeviceName;
-
-bInit := FALSE;
 ]]></ST>
       </Implementation>
     </Method>
