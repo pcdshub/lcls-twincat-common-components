@@ -253,7 +253,7 @@ HandleRequests();
     Consequently fbStates' inline-init forwarded nil REFs into
     fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
     on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitEx, which re-binds them and
+    refs through fbStates.CallAfterInitStateMover, which re-binds them and
     runs the Core / ND child-FB wiring chain.
 *)
 {attribute 'call_after_init'}

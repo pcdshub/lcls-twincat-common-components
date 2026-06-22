@@ -178,7 +178,7 @@ fbRTD2(
     Consequently fbStates' inline-init forwarded nil REFs into
     fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
     on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitEx, which re-binds them and runs
+    refs through fbStates.CallAfterInitStateMover, which re-binds them and runs
     the full child-FB wiring chain (Core / ND / PMPSND).
 *)
 {attribute 'call_after_init'}
@@ -196,7 +196,7 @@ afbStateDefaults[8].CallAfterInit(stPositionState := THIS^.astPositionState[1][E
 afbStateDefaults[9].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET5]);
 afbStateDefaults[10].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_GBS_States.TARGET6]);
 
-THIS^.fbStates.CallAfterInitEx(
+THIS^.fbStates.CallAfterInitStateMover(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -206,7 +206,7 @@ THIS^.fbStates.CallAfterInitEx(
     eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
 );
 
-THIS^.fbStates.CallAfterInitExEx(
+THIS^.fbStates.CallAfterInitPMPS(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     bEnableBeamParams     := bEnableBeamParams,

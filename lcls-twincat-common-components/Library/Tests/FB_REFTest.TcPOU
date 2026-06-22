@@ -3,7 +3,7 @@
   <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
     <Declaration><![CDATA[(*
     Single integration smoke for FB_REF. Goal: prove the FB_REF wiring
-    (REFERENCE TO refs, CallAfterInit / CallAfterInitEx / CallAfterInitExEx
+    (REFERENCE TO refs, CallAfterInit / CallAfterInitStateMover / CallAfterInitPMPS
     chain, inline-init of fbStates, per-state name/fDelta defaults,
     PMPS state-key registration) still drives FB_MotionStageNC into the
     configured fPosition for a commanded state.
