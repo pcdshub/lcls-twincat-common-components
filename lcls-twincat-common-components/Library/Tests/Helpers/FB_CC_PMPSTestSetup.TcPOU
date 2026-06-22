@@ -62,7 +62,8 @@ END_VAR
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6c}">
-      <Declaration><![CDATA[METHOD CallAfterInit
+      <Declaration><![CDATA[{attribute 'call_after_init'}
+METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[
