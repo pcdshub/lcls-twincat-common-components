@@ -476,5 +476,28 @@ fbSouth(bMoveOk  := bMoveOk);
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="SetApertureRequest" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109d}">
+      <Declaration><![CDATA[(*
+    Set the EPICS aperture request in one call: gap (width / height)
+    and center on both axes. M_CalculatePositions picks the new values
+    up on the next cycle and, if a field changed and the gap is within
+    the PMPS-authorized envelope, dispatches the blade moves.
+*)
+METHOD SetApertureRequest
+VAR_INPUT
+    ApertureSizeX : REAL;
+    ApertureSizeY : REAL;
+    CenterX       : REAL;
+    CenterY       : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rReqApertureSizeX := ApertureSizeX;
+rReqApertureSizeY := ApertureSizeY;
+rReqCenterX       := CenterX;
+rReqCenterY       := CenterY;
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
