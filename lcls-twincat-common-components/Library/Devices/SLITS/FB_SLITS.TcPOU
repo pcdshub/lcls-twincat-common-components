@@ -96,10 +96,10 @@ END_VAR
 VAR
     (* Per-blade scratch ST_PositionState. Static fields seeded here;
        fPosition and bMoveOk are refreshed each cycle in the body. *)
-    stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE);
-    stBottom : ST_PositionState := (sName := 'Bottom', bValid := TRUE, bUseRawCounts := FALSE);
-    stNorth  : ST_PositionState := (sName := 'North',  bValid := TRUE, bUseRawCounts := FALSE);
-    stSouth  : ST_PositionState := (sName := 'South',  bValid := TRUE, bUseRawCounts := FALSE);
+    stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stBottom : ST_PositionState := (sName := 'Bottom', bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stNorth  : ST_PositionState := (sName := 'North',  bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stSouth  : ST_PositionState := (sName := 'South',  bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
 
     (* Per-blade PTP movers. iMotionStage is wired in CallAfterInit;
        FB_StatePTPMove tolerates a nil interface until then. *)
@@ -447,19 +447,15 @@ METHOD M_Motion
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[stTop.fPosition    := fPosTopBlade;
-stTop.fDelta := fSmallDelta;
 stTop.bMoveOk      := bMoveOk;
 
 stBottom.fPosition := fPosBottomBlade;
-stBottom.fDelta    := fSmallDelta;
 stBottom.bMoveOk   := bMoveOk;
 
 stNorth.fPosition  := fPosNorthBlade;
-stNorth.fDelta    := fSmallDelta;
 stNorth.bMoveOk    := bMoveOk;
 
 stSouth.fPosition  := fPosSouthBlade;
-stSouth.fDelta    := fSmallDelta;
 stSouth.bMoveOk    := bMoveOk;
 
 IF bExecuteMotionY THEN
