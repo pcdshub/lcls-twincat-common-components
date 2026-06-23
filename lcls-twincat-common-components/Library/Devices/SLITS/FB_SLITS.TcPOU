@@ -17,14 +17,15 @@
     happen there once REFs are bound).
 
     The integrator PRG instantiates the four FB_MotionStageNC blade
-    motors (passing AxisRef + iPersistentDataStorage + sName), seeds
-    motion parameters (Velocity / Accel / Decel / Jerk) via
-    SetMotionParam on each motor before the first scan, and hands the
-    interfaces to FB_SLITS through FB_Init. FB_SLITS owns the blade
-    mode + enable / limit configuration via M_Init, which runs once
-    from CallAfterInit (after FB_Init binds the REFs). The integrator
-    also handles concrete-FB-only fields (RestoreMotionParams,
-    DoNotRestoreNcParameters) on each motor before the first scan.
+    motors (passing AxisRef + iPersistentDataStorage + sName) and
+    hands the interfaces to FB_SLITS through FB_Init. FB_SLITS owns the
+    blade mode + enable / limit configuration AND the motion
+    parameters (Velocity / Accel / Decel / Jerk), all applied once via
+    M_Init, which runs from CallAfterInit (after FB_Init binds the
+    REFs). The integrator still handles concrete-FB-only fields
+    (RestoreMotionParams, DoNotRestoreNcParameters) on each motor
+    before the first scan, and may override the motion params per
+    motor afterward if needed.
 
     Dispatch ownership mirrors legacy: the base FB_SLITS body consumes
     only the EPICS Open / Close / Block edge-triggers (legacy stubs).
@@ -80,13 +81,21 @@ VAR_INPUT
     '}
     rEncoderOffsetSouth : REAL;
 END_VAR
+VAR CONSTANT
+    (* Position-compare deltas for the blade ST_PositionState. *)
+    fSmallDelta : LREAL := 0.01;
+    fBigDelta   : LREAL := 10;
+
+    (* Blade motion tuning. Applied once to every blade motor in
+       M_Init via SetMotionParam. Identical for all four blades. *)
+    fVelocity     : LREAL := 0.2;
+    fAcceleration : LREAL := 0.8;
+    fDeceleration : LREAL := 0.8;
+    fJerk         : LREAL := 0.0;
+END_VAR
 VAR
     (* Per-blade scratch ST_PositionState. Static fields seeded here;
        fPosition and bMoveOk are refreshed each cycle in the body. *)
-        (*Motion Parameters*)
-    fSmallDelta: LREAL := 0.01;
-    fBigDelta: LREAL := 10;
-
     stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE);
     stBottom : ST_PositionState := (sName := 'Bottom', bValid := TRUE, bUseRawCounts := FALSE);
     stNorth  : ST_PositionState := (sName := 'North',  bValid := TRUE, bUseRawCounts := FALSE);
@@ -385,14 +394,16 @@ rActCenterY := LREAL_TO_REAL(
     <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109c}">
       <Declaration><![CDATA[(*
     One-shot blade init, called from CallAfterInit: applies
-    SetModeEnableLimits to each blade motor (UserEnable,
-    HardwareEnable, both limits, brake disabled, enable-during-motion,
-    home disabled) and sets FFO's device name from the injected
+    SetModeEnableLimits and SetMotionParam to each blade motor
+    (UserEnable, HardwareEnable, both limits, brake disabled,
+    enable-during-motion, home disabled; velocity / accel / decel /
+    jerk from the FB's fVelocity / fAcceleration / fDeceleration /
+    fJerk fields) and sets FFO's device name from the injected
     sDeviceName.
 
-    Motion params (Velocity / Accel / Decel / Jerk) are
-    integrator-owned and seeded on each motor via SetMotionParam
-    before the first scan, NOT here.
+    The integrator may still override the motion params per motor
+    after construction via SetMotionParam on the concrete motor; the
+    last writer each scan wins.
 *)
 METHOD M_Init
 ]]></Declaration>
@@ -407,6 +418,12 @@ METHOD M_Init
         HomeMode       := E_EpicsHomeCmd.NONE,
         UserEnable     := TRUE,
         HardwareEnable := TRUE
+    );
+    aiMotionStage[nMotor].SetMotionParam(
+        Velocity     := fVelocity,
+        Acceleration := fAcceleration,
+        Deceleration := fDeceleration,
+        Jerk         := fJerk
     );
 END_FOR
 

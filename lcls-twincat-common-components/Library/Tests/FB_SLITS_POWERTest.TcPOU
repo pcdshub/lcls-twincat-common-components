@@ -4,28 +4,27 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
 VAR
     (* Caller-owned AxisRefs and persistent storage. In a real PRG the
-       AxisRefs come from MAIN.Mxx. *)
-    axRefTop    : AXIS_REF;
-    axRefBottom : AXIS_REF;
-    axRefNorth  : AXIS_REF;
-    axRefSouth  : AXIS_REF;
+       AxisRefs come from MAIN.Mxx. Indexed by E_SlitsBlade (1..4). *)
+    axRef : ARRAY[1..4] OF AXIS_REF;
 
     fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    (* Four blade motors. *)
-    fbMotorTop    : FB_MotionStageNC(AxisRef := axRefTop,    iPersistentDataStorage := fbPDS, sName := 'Top');
-    fbMotorBottom : FB_MotionStageNC(AxisRef := axRefBottom, iPersistentDataStorage := fbPDS, sName := 'Bottom');
-    fbMotorNorth  : FB_MotionStageNC(AxisRef := axRefNorth,  iPersistentDataStorage := fbPDS, sName := 'North');
-    fbMotorSouth  : FB_MotionStageNC(AxisRef := axRefSouth,  iPersistentDataStorage := fbPDS, sName := 'South');
+    (* Four blade motors, indexed by E_SlitsBlade. *)
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRef[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'Top'),
+        (AxisRef := axRef[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'Bottom'),
+        (AxisRef := axRef[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'North'),
+        (AxisRef := axRef[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'South')
+    ];
 
     (* I_MotionStage array bound into FB_SLITS / FB_SLITS_POWER via
-       FB_Init. Order matches FB_SLITS' IDX_TOP / IDX_BOTTOM /
-       IDX_NORTH / IDX_SOUTH constants (1..4). *)
+       FB_Init. Order matches E_SlitsBlade (TOP / BOTTOM / NORTH /
+       SOUTH = 1..4). *)
     aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
-        fbMotorTop,
-        fbMotorBottom,
-        fbMotorNorth,
-        fbMotorSouth
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
     ];
 
     fbFFHWO     : FB_HardwareFFOutput;
@@ -37,6 +36,7 @@ VAR
         sDeviceName   := sDeviceName
     );
 
+    nBlade     : INT;
     bFirstScan : BOOL := TRUE;
 END_VAR
 ]]></Declaration>
@@ -46,32 +46,24 @@ END_VAR
 // motion parameters (Velocity / Accel / Decel / Jerk) and the
 // concrete-FB-only restore flags, which are not on I_MotionStage.
 IF bFirstScan THEN
-    fbMotorTop.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
-    fbMotorBottom.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
-    fbMotorNorth.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
-    fbMotorSouth.SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
-
-    fbMotorTop.RestoreMotionParams         := FALSE;
-    fbMotorTop.DoNotRestoreNcParameters    := TRUE;
-    fbMotorBottom.RestoreMotionParams      := FALSE;
-    fbMotorBottom.DoNotRestoreNcParameters := TRUE;
-    fbMotorNorth.RestoreMotionParams       := FALSE;
-    fbMotorNorth.DoNotRestoreNcParameters  := TRUE;
-    fbMotorSouth.RestoreMotionParams       := FALSE;
-    fbMotorSouth.DoNotRestoreNcParameters  := TRUE;
-
+    FOR nBlade := 1 TO 4 DO
+        afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+        afbMotor[nBlade].RestoreMotionParams      := FALSE;
+        afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
+    END_FOR
     bFirstScan := FALSE;
 END_IF
 
 fbPDS();
-fbMotorTop();
-fbMotorBottom();
-fbMotorNorth();
-fbMotorSouth();
+FOR nBlade := 1 TO 4 DO
+    afbMotor[nBlade]();
+END_FOR
 
 fbSlitsPower(bMoveOk := TRUE, sPmpsState := 'T1');
 
 TestTempFFO();
+TestApertureMath();
+TestApertureMotion();
 ]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
@@ -236,6 +228,132 @@ END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestApertureMath" Id="{a2c7f3d4-1b6e-4f82-9c3a-5d7e8f0a1b2c}">
+      <Declaration><![CDATA[(*
+    Covers FB_SLITS.M_CalculatePositions: an EPICS aperture request
+    (gap + center) within the PMPS-authorized envelope must produce the
+    four per-blade targets gap/2 +/- (center + per-blade encoder
+    offset). Pure arithmetic on the SUT inputs, so it needs no blade
+    motion. Targets are compared with a small tolerance because the
+    request fields are REAL.
+*)
+METHOD TestApertureMath
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 1;
+    fTol      : LREAL := 0.001;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Does an aperture request resolve to the right blade targets?
+TEST('TestSlitsApertureMath');
+
+tonTimer(IN := TRUE, PT := T#10s);
+
+CASE nStep OF
+    0:
+        // Per-blade encoder offsets and an aperture request inside the
+        // PMPS-authorized envelope (so the request is accepted).
+        fbSlitsPower.AptArrayReq.Width  := 100;
+        fbSlitsPower.AptArrayReq.Height := 100;
+        fbSlitsPower.rEncoderOffsetTop    := 0.1;
+        fbSlitsPower.rEncoderOffsetBottom := 0.2;
+        fbSlitsPower.rEncoderOffsetNorth  := 0.3;
+        fbSlitsPower.rEncoderOffsetSouth  := 0.4;
+        fbSlitsPower.rReqApertureSizeX := 4;
+        fbSlitsPower.rReqApertureSizeY := 6;
+        fbSlitsPower.rReqCenterX := 1;
+        fbSlitsPower.rReqCenterY := 2;
+        nStep := nStep + 1;
+    1:
+        // Next cycle the SUT recomputes blade targets:
+        //   Top    =  Ygap/2 + (Ycen + offTop)    =  3 + 2.1 =  5.1
+        //   Bottom = -Ygap/2 + (Ycen + offBottom) = -3 + 2.2 = -0.8
+        //   North  =  Xgap/2 + (Xcen + offNorth)  =  2 + 1.3 =  3.3
+        //   South  = -Xgap/2 + (Xcen + offSouth)  = -2 + 1.4 = -0.6
+        AssertTrue(ABS(fbSlitsPower.fPosTopBlade    -   5.1) < fTol, 'Top blade target wrong');
+        AssertTrue(ABS(fbSlitsPower.fPosBottomBlade - (-0.8)) < fTol, 'Bottom blade target wrong');
+        AssertTrue(ABS(fbSlitsPower.fPosNorthBlade  -   3.3) < fTol, 'North blade target wrong');
+        AssertTrue(ABS(fbSlitsPower.fPosSouthBlade  - (-0.6)) < fTol, 'South blade target wrong');
+        nStep := nStep + 1;
+END_CASE
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in Slits aperture math test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestApertureMotion" Id="{b3d8e4f5-2c7a-4b93-9d4b-6e8f9a0b1c2d}">
+      <Declaration><![CDATA[(*
+    End-to-end motion coverage against the linked NC simulation axes. An
+    EPICS aperture request must flow through M_CalculatePositions ->
+    M_Motion -> the blade FB_StatePTPMove movers, dispatch an absolute
+    move to each blade stage, and drive each NC axis to its target. The
+    test waits for every blade's actual NC position to settle on the
+    aperture-math target, so it confirms the request produced real
+    motion, not just a software command. Requires the four axRef entries
+    to be linked to their NC axes (Axis_Slit_Top / _Bottom / _North /
+    _South); without the link an axis latches bError and never moves.
+*)
+METHOD TestApertureMotion
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 1;
+    fDelta    : LREAL := 0.05;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Does an aperture request actually drive every blade NC axis to target?
+TEST('TestSlitsApertureMotion');
+
+tonTimer(IN := TRUE, PT := T#30s);
+
+CASE nStep OF
+    0:
+        // Per-blade encoder offsets and an aperture request inside the
+        // PMPS-authorized envelope (so each axis request is accepted and
+        // dispatched to the linked NC axis).
+        fbSlitsPower.AptArrayReq.Width  := 100;
+        fbSlitsPower.AptArrayReq.Height := 100;
+        fbSlitsPower.rEncoderOffsetTop    := 0.1;
+        fbSlitsPower.rEncoderOffsetBottom := 0.2;
+        fbSlitsPower.rEncoderOffsetNorth  := 0.3;
+        fbSlitsPower.rEncoderOffsetSouth  := 0.4;
+        fbSlitsPower.rReqApertureSizeX := 4;
+        fbSlitsPower.rReqApertureSizeY := 6;
+        fbSlitsPower.rReqCenterX := 1;
+        fbSlitsPower.rReqCenterY := 2;
+        nStep := nStep + 1;
+    1:
+        // Wait for every NC axis to reach its target:
+        //   Top    =  Ygap/2 + (Ycen + offTop)    =  3 + 2.1 =  5.1
+        //   Bottom = -Ygap/2 + (Ycen + offBottom) = -3 + 2.2 = -0.8
+        //   North  =  Xgap/2 + (Xcen + offNorth)  =  2 + 1.3 =  3.3
+        //   South  = -Xgap/2 + (Xcen + offSouth)  = -2 + 1.4 = -0.6
+        IF ABS(afbMotor[E_SlitsBlade.TOP].MotionStatus.fActPosition    -   5.1) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - (-0.8)) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.NORTH].MotionStatus.fActPosition  -   3.3) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.SOUTH].MotionStatus.fActPosition  - (-0.6)) < fDelta THEN
+            AssertTrue(TRUE, 'All blades reached aperture target');
+            nStep := nStep + 1;
+        END_IF
+END_CASE
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout: blades did not reach aperture target (NC axes linked?)');
     TEST_FINISHED();
 END_IF
 ]]></ST>

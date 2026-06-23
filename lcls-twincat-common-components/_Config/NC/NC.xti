@@ -23,5 +23,9 @@
 		<Axis File="SATT_Y.xti" Id="7"/>
 		<Axis File="WFS_Y.xti" Id="5"/>
 		<Axis File="XPIM_Y.xti" Id="6"/>
+		<Axis File="Axis_Slit_Top.xti" Id="8"/>
+		<Axis File="Axis_Slit_Bottom.xti" Id="9"/>
+		<Axis File="Axis_Slit_North.xti" Id="10"/>
+		<Axis File="Axis_Slit_South.xti" Id="11"/>
 	</NC>
 </TcSmItem>
