@@ -268,10 +268,7 @@ CASE nStep OF
         fbSlitsPower.rEncoderOffsetBottom := 0.2;
         fbSlitsPower.rEncoderOffsetNorth  := 0.3;
         fbSlitsPower.rEncoderOffsetSouth  := 0.4;
-        fbSlitsPower.rReqApertureSizeX := 4;
-        fbSlitsPower.rReqApertureSizeY := 6;
-        fbSlitsPower.rReqCenterX := 1;
-        fbSlitsPower.rReqCenterY := 2;
+        fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
         nStep := nStep + 1;
     1:
         // Next cycle the SUT recomputes blade targets:
@@ -332,10 +329,7 @@ CASE nStep OF
         fbSlitsPower.rEncoderOffsetBottom := 0.2;
         fbSlitsPower.rEncoderOffsetNorth  := 0.3;
         fbSlitsPower.rEncoderOffsetSouth  := 0.4;
-        fbSlitsPower.rReqApertureSizeX := 4;
-        fbSlitsPower.rReqApertureSizeY := 6;
-        fbSlitsPower.rReqCenterX := 1;
-        fbSlitsPower.rReqCenterY := 2;
+        fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
         nStep := nStep + 1;
     1:
         // Wait for every NC axis to reach its target:
