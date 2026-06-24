@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SATT_FilterConfig" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a21}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Per-filter writer of one ST_SATT_Filter slot in a SATT stage's
+    arrFilters table. Owned by the integrator PRG, one instance per
+    populated filter slot. Mirrors FB_CC_StatePMPSConfig: a one-shot
+    direct write from CallAfterInit, so the declaration box stays the
+    single place the install's filter table is described.
+
+    Performs a one-shot write of sFilterMaterial and
+    fFilterThickness_um into the referenced slot. The FB body is
+    empty; the slot is never touched cyclically, so online-view edits
+    persist.
+
+    Usage (integrator declaration box, fbStage1 declared first):
+        fbStage1     : FB_SXR_SATT_Stage(...);
+        fbFilter1Cfg : FB_SATT_FilterConfig(
+            stFilter            := fbStage1.arrFilters[1],
+            sFilterMaterial     := 'C',
+            fFilterThickness_um := 25);
+*)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SATT_FilterConfig
+VAR_INPUT
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stFilter            : REFERENCE TO ST_SATT_Filter;
+    sFilterMaterial     : STRING;
+    fFilterThickness_um : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a23}">
+      <Declaration><![CDATA[(* One-shot write of the per-filter material and thickness into the
+   referenced arrFilters slot. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF __ISVALIDREF(THIS^.stFilter) THEN
+    THIS^.stFilter.sFilterMaterial     := THIS^.sFilterMaterial;
+    THIS^.stFilter.fFilterThickness_um := THIS^.fFilterThickness_um;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a22}">
+      <Declaration><![CDATA[(* Stores the slot reference plus the per-filter material and
+   thickness at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains        : BOOL;
+    bInCopyCode         : BOOL;
+    stFilter            : REFERENCE TO ST_SATT_Filter;
+    sFilterMaterial     : STRING;
+    fFilterThickness_um : LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stFilter REF= stFilter;
+THIS^.sFilterMaterial     := sFilterMaterial;
+THIS^.fFilterThickness_um := fFilterThickness_um;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

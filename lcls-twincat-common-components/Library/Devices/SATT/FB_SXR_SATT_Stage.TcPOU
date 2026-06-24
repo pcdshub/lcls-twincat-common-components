@@ -11,9 +11,9 @@
     no arbiter handshake, no BPTM, no beam-param gating, no
     transition-key plumbing, no eMotionRequestPolicy other than the
     default. The only PMPS-adjacent behavior is:
-      - Per-state reactive temperature setpoint pulled from the PMPS
-        JSON DB by an in-device FB_JsonDocToSafeBP read (one state at
-        a time), used as the two RTD fault thresholds.
+      - Reactive temperature setpoint pulled from the PMPS JSON DB by
+        an in-device FB_JsonDocToSafeBP read keyed on the caller-
+        supplied RTDPMPSState, used as the two RTD fault thresholds.
       - A single FB_FastFault ("Device is moving") raised whenever
         the stage is in motion or in UNKNOWN, sunk into the caller-
         supplied fbFFHWO.
@@ -29,12 +29,14 @@
       - Own and tick FB_MotionStageNC for the Y motor; pass it into
         aiMotionStage via FB_Init.
       - Own astPositionState[1..MAX_STATE_MOTORS][1..MAX_STATES] and
-        run a per-(motor, state) FB_CC_StatePMPSConfig array each
-        cycle BEFORE calling fbSATT, writing fPosition + sPmpsState
-        (only stack-slot 1 matters for SATT). The per-state sName +
-        fDelta are written by FB_SATT itself from afbStateDefaults.
+        configure each state's sName + fPosition (+ fDelta) in the
+        caller app before calling fbSATT (only stack-slot 1 matters
+        for SATT). The filters are not real PMPS states, so the
+        per-filter stPMPS.sPmpsState is not used.
       - Own fbFFHWO (caller-side hardware fast-fault sink).
-      - Set sDeviceName (used for both DB lookup and FF messages).
+      - Set sDeviceName (used for both DB lookup and FF messages) and
+        RTDPMPSState (the PMPS DB key for the RTD reactive-temperature
+        read), both passed via FB_Init.
 *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SXR_SATT_Stage
@@ -133,52 +135,12 @@ VAR
     {attribute 'no_copy'}
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName      : STRING;
+    (* PMPS DB key for the RTD reactive-temperature read. The filters
+       are not real PMPS states, so this device-level key (caller-
+       supplied via FB_Init) names the DB entry to pull the reactive
+       temp setpoint from. *)
+    RTDPMPSState     : STRING;
     bEnableMotion    : BOOL := TRUE;
-
-    (* One configurator per SATT state (OUT + 8 filters). Writes the
-       per-state sName and fDelta. Ticked cyclically in the body
-       AFTER fbStates so its writes win over the template baseline
-       FB_StateSetup applied via the integrator's
-       FB_CC_StatePMPSConfig array. Idempotent once
-       stPositionState.bUpdated trips. *)
-    afbStateDefaults : ARRAY[1..9] OF FB_CC_DeviceStateDefaults[
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.OUT],
-         sName           := 'OUT',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER1],
-         sName           := 'FILTER1',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER2],
-         sName           := 'FILTER2',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER3],
-         sName           := 'FILTER3',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER4],
-         sName           := 'FILTER4',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER5],
-         sName           := 'FILTER5',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER6],
-         sName           := 'FILTER6',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER7],
-         sName           := 'FILTER7',
-         fDelta          := FDELTA_DEFAULT),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER8],
-         sName           := 'FILTER8',
-         fDelta          := FDELTA_DEFAULT)
-    ];
-
-    i      : UINT;
-    iSlot  : INT;
-END_VAR
-VAR CONSTANT
-    (* SATT-wide default tolerance for state in-position detection,
-       applied per-state by afbStateDefaults. Matches the historical
-       legacy SATT default used by the test suite. *)
-    FDELTA_DEFAULT : LREAL := 0.5;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
@@ -188,8 +150,6 @@ IF NOT __ISVALIDREF(aiMotionStage)
     RETURN;
 END_IF
 
-(* Device-side per-state defaults (afbStateDefaults) are written
-   once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
 fbStates();
 
 (* Filter index is offset by one because E_SXR_SATT_Position.OUT
@@ -239,16 +199,11 @@ fbFF(
     io_fbFFHWO := fbFFHWO
 );
 
-(* Pick the first non-empty PMPS state key among the filter slots as
-   the lookup key for the reactive-temperature read. The DB entry
-   must exist; the temperature field may be blank. *)
-astPickedDB[1].sPmpsState := '';
-FOR iSlot := E_SXR_SATT_Position.FILTER1 TO E_SXR_SATT_Position.FILTER8 DO
-    IF astPositionState[1][iSlot].stPMPS.sPmpsState <> '' THEN
-        astPickedDB[1].sPmpsState := astPositionState[1][iSlot].stPMPS.sPmpsState;
-        EXIT;
-    END_IF
-END_FOR
+(* The RTD reactive-temperature read is keyed on the device-level
+   RTDPMPSState (the filters are not real PMPS states, so no per-
+   filter key is scanned). The named DB entry must exist; the
+   temperature field may be blank. *)
+astPickedDB[1].sPmpsState := RTDPMPSState;
 
 fbReadPMPSDB(
     bExecute    := NOT MOTION_GVL.fbPmpsFileReader.bBusy,
@@ -292,17 +247,7 @@ fTemp2 := fbRTD_2.fTemp;]]></ST>
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.OUT]);
-afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER1]);
-afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER2]);
-afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER3]);
-afbStateDefaults[5].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER4]);
-afbStateDefaults[6].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER5]);
-afbStateDefaults[7].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER6]);
-afbStateDefaults[8].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER7]);
-afbStateDefaults[9].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_SXR_SATT_Position.FILTER8]);
-
-THIS^.fbStates.CallAfterInitStateMover(
+        <ST><![CDATA[THIS^.fbStates.CallAfterInitStateMover(
     aiMotionStage         := aiMotionStage,
     astPositionState      := astPositionState,
     nActiveMotorCount     := 1,
@@ -330,12 +275,14 @@ VAR_INPUT
                                           OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName      : STRING;
+    RTDPMPSState     : STRING;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
-THIS^.sDeviceName      := sDeviceName;]]></ST>
+THIS^.sDeviceName      := sDeviceName;
+THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
       </Implementation>
     </Method>
   </POU>

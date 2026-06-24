@@ -28,62 +28,61 @@ VAR
         aiMotionStage    := aiMotionStage,
         astPositionState := astPositionState,
         fbFFHWO          := fbFFHWO,
-        sDeviceName      := sDeviceName
+        sDeviceName      := sDeviceName,
+        RTDPMPSState     := 'TST:SATT-FILTER1'
     );
 
-    (* Per-install state config (caller-owned). Mirrors what a real
-       PRG_xxL0_SATT would declare. stDefault is the caller-owned
-       baseline template that FB_CC_StatePMPSConfig's inner
-       FB_StateSetup preloads from; fbSATT subsequently overrides
-       per-state sName and fDelta via its own
-       FB_CC_DeviceStateDefaults array.
+    (* Per-install config (integrator-owned), split by responsibility
+       so no writer overlaps another:
+         - afbStateDefaults (FB_CC_StateDefaultsConfig): the full state
+           slot, i.e. the shared baseline (incl. fDelta) from stDefault
+           plus the per-state sName and fPosition. SATT states are not
+           PMPS states, so no FB_CC_StatePMPSConfig and no sPmpsState
+           are used.
+         - afbFilterCfg (FB_SATT_FilterConfig): per-filter material and
+           thickness into fbSATT.arrFilters.
+       Both are one-shot CallAfterInit writers; ordering between them
+       is irrelevant because their field sets are disjoint.
 
-       FILTER1 carries the PMPS state key the test exercises; the
-       other filter slots leave sPmpsState blank, matching legacy
-       behavior where the FB picks the first non-empty key. *)
+       RTDPMPSState ('TST:SATT-FILTER1') is passed to the device via
+       FB_Init and names the DB entry for the RTD reactive-temp read,
+       independent of any per-state PMPS key. *)
     stDefault : ST_PositionState := (
+        fDelta        := 0.2,
         bMoveOk       := TRUE,
         bValid        := TRUE,
         bUseRawCounts := FALSE
     );
 
-    afbStatePMPS : ARRAY[1..9] OF FB_CC_StatePMPSConfig[
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.OUT],
-         stDefault       := stDefault,
-         fPosition       := 10,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER1],
-         stDefault       := stDefault,
-         fPosition       := 20,
-         sPmpsState      := 'TST:SATT-FILTER1'),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER2],
-         stDefault       := stDefault,
-         fPosition       := 30,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER3],
-         stDefault       := stDefault,
-         fPosition       := 40,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER4],
-         stDefault       := stDefault,
-         fPosition       := 50,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER5],
-         stDefault       := stDefault,
-         fPosition       := 60,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER6],
-         stDefault       := stDefault,
-         fPosition       := 70,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER7],
-         stDefault       := stDefault,
-         fPosition       := 80,
-         sPmpsState      := ''),
-        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER8],
-         stDefault       := stDefault,
-         fPosition       := 90,
-         sPmpsState      := '')
+    (* Per-state config (integrator-owned): the shared baseline (incl.
+       fDelta) comes from stDefault; only the per-state sName and
+       fPosition are set here. Written via FB_CC_StateDefaultsConfig,
+       which is FB_CC_StatePMPSConfig without sPmpsState, so SATT needs
+       no FB_CC_StatePMPSConfig. *)
+    afbStateDefaults : ARRAY[1..9] OF FB_CC_StateDefaultsConfig[
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.OUT],     stDefault := stDefault, sName := 'Out',     fPosition := 10),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER1], stDefault := stDefault, sName := 'Filter1', fPosition := 20),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER2], stDefault := stDefault, sName := 'Filter2', fPosition := 30),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER3], stDefault := stDefault, sName := 'Filter3', fPosition := 40),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER4], stDefault := stDefault, sName := 'Filter4', fPosition := 50),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER5], stDefault := stDefault, sName := 'Filter5', fPosition := 60),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER6], stDefault := stDefault, sName := 'Filter6', fPosition := 70),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER7], stDefault := stDefault, sName := 'Filter7', fPosition := 80),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER8], stDefault := stDefault, sName := 'Filter8', fPosition := 90)
+    ];
+
+    (* Per-filter material + thickness (integrator-owned) written into
+       the device's arrFilters table via FB_SATT_FilterConfig. fbSATT
+       is declared above, so these refs are valid at init. *)
+    afbFilterCfg : ARRAY[1..8] OF FB_SATT_FilterConfig[
+        (stFilter := fbSATT.arrFilters[1], sFilterMaterial := 'C',  fFilterThickness_um := 25),
+        (stFilter := fbSATT.arrFilters[2], sFilterMaterial := 'C',  fFilterThickness_um := 50),
+        (stFilter := fbSATT.arrFilters[3], sFilterMaterial := 'C',  fFilterThickness_um := 100),
+        (stFilter := fbSATT.arrFilters[4], sFilterMaterial := 'Si', fFilterThickness_um := 200),
+        (stFilter := fbSATT.arrFilters[5], sFilterMaterial := 'Si', fFilterThickness_um := 320),
+        (stFilter := fbSATT.arrFilters[6], sFilterMaterial := 'Si', fFilterThickness_um := 640),
+        (stFilter := fbSATT.arrFilters[7], sFilterMaterial := 'Si', fFilterThickness_um := 1280),
+        (stFilter := fbSATT.arrFilters[8], sFilterMaterial := 'Si', fFilterThickness_um := 2560)
     ];
 
     bFirstScan : BOOL := TRUE;
@@ -91,8 +90,8 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Caller-side state configurators write each slot once in
-   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
+      <ST><![CDATA[(* The two integrator-side configurator arrays each write their
+   slots once in CallAfterInit; no cyclic tick. *)
 
 (* One-shot motor setup + initial caller-owned enable. *)
 IF bFirstScan THEN
@@ -117,6 +116,7 @@ fbPDS();
 fbMotorY();
 fbSATT();
 
+TestConfig();
 TestStateMove();
 TestTempFFO();
 ]]></ST>
@@ -209,7 +209,7 @@ CASE nTestStep OF
             nTestStep       := 1;
         END_IF
     1:
-        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        (* OUT is configured at fPosition := 10 in afbStateDefaults[1]. *)
         IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
@@ -217,7 +217,7 @@ CASE nTestStep OF
             nTestStep       := 2;
         END_IF
     2:
-        (* FILTER1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        (* FILTER1 is configured at fPosition := 20 in afbStateDefaults[2]. *)
         IF fbSATT.eEnumGet = E_SXR_SATT_Position.FILTER1
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 20.0) <= fTolerance THEN
@@ -294,6 +294,54 @@ IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout in SATT temp FFO test');
     TEST_FINISHED();
 END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestConfig" Id="{c4e7a118-9f2b-4d63-8a07-3b5e6c1d2f44}">
+      <Declaration><![CDATA[(*
+    Verifies the integrator-side configurators each write their own
+    slot fields exactly once at init, with no overlap:
+      - FB_CC_StateDefaultsConfig -> sName, fPosition, and fDelta from
+        the stDefault baseline
+      - FB_SATT_FilterConfig      -> arrFilters material, thickness
+    All are one-shot CallAfterInit writes, so the values are present
+    from the first scan; this test asserts once and finishes.
+*)
+METHOD TestConfig
+VAR CONSTANT
+    fTol : LREAL := 0.001;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSATTConfig');
+
+(* FB_CC_StateDefaultsConfig wrote sName + the fDelta baseline. *)
+AssertTrue(
+    astPositionState[1][E_SXR_SATT_Position.OUT].sName = 'Out',
+    'OUT sName not set by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.OUT].fDelta - 0.2) <= fTol,
+    'OUT fDelta not copied from stDefault by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    astPositionState[1][E_SXR_SATT_Position.FILTER1].sName = 'Filter1',
+    'FILTER1 sName not set by FB_CC_StateDefaultsConfig');
+
+(* FB_CC_StateDefaultsConfig wrote fPosition. *)
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.OUT].fPosition - 10.0) <= fTol,
+    'OUT fPosition not set by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.FILTER1].fPosition - 20.0) <= fTol,
+    'FILTER1 fPosition not set by FB_CC_StateDefaultsConfig');
+
+(* FB_SATT_FilterConfig wrote material + thickness into arrFilters. *)
+AssertTrue(
+    fbSATT.arrFilters[1].sFilterMaterial = 'C',
+    'arrFilters[1] material not set by FB_SATT_FilterConfig');
+AssertTrue(
+    ABS(fbSATT.arrFilters[1].fFilterThickness_um - 25.0) <= fTol,
+    'arrFilters[1] thickness not set by FB_SATT_FilterConfig');
+
+TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
