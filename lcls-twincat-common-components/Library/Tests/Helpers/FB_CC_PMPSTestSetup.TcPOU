@@ -39,8 +39,11 @@ VAR
     fbJsonHelper_IPM   : FB_PMPSJsonTestHelperEx;
     fbJsonHelper_WFS   : FB_PMPSJsonTestHelperEx;
     fbJsonHelper_XPIM  : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_SATT  : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_SLITS : FB_PMPSJsonTestHelperEx;
+    (* SATT and SLITS read a reactive-DB temperature threshold, so they
+       need the reactive-temp-serializing helper rather than the Ex
+       variant. *)
+    fbJsonHelper_SATT  : FB_PMPSJsonTestHelper;
+    fbJsonHelper_SLITS : FB_PMPSJsonTestHelper;
 
     (* astParams_XXX[0] is the transition key; the rest are named-state
        keys in enum order. *)
@@ -52,7 +55,7 @@ VAR
     astParams_IPM   : ARRAY[0..5] OF ST_DbStateParams;
     astParams_WFS   : ARRAY[0..6] OF ST_DbStateParams;
     astParams_XPIM  : ARRAY[0..5] OF ST_DbStateParams;
-    astParams_SATT  : ARRAY[0..1] OF ST_DbStateParams;
+    astParams_SATT  : ARRAY[0..0] OF ST_DbStateParams;
     astParams_SLITS : ARRAY[0..0] OF ST_DbStateParams;
 END_VAR
 ]]></Declaration>
@@ -475,26 +478,27 @@ astParams_XPIM[5].stBeamParams.nRate         := 50;
 astParams_XPIM[5].stBeamParams.nTran         := 8;
 astParams_XPIM[5].stBeamParams.nMachineMode  := 1;
 
-(* ---- TST:SATT ---- *)
-astParams_SATT[0].sPmpsState                 := 'TST:SATT-TRANSITION';
+(* ---- AT1K4:L2SI (single reactive-temp key; the SATT filters are not
+   real PMPS states, so only the RTD reactive-temperature key is
+   seeded). nTempSP is the RTD fault threshold in degC: the SATT temp
+   FFO test faults at 100degC and clears at 0degC, so any threshold in
+   (0, 100) works. *)
+astParams_SATT[0].sPmpsState                 := 'AT1K4:L2SI-RTD';
 astParams_SATT[0].nRequestAssertionID        := 1100;
-astParams_SATT[0].stBeamParams.nBeamClass    := 2#0000_1000;
+astParams_SATT[0].stReactiveParams.nTempSP   := 30;
+astParams_SATT[0].stBeamParams.nBeamClass    := 2#0000_0001;
 astParams_SATT[0].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
-astParams_SATT[0].stBeamParams.nRate         := 1;
-astParams_SATT[0].stBeamParams.nTran         := 0;
-astParams_SATT[0].stBeamParams.nMachineMode  := 1;
+astParams_SATT[0].stBeamParams.nRate         := 10;
+astParams_SATT[0].stBeamParams.nTran         := 12;
+astParams_SATT[0].stBeamParams.nMachineMode  := 2;
 
-astParams_SATT[1].sPmpsState                 := 'TST:SATT-FILTER1';
-astParams_SATT[1].nRequestAssertionID        := 1101;
-astParams_SATT[1].stBeamParams.nBeamClass    := 2#0000_0001;
-astParams_SATT[1].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
-astParams_SATT[1].stBeamParams.nRate         := 10;
-astParams_SATT[1].stBeamParams.nTran         := 12;
-astParams_SATT[1].stBeamParams.nMachineMode  := 2;
-
-(* ---- TST:SLITS (single PMPS key, aperture geometry not state-keyed) ---- *)
-astParams_SLITS[0].sPmpsState                := 'TST:SLITS';
+(* ---- SL1L0:POWER (single reactive-temp key; aperture geometry is
+   not state-keyed). nTempSP is the RTD fault threshold in degC: the
+   SLITS temp FFO test faults at 100degC and clears at 0degC, so any
+   threshold in (0, 100) works. *)
+astParams_SLITS[0].sPmpsState                := 'SL1L0:POWER-RTD';
 astParams_SLITS[0].nRequestAssertionID       := 1200;
+astParams_SLITS[0].stReactiveParams.nTempSP  := 30;
 astParams_SLITS[0].stBeamParams.nBeamClass   := 2#0000_0001;
 astParams_SLITS[0].stBeamParams.neVRange     := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_SLITS[0].stBeamParams.nRate        := 10;
@@ -553,13 +557,13 @@ fbJsonHelper_XPIM(
 fbJsonHelper_SATT(
     astBeamParams := astParams_SATT,
     bExecute      := TRUE,
-    sDevName      := 'TST:SATT',
+    sDevName      := 'AT1K4:L2SI',
     bNewDoc       := FALSE);
 
 fbJsonHelper_SLITS(
     astBeamParams := astParams_SLITS,
     bExecute      := TRUE,
-    sDevName      := 'TST:SLITS',
+    sDevName      := 'SL1L0:POWER',
     bNewDoc       := FALSE);
 ]]></ST>
       </Implementation>

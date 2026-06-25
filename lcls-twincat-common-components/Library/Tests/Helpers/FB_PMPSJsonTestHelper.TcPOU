@@ -3,9 +3,17 @@
   <POU Name="FB_PMPSJsonTestHelper" Id="{dc71dc31-2d0b-4062-b2d3-b26324b3473f}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PMPSJsonTestHelper
 (*
-    Create a JSON doc in memory to match the input structs
-    Assumes 1 device for simplicity
-    Writes to the global pmps json doc
+    Build a JSON document in memory from the input structs and publish
+    it to the global PMPS doc (PMPS_GVL.BP_jsonDoc). Unlike
+    FB_PMPSJsonTestHelperEx, this helper serializes the reactive
+    temperature and pressure set points (nTempSP / nPressSP) into the
+    reactive_temp / reactive_pressure members, so it is the helper to
+    use for any device whose test reads a reactive-DB threshold.
+
+    bNewDoc selects the document mode: TRUE creates a fresh root
+    document (first device in the seeding chain); FALSE appends this
+    device to the existing PMPS_GVL.BP_jsonDoc, so several helpers can
+    accumulate into one multi-device document.
 *)
 VAR_IN_OUT
     astBeamParams: ARRAY[*] OF ST_DbStateParams;
@@ -13,6 +21,7 @@ END_VAR
 VAR_INPUT
     bExecute: BOOL;
     sDevName: STRING;
+    bNewDoc: BOOL;
 END_VAR
 VAR_OUTPUT
 END_VAR
@@ -42,7 +51,11 @@ IF NOT rtExec.Q THEN
     RETURN;
 END_IF
 
-jsonRoot := fbJson.NewDocument();
+IF bNewDoc THEN
+    jsonRoot := fbJson.NewDocument();
+ELSE
+    jsonRoot := PMPS_GVL.BP_jsonDoc;
+END_IF
 jsonDevice := fbJson.AddObjectMember(jsonRoot, sDevName);
 FOR nIter := LOWER_BOUND(astBeamParams, 1) TO UPPER_BOUND(astBeamParams, 1) DO
     ajsonState[nIter] := fbJson.AddObjectMember(jsonDevice, astBeamParams[nIter].sPmpsState);
