@@ -57,6 +57,11 @@ VAR
     sPmpsState : STRING;
     fbReadPMPSDB : FB_JsonDocToSafeBP;
     astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
+    (* Caller-injected file-reader busy flag. fbReadPMPSDB.bExecute needs a
+       rising edge; a real PMPS file read produces one as bBusy falls. Taken
+       as REFERENCE TO so a test can drive its own BOOL and simulate the edge
+       instead of reaching into MOTION_GVL.fbPmpsFileReader directly. *)
+    bFileReaderBusy : REFERENCE TO BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -80,15 +85,20 @@ SUPER^();
 M_CalculatePositions();
 M_Motion();
 
-// PMPS reactive temperature DB lookup.
+// PMPS reactive temperature DB lookup. bExecute needs a rising edge,
+// produced as the caller-injected file-reader busy flag falls. Guard
+// the REF (single condition, no short-circuit hazard) so an unbound
+// instance stays inert rather than dereferencing a nil ref.
 astTempDB[1].sPmpsState := sPmpsState;
-fbReadPMPSDB(
-    bExecute    := NOT MOTION_GVL.fbPmpsFileReader.bBusy,
-    jsonDoc     := PMPS_GVL.BP_jsonDoc,
-    sDeviceName := sDeviceName,
-    arrStates   := astTempDB,
-    io_fbFFHWO  := fbFFHWO
-);
+IF __ISVALIDREF(bFileReaderBusy) THEN
+    fbReadPMPSDB(
+        bExecute    := NOT bFileReaderBusy,
+        jsonDoc     := PMPS_GVL.BP_jsonDoc,
+        sDeviceName := sDeviceName,
+        arrStates   := astTempDB,
+        io_fbFFHWO  := fbFFHWO
+    );
+END_IF
 
 // All 8 RTDs share the same fault threshold (resolved from the DB).
 RTD_TOP_1(
@@ -137,10 +147,11 @@ fbFlowSwitch();
     </Implementation>
     <Method Name="FB_Init" Id="{374dff7e-a7f7-48ec-a96e-6c5ba3e1db5a}">
       <Declaration><![CDATA[(*
-    REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
-    sDeviceName at instantiation. Interface wiring into each blade
-    mover, and the one-shot M_Init blade configuration, run from
-    CallAfterInit once these REFs are bound.
+    Records sPmpsState and REF-binds the caller-owned file-reader busy
+    flag; aiMotionStage (4 blades), fbFFHWO and sDeviceName are bound by
+    the base FB_SLITS.FB_Init. Interface wiring into each blade mover,
+    and the one-shot M_Init blade configuration, run from CallAfterInit
+    once these REFs are bound.
 *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
@@ -151,10 +162,12 @@ VAR_INPUT
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName   : STRING;
     sPmpsState 	  : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
 END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.sPmpsState := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;
 ]]></ST>
       </Implementation>
     </Method>
