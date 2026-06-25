@@ -239,6 +239,8 @@ END_VAR
       <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
 // Block edge-triggers. Blade init + motion dispatch lives on the
 // FB_SLITS_POWER subclass body.
+// Blade mode / enable / limits + FFO device name, once at init.
+M_Init();
 HandleRequests();
 ]]></ST>
     </Implementation>
@@ -260,9 +262,7 @@ fbBottom.CallAfterInit( stPositionState := stBottom, iMotionStage := aiMotionSta
 fbNorth.CallAfterInit(  stPositionState := stNorth,  iMotionStage := aiMotionStage[E_SlitsBlade.NORTH]);
 fbSouth.CallAfterInit(  stPositionState := stSouth,  iMotionStage := aiMotionStage[E_SlitsBlade.SOUTH]);
 
-// Blade mode / enable / limits + FFO device name, once at init.
-M_Init();
-]]></ST>
+FFO.i_DevName := sDeviceName;]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
@@ -408,26 +408,16 @@ rActCenterY := LREAL_TO_REAL(
 METHOD M_Init
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[FOR nMotor := 1 TO 4 DO
-    aiMotionStage[nMotor].SetModeEnableLimits(
-        LimBackward    := TRUE,
-        LimForward     := TRUE,
-        HomeEnable     := FALSE,
-        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
-        EnableMode     := E_StageEnableMode.DURING_MOTION,
-        HomeMode       := E_EpicsHomeCmd.NONE,
-        UserEnable     := TRUE,
-        HardwareEnable := TRUE
-    );
-    aiMotionStage[nMotor].SetMotionParam(
-        Velocity     := fVelocity,
-        Acceleration := fAcceleration,
-        Deceleration := fDeceleration,
-        Jerk         := fJerk
-    );
-END_FOR
+        <ST><![CDATA[// FOR nMotor := 1 TO 4 DO
+//     aiMotionStage[nMotor].SetMotionParam(
+//         Velocity     := fVelocity,
+//         Acceleration := fAcceleration,
+//         Deceleration := fDeceleration,
+//         Jerk         := fJerk
+//     );
+// END_FOR
+//
 
-FFO.i_DevName := sDeviceName;
 ]]></ST>
       </Implementation>
     </Method>

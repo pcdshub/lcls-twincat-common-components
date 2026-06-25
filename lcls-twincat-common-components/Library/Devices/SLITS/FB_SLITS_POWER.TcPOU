@@ -60,10 +60,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Parent body: EPICS edge-trigger consumption only (no REF touch).
-SUPER^();
-
-// REF nil-guard for every REF-touching call below (dispatch + PMPS DB
+      <ST><![CDATA[// REF nil-guard for every REF-touching call below (dispatch + PMPS DB
 // + RTDs all consume sDeviceName / fbFFHWO; M_CalculatePositions also
 // indexes aiMotionStage). The parent's body no longer holds this
 // guard so we must.
@@ -71,6 +68,11 @@ IF NOT __ISVALIDREF(THIS^.aiMotionStage)
    OR NOT __ISVALIDREF(THIS^.fbFFHWO) THEN
     RETURN;
 END_IF
+
+
+// Parent body: EPICS edge-trigger consumption only (no REF touch).
+SUPER^();
+
 
 // Inherited dispatch (parity with legacy FB_SLITS_POWER body
 // invoking ACT_CalculatePositions / ACT_Motion). Blade mode / enable

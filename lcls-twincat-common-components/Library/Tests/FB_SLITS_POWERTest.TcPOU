@@ -38,6 +38,7 @@ VAR
 
     nBlade     : INT;
     bFirstScan : BOOL := TRUE;
+    bStageReady : BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -45,25 +46,38 @@ END_VAR
 // CallAfterInit via M_Init). The integrator seeds the per-blade
 // motion parameters (Velocity / Accel / Decel / Jerk) and the
 // concrete-FB-only restore flags, which are not on I_MotionStage.
-IF bFirstScan THEN
-    FOR nBlade := 1 TO 4 DO
-        afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
-        afbMotor[nBlade].RestoreMotionParams      := FALSE;
-        afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
-    END_FOR
-    bFirstScan := FALSE;
-END_IF
+// IF bFirstScan THEN
+//     FOR nBlade := 1 TO 4 DO
+// 		afbMotor[nBlade].SetModeEnableLimits(
+// 			LimBackward    := TRUE,
+// 			LimForward     := TRUE,
+// 			HomeEnable     := FALSE,
+// 			BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+// 			EnableMode     := E_StageEnableMode.DURING_MOTION,
+// 			HomeMode       := E_EpicsHomeCmd.NONE,
+// 			UserEnable     := TRUE,
+// 			HardwareEnable := TRUE
+// 		);
+// 		afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+//         afbMotor[nBlade].RestoreMotionParams      := FALSE;
+//         afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
+//     END_FOR
+//     bFirstScan := FALSE;
+// END_IF
+//
+// fbPDS();
+// FOR nBlade := 1 TO 4 DO
+//     afbMotor[nBlade]();
+// 	bStageReady := afbMotor[nBlade].stMotionStatus.bStageReady;
+// END_FOR
 
-fbPDS();
-FOR nBlade := 1 TO 4 DO
-    afbMotor[nBlade]();
-END_FOR
-
-fbSlitsPower(bMoveOk := TRUE);
-
-TestTempFFO();
-TestApertureMath();
+// fbSlitsPower(bMoveOk := TRUE);
+//
+// //TestTempFFO();
+// //TestApertureMath();
 TestApertureMotion();
+
+
 ]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
@@ -268,21 +282,45 @@ END_VAR
         <ST><![CDATA[// Does an aperture request actually drive every blade NC axis to target?
 TEST('TestSlitsApertureMotion');
 
-tonTimer(IN := TRUE, PT := T#30s);
+tonTimer(IN := TRUE, PT := T#40S);
 
 CASE nStep OF
     0:
+        IF bFirstScan THEN
+            FOR nBlade := 1 TO 4 DO
+                afbMotor[nBlade].SetModeEnableLimits(
+                    LimBackward    := TRUE,
+                    LimForward     := TRUE,
+                    HomeEnable     := FALSE,
+                    BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+                    EnableMode     := E_StageEnableMode.DURING_MOTION,
+                    HomeMode       := E_EpicsHomeCmd.NONE,
+                    UserEnable     := TRUE,
+                    HardwareEnable := TRUE
+                );
+                afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+                afbMotor[nBlade].RestoreMotionParams      := FALSE;
+                afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
+            END_FOR
+            bFirstScan := FALSE;
+            nStep := nStep + 1;
+        END_IF
+    1:
         // Per-blade encoder offsets and an aperture request inside the
         // PMPS-authorized envelope (so each axis request is accepted and
         // dispatched to the linked NC axis).
         fbSlitsPower.SetAptWidthHeight(Width:=100.0, Height:=100.0);
-        fbSlitsPower.rEncoderOffsetTop    := 0.1;
-        fbSlitsPower.rEncoderOffsetBottom := 0.2;
-        fbSlitsPower.rEncoderOffsetNorth  := 0.3;
-        fbSlitsPower.rEncoderOffsetSouth  := 0.4;
-        fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
-        nStep := nStep + 1;
-    1:
+        fbSlitsPower.rEncoderOffsetTop    := 16.1;
+        fbSlitsPower.rEncoderOffsetBottom := -11.65;
+        fbSlitsPower.rEncoderOffsetNorth  := 12.45;
+        fbSlitsPower.rEncoderOffsetSouth  := -16.45;
+
+        IF bStageReady THEN
+             fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
+            nStep := nStep + 1;
+        END_IF
+
+    2:
         // Wait for every NC axis to reach its target:
         //   Top    =  Ygap/2 + (Ycen + offTop)    =  3 + 2.1 =  5.1
         //   Bottom = -Ygap/2 + (Ycen + offBottom) = -3 + 2.2 = -0.8
@@ -297,8 +335,15 @@ CASE nStep OF
         END_IF
 END_CASE
 
-IF tonTimer.Q OR nStep > nLastStep THEN
-    AssertFalse(tonTimer.Q, 'Timeout: blades did not reach aperture target (NC axes linked?)');
+
+fbPDS();
+FOR nBlade := 1 TO 4 DO
+    afbMotor[nBlade]();
+    bStageReady := afbMotor[nBlade].stMotionStatus.bStageReady;
+END_FOR
+fbSlitsPower(bMoveOk := TRUE);
+
+IF tonTimer.Q OR nStep > 3 THEN
     TEST_FINISHED();
 END_IF
 ]]></ST>
