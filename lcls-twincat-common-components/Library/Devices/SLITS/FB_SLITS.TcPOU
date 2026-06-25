@@ -46,6 +46,7 @@
     legacy preset-position branch was never implemented).
 *)
 {attribute 'analysis' := '-33'}
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS
 VAR_INPUT
     {attribute 'pytmc' := '
@@ -106,22 +107,22 @@ VAR
     {attribute 'pytmc' := 'pv: TOP'}
     fbTop    : FB_StatePTPMove(
         stPositionState := stTop,
-        iMotionStage:=aiMotionStage[E_SlitsBlade.TOP]
+        iMotionStage:=0
     );
     {attribute 'pytmc' := 'pv: BOTTOM'}
     fbBottom : FB_StatePTPMove(
         stPositionState := stBottom,
-        iMotionStage:=aiMotionStage[E_SlitsBlade.BOTTOM]
+        iMotionStage:=0
     );
     {attribute 'pytmc' := 'pv: NORTH'}
     fbNorth  : FB_StatePTPMove(
         stPositionState := stNorth,
-        iMotionStage:=aiMotionStage[E_SlitsBlade.NORTH]
+        iMotionStage:=0
     );
     {attribute 'pytmc' := 'pv: SOUTH'}
     fbSouth  : FB_StatePTPMove(
         stPositionState := stSouth,
-        iMotionStage:=aiMotionStage[E_SlitsBlade.SOUTH]
+        iMotionStage:=0
     );
 
     (* Aperture-math intermediate targets. *)
@@ -216,7 +217,7 @@ VAR
 
     (* PMPS aperture-safety fault (driven by FB_SLITS_POWER.M_UpdatePMPS). *)
     FFO : FB_FastFault := (
-        i_DevName  := 'Slits',
+        i_DevName  := sDeviceName,
         i_Desc     := 'Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF',
         i_TypeCode := 16#FAA
     );
@@ -230,8 +231,7 @@ VAR
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
     {attribute 'no_copy'}
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
-    {attribute 'no_copy'}
-    sDeviceName   : REFERENCE TO STRING;
+    sDeviceName   :  STRING;
     nMotor : UINT;
 END_VAR
 ]]></Declaration>
@@ -279,13 +279,13 @@ VAR_INPUT
     bInCopyCode   : BOOL;
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
-    sDeviceName   : REFERENCE TO STRING;
+    sDeviceName   : STRING;
 END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
 THIS^.fbFFHWO       REF= fbFFHWO;
-THIS^.sDeviceName   REF= sDeviceName;
+THIS^.sDeviceName   := sDeviceName;
 ]]></ST>
       </Implementation>
     </Method>
@@ -497,6 +497,18 @@ rReqApertureSizeY := ApertureSizeY;
 rReqCenterX       := CenterX;
 rReqCenterY       := CenterY;
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
+      <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
+VAR_INPUT
+    Width : REAL;
+    Height : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width := Width;
+THIS^.AptArrayReq.Height := Height;]]></ST>
       </Implementation>
     </Method>
   </POU>

@@ -795,6 +795,54 @@ External Setpoint Generation:
 			</Relations>
 		</DataType>
 		<DataType>
+			<Name GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Name>
+			<BitSize>96</BitSize>
+			<SubItem>
+				<Name>Width</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+				<Comment><![CDATA[distance between horizontal slits (x)]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: Width
+            io: i
+            field: EGU mm</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+			<SubItem>
+				<Name>Height</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000D}">REAL</Type>
+				<Comment><![CDATA[distance between vertical slits (y)]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: Height
+            io: i
+            field: EGU mm</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+			<SubItem>
+				<Name>xOK</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
+				<Comment><![CDATA[status of aperture, false if error or in motion]]></Comment>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+				<Properties>
+					<Property>
+						<Name>plcAttribute_pytmc</Name>
+						<Value>pv: OK
+        io: i</Value>
+					</Property>
+				</Properties>
+			</SubItem>
+		</DataType>
+		<DataType>
 			<Name GUID="{875D2B22-B7EB-497E-B933-0C004593CCF3}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">PLCTONC_AXIS_REF_CTRL</Name>
 			<BitSize>32</BitSize>
 			<SubItem>
@@ -983,7 +1031,7 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{2956C132-A8F5-3A7B-9DF1-5CF5FC0A7130}" TmcPath="Library\Library.tmc">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{EA75D9CE-C7D0-A718-CD95-252F45A87219}" TmcPath="Library\Library.tmc">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="8" AreaNo="4">
@@ -1013,22 +1061,6 @@ External Setpoint Generation:
 					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
 					<Name>PRG_TEST.fbREFTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
 					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
 					<Type>BOOL</Type>
@@ -1050,27 +1082,56 @@ External Setpoint Generation:
 					<Comment><![CDATA[ Connect this output to the terminal]]></Comment>
 					<Type>INT</Type>
 				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayStatus</Name>
+					<Comment><![CDATA[ PMPS aperture IO (caller-mapped to terminals). ]]></Comment>
+					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
+				</Var>
 			</Vars>
 			<Vars VarGrpType="1">
 				<Name>PlcTask Inputs</Name>
 				<Var>
 					<Name>PRG_TEST.fbREFTest.axRef.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
@@ -1123,6 +1184,338 @@ External Setpoint Generation:
 					<Comment><![CDATA[ Connect this input to the terminal]]></Comment>
 					<Type>DINT</Type>
 				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayReq</Name>
+					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbFlowSwitch.bFlowOk</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_TOP_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_Bottom_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_North_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.RTD_South_2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
 			</Vars>
 			<UnrestoredVarLinks ImportTime="2026-06-11T14:24:35">
 				<OwnerA Name="InputDst" Prefix="TIPC^Library^Library Instance" Type="1">
@@ -1147,18 +1540,6 @@ External Setpoint Generation:
 					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
 						<Link VarA="PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
 					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_Top">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_Bottom">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_North">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_South">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
 				</OwnerA>
 				<OwnerA Name="OutputSrc" Prefix="TIPC^Library^Library Instance" Type="2">
 					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
@@ -1181,18 +1562,6 @@ External Setpoint Generation:
 					</OwnerB>
 					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
 						<Link VarA="PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_Top">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_Bottom">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_North">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
-					</OwnerB>
-					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis_Slit_South">
-						<Link VarA="PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
 					</OwnerB>
 				</OwnerA>
 			</UnrestoredVarLinks>
@@ -1217,6 +1586,22 @@ External Setpoint Generation:
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
 				<Link VarA="PlcTask Inputs^PRG_TEST.fbREFTest.axRef.NcToPlc" VarB="Outputs^ToPlc"/>
 				<Link VarA="PlcTask Outputs^PRG_TEST.fbREFTest.axRef.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_Bottom">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_North">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_South">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_Top">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>

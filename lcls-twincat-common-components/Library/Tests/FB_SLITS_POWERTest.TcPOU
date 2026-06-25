@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWERTest" Id="{e999be49-2915-49c2-8ad1-4a5692f33436}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
@@ -28,12 +28,12 @@ VAR
     ];
 
     fbFFHWO     : FB_HardwareFFOutput;
-    sDeviceName : STRING := 'TST:SLITS';
 
     fbSlitsPower : FB_SLITS_POWER(
         aiMotionStage := aiMotionStage,
         fbFFHWO       := fbFFHWO,
-        sDeviceName   := sDeviceName
+        sDeviceName   := 'SL1L0:POWER',
+        sPmpsState:= 'SL1L0:POWER-RTD'
     );
 
     nBlade     : INT;
@@ -59,7 +59,7 @@ FOR nBlade := 1 TO 4 DO
     afbMotor[nBlade]();
 END_FOR
 
-fbSlitsPower(bMoveOk := TRUE, sPmpsState := 'T1');
+fbSlitsPower(bMoveOk := TRUE);
 
 TestTempFFO();
 TestApertureMath();
@@ -186,53 +186,6 @@ ptr^ := iTempC * 10;
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="TestTempFFO" Id="{449fe1eb-ccc2-4b89-a3aa-28398aabab9d}">
-      <Declaration><![CDATA[METHOD TestTempFFO
-VAR_INST
-    tonTimer : TON;
-    nStep    : UINT := 0;
-END_VAR
-VAR CONSTANT
-    nLastStep : UINT := 4;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[// Do we fault at the correct times?
-TEST('TestSlitsTempFFO');
-
-// Prepare a timeout
-tonTimer(IN := TRUE, PT := T#10s);
-
-CASE nStep OF
-    0:
-        // Hold until the PMPS DB is ready.
-        IF fbSlitsPower.RTD_TOP_1.fFaultThreshold > 0 THEN
-            nStep := nStep + 1;
-        END_IF
-    1:
-        // Set the thermocouple temperatures to a crazy-high number.
-        SetSlitsTemp(100);
-        nStep := nStep + 1;
-    2:
-        // We should see faults on all RTDs at 100C.
-        AssertAllTempFault('has high temp reading');
-        nStep := nStep + 1;
-    3:
-        // Set the thermocouple temperatures back to low.
-        SetSlitsTemp(0);
-        nStep := nStep + 1;
-    4:
-        AssertNoneTempFault('has low temp reading');
-        nStep := nStep + 1;
-END_CASE
-
-IF tonTimer.Q OR nStep > nLastStep THEN
-    AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
-    TEST_FINISHED();
-END_IF
-]]></ST>
-      </Implementation>
-    </Method>
     <Method Name="TestApertureMath" Id="{a2c7f3d4-1b6e-4f82-9c3a-5d7e8f0a1b2c}">
       <Declaration><![CDATA[(*
     Covers FB_SLITS.M_CalculatePositions: an EPICS aperture request
@@ -262,8 +215,7 @@ CASE nStep OF
     0:
         // Per-blade encoder offsets and an aperture request inside the
         // PMPS-authorized envelope (so the request is accepted).
-        fbSlitsPower.AptArrayReq.Width  := 100;
-        fbSlitsPower.AptArrayReq.Height := 100;
+        fbSlitsPower.SetAptWidthHeight(Width:=100.0, Height:=100.0);
         fbSlitsPower.rEncoderOffsetTop    := 0.1;
         fbSlitsPower.rEncoderOffsetBottom := 0.2;
         fbSlitsPower.rEncoderOffsetNorth  := 0.3;
@@ -323,8 +275,7 @@ CASE nStep OF
         // Per-blade encoder offsets and an aperture request inside the
         // PMPS-authorized envelope (so each axis request is accepted and
         // dispatched to the linked NC axis).
-        fbSlitsPower.AptArrayReq.Width  := 100;
-        fbSlitsPower.AptArrayReq.Height := 100;
+        fbSlitsPower.SetAptWidthHeight(Width:=100.0, Height:=100.0);
         fbSlitsPower.rEncoderOffsetTop    := 0.1;
         fbSlitsPower.rEncoderOffsetBottom := 0.2;
         fbSlitsPower.rEncoderOffsetNorth  := 0.3;
@@ -348,6 +299,53 @@ END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout: blades did not reach aperture target (NC axes linked?)');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{449fe1eb-ccc2-4b89-a3aa-28398aabab9d}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 4;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Do we fault at the correct times?
+TEST('TestSlitsTempFFO');
+
+// Prepare a timeout
+tonTimer(IN := TRUE, PT := T#10s);
+
+CASE nStep OF
+    0:
+        // Hold until the PMPS DB is ready.
+        IF fbSlitsPower.RTD_TOP_1.fFaultThreshold > 0 THEN
+            nStep := nStep + 1;
+        END_IF
+    1:
+        // Set the thermocouple temperatures to a crazy-high number.
+        SetSlitsTemp(100);
+        nStep := nStep + 1;
+    2:
+        // We should see faults on all RTDs at 100C.
+        AssertAllTempFault('has high temp reading');
+        nStep := nStep + 1;
+    3:
+        // Set the thermocouple temperatures back to low.
+        SetSlitsTemp(0);
+        nStep := nStep + 1;
+    4:
+        AssertNoneTempFault('has low temp reading');
+        nStep := nStep + 1;
+END_CASE
+
+IF tonTimer.Q OR nStep > nLastStep THEN
+    AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>

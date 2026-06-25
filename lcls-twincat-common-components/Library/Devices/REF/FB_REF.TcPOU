@@ -83,6 +83,9 @@ VAR
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
     (* One configurator per REF state (OUT, IN). Writes the per-state
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
        so its writes win over the template baseline FB_StateSetup
@@ -217,7 +220,7 @@ VAR_INPUT
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
     bFileReaderBusy       : REFERENCE TO BOOL;
-    bFileReaderError      : REFERENCE TO BOOL;   
+    bFileReaderError      : REFERENCE TO BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;

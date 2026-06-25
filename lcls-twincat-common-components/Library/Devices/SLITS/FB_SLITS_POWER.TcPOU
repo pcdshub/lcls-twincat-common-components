@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
     <Declaration><![CDATA[(*
@@ -22,11 +22,9 @@
     runs once in the parent's CallAfterInit (M_Init).
 *)
 {attribute 'analysis' := '-33'}
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
-VAR_INPUT
-    (* PMPS reactive-DB key for the device's allowed temperature. *)
-    sPmpsState : STRING;
-END_VAR
+
 VAR
     {attribute 'pytmc' := '
     pv: MODE
@@ -55,7 +53,8 @@ VAR
     RTD_South_1 : FB_CC_TempSensor;
     {attribute 'pytmc' := 'pv: SOUTH:RTD:02'}
     RTD_South_2 : FB_CC_TempSensor;
-
+    (* PMPS reactive-DB key for the device's allowed temperature. *)
+    sPmpsState : STRING;
     fbReadPMPSDB : FB_JsonDocToSafeBP;
     astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
 END_VAR
@@ -69,8 +68,7 @@ SUPER^();
 // indexes aiMotionStage). The parent's body no longer holds this
 // guard so we must.
 IF NOT __ISVALIDREF(THIS^.aiMotionStage)
-   OR NOT __ISVALIDREF(THIS^.fbFFHWO)
-   OR NOT __ISVALIDREF(THIS^.sDeviceName) THEN
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO) THEN
     RETURN;
 END_IF
 
@@ -135,6 +133,29 @@ RTD_South_2(
 fbFlowSwitch();
 ]]></ST>
     </Implementation>
+    <Method Name="FB_Init" Id="{374dff7e-a7f7-48ec-a96e-6c5ba3e1db5a}">
+      <Declaration><![CDATA[(*
+    REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
+    sDeviceName at instantiation. Interface wiring into each blade
+    mover, and the one-shot M_Init blade configuration, run from
+    CallAfterInit once these REFs are bound.
+*)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains  : BOOL;
+    bInCopyCode   : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    sPmpsState 	  : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.sPmpsState := sPmpsState;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
       <Declaration><![CDATA[(*
     Integrator-driven PMPS aperture-safety reconciliation. Called each
