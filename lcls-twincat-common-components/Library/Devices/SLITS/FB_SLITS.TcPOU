@@ -428,7 +428,7 @@ METHOD M_Init
     Refreshes per-blade ST_PositionState dynamic fields (fPosition +
     bMoveOk: static fields are seeded by the declaration inline-init),
     asserts bExecute on the bound FB_StatePTPMove on aperture change
-    (FB_StatePTPMove self-clears bExecute on bDone / bError, so
+    (FB_StatePTPMove self-clears bExecute on arrival or error, so
     re-asserting TRUE only re-dispatches once the previous move
     completes, matching legacy behaviour), and ticks the four per-blade
     movers cyclically.
