@@ -40,10 +40,11 @@ VAR
     fbJsonHelper_WFS   : FB_PMPSJsonTestHelperEx;
     fbJsonHelper_XPIM  : FB_PMPSJsonTestHelperEx;
     (* SATT and SLITS read a reactive-DB temperature threshold, so they
-       need the reactive-temp-serializing helper rather than the Ex
-       variant. *)
-    fbJsonHelper_SATT  : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_SLITS : FB_PMPSJsonTestHelperEx;
+       need FB_PMPSJsonTestHelper, which serializes nTempSP into
+       reactive_temp. The Ex variant writes reactive_temp := '' (parses
+       to 0), which leaves the RTD fault threshold unset. *)
+    fbJsonHelper_SATT  : FB_PMPSJsonTestHelper;
+    fbJsonHelper_SLITS : FB_PMPSJsonTestHelper;
 
     (* astParams_XXX[0] is the transition key; the rest are named-state
        keys in enum order. *)

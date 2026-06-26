@@ -33,7 +33,6 @@ VAR
     fbJson: FB_JsonDomParser;
 
     nIter: DINT;
-    nId: DINT;
 
     aseVRange: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
     asRate: ARRAY[0..GeneralConstants.MAX_STATES] OF STRING;
@@ -60,11 +59,10 @@ jsonDevice := fbJson.AddObjectMember(jsonRoot, sDevName);
 FOR nIter := LOWER_BOUND(astBeamParams, 1) TO UPPER_BOUND(astBeamParams, 1) DO
     ajsonState[nIter] := fbJson.AddObjectMember(jsonDevice, astBeamParams[nIter].sPmpsState);
 
-    nId := nId + 1;
     fbJson.AddIntMember(
         v:=ajsonState[nIter],
         member:='id',
-        value:=nId,
+        value:=UDINT_TO_DINT(astBeamParams[nIter].nRequestAssertionID),
     );
     fbJson.AddStringMember(
         v:=ajsonState[nIter],
