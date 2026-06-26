@@ -31,18 +31,18 @@
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_CC_PMPSTestSetup
 VAR
-    fbJsonHelper_ATM   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_LIC   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_PPM   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_REF   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_GBS   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_IPM   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_WFS   : FB_PMPSJsonTestHelperEx;
-    fbJsonHelper_XPIM  : FB_PMPSJsonTestHelperEx;
-    (* SATT and SLITS read a reactive-DB temperature threshold, so they
-       need FB_PMPSJsonTestHelper, which serializes nTempSP into
-       reactive_temp. The Ex variant writes reactive_temp := '' (parses
-       to 0), which leaves the RTD fault threshold unset. *)
+    (* All devices use the local FB_PMPSJsonTestHelper: it serializes the
+       seeded nRequestAssertionID into the DB 'id' (so each state gets a
+       unique assertion ID) and serializes nTempSP into reactive_temp
+       (needed by SATT/SLITS RTD thresholds). *)
+    fbJsonHelper_ATM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_LIC   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_PPM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_REF   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_GBS   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_IPM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_WFS   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_XPIM  : FB_PMPSJsonTestHelper;
     fbJsonHelper_SATT  : FB_PMPSJsonTestHelper;
     fbJsonHelper_SLITS : FB_PMPSJsonTestHelper;
 
