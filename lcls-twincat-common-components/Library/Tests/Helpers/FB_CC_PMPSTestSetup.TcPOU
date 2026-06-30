@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_PMPSTestSetup" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6b}" SpecialFunc="None">
     <Declaration><![CDATA[

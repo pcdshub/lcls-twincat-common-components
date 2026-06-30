@@ -189,7 +189,7 @@
     </Compile>
     <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
       <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
+      <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
     <Compile Include="Tests\Helpers\FB_CC_PMPSTestSetup.TcPOU">
       <SubType>Code</SubType>

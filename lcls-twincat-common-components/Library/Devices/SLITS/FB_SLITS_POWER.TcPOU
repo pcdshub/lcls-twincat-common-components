@@ -65,12 +65,8 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// REF nil-guard for every REF-touching call below (dispatch + PMPS DB
-// + RTDs all consume sDeviceName / fbFFHWO; M_CalculatePositions also
-// indexes aiMotionStage). The parent's body no longer holds this
-// guard so we must.
-IF NOT __ISVALIDREF(THIS^.aiMotionStage)
-   OR NOT __ISVALIDREF(THIS^.fbFFHWO) THEN
+      <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.aiMotionStage)
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO) OR NOT __ISVALIDREF(bFileReaderBusy) THEN
     RETURN;
 END_IF
 
@@ -90,15 +86,13 @@ M_Motion();
 // the REF (single condition, no short-circuit hazard) so an unbound
 // instance stays inert rather than dereferencing a nil ref.
 astTempDB[1].sPmpsState := sPmpsState;
-IF __ISVALIDREF(bFileReaderBusy) THEN
-    fbReadPMPSDB(
-        bExecute    := NOT bFileReaderBusy,
-        jsonDoc     := PMPS_GVL.BP_jsonDoc,
-        sDeviceName := sDeviceName,
-        arrStates   := astTempDB,
-        io_fbFFHWO  := fbFFHWO
-    );
-END_IF
+fbReadPMPSDB(
+    bExecute    := NOT bFileReaderBusy,
+    jsonDoc     := PMPS_GVL.BP_jsonDoc,
+    sDeviceName := sDeviceName,
+    arrStates   := astTempDB,
+    io_fbFFHWO  := fbFFHWO
+);
 
 // All 8 RTDs share the same fault threshold (resolved from the DB).
 RTD_TOP_1(

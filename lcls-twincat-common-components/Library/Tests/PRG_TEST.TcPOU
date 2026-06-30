@@ -9,8 +9,7 @@ VAR
        (not inside a test FB) so seeding happens exactly once at
        PLC startup, independent of TcUnit suite-invocation order. *)
     fbPmpsTestSetup: FB_CC_PMPSTestSetup;
-
-//     fbATMTest: FB_ATMTest;
+//    fbATMTest: FB_ATMTest;
 //     fbLICTest: FB_LICTest;
 //     fbPPMTest: FB_PPMTest;
     fbREFTest: FB_REFTest;

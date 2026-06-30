@@ -326,10 +326,7 @@ END_IF
 METHOD M_CalculatePositions
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[// EPICS request change detection. Aperture-size branches reject (and
-// log) requests exceeding the PMPS-authorized envelope; center
-// branches accept unconditionally.
-IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
+        <ST><![CDATA[IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
     IF rReqApertureSizeX <= AptArrayReq.Width THEN
         rOldReqApertureSizeX := rReqApertureSizeX;
         bExecuteMotionX      := TRUE;
@@ -341,11 +338,13 @@ IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
         );
     END_IF
 END_IF
+
 IF rOldReqCenterX <> rReqCenterX THEN
     rOldReqCenterX  := rReqCenterX;
     bExecuteMotionX := TRUE;
     fbLogger(sMsg := 'Requested new X center', eSevr := TcEventSeverity.Verbose);
 END_IF
+
 IF rOldReqApertureSizeY <> rReqApertureSizeY THEN
     IF rReqApertureSizeY <= AptArrayReq.Height THEN
         rOldReqApertureSizeY := rReqApertureSizeY;
@@ -358,6 +357,7 @@ IF rOldReqApertureSizeY <> rReqApertureSizeY THEN
         );
     END_IF
 END_IF
+
 IF rOldReqCenterY <> rReqCenterY THEN
     rOldReqCenterY  := rReqCenterY;
     bExecuteMotionY := TRUE;
