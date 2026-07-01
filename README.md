@@ -75,6 +75,8 @@ VAR
         astPositionState := astPositionState,
         fbFFHWO          := fbFFHWO,
         fbArbiter        := fbArbiter,
+        bFileReaderBusy  := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError := MOTION_GVL.fbPmpsFileReader.bError,
         sDeviceName      := sDeviceName,
         sTransitionKey   := sTransitionKey,
         bEnableBeamParams     := TRUE,
@@ -95,16 +97,14 @@ IF bFirstScan THEN
         LimBackward := TRUE, LimForward := TRUE, HomeEnable := FALSE,
         BrakeMode := E_StageBrakeMode.IF_ENABLED, EnableMode := E_StageEnableMode.DURING_MOTION,
         HomeMode := E_EpicsHomeCmd.LOW_LIMIT, UserEnable := TRUE, HardwareEnable := TRUE);
+	// optional motion parameter are persited
     fbMotorY.SetVelocity(Velocity := 15.5);
     bFirstScan := FALSE;
 END_IF
 
 fbPDS();
 fbMotorY();
-fbREF(
-    bFileReaderBusy  := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError := MOTION_GVL.fbPmpsFileReader.bError
-);
+fbREF();
 fbArbiterIO(i_bVeto := FALSE, Arbiter := fbArbiter, fbFFHWO := fbFFHWO);
 ```
 
