@@ -1,27 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_IPMTest" Id="{1b3d0000-0000-0000-0000-000000000001}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Single integration smoke for FB_IPM. Goal: prove the FB_IPM wiring
-    (REFERENCE TO refs, CallAfterInit / CallAfterInitStateMover /
-    CallAfterInitPMPS chain, inline-init of fbStates, per-state
-    name/fDelta defaults, PMPS state-key registration) still drives
-    FB_MotionStageNC into the configured fPosition for a commanded
-    state.
-
-    FB_IPM is a state-mover-only device (its legacy RTD slots are a
-    commented stub with no runtime effect), so there is no temp-FFO
-    test here. The motion stack itself is covered by the
-    lcls-twincat-motion-abstraction suite; this test only checks that
-    the CC FB_IPM wrapper does not break the contract.
-
-    Procedure:
-        1. Wait for first-scan motor setup + PMPS DB loaded.
-        2. Command OUT (fPosition = 10), then TARGET1 (fPosition = 20).
-        3. Assert each lands within fTolerance of its set point.
-    On watchdog expiry: AssertTrue(FALSE, ...) with the step, observed
-    eEnumGet, and observed fActPosition so the failure mode is obvious.
-*)
+    <Declaration><![CDATA[(* Single integration smoke for FB_IPM. Proves the wrapper wiring (REFERENCE TO
+   refs, CallAfterInit chain, fbStates inline-init, per-state defaults, PMPS key
+   registration) drives the motor to the configured fPosition for OUT then
+   TARGET1, asserting each within fTolerance. State-mover-only device, so no
+   temp-FFO test; the motion stack is covered by the motion-abstraction suite. *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_IPMTest EXTENDS FB_TestSuite
 VAR
@@ -116,15 +100,10 @@ END_VAR
 ]]></ST>
     </Implementation>
     <Method Name="TestStateMove" Id="{1b3d0000-0000-0000-0000-000000000002}">
-      <Declaration><![CDATA[(*
-    Smoke test for IPM state-move wiring. Walks OUT then TARGET1 and
-    asserts each lands within fTolerance of the configured fPosition.
-    Mirrors FB_PPMTest: stageReady gate up front, NOT bMoving +
-    position-tolerance check per state, 60s watchdog, on timeout
-    AssertTrue(FALSE, ...) with the current step and observed position.
-    Two moves is enough to exercise the FB wiring; the motion stack
-    itself is covered by the lcls-twincat-motion-abstraction suite.
-*)
+      <Declaration><![CDATA[(* Smoke test for IPM state-move wiring. Walks OUT then TARGET1 and asserts
+   each lands within fTolerance of the configured fPosition. Mirrors FB_PPMTest:
+   stageReady gate, NOT bMoving + tolerance check per state, 60s watchdog, on
+   timeout AssertTrue(FALSE, ...) with the step and observed position. *)
 METHOD TestStateMove
 VAR_INST
     tonTimer  : TON;

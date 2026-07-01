@@ -1,30 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_GBSTest" Id="{2c4e0000-0000-0000-0000-000000000001}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Integration smoke for FB_GBS. Two tests:
-
-    TestStateMove - proves the FB_GBS wiring (REFERENCE TO refs,
-      CallAfterInit / CallAfterInitStateMover / CallAfterInitPMPS chain,
-      inline-init of fbStates, per-state name/fDelta defaults, PMPS
-      state-key registration) still drives FB_MotionStageNC into the
-      configured fPosition for a commanded state. Walks OUT then
-      TARGET1a and asserts each lands within fTolerance.
-
-    TestTempFFO - proves the two in-beam RTDs (fbRTD1 / fbRTD2) fault
-      only when something is in the beam. They are vetoed while OUT
-      (bVeto := eEnumGet = OUT) and active in any target state, with
-      the fault threshold taken from the PMPS DB reactive temp setpoint
-      (seeded to 30 by FB_CC_PMPSTestSetup). Parasitically rides the
-      state-move test to observe both an OUT and a target state.
-
-    The motion stack itself is covered by the
-    lcls-twincat-motion-abstraction suite; this test only checks that
-    the CC FB_GBS wrapper does not break the contract.
-
-    On watchdog expiry: AssertTrue(FALSE, ...) with the step, observed
-    eEnumGet, and observed fActPosition so the failure mode is obvious.
-*)
+    <Declaration><![CDATA[(* Integration smoke for FB_GBS. TestStateMove proves the wrapper wiring
+   (REFERENCE TO refs, CallAfterInit chain, fbStates inline-init, per-state
+   defaults, PMPS key registration) drives the motor to the configured
+   fPosition for OUT then TARGET1a. TestTempFFO proves the two in-beam RTDs
+   fault only in a target state, vetoed while OUT. Motion stack tested elsewhere. *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_GBSTest EXTENDS FB_TestSuite
 VAR
@@ -188,15 +169,10 @@ ptr^ := iTempC * 10;]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{2c4e0000-0000-0000-0000-000000000002}">
-      <Declaration><![CDATA[(*
-    Smoke test for GBS state-move wiring. Walks OUT then TARGET1a and
-    asserts each lands within fTolerance of the configured fPosition.
-    Mirrors FB_PPMTest: stageReady gate up front, NOT bMoving +
-    position-tolerance check per state, 60s watchdog, on timeout
-    AssertTrue(FALSE, ...) with the current step and observed position.
-    Two moves is enough to exercise the FB wiring; the motion stack
-    itself is covered by the lcls-twincat-motion-abstraction suite.
-*)
+      <Declaration><![CDATA[(* Smoke test for GBS state-move wiring. Walks OUT then TARGET1a and asserts
+   each lands within fTolerance of the configured fPosition. Mirrors FB_PPMTest:
+   stageReady gate, NOT bMoving + tolerance check per state, 60s watchdog, on
+   timeout AssertTrue(FALSE, ...) with the step and observed position. *)
 METHOD TestStateMove
 VAR_INST
     tonTimer  : TON;
@@ -288,14 +264,10 @@ END_IF
       </Implementation>
     </Method>
     <Method Name="TestTempFFO" Id="{2c4e0000-0000-0000-0000-000000000003}">
-      <Declaration><![CDATA[(*
-    In-beam RTD gating test. The two GBS RTDs are vetoed while OUT and
-    active in any target state, faulting when the reading exceeds the
-    DB reactive temp setpoint (30). Parasitically rides the state-move
-    test: with the temperature held high it asserts no fault while OUT
-    and a fault once in a target, then drops the temperature and
-    asserts the fault clears.
-*)
+      <Declaration><![CDATA[(* In-beam RTD gating test. The two GBS RTDs are vetoed while OUT and active
+   in any target state, faulting above the DB reactive temp setpoint (30).
+   Rides the state-move test: with temp held high, asserts no fault OUT and a
+   fault in a target, then drops the temp and asserts the fault clears. *)
 METHOD TestTempFFO
 VAR_INST
     tonTimer    : TON;

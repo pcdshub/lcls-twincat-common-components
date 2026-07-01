@@ -1,55 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Function block for Power and Profile Monitor (PPM) controls under
-    the LCLS_Tc_Motion (ND) framework:
-    - Y in/powermeter/yag state mover via FB_PositionStatePMPSND
-      with four states (OUT, POWERMETER, YAG1, YAG2)
-    - power meter (FB_PPM_PowerMeter)
-    - GigE camera power + illuminator (FB_PPM_Gige)
-    - flow meter (FB_AnalogInput)
-    - YAG thermocouple (FB_CC_TempSensor)
-    - flow switch (FB_XTES_Flowswitch)
-
-    FB_PPM is a thin wrapper for the state-mover plumbing and a tick
-    site for the five orthogonal sub-devices. Motors, motion-stage
-    interface array, position-state slot array, fast-fault output and
-    arbiter are caller-owned; FB_PPM receives them by FB_Init
-    REFERENCE TO and forwards them to fbStates via inline-init. The
-    state enum bridge (eEnumSet / eEnumGet, UINT) and the four run-time
-    toggles (bEnableMotion / bEnableBeamParams / bEnablePositionLimits
-    / bReadDBNow, plain BOOL) are device-specific and live as classic
-    VAR_INPUT; the body re-forwards them into fbStates each cycle.
-
-    Per-state configuration is split across two configurators that
-    co-operate on each ST_PositionState slot:
-      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
-        in the caller PRG) wraps motion-lib's FB_StateSetup and writes
-        fPosition + sPmpsState plus a caller-owned stDefault baseline
-        (bMoveOk / bValid / bUseRawCounts / template fDelta).
-      - FB_PPM.afbStateDefaults (device-side, hardcoded here) writes
-        per-state sName and fDelta last, overriding the template
-        baseline that FB_StateSetup just laid down. Ordering matters:
-        the integrator must tick its PMPS array BEFORE calling fbPPM.
-    Both configurators are idempotent once the parent state FB sets
-    stPositionState.bUpdated := TRUE.
-
-    Power meter and YAG thermocouple consume motion-stack state
-    (eEnumGet, fbStates.stDbStateParams, axis NC state). The NC axis
-    state DWORD is reached as `aiMotionStage[1].Axis.NcToPlc.AxisState`
-    (I_MotionStage.Axis -> REFERENCE TO AXIS_REF).
-
-    The following IO link points are included and should be used:
-    - FB_PPM.fbPowerMeter.iVoltageINT -> power meter analog input voltage
-    - FB_PPM.fbPowerMeter.fbThermoCouple.{bError,bUnderrange,bOverrange,iRaw}
-      -> the corresponding thermocouple terminal inputs
-    - FB_PPM.fbGige.iIlluminatorINT -> illuminator dimmer analog output voltage
-    - FB_PPM.fbGige.bGigePower -> camera power digital output channel
-    - FB_PPM.fbFlowMeter.iRaw -> flow meter current analog input channel
-    - FB_PPM.fbYagTempSensor.{bError,bUnderrange,bOverrange,iRaw} -> YAG
-      thermocouple terminal inputs
-*)
+    <Declaration><![CDATA[(* Power and Profile Monitor (PPM): thin ND-framework state-mover wrapper.
+   Y mover via FB_PositionStatePMPSND (states OUT, POWERMETER, YAG1, YAG2),
+   plus a tick site for power meter, GigE camera/illuminator, flow meter,
+   YAG thermocouple and flow switch. Caller-owned deps injected via FB_Init
+   REFERENCE TO and forwarded to fbStates; toggles re-forwarded each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_PPM
 VAR_INPUT
@@ -215,18 +171,10 @@ fbYagTempSensor(
 fbFlowSwitch();]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{21ba0057-420c-4281-af9c-7f35e47eaf5c}">
-      <Declaration><![CDATA[(*
-    {attribute 'call_after_init'} on FB_PPM causes TwinCAT to auto-fire
-    THIS^.CallAfterInit() after FB_PPM.FB_Init completes.
-
-    fbStates was constructed via inline-init in FB_PPM's VAR section,
-    which ran BEFORE FB_PPM.FB_Init bound the REF fields on THIS^.
-    Consequently fbStates' inline-init forwarded nil REFs into
-    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
-    on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitStateMover, which re-binds them and runs
-    the full child-FB wiring chain (Core / ND / PMPSND).
-*)
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
+   per-state device defaults. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
@@ -263,14 +211,10 @@ THIS^.fbStates.CallAfterInitPMPS(
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{21ba0058-420c-4281-af9c-7f35e47eaf5d}">
-      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
-   input is REFERENCE TO and is REF= bound for the lifetime of the FB
-   (matches the rule: non-interface FB_Init inputs are taken by ref).
-   Inline-init of fbStates above runs first, capturing the FB_Init
-   params at construction time; this method then records the same
-   references on THIS^ for body-side use and live caller writes.
-   The file-reader busy/error inputs are bound straight to
-   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
+      <Declaration><![CDATA[(* Stores FB_Init inputs into instance fields; every non-value input is
+   REFERENCE TO, REF= bound for the FB lifetime. fbStates inline-init
+   captured these params at construction, so this records the same refs
+   on THIS^ for body use and live caller writes. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT

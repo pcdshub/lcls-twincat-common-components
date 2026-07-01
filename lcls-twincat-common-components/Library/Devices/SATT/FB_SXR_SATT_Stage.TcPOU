@@ -1,43 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SXR_SATT_Stage" Id="{7fb611c7-2215-4e8f-8a28-e51a98acae9a}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Function block for a single Solid ATTenuator (SATT) filter stack
-    under the LCLS_Tc_Motion (ND) framework. This is for the L2SI
-    compact design with 4 filter stacks that each have many filters.
-
-    Single-axis Y mover with nine states (OUT, FILTER1..FILTER8) via
-    FB_PositionStateND. SATT is **not** a PMPS state mover: there is
-    no arbiter handshake, no BPTM, no beam-param gating, no
-    transition-key plumbing, no eMotionRequestPolicy other than the
-    default. The only PMPS-adjacent behavior is:
-      - Reactive temperature setpoint pulled from the PMPS JSON DB by
-        an in-device FB_JsonDocToSafeBP read keyed on the caller-
-        supplied RTDPMPSState, used as the two RTD fault thresholds.
-      - A single FB_FastFault ("Device is moving") raised whenever
-        the stage is in motion or in UNKNOWN, sunk into the caller-
-        supplied fbFFHWO.
-
-    Transmission for the stack's currently selected filter is
-    calculated each cycle from arrFilters[iFilterIndex] (material,
-    thickness), the current beam energy
-    (PMPS_GVL.stCurrentBeamParameters.neV), and the per-element
-    atomic-mass + density lookups (FB_AtomicMass /
-    FB_AttenuatorElementDensity).
-
-    Caller responsibilities:
-      - Own and tick FB_MotionStageNC for the Y motor; pass it into
-        aiMotionStage via FB_Init.
-      - Own astPositionState[1..MAX_STATE_MOTORS][1..MAX_STATES] and
-        configure each state's sName + fPosition (+ fDelta) in the
-        caller app before calling fbSATT (only stack-slot 1 matters
-        for SATT). The filters are not real PMPS states, so the
-        per-filter stPMPS.sPmpsState is not used.
-      - Own fbFFHWO (caller-side hardware fast-fault sink).
-      - Set sDeviceName (used for both DB lookup and FF messages) and
-        RTDPMPSState (the PMPS DB key for the RTD reactive-temperature
-        read), both passed via FB_Init.
-*)
+    <Declaration><![CDATA[(* Single Solid Attenuator (SATT) filter stack (L2SI compact, 4 stacks
+   of 8 filters): single-axis mover via FB_PositionStateND (states OUT,
+   FILTER1..FILTER8). Not a PMPS state mover; only RTD reactive-temp
+   fault thresholds and a "device moving" fast fault. Per-cycle transmission
+   from filter material/thickness and beam energy. Deps injected via FB_Init. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SXR_SATT_Stage
 VAR_INPUT
@@ -231,19 +199,9 @@ fbRTD_2(
 fTemp2 := fbRTD_2.fTemp;]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{7fb611c8-2215-4e8f-8a28-e51a98acae9b}">
-      <Declaration><![CDATA[(*
-    {attribute 'call_after_init'} on FB_SXR_SATT_Stage causes TwinCAT
-    to auto-fire THIS^.CallAfterInit() after FB_SXR_SATT_Stage.FB_Init
-    completes.
-
-    fbStates was constructed via inline-init in this FB's VAR section,
-    which ran BEFORE FB_Init bound the REF fields on THIS^.
-    Consequently fbStates' inline-init forwarded nil REFs into
-    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
-    on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitStateMover, which re-binds them and
-    runs the Core / ND child-FB wiring chain.
-*)
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover, running the Core / ND wiring chain. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>

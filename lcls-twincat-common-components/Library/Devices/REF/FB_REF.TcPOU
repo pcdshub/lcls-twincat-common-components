@@ -1,43 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Function block for reference laser (REF) controls under the
-    LCLS_Tc_Motion (ND) framework:
-    - Y in/out state mover via FB_PositionStatePMPSND
-    - laser power and dimmer via FB_REF_Laser
-
-    FB_REF is a thin wrapper. It owns only what it ticks each cycle
-    (fbStates, fbLaser, and the per-state device-default configurators).
-    Motors, motion-stage interface array, position-state slot array,
-    fast-fault output and arbiter are caller-owned; FB_REF receives
-    them by FB_Init REFERENCE TO and forwards them to fbStates via
-    inline-init. The state enum bridge (eEnumSet / eEnumGet) and the
-    four run-time toggles (bEnableMotion / bEnableBeamParams /
-    bEnablePositionLimits / bReadDBNow, plain BOOL) are device-specific
-    and live on FB_REF as classic VAR_INPUT; the caller writes them
-    each cycle (or pins them at startup) and the body re-forwards them
-    into fbStates.
-
-    Per-state configuration is split across two configurators that
-    co-operate on each ST_PositionState slot:
-      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
-        in the caller PRG) wraps motion-lib's FB_StateSetup and writes
-        fPosition + sPmpsState plus a caller-owned stDefault baseline
-        (bMoveOk / bValid / bUseRawCounts / template fDelta).
-      - FB_REF.afbStateDefaults (device-side, hardcoded here) writes
-        per-state sName and fDelta last, overriding the template
-        baseline that FB_StateSetup just laid down. Ordering matters:
-        the integrator must tick its PMPS array BEFORE calling fbREF.
-    Both configurators are idempotent once the parent state FB sets
-    stPositionState.bUpdated := TRUE.
-
-    The following IO link points are included and should be used:
-    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the
-      laser dimmer's shutdown voltage.
-    - FB_REF.fbLaser.iLaserINT should be linked to the output for the
-      laser dimmer's dimmer.
-*)
+    <Declaration><![CDATA[(* Reference laser (REF): thin ND-framework state-mover wrapper.
+   Y in/out mover via FB_PositionStatePMPSND, plus a tick site for the
+   laser power/dimmer (FB_REF_Laser). Caller-owned motors, stage/state
+   arrays, fast-fault and arbiter are injected via FB_Init REFERENCE TO
+   and forwarded to fbStates; enum bridge and toggles re-forwarded each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_REF
 VAR_INPUT
@@ -148,18 +116,10 @@ fbLaser(fTermMax := fTermMax);
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
-      <Declaration><![CDATA[(*
-    {attribute 'call_after_init'} on FB_REF causes TwinCAT to auto-fire
-    THIS^.CallAfterInit() after FB_REF.FB_Init completes.
-
-    fbStates was constructed via inline-init in FB_REF's VAR section,
-    which ran BEFORE FB_REF.FB_Init bound the REF fields on THIS^.
-    Consequently fbStates' inline-init forwarded nil REFs into
-    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
-    on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitStateMover, which re-binds them and runs
-    the full child-FB wiring chain (Core / ND / PMPSND).
-*)
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
+   per-state device defaults. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 VAR

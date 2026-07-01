@@ -116,3 +116,6 @@ Key points:
   so they need no body call.
 * The program ticks the supporting FBs (`fbPDS`, motors, arbiter IO) and the device FB itself;
   the device does not tick another FB's body internally.
+
+For the ND-interface migration and worked init examples for the power slits (`FB_SLITS_POWER`)
+and solid attenuator (`FB_SXR_SATT_Stage`), see [docs/migration.md](docs/migration.md).

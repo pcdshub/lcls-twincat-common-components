@@ -1,50 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91095}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Four-blade slit aperture controller (Top / Bottom / North / South)
-    under the LCLS_Tc_Motion (ND) framework. Each blade is driven by
-    one FB_StatePTPMove single-shot mover, NOT by the multi-state
-    FB_PositionStateND mover: slit targets are recomputed every cycle
-    from EPICS-requested aperture width + center (and per-blade encoder
-    zero-offsets), so there is no fixed enum of named positions.
-
-    Motion stages, PMPS hardware fault output and device name are
-    caller-owned and injected through FB_Init as REFERENCE TO. The
-    auto-fired CallAfterInit wires the four blade interfaces from
-    aiMotionStage[1..4] into each FB_StatePTPMove's iMotionStage field
-    (FB_StatePTPMove has no setter post-init, so the wiring must
-    happen there once REFs are bound).
-
-    The integrator PRG instantiates the four FB_MotionStageNC blade
-    motors (passing AxisRef + iPersistentDataStorage + sName) and
-    hands the interfaces to FB_SLITS through FB_Init. FB_SLITS owns the
-    blade mode + enable / limit configuration AND the motion
-    parameters (Velocity / Accel / Decel / Jerk), all applied once via
-    M_Init, which runs from CallAfterInit (after FB_Init binds the
-    REFs). The integrator still handles concrete-FB-only fields
-    (RestoreMotionParams, DoNotRestoreNcParameters) on each motor
-    before the first scan, and may override the motion params per
-    motor afterward if needed.
-
-    Dispatch ownership mirrors legacy: the base FB_SLITS body consumes
-    only the EPICS Open / Close / Block edge-triggers (legacy stubs).
-    M_Init runs once from CallAfterInit. M_CalculatePositions and
-    M_Motion are NOT invoked by the base body; they are called from the
-    FB_SLITS_POWER subclass body (the only intended integration point).
-    FB_SLITS used standalone therefore performs no blade motion: the
-    device is meaningful only via FB_SLITS_POWER.
-
-    PMPS aperture-safety FFO and request-vs-actual reconciliation live
-    on the FB_SLITS_POWER subclass via M_UpdatePMPS, which the
-    integrator calls each cycle with the device's aperture index into
-    PMPS_GVL.stCurrentBeamParameters.astApertures.
-
-    bOpen / bClose / bBlock are kept as EPICS PV stubs for downstream
-    integrator compatibility: the rising edge is consumed and the
-    flag cleared each cycle, but no preset move is dispatched (the
-    legacy preset-position branch was never implemented).
-*)
+    <Declaration><![CDATA[(* Four-blade slit aperture controller (Top/Bottom/North/South), ND framework.
+   Each blade uses a per-cycle FB_StatePTPMove single-shot mover (targets
+   recomputed from EPICS aperture width/center + encoder offsets), not a named
+   state mover. Caller-owned stages, PMPS FFO and device name injected via FB_Init
+   REFERENCE TO; CallAfterInit wires blade interfaces and runs one-shot M_Init. *)
 {attribute 'analysis' := '-33'}
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS
@@ -245,14 +206,10 @@ HandleRequests();
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
-      <Declaration><![CDATA[(*
-    Auto-fired by TwinCAT once, after FB_Init binds the REF fields on
-    THIS^. The four FB_StatePTPMove blade movers were inline-init'd in
-    the VAR section before FB_Init ran, so they captured nil interface
-    refs. This method re-supplies each blade's now-valid interface and
-    scratch ST_PositionState, then runs M_Init to apply the per-blade
-    mode / enable / limit configuration and set the FFO device name.
-*)
+      <Declaration><![CDATA[(* Auto-fired once after FB_Init binds the REFs. The four FB_StatePTPMove
+   blade movers were inline-init'd with nil interface refs, so this re-supplies
+   each blade's now-valid interface and scratch ST_PositionState, runs M_Init
+   for per-blade mode/enable/limit config, and sets the FFO device name. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
@@ -266,12 +223,9 @@ FFO.i_DevName := sDeviceName;]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
-      <Declaration><![CDATA[(*
-    REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and
-    sDeviceName at instantiation. Interface wiring into each blade
-    mover, and the one-shot M_Init blade configuration, run from
-    CallAfterInit once these REFs are bound.
-*)
+      <Declaration><![CDATA[(* REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and sDeviceName
+   at instantiation. Blade interface wiring and the one-shot M_Init config
+   run from CallAfterInit once these REFs are bound. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
@@ -314,15 +268,10 @@ END_IF
       </Implementation>
     </Method>
     <Method Name="M_CalculatePositions" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109a}">
-      <Declaration><![CDATA[(*
-    Legacy ACT_CalculatePositions equivalent.
-
-    Detects EPICS request changes (rejecting aperture-size requests
-    that exceed the PMPS-authorized envelope), recomputes per-blade
-    target positions from requested gap + center + per-blade encoder
-    offset, and refreshes actual aperture geometry feedback (size +
-    center on both axes) from the caller-owned motor positions.
-*)
+      <Declaration><![CDATA[(* Legacy ACT_CalculatePositions equivalent. Detects EPICS request changes
+   (rejecting aperture sizes beyond the PMPS-authorized envelope), recomputes
+   per-blade targets from requested gap + center + encoder offset, and refreshes
+   actual aperture geometry feedback from caller-owned motor positions. *)
 METHOD M_CalculatePositions
 ]]></Declaration>
       <Implementation>
@@ -392,19 +341,10 @@ rActCenterY := LREAL_TO_REAL(
       </Implementation>
     </Method>
     <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109c}">
-      <Declaration><![CDATA[(*
-    One-shot blade init, called from CallAfterInit: applies
-    SetModeEnableLimits and SetMotionParam to each blade motor
-    (UserEnable, HardwareEnable, both limits, brake disabled,
-    enable-during-motion, home disabled; velocity / accel / decel /
-    jerk from the FB's fVelocity / fAcceleration / fDeceleration /
-    fJerk fields) and sets FFO's device name from the injected
-    sDeviceName.
-
-    The integrator may still override the motion params per motor
-    after construction via SetMotionParam on the concrete motor; the
-    last writer each scan wins.
-*)
+      <Declaration><![CDATA[(* One-shot blade init from CallAfterInit: applies SetModeEnableLimits and
+   SetMotionParam to each blade motor (enable/limits, brake off, home off,
+   velocity/accel/decel/jerk from the FB's fields) and sets the FFO device
+   name. Integrator may still override motion params per motor afterward. *)
 METHOD M_Init
 ]]></Declaration>
       <Implementation>
@@ -422,17 +362,10 @@ METHOD M_Init
       </Implementation>
     </Method>
     <Method Name="M_Motion" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109b}">
-      <Declaration><![CDATA[(*
-    Legacy ACT_Motion equivalent.
-
-    Refreshes per-blade ST_PositionState dynamic fields (fPosition +
-    bMoveOk: static fields are seeded by the declaration inline-init),
-    asserts bExecute on the bound FB_StatePTPMove on aperture change
-    (FB_StatePTPMove self-clears bExecute on arrival or error, so
-    re-asserting TRUE only re-dispatches once the previous move
-    completes, matching legacy behaviour), and ticks the four per-blade
-    movers cyclically.
-*)
+      <Declaration><![CDATA[(* Legacy ACT_Motion equivalent. Refreshes per-blade ST_PositionState
+   fPosition/bMoveOk, asserts bExecute on each FB_StatePTPMove on aperture
+   change (self-clears on arrival/error, so re-dispatch waits for completion),
+   and ticks the four blade movers cyclically. *)
 METHOD M_Motion
 ]]></Declaration>
       <Implementation>
@@ -467,12 +400,9 @@ fbSouth(bMoveOk  := bMoveOk);
       </Implementation>
     </Method>
     <Method Name="SetApertureRequest" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109d}">
-      <Declaration><![CDATA[(*
-    Set the EPICS aperture request in one call: gap (width / height)
-    and center on both axes. M_CalculatePositions picks the new values
-    up on the next cycle and, if a field changed and the gap is within
-    the PMPS-authorized envelope, dispatches the blade moves.
-*)
+      <Declaration><![CDATA[(* Set the EPICS aperture request in one call: gap (width/height) and center
+   on both axes. M_CalculatePositions picks the values up next cycle and, if a
+   field changed and the gap is within the PMPS envelope, dispatches the moves. *)
 METHOD SetApertureRequest
 VAR_INPUT
     ApertureSizeX : REAL;

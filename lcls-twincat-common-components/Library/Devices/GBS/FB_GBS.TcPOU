@@ -1,43 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_GBS" Id="{0c826496-bbe5-4d0f-95cc-b97d4fbafab2}" SpecialFunc="None">
-    <Declaration><![CDATA[(*
-    Function block for Grating Beam Splitter (GBS) controls under the
-    LCLS_Tc_Motion (ND) framework:
-    - Y target-state mover via FB_PositionStatePMPSND with ten states
-      (OUT, TARGET1a/b, TARGET2a/b, TARGET3a/b, TARGET4, TARGET5, TARGET6)
-    - 2 in-beam RTD thermocouples (FB_CC_TempSensor) gated on the
-      current state and driven by the PMPS DB temp setpoint
-
-    FB_GBS is a thin wrapper for the state-mover plumbing and a tick
-    site for the two RTDs. Motors, motion-stage interface array,
-    position-state slot array, fast-fault output and arbiter are
-    caller-owned; FB_GBS receives them by FB_Init REFERENCE TO and
-    forwards them to fbStates via inline-init. The state enum bridge
-    (eEnumSet / eEnumGet, UINT) and the four run-time toggles
-    (bEnableMotion / bEnableBeamParams / bEnablePositionLimits /
-    bReadDBNow, plain BOOL) are device-specific and live as classic
-    VAR_INPUT; the body re-forwards them into fbStates each cycle.
-
-    Per-state configuration is split across two configurators that
-    co-operate on each ST_PositionState slot:
-      - integrator's FB_CC_StatePMPSConfig array (per-install, declared
-        in the caller PRG) wraps motion-lib's FB_StateSetup and writes
-        fPosition + sPmpsState plus a caller-owned stDefault baseline
-        (bMoveOk / bValid / bUseRawCounts / template fDelta).
-      - FB_GBS.afbStateDefaults (device-side, hardcoded here) writes
-        per-state sName and fDelta last, overriding the template
-        baseline that FB_StateSetup just laid down. Ordering matters:
-        the integrator must tick its PMPS array BEFORE calling fbGBS.
-    Both configurators are idempotent once the parent state FB sets
-    stPositionState.bUpdated := TRUE.
-
-    The following IO link points are included and should be used:
-    - FB_GBS.fbRTD1.{bError,bUnderrange,bOverrange,iRaw} -> RTD #1
-      thermocouple terminal inputs
-    - FB_GBS.fbRTD2.{bError,bUnderrange,bOverrange,iRaw} -> RTD #2
-      thermocouple terminal inputs
-*)
+    <Declaration><![CDATA[(* Grating Beam Splitter (GBS): thin ND-framework state-mover wrapper.
+   Y mover via FB_PositionStatePMPSND (states OUT, TARGET1a/b, TARGET2a/b,
+   TARGET3a/b, TARGET4..6), plus a tick site for two in-beam RTDs gated
+   on state. Caller-owned deps injected via FB_Init REFERENCE TO and
+   forwarded to fbStates; enum bridge and toggles re-forwarded each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_GBS
 VAR_INPUT
@@ -179,18 +147,10 @@ fbRTD2(
 );]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{0c826497-bbe5-4d0f-95cc-b97d4fbafab3}">
-      <Declaration><![CDATA[(*
-    {attribute 'call_after_init'} on FB_GBS causes TwinCAT to auto-fire
-    THIS^.CallAfterInit() after FB_GBS.FB_Init completes.
-
-    fbStates was constructed via inline-init in FB_GBS's VAR section,
-    which ran BEFORE FB_GBS.FB_Init bound the REF fields on THIS^.
-    Consequently fbStates' inline-init forwarded nil REFs into
-    fbStates.FB_Init, and the auto-fired fbStates.CallAfterInit guards
-    on those nil REFs and bails. This method re-supplies the now-valid
-    refs through fbStates.CallAfterInitStateMover, which re-binds them and runs
-    the full child-FB wiring chain (Core / ND / PMPSND).
-*)
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
+   per-state device defaults. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
@@ -233,14 +193,10 @@ THIS^.fbStates.CallAfterInitPMPS(
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{0c826498-bbe5-4d0f-95cc-b97d4fbafab4}">
-      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every non-value
-   input is REFERENCE TO and is REF= bound for the lifetime of the FB
-   (matches the rule: non-interface FB_Init inputs are taken by ref).
-   Inline-init of fbStates above runs first, capturing the FB_Init
-   params at construction time; this method then records the same
-   references on THIS^ for body-side use and live caller writes.
-   The file-reader busy/error inputs are bound straight to
-   MOTION_GVL.fbPmpsFileReader inside fbStates' inline-init. *)
+      <Declaration><![CDATA[(* Stores FB_Init inputs into instance fields; every non-value input is
+   REFERENCE TO, REF= bound for the FB lifetime. fbStates inline-init
+   captured these params at construction, so this records the same refs
+   on THIS^ for body use and live caller writes. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
