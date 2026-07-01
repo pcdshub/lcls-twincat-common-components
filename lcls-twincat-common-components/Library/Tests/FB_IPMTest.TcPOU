@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_IPMTest" Id="{1b3d0000-0000-0000-0000-000000000001}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Single integration smoke for FB_IPM. Goal: prove the FB_IPM wiring
+    (REFERENCE TO refs, CallAfterInit / CallAfterInitStateMover /
+    CallAfterInitPMPS chain, inline-init of fbStates, per-state
+    name/fDelta defaults, PMPS state-key registration) still drives
+    FB_MotionStageNC into the configured fPosition for a commanded
+    state.
+
+    FB_IPM is a state-mover-only device (its legacy RTD slots are a
+    commented stub with no runtime effect), so there is no temp-FFO
+    test here. The motion stack itself is covered by the
+    lcls-twincat-motion-abstraction suite; this test only checks that
+    the CC FB_IPM wrapper does not break the contract.
+
+    Procedure:
+        1. Wait for first-scan motor setup + PMPS DB loaded.
+        2. Command OUT (fPosition = 10), then TARGET1 (fPosition = 20).
+        3. Assert each lands within fTolerance of its set point.
+    On watchdog expiry: AssertTrue(FALSE, ...) with the step, observed
+    eEnumGet, and observed fActPosition so the failure mode is obvious.
+*)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_IPMTest EXTENDS FB_TestSuite
+VAR
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    (* FB_IPM is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_IPM.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..4
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    sDeviceName    : STRING := 'TST:IPM';
+    sTransitionKey : STRING := 'TST:IPM-TRANSITION';
+
+    (* Caller-owned file-reader status, bound to FB_IPM by REFERENCE
+       TO. In a real PRG these point at MOTION_GVL.fbPmpsFileReader;
+       here they stay FALSE so the DB read proceeds. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    fbIPM : FB_IPM(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
+    );
+
+    (* Per-install PMPS-side state config (caller-owned). Mirrors what
+       a real PRG_xxL0_IPM would declare. stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbIPM subsequently overrides per-state sName and
+       fDelta via its own FB_CC_DeviceStateDefaults array. sPmpsState
+       keys match the fake DB seeded by FB_CC_PMPSTestSetup. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
+    afbStatePMPS : ARRAY[1..5] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_IPM_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:IPM-OUT'),
+        (stPositionState := astPositionState[1][E_IPM_States.TARGET1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:IPM-TARGET1'),
+        (stPositionState := astPositionState[1][E_IPM_States.TARGET2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:IPM-TARGET2'),
+        (stPositionState := astPositionState[1][E_IPM_States.TARGET3],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:IPM-TARGET3'),
+        (stPositionState := astPositionState[1][E_IPM_States.TARGET4],
+         stDefault       := stDefault,
+         fPosition       := 50,
+         sPmpsState      := 'TST:IPM-TARGET4')
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TestStateMove();
+]]></ST>
+    </Implementation>
+    <Method Name="TestStateMove" Id="{1b3d0000-0000-0000-0000-000000000002}">
+      <Declaration><![CDATA[(*
+    Smoke test for IPM state-move wiring. Walks OUT then TARGET1 and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_PPMTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed position.
+    Two moves is enough to exercise the FB wiring; the motion stack
+    itself is covered by the lcls-twincat-motion-abstraction suite.
+*)
+METHOD TestStateMove
+VAR_INST
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
+END_VAR
+VAR CONSTANT
+    fTolerance : LREAL := 2.0;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestIPMStateMove');
+
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
+
+CASE nTestStep OF
+    0:
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
+            bFirstScan := FALSE;
+        END_IF
+        nTestStep      := 1;
+    1:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbIPM.eEnumSet := E_IPM_States.OUT;
+            nTestStep      := 2;
+        END_IF
+    2:
+        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        IF fbIPM.eEnumGet = E_IPM_States.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbIPM.eEnumSet := E_IPM_States.TARGET1;
+            nTestStep      := 3;
+        END_IF
+    3:
+        (* TARGET1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        IF fbIPM.eEnumGet = E_IPM_States.TARGET1
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestIPMStateMove: OUT then TARGET1 reached within tolerance');
+            nTestStep := 4;
+        END_IF
+END_CASE
+
+(* Fake PMPS handling. *)
+fbSubSysIO(
+    LA  := fbArbiter,
+    FFO := fbFFHWO
+);
+
+fbPDS();
+fbMotorY();
+fbIPM();
+
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
+
+IF nTestStep = 4 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestIPMStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbIPM.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

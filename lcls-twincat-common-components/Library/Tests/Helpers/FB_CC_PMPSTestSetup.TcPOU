@@ -329,6 +329,20 @@ astParams_GBS[10].stBeamParams.nRate         := 50;
 astParams_GBS[10].stBeamParams.nTran         := 8;
 astParams_GBS[10].stBeamParams.nMachineMode  := 1;
 
+(* In-beam RTD setpoint for FB_GBSTest temp-FFO wiring: the two RTDs
+   fault when the reading exceeds nTempSP and are vetoed while OUT. *)
+astParams_GBS[0].stReactiveParams.nTempSP    := 30;
+astParams_GBS[1].stReactiveParams.nTempSP    := 30;
+astParams_GBS[2].stReactiveParams.nTempSP    := 30;
+astParams_GBS[3].stReactiveParams.nTempSP    := 30;
+astParams_GBS[4].stReactiveParams.nTempSP    := 30;
+astParams_GBS[5].stReactiveParams.nTempSP    := 30;
+astParams_GBS[6].stReactiveParams.nTempSP    := 30;
+astParams_GBS[7].stReactiveParams.nTempSP    := 30;
+astParams_GBS[8].stReactiveParams.nTempSP    := 30;
+astParams_GBS[9].stReactiveParams.nTempSP    := 30;
+astParams_GBS[10].stReactiveParams.nTempSP   := 30;
+
 (* ---- TST:IPM ---- *)
 astParams_IPM[0].sPmpsState                  := 'TST:IPM-TRANSITION';
 astParams_IPM[0].nRequestAssertionID         := 800;
