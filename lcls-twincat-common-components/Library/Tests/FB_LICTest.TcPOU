@@ -85,39 +85,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Fake PMPS handling. *)
-fbSubSysIO(
-    LA  := fbArbiter,
-    FFO := fbFFHWO
-);
-
-(* Caller-side PMPS configurators write each slot once in
-   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
-
-(* One-shot motor setup + initial caller-owned enables. Limits,
-   brake/enable modes, home cmd, user/hardware enables, default
-   velocity; skip NC param restore. *)
-IF bFirstScan THEN
-    fbMotorY.SetModeEnableLimits(
-        LimBackward    := TRUE,
-        LimForward     := TRUE,
-        HomeEnable     := FALSE,
-        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
-        EnableMode     := E_StageEnableMode.DURING_MOTION,
-        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
-        UserEnable     := TRUE,
-        HardwareEnable := TRUE
-    );
-    fbMotorY.SetVelocity(Velocity := 15.5);
-    fbMotorY.RestoreMotionParams      := FALSE;
-    fbMotorY.DoNotRestoreNcParameters := TRUE;
-
-    bFirstScan := FALSE;
-END_IF
-
-fbPDS();
-fbMotorY();
-fbLIC();
+      <ST><![CDATA[
 
 TestStateMove();
 ]]></ST>
@@ -150,6 +118,25 @@ fObserved := fbMotorY.stMotionStatus.fActPosition;
 
 CASE nTestStep OF
     0:
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
+            bFirstScan := FALSE;
+        END_IF
+
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
             fbLIC.eEnumSet := E_LIC_States.OUT;
@@ -174,6 +161,21 @@ CASE nTestStep OF
             nTestStep := 3;
         END_IF
 END_CASE
+
+
+(* Fake PMPS handling. *)
+fbSubSysIO(
+    LA  := fbArbiter,
+    FFO := fbFFHWO
+);
+
+
+fbPDS();
+fbMotorY();
+fbLIC();
+
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
 
 IF nTestStep = 3 THEN
     TEST_FINISHED();

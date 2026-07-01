@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPMTest" Id="{4fe2b094-7b68-4ad1-a845-3ae72e5e51ed}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PPMTest EXTENDS FB_TestSuite
@@ -85,42 +85,9 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Fake PMPS handling. *)
-fbSubSysIO(
-    LA  := fbArbiter,
-    FFO := fbFFHWO
-);
-
-(* Caller-side PMPS configurators write each slot once in
-   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
-
-(* One-shot motor setup + initial caller-owned enables. Limits,
-   brake/enable modes, home cmd, user/hardware enables, default
-   velocity; skip NC param restore. *)
-IF bFirstScan THEN
-    fbMotorY.SetModeEnableLimits(
-        LimBackward    := TRUE,
-        LimForward     := TRUE,
-        HomeEnable     := FALSE,
-        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
-        EnableMode     := E_StageEnableMode.DURING_MOTION,
-        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
-        UserEnable     := TRUE,
-        HardwareEnable := TRUE
-    );
-    fbMotorY.SetVelocity(Velocity := 15.5);
-    fbMotorY.RestoreMotionParams      := FALSE;
-    fbMotorY.DoNotRestoreNcParameters := TRUE;
-
-    bFirstScan := FALSE;
-END_IF
-
-fbPDS();
-fbMotorY();
-fbPPM();
-
-TestStateMove();
+      <ST><![CDATA[TestStateMove();
 TestTempFFO();
+
 ]]></ST>
     </Implementation>
     <Method Name="AssertBothTempFault" Id="{8909043d-b06e-4fe1-af75-98d367a5485d}">
@@ -199,20 +166,40 @@ fObserved := fbMotorY.stMotionStatus.fActPosition;
 
 CASE nTestStep OF
     0:
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
+            bFirstScan := FALSE;
+        END_IF
+        nTestStep      := 1;
+    1:
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
             fbPPM.eEnumSet := E_PPM_States.OUT;
-            nTestStep      := 1;
+            nTestStep      := 2;
         END_IF
-    1:
+    2:
         (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
         IF fbPPM.eEnumGet = E_PPM_States.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
             fbPPM.eEnumSet := E_PPM_States.POWERMETER;
-            nTestStep      := 2;
+            nTestStep      := 3;
         END_IF
-    2:
+    3:
         (* POWERMETER is configured at fPosition := 20 in afbStatePMPS[2]. *)
         IF fbPPM.eEnumGet = E_PPM_States.POWERMETER
            AND NOT fbMotorY.stMotionStatus.bMoving
@@ -220,11 +207,25 @@ CASE nTestStep OF
             AssertTrue(
                 Condition := TRUE,
                 Message   := 'TestPPMStateMove: OUT then POWERMETER reached within tolerance');
-            nTestStep := 3;
+            nTestStep := 4;
         END_IF
 END_CASE
 
-IF nTestStep = 3 THEN
+(* Fake PMPS handling. *)
+fbSubSysIO(
+    LA  := fbArbiter,
+    FFO := fbFFHWO
+);
+
+fbPDS();
+fbMotorY();
+fbPPM();
+
+
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
+
+IF nTestStep = 4 THEN
     TEST_FINISHED();
 ELSIF tonTimer.Q THEN
     AssertTrue(

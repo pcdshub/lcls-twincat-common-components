@@ -16,10 +16,6 @@ VAR
     fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
-    {attribute 'pytmc' := '
-        pv: MMS
-        astPositionState.array: 1..6
-    '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
@@ -119,13 +115,17 @@ IF bFirstScan THEN
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
-
+    bFileReaderBusy  := TRUE;
+    bFileReaderError := FALSE;
     bFirstScan := FALSE;
 END_IF
 
 fbPDS();
 fbMotorY();
 fbWFS();
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
 
 TestStateMove();
 TestTempFFO();

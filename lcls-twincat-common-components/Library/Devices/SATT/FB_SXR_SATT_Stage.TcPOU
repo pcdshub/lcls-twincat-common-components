@@ -109,6 +109,7 @@ VAR
     {attribute 'pytmc' := 'pv: RTD:2'}
     fbRTD_2 : FB_CC_TempSensor := (fResolution := 0.01);
 
+    bFileReaderBusy       : REFERENCE TO BOOL;
     (* Per-cycle JSON DB read for the currently active filter's
        PMPS state, just to pull the reactive temp setpoint into
        astPickedDB[1].stReactiveParams.nTempSP. Not a PMPS BPTM
@@ -206,7 +207,7 @@ fbFF(
 astPickedDB[1].sPmpsState := RTDPMPSState;
 
 fbReadPMPSDB(
-    bExecute    := NOT MOTION_GVL.fbPmpsFileReader.bBusy,
+    bExecute    := NOT bFileReaderBusy,
     jsonDoc     := PMPS_GVL.BP_jsonDoc,
     sDeviceName := sDeviceName,
     arrStates   := astPickedDB,
@@ -273,6 +274,7 @@ VAR_INPUT
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                           OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    bFileReaderBusy       : REFERENCE TO BOOL;
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName      : STRING;
     RTDPMPSState     : STRING;
@@ -281,6 +283,7 @@ END_VAR]]></Declaration>
         <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
 THIS^.astPositionState REF= astPositionState;
 THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.bFileReaderBusy 	REF=bFileReaderBusy;
 THIS^.sDeviceName      := sDeviceName;
 THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
       </Implementation>

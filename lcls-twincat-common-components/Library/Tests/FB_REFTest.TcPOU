@@ -25,10 +25,12 @@
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    axRef    : AXIS_REF;
+    axRef    : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    fbMotorX : FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'X');
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Y');
+
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
@@ -46,9 +48,7 @@ VAR
     sDeviceName    : STRING := 'TST:REF';
     sTransitionKey : STRING := 'TST:REF-TRANSITION';
 
-    (* Caller-owned file-reader status, bound to FB_REF by REFERENCE
-       TO. Driven from the body to simulate the reader going busy then
-       idle during cold start. *)
+    (* Driven from the body to simulate the reader going busy then idle during cold start. *)
     bFileReaderBusy  : BOOL;
     bFileReaderError : BOOL;
 
@@ -97,9 +97,22 @@ END_VAR
 
 CASE nTestStep OF
     0:
-
         IF bFirstScan THEN
-            fbMotorY.SetModeEnableLimits(
+            fbMotorX.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+           fbMotorX.SetVelocity(Velocity := 15.5);
+           fbMotorX.RestoreMotionParams      := FALSE;
+           fbMotorX.DoNotRestoreNcParameters := TRUE;
+
+           fbMotorY.SetModeEnableLimits(
                 LimBackward    := TRUE,
                 LimForward     := TRUE,
                 HomeEnable     := FALSE,
@@ -149,6 +162,7 @@ CASE nTestStep OF
 END_CASE
 
 fbPDS();
+fbMotorX();
 fbMotorY();
 
 fbREF();

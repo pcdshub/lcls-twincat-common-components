@@ -93,19 +93,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Fake PMPS handling. *)
-fbSubSysIO(
-    LA  := fbArbiter,
-    FFO := fbFFHWO
-);
-
-(* Caller-side PMPS configurators write each slot once in
-   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
-
-(* One-shot motor setup + initial caller-owned enables. Limits,
-   brake/enable modes, home cmd, user/hardware enables, default
-   velocity; skip NC param restore. *)
-IF bFirstScan THEN
+      <ST><![CDATA[IF bFirstScan THEN
     fbMotorY.SetModeEnableLimits(
         LimBackward    := TRUE,
         LimForward     := TRUE,
@@ -119,16 +107,25 @@ IF bFirstScan THEN
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
-
+    bFileReaderBusy  := TRUE;
+    bFileReaderError := FALSE;
     bFirstScan := FALSE;
 END_IF
 
+TestStateMove();
+//TestTempFFO();
+
+(* Fake PMPS handling. *)
+fbSubSysIO(
+    LA  := fbArbiter,
+    FFO := fbFFHWO
+);
 fbPDS();
 fbMotorY();
 fbATM();
 
-TestStateMove();
-TestTempFFO();
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
 ]]></ST>
     </Implementation>
     <Method Name="SetATMTemp" Id="{7b7c37f0-d7db-42bb-948f-8b077a7ccce6}">
@@ -166,6 +163,7 @@ VAR CONSTANT
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[TEST('TestATMStateMove');
+
 
 tonTimer(IN := TRUE, PT := T#60s);
 fObserved := fbMotorY.stMotionStatus.fActPosition;

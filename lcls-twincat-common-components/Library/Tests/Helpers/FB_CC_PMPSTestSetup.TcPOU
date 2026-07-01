@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CC_PMPSTestSetup" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6b}" SpecialFunc="None">
     <Declaration><![CDATA[
@@ -171,6 +171,7 @@ astParams_LIC[4].stBeamParams.nMachineMode   := 1;
 
 (* ---- TST:PPM ---- *)
 astParams_PPM[0].sPmpsState                  := 'TST:PPM-TRANSITION';
+astParams_PPM[0].stReactiveParams.nTempSP   := 30;
 astParams_PPM[0].nRequestAssertionID         := 300;
 astParams_PPM[0].stBeamParams.nBeamClass     := 2#0000_1000;
 astParams_PPM[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -179,6 +180,7 @@ astParams_PPM[0].stBeamParams.nTran          := 0;
 astParams_PPM[0].stBeamParams.nMachineMode   := 1;
 
 astParams_PPM[1].sPmpsState                  := 'TST:PPM-OUT';
+astParams_PPM[1].stReactiveParams.nTempSP   := 30;
 astParams_PPM[1].nRequestAssertionID         := 301;
 astParams_PPM[1].stBeamParams.nBeamClass     := 2#0000_0001;
 astParams_PPM[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -187,6 +189,7 @@ astParams_PPM[1].stBeamParams.nTran          := 12;
 astParams_PPM[1].stBeamParams.nMachineMode   := 2;
 
 astParams_PPM[2].sPmpsState                  := 'TST:PPM-POWERMETER';
+astParams_PPM[2].stReactiveParams.nTempSP   := 30;
 astParams_PPM[2].nRequestAssertionID         := 302;
 astParams_PPM[2].stBeamParams.nBeamClass     := 2#0000_0010;
 astParams_PPM[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -195,6 +198,7 @@ astParams_PPM[2].stBeamParams.nTran          := 8;
 astParams_PPM[2].stBeamParams.nMachineMode   := 1;
 
 astParams_PPM[3].sPmpsState                  := 'TST:PPM-YAG1';
+astParams_PPM[3].stReactiveParams.nTempSP   := 30;
 astParams_PPM[3].nRequestAssertionID         := 303;
 astParams_PPM[3].stBeamParams.nBeamClass     := 2#0000_0100;
 astParams_PPM[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -203,6 +207,7 @@ astParams_PPM[3].stBeamParams.nTran          := 8;
 astParams_PPM[3].stBeamParams.nMachineMode   := 1;
 
 astParams_PPM[4].sPmpsState                  := 'TST:PPM-YAG2';
+astParams_PPM[4].stReactiveParams.nTempSP   := 30;
 astParams_PPM[4].nRequestAssertionID         := 304;
 astParams_PPM[4].stBeamParams.nBeamClass     := 2#0001_0000;
 astParams_PPM[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -375,6 +380,7 @@ astParams_IPM[5].stBeamParams.nMachineMode   := 1;
 
 (* ---- TST:WFS ---- *)
 astParams_WFS[0].sPmpsState                  := 'TST:WFS-TRANSITION';
+astParams_WFS[0].stReactiveParams.nTempSP   := 30;
 astParams_WFS[0].nRequestAssertionID         := 900;
 astParams_WFS[0].stBeamParams.nBeamClass     := 2#0000_1000;
 astParams_WFS[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -383,6 +389,7 @@ astParams_WFS[0].stBeamParams.nTran          := 0;
 astParams_WFS[0].stBeamParams.nMachineMode   := 1;
 
 astParams_WFS[1].sPmpsState                  := 'TST:WFS-OUT';
+astParams_WFS[1].stReactiveParams.nTempSP   := 30;
 astParams_WFS[1].nRequestAssertionID         := 901;
 astParams_WFS[1].stBeamParams.nBeamClass     := 2#0000_0001;
 astParams_WFS[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -391,6 +398,7 @@ astParams_WFS[1].stBeamParams.nTran          := 12;
 astParams_WFS[1].stBeamParams.nMachineMode   := 2;
 
 astParams_WFS[2].sPmpsState                  := 'TST:WFS-TARGET1';
+astParams_WFS[2].stReactiveParams.nTempSP   := 30;
 astParams_WFS[2].nRequestAssertionID         := 902;
 astParams_WFS[2].stBeamParams.nBeamClass     := 2#0000_0010;
 astParams_WFS[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -399,6 +407,7 @@ astParams_WFS[2].stBeamParams.nTran          := 8;
 astParams_WFS[2].stBeamParams.nMachineMode   := 1;
 
 astParams_WFS[3].sPmpsState                  := 'TST:WFS-TARGET2';
+astParams_WFS[3].stReactiveParams.nTempSP   := 30;
 astParams_WFS[3].nRequestAssertionID         := 903;
 astParams_WFS[3].stBeamParams.nBeamClass     := 2#0000_0100;
 astParams_WFS[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -407,6 +416,7 @@ astParams_WFS[3].stBeamParams.nTran          := 8;
 astParams_WFS[3].stBeamParams.nMachineMode   := 1;
 
 astParams_WFS[4].sPmpsState                  := 'TST:WFS-TARGET3';
+astParams_WFS[4].stReactiveParams.nTempSP   := 30;
 astParams_WFS[4].nRequestAssertionID         := 904;
 astParams_WFS[4].stBeamParams.nBeamClass     := 2#0001_0000;
 astParams_WFS[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -415,6 +425,7 @@ astParams_WFS[4].stBeamParams.nTran          := 8;
 astParams_WFS[4].stBeamParams.nMachineMode   := 1;
 
 astParams_WFS[5].sPmpsState                  := 'TST:WFS-TARGET4';
+astParams_WFS[5].stReactiveParams.nTempSP   := 30;
 astParams_WFS[5].nRequestAssertionID         := 905;
 astParams_WFS[5].stBeamParams.nBeamClass     := 2#0010_0000;
 astParams_WFS[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
@@ -423,6 +434,7 @@ astParams_WFS[5].stBeamParams.nTran          := 8;
 astParams_WFS[5].stBeamParams.nMachineMode   := 1;
 
 astParams_WFS[6].sPmpsState                  := 'TST:WFS-TARGET5';
+astParams_WFS[6].stReactiveParams.nTempSP   := 30;
 astParams_WFS[6].nRequestAssertionID         := 906;
 astParams_WFS[6].stBeamParams.nBeamClass     := 2#0100_0000;
 astParams_WFS[6].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;

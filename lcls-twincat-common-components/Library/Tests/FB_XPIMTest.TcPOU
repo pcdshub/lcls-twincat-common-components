@@ -120,7 +120,8 @@ IF bFirstScan THEN
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
-
+    bFileReaderBusy  := TRUE;
+    bFileReaderError := FALSE;
     bFirstScan := FALSE;
 END_IF
 
@@ -129,7 +130,9 @@ fbMotorY();
 fbXPIM();
 
 TestStateMove();
-]]></ST>
+
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;]]></ST>
     </Implementation>
     <Method Name="TestStateMove" Id="{fe1291e3-e066-4812-8d3e-bf776c10c3c6}">
       <Declaration><![CDATA[(*

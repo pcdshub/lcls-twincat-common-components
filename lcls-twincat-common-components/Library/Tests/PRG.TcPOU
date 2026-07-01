@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG" Id="{049d2c8f-f7b1-48e9-90f3-97014fb94e3b}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+PROGRAM PRG
+VAR
+
+    afbAxisRef               : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF AXIS_REF;
+    fbPersistentDataStorage  : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    sDeviceName    : STRING := 'TST:REF';
+    sTransitionKey : STRING := 'TST:REF-TRANSITION';
+
+    (* Caller-owned file-reader status, bound to FB_REF by REFERENCE
+       TO. Driven from the body to simulate the reader going busy then
+       idle during cold start. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10.0,
+         sPmpsState      := 'TST:REF-OUT'),
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
+         stDefault       := stDefault,
+         fPosition       := 20.0,
+         sPmpsState      := 'TST:REF-IN')
+    ];
+
+     {attribute 'pytmc' := '
+        pv: TST:FBRET
+        io: io
+        axis-link: GVL_Axes.Axes[1], GVL_Axes.Axes[2]
+    '}
+    fbREF : FB_REFT(
+        axisRefX 				:= afbAxisRef[1],
+        axisREFY 				:= afbAxisRef[2],
+        astPositionState 		:= astPositionState,
+        fbFFHWO          		:= fbFFHWO,
+        fbArbiter        		:= fbArbiter,
+        sDeviceName      		:= sDeviceName,
+        sTransitionKey   		:= sTransitionKey,
+        bEnableBeamParams     	:= TRUE,
+        bEnablePositionLimits	:= TRUE,
+        bReadDBNow 				:= FALSE,
+        bFileReaderBusy       	:= bFileReaderBusy,
+        bFileReaderError      	:= bFileReaderError
+    );
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

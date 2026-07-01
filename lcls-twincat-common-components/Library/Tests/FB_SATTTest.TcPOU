@@ -17,11 +17,15 @@ VAR
     fbFFHWO : FB_HardwareFFOutput;
 
     sDeviceName : STRING := 'AT1K4:L2SI';
+    bFileReaderBusy :  BOOL;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
 
     fbSATT : FB_SXR_SATT_Stage(
         aiMotionStage    := aiMotionStage,
         astPositionState := astPositionState,
         fbFFHWO          := fbFFHWO,
+        bFileReaderBusy  := bFileReaderBusy,
         sDeviceName      := sDeviceName,
         RTDPMPSState     := 'AT1K4:L2SI-RTD'
     );
@@ -77,17 +81,20 @@ END_VAR
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
-
     bFirstScan := FALSE;
 END_IF
-
+// avoid a division by Zero in F_CalculatrAbsorbptionConstant fro Physics Library
+// protection must be added there to on neV
+PMPS_GVL.stCurrentBeamParameters.neV := 250.0;
 fbPDS();
 fbMotorY();
 fbSATT();
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 
 TestConfig();
 TestStateMove();
 TestTempFFO();
+
 ]]></ST>
     </Implementation>
     <Method Name="AssertBothTempFault" Id="{95d6c1aa-c314-417f-8510-e65298bca360}">
@@ -220,6 +227,7 @@ fObserved := fbMotorY.stMotionStatus.fActPosition;
 
 CASE nTestStep OF
     0:
+
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
             fbSATT.eEnumSet := E_SXR_SATT_Position.OUT;

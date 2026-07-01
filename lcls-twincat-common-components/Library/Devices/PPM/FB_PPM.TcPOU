@@ -75,9 +75,6 @@ VAR_INPUT
 
 END_VAR
 VAR
-    ];
-
-
     {attribute 'pytmc' := 'pv: SPM'}
     fbPowerMeter : FB_PPM_PowerMeter;
 
@@ -111,6 +108,7 @@ VAR
     bEnableBeamParams     : BOOL;
     bEnablePositionLimits : BOOL;
     bReadDBNow            : BOOL;
+
     bFileReaderBusy       : REFERENCE TO BOOL;
     bFileReaderError      : REFERENCE TO BOOL;
 
@@ -134,7 +132,7 @@ VAR
          fDelta          := FDELTA_DEFAULT)
     ];
 
-    {attribute 'pytmc' := 'pv: MMS'} 
+    {attribute 'pytmc' := 'pv: MMS'}
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
@@ -254,8 +252,8 @@ THIS^.fbStates.CallAfterInitPMPS(
     bEnableBeamParams     := bEnableBeamParams,
     bEnablePositionLimits := bEnablePositionLimits,
     bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
-    bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
     fbFFHWO               := fbFFHWO,
     fbArbiter             := fbArbiter,
     sDeviceName           := sDeviceName,
