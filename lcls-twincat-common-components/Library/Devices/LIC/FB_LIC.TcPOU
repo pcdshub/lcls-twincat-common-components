@@ -60,7 +60,7 @@ VAR
          fDelta          := FDELTA_DEFAULT)
     ];
 
-    {attribute 'pytmc' := 'pv: MMS'} 
+    {attribute 'pytmc' := 'pv: MMS'}
     fbStates : FB_PositionStatePMPSND(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
