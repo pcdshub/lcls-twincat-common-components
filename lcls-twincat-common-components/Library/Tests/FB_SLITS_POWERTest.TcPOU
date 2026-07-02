@@ -34,15 +34,13 @@ VAR
         fbFFHWO         := fbFFHWO,
         sDeviceName     := 'SL1L0:POWER',
         sPmpsState      := 'SL1L0:POWER-RTD',
-        bFileReaderBusy := bSimFileReaderBusy
+        bFileReaderBusy := bSimFileReaderBusy,
+        fApertureMargin := 0.01 // -> must be provided here
     );
 
     nBlade     : INT;
     bFirstScan : BOOL := TRUE;
     bStageReady : BOOL;
-    (* Test-owned stand-in for MOTION_GVL.fbPmpsFileReader.bBusy. Toggle
-       it to give fbReadPMPSDB the rising edge (NOT bBusy) that a real
-       file-read completion produces. *)
     bSimFileReaderBusy : BOOL;
 END_VAR
 ]]></Declaration>

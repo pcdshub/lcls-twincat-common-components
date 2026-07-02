@@ -49,7 +49,7 @@ VAR
     bFileReaderBusy : REFERENCE TO BOOL;
     (* Margin (mm) subtracted from the authorized width/height when snapping
        the request into PMPS compliance. Set via FB_Init, defaults to 0.01. *)
-    fApertureMargin : LREAL := 0.01;
+    fApertureMargin : REAL := 0.01;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -141,7 +141,7 @@ VAR_INPUT
     sDeviceName   : STRING;
     sPmpsState 	  : STRING;
     bFileReaderBusy : REFERENCE TO BOOL;
-    fApertureMargin : LREAL := 0.01;
+    fApertureMargin : REAL;
 END_VAR
 ]]></Declaration>
       <Implementation>

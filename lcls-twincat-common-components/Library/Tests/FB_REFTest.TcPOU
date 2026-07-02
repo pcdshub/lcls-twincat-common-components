@@ -7,20 +7,6 @@
     chain, inline-init of fbStates, per-state name/fDelta defaults,
     PMPS state-key registration) still drives FB_MotionStageNC into the
     configured fPosition for a commanded state.
-
-    The motion-stack itself (FB_MotionStageNC, FB_PositionStatePMPSND,
-    FB_StateSetup, FB_AtPositionState, ...) is fully covered by the
-    lcls-twincat-motion-abstraction test suite. This test only checks
-    that the CC FB_REF wrapper does not break the contract.
-
-    Procedure:
-        1. Wait for first-scan motor setup + PMPS DB loaded.
-        2. Command IN (configured fPosition = 20.0, fDelta = 2.0).
-        3. Wait for eEnumGet = IN AND |fActPosition - 20.0| <= fDelta.
-        4. TEST_FINISHED.
-    On watchdog expiry: AssertTrue(FALSE, ...) with the step + observed
-    eEnumGet + observed fActPosition so the failure mode is obvious in
-    the TcUnit log.
 *)
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite

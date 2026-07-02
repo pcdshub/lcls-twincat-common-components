@@ -74,6 +74,7 @@ METHOD CallAfterInit
 (* ---- TST:ATM ---- *)
 astParams_ATM[0].sPmpsState                  := 'TST:ATM-TRANSITION';
 astParams_ATM[0].nRequestAssertionID         := 100;
+astParams_ATM[0].stReactiveParams.nTempSP   := 30;
 astParams_ATM[0].stBeamParams.nBeamClass     := 2#0000_1000;
 astParams_ATM[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[0].stBeamParams.nRate          := 1;
@@ -82,6 +83,7 @@ astParams_ATM[0].stBeamParams.nMachineMode   := 1;
 
 astParams_ATM[1].sPmpsState                  := 'TST:ATM-OUT';
 astParams_ATM[1].nRequestAssertionID         := 101;
+astParams_ATM[1].stReactiveParams.nTempSP   := 30;
 astParams_ATM[1].stBeamParams.nBeamClass     := 2#0000_0001;
 astParams_ATM[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[1].stBeamParams.nRate          := 10;
@@ -90,6 +92,7 @@ astParams_ATM[1].stBeamParams.nMachineMode   := 2;
 
 astParams_ATM[2].sPmpsState                  := 'TST:ATM-TARGET1';
 astParams_ATM[2].nRequestAssertionID         := 102;
+astParams_ATM[2].stReactiveParams.nTempSP   := 30;
 astParams_ATM[2].stBeamParams.nBeamClass     := 2#0000_0010;
 astParams_ATM[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[2].stBeamParams.nRate          := 50;
@@ -98,6 +101,7 @@ astParams_ATM[2].stBeamParams.nMachineMode   := 1;
 
 astParams_ATM[3].sPmpsState                  := 'TST:ATM-TARGET2';
 astParams_ATM[3].nRequestAssertionID         := 103;
+astParams_ATM[3].stReactiveParams.nTempSP   := 30;
 astParams_ATM[3].stBeamParams.nBeamClass     := 2#0000_0100;
 astParams_ATM[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[3].stBeamParams.nRate          := 50;
@@ -106,6 +110,7 @@ astParams_ATM[3].stBeamParams.nMachineMode   := 1;
 
 astParams_ATM[4].sPmpsState                  := 'TST:ATM-TARGET3';
 astParams_ATM[4].nRequestAssertionID         := 104;
+astParams_ATM[4].stReactiveParams.nTempSP   := 30;
 astParams_ATM[4].stBeamParams.nBeamClass     := 2#0001_0000;
 astParams_ATM[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[4].stBeamParams.nRate          := 50;
@@ -114,6 +119,7 @@ astParams_ATM[4].stBeamParams.nMachineMode   := 1;
 
 astParams_ATM[5].sPmpsState                  := 'TST:ATM-TARGET4';
 astParams_ATM[5].nRequestAssertionID         := 105;
+astParams_ATM[5].stReactiveParams.nTempSP   := 30;
 astParams_ATM[5].stBeamParams.nBeamClass     := 2#0010_0000;
 astParams_ATM[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[5].stBeamParams.nRate          := 50;
@@ -122,6 +128,7 @@ astParams_ATM[5].stBeamParams.nMachineMode   := 1;
 
 astParams_ATM[6].sPmpsState                  := 'TST:ATM-TARGET5';
 astParams_ATM[6].nRequestAssertionID         := 106;
+astParams_ATM[6].stReactiveParams.nTempSP   := 30;
 astParams_ATM[6].stBeamParams.nBeamClass     := 2#0100_0000;
 astParams_ATM[6].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
 astParams_ATM[6].stBeamParams.nRate          := 50;

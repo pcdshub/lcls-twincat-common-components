@@ -100,12 +100,6 @@ fbSubSysIO(
     FFO := fbFFHWO
 );
 
-(* Caller-side PMPS configurators write each slot once in
-   FB_CC_StatePMPSConfig.CallAfterInit; no cyclic tick. *)
-
-(* One-shot motor setup + initial caller-owned enables. Limits,
-   brake/enable modes, home cmd, user/hardware enables, default
-   velocity; skip NC param restore. *)
 IF bFirstScan THEN
     fbMotorY.SetModeEnableLimits(
         LimBackward    := TRUE,
