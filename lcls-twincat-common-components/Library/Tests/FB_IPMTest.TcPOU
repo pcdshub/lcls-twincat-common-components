@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_IPMTest" Id="{1b3d0000-0000-0000-0000-000000000001}" SpecialFunc="None">
     <Declaration><![CDATA[(* Single integration smoke for FB_IPM. Proves the wrapper wiring (REFERENCE TO
@@ -24,7 +24,7 @@ VAR
 
     {attribute 'pytmc' := '
         pv: MMS
-        astPositionState.array: 1..4
+        array: 1..1 | 1..5
     '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;

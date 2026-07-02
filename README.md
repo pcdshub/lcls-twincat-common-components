@@ -44,7 +44,7 @@ VAR
     // Position-state storage (exposed to EPICS via pytmc).
     {attribute 'pytmc' := '
         pv: TST:Y:STATE
-        io: io
+        io: i
         array: 1..1 | 1..2
     '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]

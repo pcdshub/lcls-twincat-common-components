@@ -10,7 +10,10 @@ VAR
     fbMotorY      : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
-
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..9
+    '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 

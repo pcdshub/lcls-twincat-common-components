@@ -51,7 +51,7 @@ VAR
 
     {attribute 'pytmc' := '
         pv: TST:PPM
-        io: io
+        io: i
         array: 1..1 | 1..4
         expand-names: Y
     '}
@@ -210,7 +210,7 @@ VAR
 
     {attribute 'pytmc' := '
         pv: TST:D1:STATE
-        io: io
+        io: i
         array: 1..1 | 1..9
         expand-names: D1M1, D1M2, D1M3, D1M4
     '}

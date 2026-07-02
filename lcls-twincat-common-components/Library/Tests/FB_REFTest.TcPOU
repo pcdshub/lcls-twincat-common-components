@@ -18,7 +18,10 @@ VAR
     fbMotorY : FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Y');
 
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
-
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..2
+    '}
     astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
 
@@ -170,24 +173,5 @@ ELSIF fbTestTimer.Q THEN
 END_IF
 ]]></ST>
     </Implementation>
-    <Method Name="T01_StateMove_RequestIn_MotorReachesConfiguredPosition" Id="{bc00a201-0000-0000-0000-000000000001}">
-      <Declaration><![CDATA[(*
-    Wiring smoke for FB_REF. Commands IN (configured fPosition = 20.0)
-    and asserts (a) eEnumGet reports IN and (b) the Y motor's actual
-    position lands within fDelta (2.0) of the configured set point.
-
-    Watchdog: 60s. Fail message includes the step number, the observed
-    eEnumGet, and the observed fActPosition so a failure points at
-    which part of the wiring chain broke.
-*)
-METHOD PRIVATE T01_StateMove_RequestIn_MotorReachesConfiguredPosition
-VAR_INST
-
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
   </POU>
 </TcPlcObject>
