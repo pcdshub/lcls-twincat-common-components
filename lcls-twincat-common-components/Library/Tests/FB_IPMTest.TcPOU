@@ -60,7 +60,7 @@ VAR
        a real PRG_xxL0_IPM would declare. stDefault is the caller-owned
        baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
        preloads from; fbIPM subsequently overrides per-state sName and
-       fDelta via its own FB_CC_DeviceStateDefaults array. sPmpsState
+       fDelta via its own FB_CC_InternalStateConfig array. sPmpsState
        keys match the fake DB seeded by FB_CC_PMPSTestSetup. *)
     stDefault : ST_PositionState := (
         bMoveOk       := TRUE,

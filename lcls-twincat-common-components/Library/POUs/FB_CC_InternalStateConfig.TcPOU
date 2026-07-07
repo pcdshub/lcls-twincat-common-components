@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="FB_CC_DeviceStateDefaults" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a31}" SpecialFunc="None">
+  <POU Name="FB_CC_InternalStateConfig" Id="{4d3a1c20-9b7e-4f6a-8d12-7e0c9f5b2a31}" SpecialFunc="None">
     <Declaration><![CDATA[(*
     Per-(state) writer of the device-FB-side fields of an
     ST_PositionState slot that FB_CC_StatePMPSConfig does not
@@ -17,7 +17,7 @@
     The FB body is empty; the slot is never touched cyclically, so
     online-view edits persist.
 *)
-FUNCTION_BLOCK FB_CC_DeviceStateDefaults
+FUNCTION_BLOCK FB_CC_InternalStateConfig
 VAR_INPUT
 END_VAR
 VAR

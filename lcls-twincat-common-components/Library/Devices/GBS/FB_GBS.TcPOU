@@ -49,7 +49,7 @@ VAR
        fbStates so its writes win over the template baseline
        FB_StateSetup applied via FB_CC_StatePMPSConfig. Idempotent once
        stPositionState.bUpdated trips. *)
-    afbStateDefaults : ARRAY[1..10] OF FB_CC_DeviceStateDefaults[
+    afbStateDefaults : ARRAY[1..10] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_GBS_States.OUT],
          sName           := 'OUT',
          fDelta          := FDELTA_DEFAULT),
@@ -128,7 +128,7 @@ IF NOT __ISVALIDREF(aiMotionStage)
 END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
-   once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
+   once in FB_CC_InternalStateConfig.CallAfterInit; no cyclic tick. *)
 fbStates(stDbStateParams=> stDbStateParams);
 
 (* In-beam RTDs: only fault when something is actually in the beam

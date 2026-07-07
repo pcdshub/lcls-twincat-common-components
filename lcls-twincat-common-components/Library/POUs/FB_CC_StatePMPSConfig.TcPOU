@@ -11,7 +11,7 @@
     fields (bMoveOk, bValid, bUseRawCounts, bLocked, nEncoderCount),
     then overlays fPosition and stPMPS.sPmpsState. sName and fDelta
     are deliberately NOT touched here: they are owned by the device
-    FB's FB_CC_DeviceStateDefaults array, so the two helpers' writes
+    FB's FB_CC_InternalStateConfig array, so the two helpers' writes
     do not overlap and their CallAfterInit ordering is irrelevant.
 
     The FB body is empty; the inner FB_StateSetup is wired (refs +
@@ -46,7 +46,7 @@ END_VAR
       <Declaration><![CDATA[(* Re-binds the inner FB_StateSetup's REFs after FB_Init (defensive),
    then performs a one-shot write of the slot: safety/baseline fields
    from stDefault and fPosition / sPmpsState overlay. sName and fDelta
-   are owned by FB_CC_DeviceStateDefaults. *)
+   are owned by FB_CC_InternalStateConfig. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 VAR_INPUT

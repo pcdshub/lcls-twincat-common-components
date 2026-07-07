@@ -144,7 +144,7 @@
     <Compile Include="POUs\FB_CC_TempSensor.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_CC_DeviceStateDefaults.TcPOU">
+    <Compile Include="POUs\FB_CC_InternalStateConfig.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FB_CC_StateDefaultsConfig.TcPOU">

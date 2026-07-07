@@ -58,7 +58,7 @@ VAR
        sName and fDelta. Ticked cyclically in the body AFTER fbStates
        so its writes win over the template baseline FB_StateSetup
        applied via FB_CC_StatePMPSConfig *)
-    afbStateDefaults : ARRAY[1..2] OF FB_CC_DeviceStateDefaults[
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
          sName           := 'OUT',
          fDelta          := FDELTA_DEFAULT),

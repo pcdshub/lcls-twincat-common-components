@@ -50,11 +50,10 @@ VAR
         bFileReaderError      := bFileReaderError
     );
 
-    (* Per-install PMPS-side state config (caller-owned). Mirrors what
-       a real PRG_xxL0_ATM would declare. stDefault is the caller-owned
+    (* stDefault is the caller-owned
        baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
        preloads from; fbATM subsequently overrides per-state sName and
-       fDelta via its own FB_CC_DeviceStateDefaults array. *)
+       fDelta via its own FB_CC_InternalStateConfig array. *)
     stDefault : ST_PositionState := (
         bMoveOk       := TRUE,
         bValid        := TRUE,

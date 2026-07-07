@@ -44,7 +44,7 @@ VAR
        fbStates so its writes win over the template baseline
        FB_StateSetup applied via FB_CC_StatePMPSConfig. Idempotent once
        stPositionState.bUpdated trips. *)
-    afbStateDefaults : ARRAY[1..5] OF FB_CC_DeviceStateDefaults[
+    afbStateDefaults : ARRAY[1..5] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_IPM_States.OUT],
          sName           := 'OUT',
          fDelta          := FDELTA_DEFAULT),
@@ -127,7 +127,7 @@ IF NOT __ISVALIDREF(aiMotionStage)
 END_IF
 
 (* Device-side per-state defaults (afbStateDefaults) are written
-   once in FB_CC_DeviceStateDefaults.CallAfterInit; no cyclic tick. *)
+   once in FB_CC_InternalStateConfig.CallAfterInit; no cyclic tick. *)
 fbStates(stDbStateParams=> stDbStateParams);]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{5686e09c-32c7-4e77-9d6e-c0baf6046a10}">

@@ -86,8 +86,8 @@ END_VAR
     fbMotorY.DoNotRestoreNcParameters := TRUE;
     bFirstScan := FALSE;
 END_IF
-// avoid a division by Zero in F_CalculatrAbsorbptionConstant fro Physics Library
-// protection must be added there to on neV
+// avoid a division by Zero in F_CalculateAbsorbptionConstant from Physics Library
+// protection must be added there on neV
 PMPS_GVL.stCurrentBeamParameters.neV := 250.0;
 fbPDS();
 fbMotorY();
