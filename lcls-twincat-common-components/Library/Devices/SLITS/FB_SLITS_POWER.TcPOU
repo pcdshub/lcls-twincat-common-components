@@ -64,8 +64,7 @@ SUPER^();
 
 
 // Inherited dispatch (parity with legacy FB_SLITS_POWER body
-// invoking ACT_CalculatePositions / ACT_Motion). Blade mode / enable
-// / limits ran once in the parent's CallAfterInit via M_Init.
+// invoking ACT_CalculatePositions / ACT_Motion).
 M_CalculatePositions();
 M_Motion();
 
@@ -130,7 +129,7 @@ fbFlowSwitch();
     <Method Name="FB_Init" Id="{374dff7e-a7f7-48ec-a96e-6c5ba3e1db5a}">
       <Declaration><![CDATA[(* Records sPmpsState and REF-binds the caller-owned file-reader busy flag;
    aiMotionStage (4 blades), fbFFHWO and sDeviceName are bound by base
-   FB_SLITS.FB_Init. Blade wiring and one-shot M_Init run from CallAfterInit. *)
+   FB_SLITS.FB_Init. Blade wiring runs from CallAfterInit. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT

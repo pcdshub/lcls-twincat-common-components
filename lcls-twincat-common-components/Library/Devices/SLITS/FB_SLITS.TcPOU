@@ -5,7 +5,9 @@
    Each blade uses a per-cycle FB_StatePTPMove single-shot mover (targets
    recomputed from EPICS aperture width/center + encoder offsets), not a named
    state mover. Caller-owned stages, PMPS FFO and device name injected via FB_Init
-   REFERENCE TO; CallAfterInit wires blade interfaces and runs one-shot M_Init. *)
+   REFERENCE TO; CallAfterInit wires blade interfaces. Motion parameters
+   (velocity/accel/decel/jerk) belong to the caller-owned stage, set once at
+   commissioning and persisted; FB_SLITS does not apply them. *)
 {attribute 'analysis' := '-33'}
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS
@@ -48,12 +50,13 @@ VAR CONSTANT
     fSmallDelta : LREAL := 0.01;
     fBigDelta   : LREAL := 10;
 
-    (* Blade motion tuning. Applied once to every blade motor in
-       M_Init via SetMotionParam. Identical for all four blades. *)
-    fVelocity     : LREAL := 0.2;
-    fAcceleration : LREAL := 0.8;
-    fDeceleration : LREAL := 0.8;
-    fJerk         : LREAL := 0.0;
+    (* Reference blade motion tuning (velocity/accel/decel/jerk). Not applied
+       here: motion parameters belong to the caller-owned stage, set once at
+       commissioning and persisted. Kept as commissioning reference values. *)
+    // fVelocity     : LREAL := 0.2;
+    // fAcceleration : LREAL := 0.8;
+    // fDeceleration : LREAL := 0.8;
+    // fJerk         : LREAL := 0.0;
 END_VAR
 VAR
     (* Per-blade scratch ST_PositionState. Static fields seeded here;
@@ -200,16 +203,14 @@ END_VAR
       <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
 // Block edge-triggers. Blade init + motion dispatch lives on the
 // FB_SLITS_POWER subclass body.
-// Blade mode / enable / limits + FFO device name, once at init.
-M_Init();
 HandleRequests();
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
       <Declaration><![CDATA[(* Auto-fired once after FB_Init binds the REFs. The four FB_StatePTPMove
    blade movers were inline-init'd with nil interface refs, so this re-supplies
-   each blade's now-valid interface and scratch ST_PositionState, runs M_Init
-   for per-blade mode/enable/limit config, and sets the FFO device name. *)
+   each blade's now-valid interface and scratch ST_PositionState, and sets the
+   FFO device name. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
@@ -224,8 +225,8 @@ FFO.i_DevName := sDeviceName;]]></ST>
     </Method>
     <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
       <Declaration><![CDATA[(* REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and sDeviceName
-   at instantiation. Blade interface wiring and the one-shot M_Init config
-   run from CallAfterInit once these REFs are bound. *)
+   at instantiation. Blade interface wiring runs from CallAfterInit once these
+   REFs are bound. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
@@ -337,27 +338,6 @@ rActCenterY := LREAL_TO_REAL(
     ((aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
    + (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
 );
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109c}">
-      <Declaration><![CDATA[(* One-shot blade init from CallAfterInit: applies SetModeEnableLimits and
-   SetMotionParam to each blade motor (enable/limits, brake off, home off,
-   velocity/accel/decel/jerk from the FB's fields) and sets the FFO device
-   name. Integrator may still override motion params per motor afterward. *)
-METHOD M_Init
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[// FOR nMotor := 1 TO 4 DO
-//     aiMotionStage[nMotor].SetMotionParam(
-//         Velocity     := fVelocity,
-//         Acceleration := fAcceleration,
-//         Deceleration := fDeceleration,
-//         Jerk         := fJerk
-//     );
-// END_FOR
-//
-
 ]]></ST>
       </Implementation>
     </Method>
