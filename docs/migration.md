@@ -272,8 +272,19 @@ fbFFHWO.Execute();
 - **Config-before-device.** Tick the `FB_CC_StatePMPSConfig` array before the
   device each cycle; the device's per-state defaults overwrite the baseline
   `FB_StateSetup` just laid down.
-- **Multi-axis devices** size the `afbMotorsNC` / `aiMotionStage` arrays to the
-  active motor count and set `nActiveMotorCount` accordingly (see the
+- **Multi-motor state movers** size the `aiMotionStage` array to the active
+  motor count and set `nActiveMotorCount` accordingly (see the
   motion-abstraction `PRG_PMPS` test program for a 4-axis example).
+- **Multi-stage devices with a single state stage.** Several devices carry
+  more than one physical stage while only one drives the internal state mover.
+  `FB_ATM`, for example, has an X alignment motor alongside the Y state stage;
+  `FB_IPM`, `FB_WFS` and `FB_XPIM` likewise pair their state stage with aux
+  X / Z / Zoom / Focus stages. Wire only the state stage into `aiMotionStage`
+  (slot 1, `nActiveMotorCount := 1`) and give it the `astPositionState` row.
+  Each auxiliary stage is a plain caller-owned `FB_MotionStageNC` that the PRG
+  (or test harness) declares, configures and ticks on its own every cycle; it
+  never appears in `aiMotionStage` or `astPositionState`. The device sizes
+  `aiMotionStage` to `MotionConstants.MAX_STATE_MOTORS` to match `FB_Init`'s
+  fixed-size signature, so the unused slots stay nil and are never touched.
 - **Commanding moves:** write `fbPPM.eEnumSet := E_PPM_States.YAG1;` and read
   back `fbPPM.eEnumGet`.
