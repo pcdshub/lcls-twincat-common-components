@@ -9,15 +9,13 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SXR_SATT_Stage
 VAR_INPUT
-    (* Device-specific state-enum bridges. Typed as
-       E_SXR_SATT_Position (UINT base) so the caller surface is enum-
-       checked; the inline-init below binds them to
-       FB_PositionStateND's REFERENCE TO UINT params via the shared
-       UINT base. Callers drive moves with
-       `fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;`. *)
+    (* Callers drive moves with`fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;`. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: STATE:SET
+        io: io
+    '}
     eEnumSet : E_SXR_SATT_Position;
-    eEnumGet : E_SXR_SATT_Position;
-
     (* Per-filter material / thickness table. Used by the transmission
        calculation. Index 1 corresponds to FILTER1 (which is the
        state at slot 2 in astPositionState, since OUT lives at slot 1
@@ -30,7 +28,12 @@ VAR_OUTPUT
     fTemp2                    : LREAL;
     bIsStationary             : BOOL;
     bError                    : BOOL;
-
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: STATE:GET
+        io: i
+    '}
+    eEnumGet : E_SXR_SATT_Position;
     {attribute 'pytmc' := '
         pv: MATERIAL
         io: i
@@ -93,9 +96,7 @@ VAR
         i_xAutoReset := TRUE
     );
 
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
+    (* REFERENCE TO backing fields populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -104,10 +105,9 @@ VAR
     {attribute 'no_copy'}
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName      : STRING;
-    (* PMPS DB key for the RTD reactive-temperature read. The filters
-       are not real PMPS states, so this device-level key (caller-
-       supplied via FB_Init) names the DB entry to pull the reactive
-       temp setpoint from. *)
+    (* PMPS DB key for the RTD reactive-temperature read. The filters are not real PMPS states,
+		so this device-level key names the DB entry to pull the reactive temp setpoint from.
+	*)
     RTDPMPSState     : STRING;
     bEnableMotion    : BOOL := TRUE;
 END_VAR]]></Declaration>

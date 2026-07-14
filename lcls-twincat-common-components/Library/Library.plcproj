@@ -271,8 +271,20 @@
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
+    <PlaceholderResolution Include="LCLS General">
+      <Resolution>LCLS General, 2.12.0 (SLAC)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="lcls-twincat-physics">
+      <Resolution>lcls-twincat-physics, 0.2.0 (SLAC)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="LCLS_Tc_DevAbs">
+      <Resolution>LCLS_Tc_DevAbs, 2.0.1 (SLAC - LCLS)</Resolution>
+    </PlaceholderResolution>
     <PlaceholderResolution Include="LCLS_Tc_Motion">
-      <Resolution>LCLS_Tc_Motion, 0.0.0 (SLAC - LCLS)</Resolution>
+      <Resolution>LCLS_Tc_Motion, 2.1.0 (SLAC - LCLS)</Resolution>
+    </PlaceholderResolution>
+    <PlaceholderResolution Include="PMPS">
+      <Resolution>PMPS, 3.9.0 (SLAC - LCLS)</Resolution>
     </PlaceholderResolution>
   </ItemGroup>
   <ItemGroup>

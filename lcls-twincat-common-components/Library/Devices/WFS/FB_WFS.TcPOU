@@ -29,9 +29,7 @@ VAR
     {attribute 'pytmc' := 'pv: FWM'}
     fbFlowMeter : FB_AnalogInput := (iTermBits := 15, fTermMax := 60, fTermMin := 0);
 
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
+    (* REFERENCE TO backing fields populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -116,8 +114,7 @@ VAR CONSTANT
     FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
-IF NOT __ISVALIDREF(aiMotionStage)
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter) THEN
