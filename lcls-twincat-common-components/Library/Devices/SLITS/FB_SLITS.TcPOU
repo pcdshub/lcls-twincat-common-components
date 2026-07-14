@@ -48,9 +48,7 @@ END_VAR
 VAR CONSTANT
     (* Position-compare deltas for the blade ST_PositionState. *)
     fSmallDelta : LREAL := 0.01;
-    fBigDelta   : LREAL := 10;
-
-    (* Reference blade motion tuning (velocity/accel/decel/jerk). Not applied
+     (* Reference blade motion tuning (velocity/accel/decel/jerk). Not applied
        here: motion parameters belong to the caller-owned stage, set once at
        commissioning and persisted. Kept as commissioning reference values. *)
     // fVelocity     : LREAL := 0.2;
