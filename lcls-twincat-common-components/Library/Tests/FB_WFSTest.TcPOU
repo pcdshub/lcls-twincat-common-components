@@ -5,15 +5,17 @@
 VAR
     (* Caller-owned axis, persistent storage, and Y motor.
        In a real PRG the AxisRef would come from MAIN.Mxx. *)
-    axRef    : AXIS_REF;
+    axRef    : ARRAY[1..2] OF AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
+    // Z motor (focus adjust).
+    fbMotorZ : FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'Z');
     (* FB_WFS is single-axis (nActiveMotorCount := 1), so only slot 1
        holds a real motor. aiMotionStage is sized to
        MotionConstants.MAX_STATE_MOTORS to match FB_WFS.FB_Init's
        fixed-size signature; slots 2-4 default-init to a nil interface
        and are never touched. *)
-    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Y');
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     {attribute 'pytmc' := '
@@ -110,6 +112,19 @@ IF bFirstScan THEN
         UserEnable     := TRUE,
         HardwareEnable := TRUE
     );
+    fbMotorZ.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorZ.SetVelocity(Velocity := 15.5);
+    fbMotorZ.RestoreMotionParams      := FALSE;
+    fbMotorZ.DoNotRestoreNcParameters := TRUE;
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
@@ -120,6 +135,7 @@ END_IF
 
 fbPDS();
 fbMotorY();
+fbMotorZ();
 fbWFS();
 fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 bFileReaderBusy  := FALSE;

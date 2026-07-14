@@ -5,15 +5,18 @@
 VAR
     (* Caller-owned axis, persistent storage, and Y motor.
        In a real PRG the AxisRef would come from MAIN.Mxx. *)
-    axRef    : AXIS_REF;
+    axRef    : ARRAY[1..3] OF AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    fbZoom: FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'Zoom');;
+    fbFocus: FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Focus');;
 
     (* FB_XPIM is single-axis (nActiveMotorCount := 1), so only slot 1
        holds a real motor. aiMotionStage is sized to
        MotionConstants.MAX_STATE_MOTORS to match FB_XPIM.FB_Init's
        fixed-size signature; slots 2-4 default-init to a nil interface
        and are never touched. *)
-    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[3], iPersistentDataStorage := fbPDS, sName := 'Y');
     aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
     {attribute 'pytmc' := '
@@ -111,9 +114,35 @@ IF bFirstScan THEN
         UserEnable     := TRUE,
         HardwareEnable := TRUE
     );
+    fbZoom.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbFocus.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
     fbMotorY.SetVelocity(Velocity := 15.5);
     fbMotorY.RestoreMotionParams      := FALSE;
     fbMotorY.DoNotRestoreNcParameters := TRUE;
+    fbZoom.SetVelocity(Velocity := 15.5);
+    fbZoom.RestoreMotionParams      := FALSE;
+    fbZoom.DoNotRestoreNcParameters := TRUE;
+    fbFocus.SetVelocity(Velocity := 15.5);
+    fbFocus.RestoreMotionParams      := FALSE;
+    fbFocus.DoNotRestoreNcParameters := TRUE;
     bFileReaderBusy  := TRUE;
     bFileReaderError := FALSE;
     bFirstScan := FALSE;
@@ -121,6 +150,8 @@ END_IF
 
 fbPDS();
 fbMotorY();
+fbZoom();
+fbFocus();
 fbXPIM();
 
 TestStateMove();
