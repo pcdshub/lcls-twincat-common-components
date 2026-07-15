@@ -43,7 +43,7 @@ VAR
     fbReadPMPSDB : FB_JsonDocToSafeBP;
     astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
     (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls.
-	   Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
+       Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
        instead of reaching into MOTION_GVL.fbPmpsFileReader directly.
     *)
     bFileReaderBusy : REFERENCE TO BOOL;

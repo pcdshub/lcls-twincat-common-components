@@ -106,8 +106,8 @@ VAR
     fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName      : STRING;
     (* PMPS DB key for the RTD reactive-temperature read. The filters are not real PMPS states,
-		so this device-level key names the DB entry to pull the reactive temp setpoint from.
-	*)
+        so this device-level key names the DB entry to pull the reactive temp setpoint from.
+    *)
     RTDPMPSState     : STRING;
     bEnableMotion    : BOOL := TRUE;
 END_VAR]]></Declaration>
