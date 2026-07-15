@@ -1,195 +1,201 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
-
-VAR_INPUT
-    sPmpsState: STRING;
-END_VAR
+    <Declaration><![CDATA[(* PMPS-aware (power-class) variant of FB_SLITS. Adds 8 thermocouple RTDs,
+   a flow switch, a reactive-temp DB lookup (FB_JsonDocToSafeBP keyed by
+   sPmpsState) driving every RTD fault, an xPMPSMode toggle, and M_UpdatePMPS.
+   EXTENDS FB_SLITS; body calls SUPER^() for edge-trigger consumption then
+   drives M_CalculatePositions / M_Motion behind a REF nil-guard. *)
+{attribute 'analysis' := '-33'}
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
 
 VAR
     {attribute 'pytmc' := '
-    pv: MODE ;
-     field: ZNAM Local;
-    field: ONAM PMPS;
-     io: io;
+    pv: MODE
+    field: ZNAM Local
+    field: ONAM PMPS
+    io: io
     '}
-    xPMPSMode	:BOOL :=TRUE;
+    xPMPSMode : BOOL := TRUE;
 
-     {attribute 'pytmc' := '
-        pv: FSW
-    '}
-    fbFlowSwitch: FB_XTES_Flowswitch;
+    {attribute 'pytmc' := 'pv: FSW'}
+    fbFlowSwitch : FB_XTES_Flowswitch;
 
-    //RTDs
-    {attribute 'pytmc' := '
-        pv: TOP:RTD:01
-    '}
-    RTD_TOP_1: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: TOP:RTD:02
-    '}
-    RTD_TOP_2: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: BOTTOM:RTD:01
-    '}
-    RTD_Bottom_1: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: BOTTOM:RTD:02
-    '}
-    RTD_Bottom_2: FB_CC_TempSensor;
-
-    {attribute 'pytmc' := '
-        pv: NORTH:RTD:01
-    '}
-    RTD_North_1: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: NORTH:RTD:02
-    '}
-    RTD_North_2: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: SOUTH:RTD:01
-    '}
-    RTD_South_1: FB_CC_TempSensor;
-    {attribute 'pytmc' := '
-        pv: SOUTH:RTD:02
-    '}
-    RTD_South_2: FB_CC_TempSensor;
-
-    fbReadPMPSDB: FB_JsonDocToSafeBP;
-    astTempDB: ARRAY[1..1] OF ST_DbStateParams;
+    {attribute 'pytmc' := 'pv: TOP:RTD:01'}
+    RTD_TOP_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: TOP:RTD:02'}
+    RTD_TOP_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: BOTTOM:RTD:01'}
+    RTD_Bottom_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: BOTTOM:RTD:02'}
+    RTD_Bottom_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: NORTH:RTD:01'}
+    RTD_North_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: NORTH:RTD:02'}
+    RTD_North_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: SOUTH:RTD:01'}
+    RTD_South_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: SOUTH:RTD:02'}
+    RTD_South_2 : FB_CC_TempSensor;
+    (* PMPS reactive-DB key for the device's allowed temperature. *)
+    sPmpsState : STRING;
+    fbReadPMPSDB : FB_JsonDocToSafeBP;
+    astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
+    (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls.
+       Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
+       instead of reaching into MOTION_GVL.fbPmpsFileReader directly.
+    *)
+    bFileReaderBusy : REFERENCE TO BOOL;
+    (* Margin (mm) subtracted from the authorized width/height when snapping
+       the request into PMPS compliance. Set via FB_Init, defaults to 0.01. *)
+    fApertureMargin : REAL := 0.01;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-ACT_init();
-// Instantiate Function block for all the blades
-ACT_Motion();
-//SET and GET the requested and Actual values
-ACT_CalculatePositions();
-//ACT_BLOCK();
-ACT_RTDs();
-]]></ST>
-    </Implementation>
-    <Action Name="ACT_Init" Id="{c73db9fc-43d0-43e2-91f3-2874c0adf041}">
-      <Implementation>
-        <ST><![CDATA[
-// Instantiate Function block for all the blades
-ACT_Motion();
-//SET and GET the requested and Actual values
-ACT_CalculatePositions();
-//ACT_BLOCK();
-ACT_RTDs();
-]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="ACT_RTDs" Id="{f626bddb-7b7c-4b26-9d84-fe5bb2361d2a}">
-      <Implementation>
-        <ST><![CDATA[
-// Database
-astTempDb[1].sPmpsState := sPmpsState;
+      <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.aiMotionStage)
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO) OR NOT __ISVALIDREF(bFileReaderBusy) THEN
+    RETURN;
+END_IF
+
+
+// Parent body: EPICS edge-trigger consumption only (no REF touch).
+SUPER^();
+
+
+// Inherited dispatch (parity with legacy FB_SLITS_POWER body
+// invoking ACT_CalculatePositions / ACT_Motion).
+M_CalculatePositions();
+M_Motion();
+
+// PMPS reactive temperature DB lookup. bExecute needs a rising edge,
+// produced as the caller-injected file-reader busy flag falls. Guard
+// the REF (single condition, no short-circuit hazard) so an unbound
+// instance stays inert rather than dereferencing a nil ref.
+astTempDB[1].sPmpsState := sPmpsState;
 fbReadPMPSDB(
-    bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
-    jsonDoc:=PMPS_GVL.BP_jsonDoc,
-    sDeviceName:=i_DevName,
-    arrStates:=astTempDb,
-    io_fbFFHWO:=io_fbFFHWO,
+    bExecute    := NOT bFileReaderBusy,
+    jsonDoc     := PMPS_GVL.BP_jsonDoc,
+    sDeviceName := sDeviceName,
+    arrStates   := astTempDB,
+    io_fbFFHWO  := fbFFHWO
 );
 
-//RTDs
+// All 8 RTDs share the same fault threshold (resolved from the DB).
 RTD_TOP_1(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_TOP_2(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_Bottom_1(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_Bottom_2(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_North_1(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_North_2(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_South_1(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 RTD_South_2(
-    fFaultThreshold:=astTempDb[1].stReactiveParams.nTempSP,
-    sDevName:=i_DevName,
-    io_fbFFHWO:=io_fbFFHWO,
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
 );
 
-//Flow Switch
 fbFlowSwitch();
 ]]></ST>
-      </Implementation>
-    </Action>
-    <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
-      <Declaration><![CDATA[METHOD M_UpdatePMPS : BOOL
+    </Implementation>
+    <Method Name="FB_Init" Id="{374dff7e-a7f7-48ec-a96e-6c5ba3e1db5a}">
+      <Declaration><![CDATA[(* Records sPmpsState and REF-binds the caller-owned file-reader busy flag;
+   aiMotionStage (4 blades), fbFFHWO and sDeviceName are bound by base
+   FB_SLITS.FB_Init. Blade wiring runs from CallAfterInit. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
 VAR_INPUT
-    index: int;
+    bInitRetains  : BOOL;
+    bInCopyCode   : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    sPmpsState 	  : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+    fApertureMargin : REAL;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-//Keep updating the status of the apertures PMPS
-This^.AptArrayStatus.Height := This^.rActApertureSizeY;
-This^.AptArrayStatus.Width := This^.rActApertureSizeX;
-This^.AptArrayStatus.xOK := NOT (This^.stTopBlade.bError) AND NOT (This^.stBottomBlade.bError)
-                                 AND NOT (This^.stNorthBlade.bError) AND NOT (This^.stNorthBlade.bError);
+        <ST><![CDATA[THIS^.sPmpsState := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;
+THIS^.fApertureMargin := fApertureMargin;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
+      <Declaration><![CDATA[(* Integrator-driven PMPS aperture-safety reconciliation, called each cycle
+   with index = this device's slot in astApertures. Mirrors actual geometry
+   into AptArrayStatus, faults FFO when actual gap exceeds the authorized
+   envelope (or always, out of PMPS mode), and in PMPS mode snaps the request
+   into compliance. Caller must ensure index is valid (no short-circuit). *)
+METHOD M_UpdatePMPS : BOOL
+VAR_INPUT
+    index : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Mirror current actual aperture geometry and any-blade error state.
+THIS^.AptArrayStatus.Height := THIS^.rActApertureSizeY;
+THIS^.AptArrayStatus.Width  := THIS^.rActApertureSizeX;
+THIS^.AptArrayStatus.xOK    :=
+        NOT (THIS^.aiMotionStage[E_SlitsBlade.TOP   ].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.NORTH ].MotionStatus.bError)
+    AND NOT (THIS^.aiMotionStage[E_SlitsBlade.SOUTH ].MotionStatus.bError);
 
-//Evaluate that the current center on the X and the y direction didn't exceed limits,
-// Gap should be reduced when center is moved, gap < Maximum permessible gap - 2|Center deviation from nominal|
-//Fast fault when it does.
-IF(This^.rActApertureSizeX > (AptArrayReq.Width - (2*ABS(rActCenterX)))
-//(rActCenterX > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width/2))
-    AND (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width >0 ))
-    OR (This^.rActApertureSizeY > (AptArrayReq.Height - (2*ABS(rActCenterY)))
-    //((rActCenterY > (PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height/2))
-        AND(PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height>0 )) THEN
-        FFO.i_xOK := FALSE;
-    ELSE
-        FFO.i_xOK := TRUE;
+// Aperture-envelope evaluation.
+IF ( THIS^.rActApertureSizeX > (AptArrayReq.Width  - (2 * ABS(THIS^.rActCenterX)))
+     AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width  > 0 )
+OR ( THIS^.rActApertureSizeY > (AptArrayReq.Height - (2 * ABS(THIS^.rActCenterY)))
+     AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height > 0 ) THEN
+    FFO.i_xOK := FALSE;
+ELSE
+    FFO.i_xOK := TRUE;
 END_IF
 
-//Evaluate that the requested gaps on the X and the y direction is not larger than the current gap
-// narrow  the gap if the requested is larger
-IF(xPMPSMode) THEN
-    IF (This^.rActApertureSizeX > AptArrayReq.Width) THEN
-        rReqApertureSizeX := AptArrayReq.Width - 0.01;
+IF xPMPSMode THEN
+    IF THIS^.rActApertureSizeX > AptArrayReq.Width THEN
+        rReqApertureSizeX := AptArrayReq.Width - fApertureMargin;
     END_IF
-    IF (This^.rActApertureSizeY > AptArrayReq.Height) THEN
-         rReqApertureSizeY := AptArrayReq.Height - 0.01;
+    IF THIS^.rActApertureSizeY > AptArrayReq.Height THEN
+        rReqApertureSizeY := AptArrayReq.Height - fApertureMargin;
     END_IF
-    ELSE
-     FFO.i_xOK := FALSE;
+ELSE
+    FFO.i_xOK := FALSE;
 END_IF
 
-
-(*FAST FAULT*)
-FFO(i_xOK := ,
-    i_xReset := ,
-    i_xAutoReset :=TRUE,
-    io_fbFFHWO := io_fbFFHWO);
+FFO(
+    i_xAutoReset := TRUE,
+    io_fbFFHWO   := fbFFHWO
+);
 ]]></ST>
       </Implementation>
     </Method>

@@ -1,395 +1,413 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91095}" SpecialFunc="None">
-    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+    <Declaration><![CDATA[(* Four-blade slit aperture controller (Top/Bottom/North/South), ND framework.
+   Each blade uses a per-cycle FB_StatePTPMove single-shot mover (targets
+   recomputed from EPICS aperture width/center + encoder offsets), not a named
+   state mover. Caller-owned stages, PMPS FFO and device name injected via FB_Init
+   REFERENCE TO; CallAfterInit wires blade interfaces. Motion parameters
+   (velocity/accel/decel/jerk) belong to the caller-owned stage, set once at
+   commissioning and persisted; FB_SLITS does not apply them. *)
+{attribute 'analysis' := '-33'}
+{attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS
-
-VAR_IN_OUT
-    stTopBlade: ST_MotionStage;
-    stBottomBlade: ST_MotionStage;
-    stNorthBlade: ST_MotionStage;
-    stSouthBlade: ST_MotionStage;
-    bExecuteMotion:BOOL ;
-    io_fbFFHWO    :    FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter();
-END_VAR
 VAR_INPUT
     {attribute 'pytmc' := '
-    pv: PMPS_OK;
-    io: i;
+    pv: PMPS_OK
+    io: i
     field: ZNAM False
     field: ONAM True
     '}
-    bMoveOk:BOOL;
+    bMoveOk : BOOL;
 
-    (*Offsets*)
+    (* Per-blade encoder zero-offsets (EPICS-settable). *)
     {attribute 'pytmc' := '
-    pv: Offset_Top;
-    io: io;
+    pv: Offset_Top
+    io: io
     '}
-    rEncoderOffsetTop: REAL;
+    rEncoderOffsetTop : REAL;
+
     {attribute 'pytmc' := '
-    pv: ZeroOffset_Bottom;
-    io: io;
+    pv: ZeroOffset_Bottom
+    io: io
     '}
-    rEncoderOffsetBottom: REAL;
+    rEncoderOffsetBottom : REAL;
+
     {attribute 'pytmc' := '
-    pv: ZeroOffset_North;
-    io: io;
+    pv: ZeroOffset_North
+    io: io
     '}
-    rEncoderOffsetNorth: REAL;
+    rEncoderOffsetNorth : REAL;
+
     {attribute 'pytmc' := '
-    pv: ZeroOffset_South;
-    io: io;
+    pv: ZeroOffset_South
+    io: io
     '}
-    rEncoderOffsetSouth: REAL;
-    i_DevName : STRING; //device name for FFO and PMPS diagnostics
+    rEncoderOffsetSouth : REAL;
 END_VAR
-
+VAR CONSTANT
+    (* Position-compare deltas for the blade ST_PositionState. *)
+    fSmallDelta : LREAL := 0.01;
+     (* Reference blade motion tuning (velocity/accel/decel/jerk). Not applied
+       here: motion parameters belong to the caller-owned stage, set once at
+       commissioning and persisted. Kept as commissioning reference values. *)
+    // fVelocity     : LREAL := 0.2;
+    // fAcceleration : LREAL := 0.8;
+    // fDeceleration : LREAL := 0.8;
+    // fJerk         : LREAL := 0.0;
+END_VAR
 VAR
-    fbTopBlade: FB_MotionStage;
-    fbBottomBlade: FB_MotionStage;
-    fbNorthBlade: FB_MotionStage;
-    fbSouthBlade: FB_MotionStage;
-    fPosTopBlade: LREAL;
-    fPosBottomBlade: LREAL;
-    fPosNorthBlade: LREAL;
-    fPosSouthBlade: LREAL;
+    (* Per-blade scratch ST_PositionState. Static fields seeded here;
+       fPosition and bMoveOk are refreshed each cycle in the body. *)
+    stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stBottom : ST_PositionState := (sName := 'Bottom', bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stNorth  : ST_PositionState := (sName := 'North',  bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
+    stSouth  : ST_PositionState := (sName := 'South',  bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
 
-    (*Motion Parameters*)
-    fSmallDelta: LREAL := 0.01;
-    fBigDelta: LREAL := 10;
-    fMaxVelocity: LREAL := 0.2;
-    fHighAccel: LREAL := 0.8;
-    fLowAccel: LREAL := 0.1;
-
-    stTop: DUT_PositionState;
-    stBOTTOM: DUT_PositionState;
-    stNorth: DUT_PositionState;
-    stSouth: DUT_PositionState;
-
+    (* Per-blade PTP movers. iMotionStage is wired in CallAfterInit;
+       FB_StatePTPMove tolerates a nil interface until then. *)
     {attribute 'pytmc' := 'pv: TOP'}
-    fbTop: FB_StatePTPMove;
+    fbTop    : FB_StatePTPMove(
+        stPositionState := stTop,
+        iMotionStage:=0
+    );
     {attribute 'pytmc' := 'pv: BOTTOM'}
-    fbBottom: FB_StatePTPMove;
+    fbBottom : FB_StatePTPMove(
+        stPositionState := stBottom,
+        iMotionStage:=0
+    );
     {attribute 'pytmc' := 'pv: NORTH'}
-    fbNorth: FB_StatePTPMove;
+    fbNorth  : FB_StatePTPMove(
+        stPositionState := stNorth,
+        iMotionStage:=0
+    );
     {attribute 'pytmc' := 'pv: SOUTH'}
-    fbSouth: FB_StatePTPMove;
+    fbSouth  : FB_StatePTPMove(
+        stPositionState := stSouth,
+        iMotionStage:=0
+    );
 
-    (*EPICS pvs*)
+    (* Aperture-math intermediate targets. *)
+    fPosTopBlade    : LREAL;
+    fPosBottomBlade : LREAL;
+    fPosNorthBlade  : LREAL;
+    fPosSouthBlade  : LREAL;
+
+    (* EPICS request / actual aperture geometry. *)
     {attribute 'pytmc' := '
-    pv: XWID_REQ;
-    io: io;
+    pv: XWID_REQ
+    io: io
     '}
     rReqApertureSizeX : REAL;
     {attribute 'pytmc' := '
-    pv: YWID_REQ;
-    io: io;
+    pv: YWID_REQ
+    io: io
     '}
     rReqApertureSizeY : REAL;
     {attribute 'pytmc' := '
-    pv: XCEN_REQ;
-    io: io;
+    pv: XCEN_REQ
+    io: io
     '}
-    rReqCenterX: REAL;
+    rReqCenterX : REAL;
     {attribute 'pytmc' := '
-    pv: YCEN_REQ;
-    io: io;
+    pv: YCEN_REQ
+    io: io
     '}
-    rReqCenterY: REAL;
+    rReqCenterY : REAL;
 
     {attribute 'pytmc' := '
-    pv: ACTUAL_XWIDTH;
-    io: io;
+    pv: ACTUAL_XWIDTH
+    io: io
     '}
     rActApertureSizeX : REAL;
-
     {attribute 'pytmc' := '
-    pv: ACTUAL_YWIDTH;
-    io: io;
+    pv: ACTUAL_YWIDTH
+    io: io
     '}
     rActApertureSizeY : REAL;
     {attribute 'pytmc' := '
-    pv: ACTUAL_XCENTER;
-    io: io;
+    pv: ACTUAL_XCENTER
+    io: io
     '}
-    rActCenterX: REAL;
+    rActCenterX : REAL;
     {attribute 'pytmc' := '
-    pv: ACTUAL_YCENTER;
-    io: io;
+    pv: ACTUAL_YCENTER
+    io: io
     '}
-    rActCenterY: REAL;
+    rActCenterY : REAL;
 
+    (* Edge-trigger request flags. Cleared on the rising edge each
+       cycle but no preset move is dispatched (stub: legacy parity). *)
     {attribute 'pytmc' := '
-    pv: XCEN_SETZERO;
-    io: io;
-    '}
-    rSetCenterX: BOOL;
-    {attribute 'pytmc' := '
-    pv: YCEN_SETZERO;
-    io: io;
-    '}
-    rSetCenterY: BOOL;
-
-    {attribute 'pytmc' := '
-    pv: OPEN;
-    io: io;
+    pv: OPEN
+    io: io
     field: ZNAM False
     field: ONAM True
     '}
-    bOpen: BOOL;
+    bOpen : BOOL;
 
     {attribute 'pytmc' := '
-    pv: CLOSE;
-    io: io;
+    pv: CLOSE
+    io: io
     field: ZNAM False
     field: ONAM True
     '}
-    bClose: BOOL;
+    bClose : BOOL;
 
     {attribute 'pytmc' := '
-    pv: BLOCK;
-    io: io;
+    pv: BLOCK
+    io: io
     field: ZNAM False
     field: ONAM True
     '}
-    bBlock: BOOL;
+    bBlock : BOOL;
 
-    //Local variables
-    bInit: BOOL :=true;
-    rTrig_Block: R_TRIG;
-    rTrig_Open: R_TRIG;
-    rTrig_Close: R_TRIG;
+    rTrig_Block : R_TRIG;
+    rTrig_Open  : R_TRIG;
+    rTrig_Close : R_TRIG;
 
-    //old values
+    (* Change-detection latches for EPICS request fields. *)
     rOldReqApertureSizeX : REAL;
     rOldReqApertureSizeY : REAL;
-    rOldReqCenterX: REAL;
-    rOldReqCenterY: REAL;
+    rOldReqCenterX       : REAL;
+    rOldReqCenterY       : REAL;
 
-    bExecuteMotionX: BOOL;
-    bExecuteMotionY: BOOL;
+    bExecuteMotionX : BOOL;
+    bExecuteMotionY : BOOL;
 
+    fbLogger : FB_LogMessage := (eSubsystem := E_SubSystem.MOTION);
 
-    fPosBlock: LREAL;
-    fPosClose: LREAL;
-    fPosOpen: LREAL;
+    (* PMPS aperture-safety fault (driven by FB_SLITS_POWER.M_UpdatePMPS). *)
+    FFO : FB_FastFault := (
+        i_DevName  := sDeviceName,
+        i_Desc     := 'Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF',
+        i_TypeCode := 16#FAA
+    );
 
-    stSetPositionOptions: ST_SetPositionOptions;
-    fbSetPosition_TOP: MC_SetPosition;
-    fbSetPosition_Bottom: MC_SetPosition;
-    fbSetPosition_North: MC_SetPosition;
-    fbSetPosition_South: MC_SetPosition;
-
-    // For logging
-    fbLogger : FB_LogMessage := (eSubsystem:=E_SubSystem.MOTION);
-    tErrorPresent : R_TRIG;
-    tAction : R_TRIG;
-    tOverrideActivated : R_TRIG;
-
-    FFO    :    FB_FastFault :=(
-        i_DevName := 'Slits',
-        i_Desc := 'Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF',
-        i_TypeCode := 16#FAA);
-
+    (* PMPS aperture IO (caller-mapped to terminals). *)
     AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
-    AptArrayReq AT %I* : ST_PMPS_Aperture_IO;
+    AptArrayReq    AT %I* : ST_PMPS_Aperture_IO;
 
-    bTest: BOOL;
+    (* REF backing fields, populated by FB_Init. *)
+    {attribute 'no_copy'}
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    {attribute 'no_copy'}
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   :  STRING;
+    nMotor : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-rTrig_Block (CLK:= bBlock);
-rTrig_Open (CLK:= bOpen);
-rTrig_Close (CLK:= bClose);
-
-if (rTrig_Block.Q) THEN
-    //BLOCK
-
-    bBlock := false;
-END_IF
-
-if (rTrig_Open.Q) THEN
-
-
-    bOpen := false;
-END_IF
-
-if (rTrig_Close.Q) THEN
-
-
-    bClose := false;
-END_IF
+      <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
+// Block edge-triggers. Blade init + motion dispatch lives on the
+// FB_SLITS_POWER subclass body.
+HandleRequests();
 ]]></ST>
     </Implementation>
-    <Action Name="ACT_CalculatePositions" Id="{725e398a-6162-44d6-8bb7-0ca8a4916528}">
+    <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
+      <Declaration><![CDATA[(* Auto-fired once after FB_Init binds the REFs. The four FB_StatePTPMove
+   blade movers were inline-init'd with nil interface refs, so this re-supplies
+   each blade's now-valid interface and scratch ST_PositionState, and sets the
+   FFO device name. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-//check if requested center or gap has changed
-//check that the requested values are within acceptable motion range
-IF (rOldReqApertureSizeX <> rReqApertureSizeX) THEN
-    IF (rReqApertureSizeX <= AptArrayReq.Width)  THEN
+        <ST><![CDATA[fbTop.CallAfterInit(    stPositionState := stTop,    iMotionStage := aiMotionStage[E_SlitsBlade.TOP]);
+fbBottom.CallAfterInit( stPositionState := stBottom, iMotionStage := aiMotionStage[E_SlitsBlade.BOTTOM]);
+fbNorth.CallAfterInit(  stPositionState := stNorth,  iMotionStage := aiMotionStage[E_SlitsBlade.NORTH]);
+fbSouth.CallAfterInit(  stPositionState := stSouth,  iMotionStage := aiMotionStage[E_SlitsBlade.SOUTH]);
+
+FFO.i_DevName := sDeviceName;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
+      <Declaration><![CDATA[(* REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and sDeviceName
+   at instantiation. Blade interface wiring runs from CallAfterInit once these
+   REFs are bound. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains  : BOOL;
+    bInCopyCode   : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   := sDeviceName;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HandleRequests" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91099}">
+      <Declaration><![CDATA[(*
+    Consume the EPICS Open / Close / Block rising-edge requests and
+    self-clear the flags. No preset move is dispatched (legacy stub).
+*)
+METHOD HandleRequests
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rTrig_Block(CLK := bBlock);
+rTrig_Open(CLK := bOpen);
+rTrig_Close(CLK := bClose);
+
+IF rTrig_Block.Q THEN
+    bBlock := FALSE;
+END_IF
+IF rTrig_Open.Q THEN
+    bOpen := FALSE;
+END_IF
+IF rTrig_Close.Q THEN
+    bClose := FALSE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CalculatePositions" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109a}">
+      <Declaration><![CDATA[(* Legacy ACT_CalculatePositions equivalent. Detects EPICS request changes
+   (rejecting aperture sizes beyond the PMPS-authorized envelope), recomputes
+   per-blade targets from requested gap + center + encoder offset, and refreshes
+   actual aperture geometry feedback from caller-owned motor positions. *)
+METHOD M_CalculatePositions
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
+    IF rReqApertureSizeX <= AptArrayReq.Width THEN
         rOldReqApertureSizeX := rReqApertureSizeX;
-        bExecuteMotionX := TRUE;
-        fbLogger(sMsg:='Requested new X gap.', eSevr:=TcEventSeverity.Verbose);
+        bExecuteMotionX      := TRUE;
+        fbLogger(sMsg := 'Requested new X gap.', eSevr := TcEventSeverity.Verbose);
     ELSE
-        fbLogger(sMsg:='Requested new X gap is larger than PMPS request.', eSevr:=TcEventSeverity.Verbose);
+        fbLogger(
+            sMsg := 'Requested new X gap is larger than PMPS request.',
+            eSevr := TcEventSeverity.Verbose
+        );
     END_IF
-  //  ELSE
-    //    rReqApertureSizeX := rActApertureSizeX;
 END_IF
 
-IF (rOldReqCenterX <> rReqCenterX) THEN
-    rOldReqCenterX := rReqCenterX;
+IF rOldReqCenterX <> rReqCenterX THEN
+    rOldReqCenterX  := rReqCenterX;
     bExecuteMotionX := TRUE;
-    fbLogger(sMsg:='Requested new X center', eSevr:=TcEventSeverity.Verbose);
-   // ELSE
-      //  rReqCenterX := rActCenterX;
+    fbLogger(sMsg := 'Requested new X center', eSevr := TcEventSeverity.Verbose);
 END_IF
 
-IF (rOldReqApertureSizeY <> rReqApertureSizeY) THEN
+IF rOldReqApertureSizeY <> rReqApertureSizeY THEN
     IF rReqApertureSizeY <= AptArrayReq.Height THEN
         rOldReqApertureSizeY := rReqApertureSizeY;
-        bExecuteMotionY := TRUE;
-        fbLogger(sMsg:='Requested new Y gap.', eSevr:=TcEventSeverity.Verbose);
+        bExecuteMotionY      := TRUE;
+        fbLogger(sMsg := 'Requested new Y gap.', eSevr := TcEventSeverity.Verbose);
     ELSE
-        fbLogger(sMsg:='Requested new Y gap is larger than PMPS request.', eSevr:=TcEventSeverity.Verbose);
+        fbLogger(
+            sMsg := 'Requested new Y gap is larger than PMPS request.',
+            eSevr := TcEventSeverity.Verbose
+        );
     END_IF
-   // ELSE
-       // rReqApertureSizeY := rActApertureSizeY;
 END_IF
 
-IF (rOldReqCenterY <> rReqCenterY) THEN
-    rOldReqCenterY := rReqCenterY;
+IF rOldReqCenterY <> rReqCenterY THEN
+    rOldReqCenterY  := rReqCenterY;
     bExecuteMotionY := TRUE;
-    fbLogger(sMsg:='Requested new Y center.', eSevr:=TcEventSeverity.Verbose);
-   // ELSE
-      //  rReqCenterY := rActCenterY;
+    fbLogger(sMsg := 'Requested new Y center.', eSevr := TcEventSeverity.Verbose);
 END_IF
 
+// Per-blade target positions from requested gap + center + per-blade
+// encoder offset.
+fPosTopBlade    :=  (rReqApertureSizeY / 2) + (rReqCenterY + rEncoderOffsetTop);
+fPosBottomBlade := -(rReqApertureSizeY / 2) + (rReqCenterY + rEncoderOffsetBottom);
+fPosNorthBlade  :=  (rReqApertureSizeX / 2) + (rReqCenterX + rEncoderOffsetNorth);
+fPosSouthBlade  := -(rReqApertureSizeX / 2) + (rReqCenterX + rEncoderOffsetSouth);
 
-//Calculate requested target positions from requested gap and center
-fPosTopBlade := (rReqApertureSizeY/2) + (rReqCenterY + rEncoderOffsetTop) ;
-fPosBottomBlade := (-1*rReqApertureSizeY/2) + (rReqCenterY+rEncoderOffsetBottom);
-
-fPosNorthBlade := (rReqApertureSizeX/2) + (rReqCenterX + rEncoderOffsetNorth);
-fPosSouthBlade := (-1*rReqApertureSizeX/2) + (rReqCenterX + rEncoderOffsetSouth);
-
-
-//Calculate actual gap and center from actual stages positions
-rActApertureSizeX := LREAL_TO_REAL((stNorthBlade.stAxisStatus.fActPosition - rEncoderOffsetNorth) - (stSouthBlade.stAxisStatus.fActPosition- rEncoderOffsetSouth));
-
-rActApertureSizeY := LREAL_TO_REAL((stTopBlade.stAxisStatus.fActPosition - rEncoderOffsetTop) - (stBottomBlade.stAxisStatus.fActPosition - rEncoderOffsetBottom));
-
-rActCenterX := LREAL_TO_REAL((((stNorthBlade.stAxisStatus.fActPosition - rEncoderOffsetNorth)  + (stSouthBlade.stAxisStatus.fActPosition - rEncoderOffsetSouth ))/2));
-
-rActCenterY := LREAL_TO_REAL((((stTopBlade.stAxisStatus.fActPosition - rEncoderOffsetTop) + (stBottomBlade.stAxisStatus.fActPosition - rEncoderOffsetBottom))/2));
-
-
-
-//Update PMPS Arbiter with the Actual Size and Center of the Aperture
+// Actual aperture geometry feedback from caller-owned motors.
+rActApertureSizeX := LREAL_TO_REAL(
+    (aiMotionStage[E_SlitsBlade.NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
+  - (aiMotionStage[E_SlitsBlade.SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)
+);
+rActApertureSizeY := LREAL_TO_REAL(
+    (aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
+  - (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)
+);
+rActCenterX := LREAL_TO_REAL(
+    ((aiMotionStage[E_SlitsBlade.NORTH].MotionStatus.fActPosition - rEncoderOffsetNorth)
+   + (aiMotionStage[E_SlitsBlade.SOUTH].MotionStatus.fActPosition - rEncoderOffsetSouth)) / 2
+);
+rActCenterY := LREAL_TO_REAL(
+    ((aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
+   + (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
+);
 ]]></ST>
       </Implementation>
-    </Action>
-    <Action Name="ACT_Home" Id="{17f20a30-628f-4b1f-b1f6-0f76c2d13ba0}">
+    </Method>
+    <Method Name="M_Motion" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109b}">
+      <Declaration><![CDATA[(* Legacy ACT_Motion equivalent. Refreshes per-blade ST_PositionState
+   fPosition/bMoveOk, asserts bExecute on each FB_StatePTPMove on aperture
+   change (self-clears on arrival/error, so re-dispatch waits for completion),
+   and ticks the four blade movers cyclically. *)
+METHOD M_Motion
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="ACT_Init" Id="{cd48ad3e-c0bd-4858-8ea8-85364fd0a6cb}">
-      <Implementation>
-        <ST><![CDATA[
-//  init the motion stages parameters
-IF ( bInit) THEN
-    stTopBlade.bHardwareEnable := TRUE;
-    stBottomBlade.bHardwareEnable := TRUE;
-    stNorthBlade.bHardwareEnable := TRUE;
-    stSouthBlade.bHardwareEnable := TRUE;
-    stTopBlade.bPowerSelf :=TRUE;
-    stBottomBlade.bPowerSelf :=TRUE;
-    stNorthBlade.bPowerSelf :=TRUE;
-    stSouthBlade.bPowerSelf :=TRUE;
-    stTopBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stBottomBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stNorthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    stSouthBlade.nBrakeMode := ENUM_StageBrakeMode.NO_BRAKE;
-    FFO.i_DevName := i_DevName;
+        <ST><![CDATA[stTop.fPosition    := fPosTopBlade;
+stTop.bMoveOk      := bMoveOk;
+
+stBottom.fPosition := fPosBottomBlade;
+stBottom.bMoveOk   := bMoveOk;
+
+stNorth.fPosition  := fPosNorthBlade;
+stNorth.bMoveOk    := bMoveOk;
+
+stSouth.fPosition  := fPosSouthBlade;
+stSouth.bMoveOk    := bMoveOk;
+
+IF bExecuteMotionY THEN
+    fbTop.bExecute    := TRUE;
+    fbBottom.bExecute := TRUE;
 END_IF
+IF bExecuteMotionX THEN
+    fbNorth.bExecute := TRUE;
+    fbSouth.bExecute := TRUE;
+END_IF
+bExecuteMotionX := FALSE;
+bExecuteMotionY := FALSE;
+
+fbTop(bMoveOk    := bMoveOk);
+fbBottom(bMoveOk := bMoveOk);
+fbNorth(bMoveOk  := bMoveOk);
+fbSouth(bMoveOk  := bMoveOk);
 ]]></ST>
       </Implementation>
-    </Action>
-    <Action Name="ACT_Motion" Id="{bc8462ef-53d6-480f-a2d2-4aa58e282075}">
+    </Method>
+    <Method Name="SetApertureRequest" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109d}">
+      <Declaration><![CDATA[(* Set the EPICS aperture request in one call: gap (width/height) and center
+   on both axes. M_CalculatePositions picks the values up next cycle and, if a
+   field changed and the gap is within the PMPS envelope, dispatches the moves. *)
+METHOD SetApertureRequest
+VAR_INPUT
+    ApertureSizeX : REAL;
+    ApertureSizeY : REAL;
+    CenterX       : REAL;
+    CenterY       : REAL;
+END_VAR
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Instantiate Function block for all the blades
-fbTopBlade(stMotionStage:=stTopBlade);
-fbBottomBlade(stMotionStage:=stBottomBlade);
-fbNorthBlade(stMotionStage:=stNorthBlade);
-fbSouthBlade(stMotionStage:=stSouthBlade);
-
-// PTP Motion for each blade
-stTop.sName := 'Top';
-stTop.fPosition := fPosTopBlade;
-stTop.fDelta := fSmallDelta;
-stTop.fVelocity := fMaxVelocity;
-stTop.fAccel := fHighAccel;
-stTop.fDecel := fHighAccel;
-
-stBOTTOM.sName := 'Bottom';
-stBOTTOM.fPosition := fPosBottomBlade;
-stBOTTOM.fDelta := fSmallDelta;
-stBOTTOM.fVelocity := fMaxVelocity;
-stBOTTOM.fAccel := fHighAccel;
-stBOTTOM.fDecel := fHighAccel;
-
-stNorth.sName := 'North';
-stNorth.fPosition := fPosNorthBlade;
-stNorth.fDelta := fSmallDelta;
-stNorth.fVelocity := fMaxVelocity;
-stNorth.fAccel := fHighAccel;
-stNorth.fDecel := fHighAccel;
-
-stSouth.sName := 'South';
-stSouth.fPosition := fPosSouthBlade;
-stSouth.fDelta := fSmallDelta;
-stSouth.fVelocity := fMaxVelocity;
-stSouth.fAccel := fHighAccel;
-stSouth.fDecel := fHighAccel;
-
-IF (bExecuteMotionY) THEN
-    fbTop.bExecute := fbBottom.bExecute := bExecuteMotionY;
-    bExecuteMotionY:= FALSE;
-END_IF
-
-IF (bExecuteMotionX) THEN
-    fbNorth.bExecute := fbSouth.bExecute := bExecuteMotionX;
-    bExecuteMotionX:= FALSE;
-END_IF
-
-
-fbTop(
-    stPositionState:=stTop,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stTopBlade);
-
-fbBottom(
-    stPositionState:=stBOTTOM,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stBottomBlade);
-
-fbNorth(
-    stPositionState:=stNorth,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stNorthBlade);
-
-fbSouth(
-    stPositionState:=stSouth,
-    bMoveOk:=bMoveOk,
-    stMotionStage:=stSouthBlade);
+        <ST><![CDATA[rReqApertureSizeX := ApertureSizeX;
+rReqApertureSizeY := ApertureSizeY;
+rReqCenterX       := CenterX;
+rReqCenterY       := CenterY;
 ]]></ST>
       </Implementation>
-    </Action>
+    </Method>
+    <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
+      <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
+VAR_INPUT
+    Width : REAL;
+    Height : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width := Width;
+THIS^.AptArrayReq.Height := Height;]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

@@ -3,197 +3,318 @@
   <POU Name="FB_SLITS_POWERTest" Id="{e999be49-2915-49c2-8ad1-4a5692f33436}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
 VAR
-    fbSlitsPower: FB_SLITS_POWER;
-    M1: ST_MotionStage;
-    M2: ST_MotionStage;
-    M3: ST_MotionStage;
-    M4: ST_MotionStage;
-    bExecuteMotion: BOOL := FALSE;
+    (* Caller-owned AxisRefs and persistent storage. In a real PRG the
+       AxisRefs come from MAIN.Mxx. Indexed by E_SlitsBlade (1..4). *)
+    axRef : ARRAY[1..4] OF AXIS_REF;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    (* Four blade motors, indexed by E_SlitsBlade. *)
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRef[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'Top'),
+        (AxisRef := axRef[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'Bottom'),
+        (AxisRef := axRef[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'North'),
+        (AxisRef := axRef[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'South')
+    ];
+
+    (* I_MotionStage array bound into FB_SLITS / FB_SLITS_POWER via
+       FB_Init. Order matches E_SlitsBlade (TOP / BOTTOM / NORTH /
+       SOUTH = 1..4). *)
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
+    ];
+
+    fbFFHWO     : FB_HardwareFFOutput;
+
+    fbSlitsPower : FB_SLITS_POWER(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := 'SL1L0:POWER',
+        sPmpsState      := 'SL1L0:POWER-RTD',
+        bFileReaderBusy := bSimFileReaderBusy,
+        fApertureMargin := 0.01 // -> must be provided here
+    );
+
+    nBlade     : INT;
+    bFirstScan : BOOL := TRUE;
+    bStageReady : BOOL;
+    bSimFileReaderBusy : BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbSlitsPower(
-    stTopBlade:=M1,
-    stBottomBlade:=M2,
-    stNorthBlade:=M3,
-    stSouthBlade:=M4,
-    bExecuteMotion:=bExecuteMotion,
-    i_DevName:='DEVICE',
-    sPmpsState:='T1',
-    io_fbFFHWO := fbFFHWO,
-    fbArbiter := fbArbiter,
-);
-
-TestTempFFO();]]></ST>
+      <ST><![CDATA[TestTempFFO();
+TestApertureMotion();
+fbSlitsPower(bMoveOk := TRUE);
+]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
       <Declaration><![CDATA[METHOD AssertAllTempFault
 VAR_INPUT
-    Message: STRING;
+    Message : STRING;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-AssertFalse(
+        <ST><![CDATA[AssertFalse(
     fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
-    CONCAT('Slits Top 1 RTD expected fault: ', Message),
+    CONCAT('Slits Top 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
-    CONCAT('Slits Top 2 RTD expected fault: ', Message),
+    CONCAT('Slits Top 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
-    CONCAT('Slits Bottom 1 RTD expected fault: ', Message),
+    CONCAT('Slits Bottom 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
-    CONCAT('Slits Bottom 2 RTD expected fault: ', Message),
+    CONCAT('Slits Bottom 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_North_1.FFO.i_xOK,
-    CONCAT('Slits North 1 RTD expected fault: ', Message),
+    CONCAT('Slits North 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_North_2.FFO.i_xOK,
-    CONCAT('Slits North 2 RTD expected fault: ', Message),
+    CONCAT('Slits North 2 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_South_1.FFO.i_xOK,
-    CONCAT('Slits South 1 RTD expected fault: ', Message),
+    CONCAT('Slits South 1 RTD expected fault: ', Message)
 );
 AssertFalse(
     fbSlitsPower.RTD_South_2.FFO.i_xOK,
-    CONCAT('Slits South 2 1 RTD expected fault: ', Message),
-);]]></ST>
+    CONCAT('Slits South 2 RTD expected fault: ', Message)
+);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="AssertNoneTempFault" Id="{7927d348-8b24-4e84-9bb0-a49691bff10c}">
       <Declaration><![CDATA[METHOD AssertNoneTempFault
 VAR_INPUT
-    Message: STRING;
+    Message : STRING;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-AssertTrue(
+        <ST><![CDATA[AssertTrue(
     fbSlitsPower.RTD_TOP_1.FFO.i_xOK,
-    CONCAT('Slits Top 1 RTD expected ok: ', Message),
+    CONCAT('Slits Top 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_TOP_2.FFO.i_xOK,
-    CONCAT('Slits Top 2 RTD expected ok: ', Message),
+    CONCAT('Slits Top 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_Bottom_1.FFO.i_xOK,
-    CONCAT('Slits Bottom 1 RTD expected ok: ', Message),
+    CONCAT('Slits Bottom 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_Bottom_2.FFO.i_xOK,
-    CONCAT('Slits Bottom 2 RTD expected ok: ', Message),
+    CONCAT('Slits Bottom 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_North_1.FFO.i_xOK,
-    CONCAT('Slits North 1 RTD expected ok: ', Message),
+    CONCAT('Slits North 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_North_2.FFO.i_xOK,
-    CONCAT('Slits North 2 RTD expected ok: ', Message),
+    CONCAT('Slits North 2 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_South_1.FFO.i_xOK,
-    CONCAT('Slits South 1 RTD expected ok: ', Message),
+    CONCAT('Slits South 1 RTD expected ok: ', Message)
 );
 AssertTrue(
     fbSlitsPower.RTD_South_2.FFO.i_xOK,
-    CONCAT('Slits South 2 1 RTD expected ok: ', Message),
-);]]></ST>
+    CONCAT('Slits South 2 RTD expected ok: ', Message)
+);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="SetSlitsTemp" Id="{1f9cef68-eb11-4206-b1d9-ee7921d5c884}">
       <Declaration><![CDATA[METHOD SetSlitsTemp
 VAR_INPUT
-    iTempC: INT;
+    iTempC : INT;
 END_VAR
 VAR
-    ptr: POINTER TO INT;
+    ptr : POINTER TO INT;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-ptr := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
+        <ST><![CDATA[ptr  := ADR(fbSlitsPower.RTD_TOP_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_TOP_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_Bottom_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_Bottom_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_North_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_North_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_North_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_North_2.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_South_1.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_South_1.iRaw);
 ptr^ := iTempC * 10;
 
-ptr := ADR(fbSlitsPower.RTD_South_2.iRaw);
+ptr  := ADR(fbSlitsPower.RTD_South_2.iRaw);
 ptr^ := iTempC * 10;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestApertureMotion" Id="{b3d8e4f5-2c7a-4b93-9d4b-6e8f9a0b1c2d}">
+      <Declaration><![CDATA[(*
+    End-to-end motion coverage against the linked NC simulation axes. An
+    EPICS aperture request must flow through M_CalculatePositions ->
+    M_Motion -> the blade FB_StatePTPMove movers, dispatch an absolute
+    move to each blade stage, and drive each NC axis to its target. The
+    test waits for every blade's actual NC position to settle on the
+    aperture-math target, so it confirms the request produced real
+    motion, not just a software command. Requires the four axRef entries
+    to be linked to their NC axes (Axis_Slit_Top / _Bottom / _North /
+    _South); without the link an axis latches bError and never moves.
+*)
+METHOD TestApertureMotion
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 1;
+    fDelta    : LREAL := 0.05;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Does an aperture request actually drive every blade NC axis to target?
+TEST('TestSlitsApertureMotion');
+
+tonTimer(IN := TRUE, PT := T#40S);
+
+CASE nStep OF
+    0:
+        IF bFirstScan THEN
+            FOR nBlade := 1 TO 4 DO
+                afbMotor[nBlade].SetModeEnableLimits(
+                    LimBackward    := TRUE,
+                    LimForward     := TRUE,
+                    HomeEnable     := FALSE,
+                    BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+                    EnableMode     := E_StageEnableMode.DURING_MOTION,
+                    HomeMode       := E_EpicsHomeCmd.NONE,
+                    UserEnable     := TRUE,
+                    HardwareEnable := TRUE
+                );
+                afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+                afbMotor[nBlade].RestoreMotionParams      := FALSE;
+                afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
+            END_FOR
+            bFirstScan := FALSE;
+            nStep := nStep + 1;
+        END_IF
+    1:
+        // Per-blade encoder offsets and an aperture request inside the
+        // PMPS-authorized envelope (so each axis request is accepted and
+        // dispatched to the linked NC axis).
+
+
+        IF bStageReady THEN
+            fbSlitsPower.SetAptWidthHeight(Width:=100.0, Height:=100.0);
+            fbSlitsPower.rEncoderOffsetTop    := 16.1;
+            fbSlitsPower.rEncoderOffsetBottom := -11.65;
+            fbSlitsPower.rEncoderOffsetNorth  := 12.45;
+            fbSlitsPower.rEncoderOffsetSouth  := -16.45;
+            fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
+            nStep := nStep + 1;
+        END_IF
+
+    2:
+        // Wait for every NC axis to reach its target:
+        //   Top    =  Ygap/2 + (Ycen + offTop)    =  3 +  18.1  =  21.1
+        //   Bottom = -Ygap/2 + (Ycen + offBottom) = -3 + (-9.65) = -12.65
+        //   North  =  Xgap/2 + (Xcen + offNorth)  =  2 +  13.45 =  15.45
+        //   South  = -Xgap/2 + (Xcen + offSouth)  = -2 + (-15.45) = -17.45
+        IF ABS(afbMotor[E_SlitsBlade.TOP].MotionStatus.fActPosition    -   21.1) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - (-12.65)) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.NORTH].MotionStatus.fActPosition  -   15.45) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.SOUTH].MotionStatus.fActPosition  - (-17.45)) < fDelta THEN
+            AssertTrue(TRUE, 'All blades reached aperture target');
+            nStep := nStep + 1;
+        END_IF
+END_CASE
+
+
+fbPDS();
+FOR nBlade := 1 TO 4 DO
+    afbMotor[nBlade]();
+    bStageReady := afbMotor[nBlade].stMotionStatus.bStageReady;
+END_FOR
+
+
+IF tonTimer.Q OR nStep = 3 THEN
+    TEST_FINISHED();
+END_IF
 ]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestTempFFO" Id="{449fe1eb-ccc2-4b89-a3aa-28398aabab9d}">
       <Declaration><![CDATA[METHOD TestTempFFO
 VAR_INST
-    tonTimer: TON;
-    nStep: UINT := 0;
+    tonTimer : TON;
+    nStep    : UINT := 0;
 END_VAR
 VAR CONSTANT
-    nLastStep: UINT := 4;
-END_VAR]]></Declaration>
+    nLastStep : UINT := 4;
+END_VAR
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Do we fault at the correct times?
+        <ST><![CDATA[// Do we fault at the correct times?
 TEST('TestSlitsTempFFO');
 
 // Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
-
+tonTimer(IN := TRUE, PT := T#10s);
 
 CASE nStep OF
     0:
-        // Hold until the PMPS DB is ready
-        // Most tests don't need this because they start by waiting for a move
+        // Toggle the simulated file-reader busy each cycle so fbReadPMPSDB
+        // keeps seeing the rising edge (NOT bBusy) a real file read gives,
+        // then hold until the resolved DB threshold appears.
+        bSimFileReaderBusy := TRUE;
+         nStep := nStep + 1;
+
+    1:
+        bSimFileReaderBusy :=FALSE;
         IF fbSlitsPower.RTD_TOP_1.fFaultThreshold > 0 THEN
             nStep := nStep + 1;
         END_IF
-    1:
-        // Set the thermocouple temperatures to crazy high number
+    2:
+        // Set the thermocouple temperatures to a crazy-high number.
         SetSlitsTemp(100);
         nStep := nStep + 1;
-    2:
-        // We should see faults on all RTDs at 100C
+    3:
+        // We should see faults on all RTDs at 100C.
         AssertAllTempFault('has high temp reading');
         nStep := nStep + 1;
-    3:
-        // Set the thermocouple temperatures to low again
+    4:
+        // Set the thermocouple temperatures back to low.
         SetSlitsTemp(0);
         nStep := nStep + 1;
-    4:
+    5:
         AssertNoneTempFault('has low temp reading');
         nStep := nStep + 1;
-END_CASE;
+END_CASE
 
-IF tonTimer.Q OR nStep > nLastStep THEN
-    AssertFalse(tonTimer.Q, 'Timeout in PPM temp FFO test');
+IF nStep = 6 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
     TEST_FINISHED();
 END_IF
 ]]></ST>

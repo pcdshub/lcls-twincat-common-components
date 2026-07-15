@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_StateDefaultsConfig" Id="{3a7c5e21-8d4f-4b62-9c13-1f0e2a5b4c32}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Integrator-side, auto-fired writer of a complete ST_PositionState
+    slot for devices whose states are not PMPS states. Functionally
+    FB_CC_StatePMPSConfig without sPmpsState: copies the shared
+    baseline (bMoveOk, bValid, bUseRawCounts, bLocked, nEncoderCount,
+    fDelta) from the caller's stDefault template, then overlays the
+    per-state sName and fPosition.
+
+    Use this when the integrator owns the full state config and the
+    device has no per-state PMPS key (e.g. FB_SXR_SATT_Stage). One
+    instance per state; with this FB the integrator needs no separate
+    FB_CC_StatePMPSConfig.
+
+    Driven by {attribute 'call_after_init'}, so it is declared inline
+    in the integrator box with no explicit call. The inner
+    FB_StateSetup is wired at init purely as a defensive backstop, so
+    a stray cyclic call stays safe and template-aware.
+
+    One-shot write from CallAfterInit; the body is empty, so
+    online-view edits to the slot persist.
+
+    Usage (integrator declaration box):
+        afbStates : ARRAY[1..N] OF FB_CC_StateDefaultsConfig[
+            (stPositionState := astPositionState[1][E_xxx.OUT],
+             stDefault       := stDefault,
+             sName           := 'Out',
+             fPosition       := 22.70),
+            ...];
+*)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_CC_StateDefaultsConfig
+VAR_INPUT
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stPositionState : REFERENCE TO ST_PositionState;
+    {attribute 'no_copy'}
+    stDefault       : REFERENCE TO ST_PositionState;
+    sName           : STRING;
+    fPosition       : LREAL;
+    fbStateSetup    : FB_StateSetup(
+        stDefault       := stDefault,
+        stPositionState := stPositionState,
+        bSetDefault     := TRUE
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{3a7c5e21-8d4f-4b62-9c13-1f0e2a5b4c34}">
+      <Declaration><![CDATA[(* Re-binds the inner FB_StateSetup's REFs after FB_Init (defensive),
+   then performs a one-shot write of the slot: shared baseline
+   (including fDelta) from stDefault, then the per-state sName /
+   fPosition overlay. No sPmpsState. Auto-fired by the runtime after
+   FB_Init. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStateSetup.CallAfterInit(
+    stDefault       := THIS^.stDefault,
+    stPositionState := THIS^.stPositionState,
+    bSetDefault     := TRUE
+);
+
+IF __ISVALIDREF(THIS^.stPositionState) AND __ISVALIDREF(THIS^.stDefault) THEN
+    THIS^.stPositionState.bMoveOk       := THIS^.stDefault.bMoveOk;
+    THIS^.stPositionState.bValid        := THIS^.stDefault.bValid;
+    THIS^.stPositionState.bUseRawCounts := THIS^.stDefault.bUseRawCounts;
+    THIS^.stPositionState.bLocked       := THIS^.stDefault.bLocked;
+    THIS^.stPositionState.nEncoderCount := THIS^.stDefault.nEncoderCount;
+    THIS^.stPositionState.fDelta        := THIS^.stDefault.fDelta;
+
+    THIS^.stPositionState.sName     := THIS^.sName;
+    THIS^.stPositionState.fPosition := THIS^.fPosition;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{3a7c5e21-8d4f-4b62-9c13-1f0e2a5b4c33}">
+      <Declaration><![CDATA[(* Stores the slot reference, the device-common stDefault template
+   REF, plus the per-state sName / fPosition at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains    : BOOL;
+    bInCopyCode     : BOOL;
+    stPositionState : REFERENCE TO ST_PositionState;
+    stDefault       : REFERENCE TO ST_PositionState;
+    sName           : STRING;
+    fPosition       : LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.stDefault       REF= stDefault;
+THIS^.sName            := sName;
+THIS^.fPosition        := fPosition;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

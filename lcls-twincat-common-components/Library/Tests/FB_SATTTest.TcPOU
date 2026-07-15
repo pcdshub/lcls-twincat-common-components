@@ -3,68 +3,117 @@
   <POU Name="FB_SATTTest" Id="{383787d3-728f-42f6-950b-c99d26391aa0}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SATTTest EXTENDS FB_TestSuite
 VAR
-    fbSATT: FB_SXR_SATT_Stage;
-    stYStage: ST_MotionStage;
 
-    stDefault: ST_PositionState := (
-        fDelta:=0.5,
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    fbMotorY      : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..9
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO : FB_HardwareFFOutput;
+
+    sDeviceName : STRING := 'AT1K4:L2SI';
+    bFileReaderBusy :  BOOL;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    fbSATT : FB_SXR_SATT_Stage(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        bFileReaderBusy  := bFileReaderBusy,
+        sDeviceName      := sDeviceName,
+        RTDPMPSState     := 'AT1K4:L2SI-RTD'
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
+    stDefault : ST_PositionState := (
+        fDelta        := 0.2,
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
 
-    bInit: BOOL;
+    afbStateDefaults : ARRAY[1..9] OF FB_CC_StateDefaultsConfig[
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.OUT],     stDefault := stDefault, sName := 'Out',     fPosition := 10),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER1], stDefault := stDefault, sName := 'Filter1', fPosition := 20),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER2], stDefault := stDefault, sName := 'Filter2', fPosition := 30),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER3], stDefault := stDefault, sName := 'Filter3', fPosition := 40),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER4], stDefault := stDefault, sName := 'Filter4', fPosition := 50),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER5], stDefault := stDefault, sName := 'Filter5', fPosition := 60),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER6], stDefault := stDefault, sName := 'Filter6', fPosition := 70),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER7], stDefault := stDefault, sName := 'Filter7', fPosition := 80),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER8], stDefault := stDefault, sName := 'Filter8', fPosition := 90)
+    ];
+
+    (* Per-filter material + thickness (integrator-owned) written into
+       the device's arrFilters table via FB_SATT_FilterConfig. *)
+    afbFilterCfg : ARRAY[1..8] OF FB_SATT_FilterConfig[
+        (stFilter := fbSATT.arrFilters[1], sFilterMaterial := 'C',  fFilterThickness_um := 25),
+        (stFilter := fbSATT.arrFilters[2], sFilterMaterial := 'C',  fFilterThickness_um := 50),
+        (stFilter := fbSATT.arrFilters[3], sFilterMaterial := 'C',  fFilterThickness_um := 100),
+        (stFilter := fbSATT.arrFilters[4], sFilterMaterial := 'Si', fFilterThickness_um := 200),
+        (stFilter := fbSATT.arrFilters[5], sFilterMaterial := 'Si', fFilterThickness_um := 320),
+        (stFilter := fbSATT.arrFilters[6], sFilterMaterial := 'Si', fFilterThickness_um := 640),
+        (stFilter := fbSATT.arrFilters[7], sFilterMaterial := 'Si', fFilterThickness_um := 1280),
+        (stFilter := fbSATT.arrFilters[8], sFilterMaterial := 'Si', fFilterThickness_um := 2560)
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.NONE,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+// avoid a division by Zero in F_CalculateAbsorbptionConstant from Physics Library
+// protection must be added there on neV
+PMPS_GVL.stCurrentBeamParameters.neV := 250.0;
+fbPDS();
+fbMotorY();
+fbSATT();
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbSATT.stOut, sName:='OUT', fPosition:=10);
-fbSetup(stPositionState:=fbSATT.stFilter1, sName:='T1', fPosition:=20, sPmpsState:='T1');
-fbSetup(stPositionState:=fbSATT.stFilter2, sName:='T2', fPosition:=30);
-fbSetup(stPositionState:=fbSATT.stFilter3, sName:='T3', fPosition:=40);
-fbSetup(stPositionState:=fbSATT.stFilter4, sName:='T4', fPosition:=50);
-fbSetup(stPositionState:=fbSATT.stFilter5, sName:='T5', fPosition:=60);
-fbSetup(stPositionState:=fbSATT.stFilter6, sName:='T6', fPosition:=70);
-fbSetup(stPositionState:=fbSATT.stFilter7, sName:='T7', fPosition:=80);
-fbSetup(stPositionState:=fbSATT.stFilter8, sName:='T8', fPosition:=90);
-
-// Standard FB call
-fbSATT(
-    stAxis:=stYStage,
-    fbFFHWO:=fbFFHWO,
-    bEnable:=TRUE,
-    sDeviceName:='DEVICE',
-);
-
+TestConfig();
 TestStateMove();
 TestTempFFO();
 
-bInit := TRUE;
 ]]></ST>
     </Implementation>
     <Method Name="AssertBothTempFault" Id="{95d6c1aa-c314-417f-8510-e65298bca360}">
       <Declaration><![CDATA[METHOD AssertBothTempFault
 VAR_INPUT
-    Message: STRING;
-END_VAR
-]]></Declaration>
+    Message : STRING;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
 AssertFalse(
     fbSATT.fbRTD_1.FFO.i_xOK,
-    CONCAT('SATT RTD1 expected fault: ', Message),
+    CONCAT('SATT RTD1 expected fault: ', Message)
 );
 AssertFalse(
     fbSATT.fbRTD_2.FFO.i_xOK,
-    CONCAT('SATT RTD2 expected fault: ', Message),
+    CONCAT('SATT RTD2 expected fault: ', Message)
 );
 ]]></ST>
       </Implementation>
@@ -72,18 +121,17 @@ AssertFalse(
     <Method Name="AssertNeitherTempFault" Id="{5de84732-353a-4a55-9eb9-df3ae8bca03b}">
       <Declaration><![CDATA[METHOD AssertNeitherTempFault
 VAR_INPUT
-    Message: STRING;
-END_VAR
-]]></Declaration>
+    Message : STRING;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
 AssertTrue(
     fbSATT.fbRTD_1.FFO.i_xOK,
-    CONCAT('SATT RTD1 expected ok: ', Message),
+    CONCAT('SATT RTD1 expected ok: ', Message)
 );
 AssertTrue(
     fbSATT.fbRTD_2.FFO.i_xOK,
-    CONCAT('SATT RTD2 expected ok: ', Message),
+    CONCAT('SATT RTD2 expected ok: ', Message)
 );
 ]]></ST>
       </Implementation>
@@ -91,47 +139,133 @@ AssertTrue(
     <Method Name="SetSATTTemp" Id="{7ebc7bb7-f0d1-456e-9851-f9318ff9a3aa}">
       <Declaration><![CDATA[METHOD SetSATTTemp
 VAR_INPUT
-    iTempC: INT;
+    iTempC : INT;
 END_VAR
 VAR
-    ptr: POINTER TO INT;
-END_VAR
-]]></Declaration>
+    ptr : POINTER TO INT;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-ptr := ADR(fbSATT.fbRTD_1.iRaw);
+ptr  := ADR(fbSATT.fbRTD_1.iRaw);
 ptr^ := iTempC * 100;
 
-ptr := ADR(fbSATT.fbRTD_2.iRaw);
+ptr  := ADR(fbSATT.fbRTD_2.iRaw);
 ptr^ := iTempC * 100;
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="TestStateMove" Id="{6c59097f-e216-48c9-8846-19da78be43c4}">
-      <Declaration><![CDATA[METHOD TestStateMove
-VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
-END_VAR
+    <Method Name="TestConfig" Id="{c4e7a118-9f2b-4d63-8a07-3b5e6c1d2f44}">
+      <Declaration><![CDATA[(*
+    Verifies the integrator-side configurators each write their own
+    slot fields exactly once at init, with no overlap:
+      - FB_CC_StateDefaultsConfig -> sName, fPosition, and fDelta from
+        the stDefault baseline
+      - FB_SATT_FilterConfig      -> arrFilters material, thickness
+    All are one-shot CallAfterInit writes, so the values are present
+    from the first scan; this test asserts once and finishes.
+*)
+METHOD TestConfig
 VAR CONSTANT
-    nLastState: UINT := E_SXR_SATT_Position.FILTER8;
+    fTol : LREAL := 0.001;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
-TEST('TestSATTStateMove');
+        <ST><![CDATA[TEST('TestSATTConfig');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#20s);
+(* FB_CC_StateDefaultsConfig wrote sName + the fDelta baseline. *)
+AssertTrue(
+    astPositionState[1][E_SXR_SATT_Position.OUT].sName = 'Out',
+    'OUT sName not set by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.OUT].fDelta - 0.2) <= fTol,
+    'OUT fDelta not copied from stDefault by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    astPositionState[1][E_SXR_SATT_Position.FILTER1].sName = 'Filter1',
+    'FILTER1 sName not set by FB_CC_StateDefaultsConfig');
 
-// Start in Unknown, then go through the state positions one by one
-IF fbSATT.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
-    fbSATT.eEnumSet := nIterState;
-END_IF
+(* FB_CC_StateDefaultsConfig wrote fPosition. *)
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.OUT].fPosition - 10.0) <= fTol,
+    'OUT fPosition not set by FB_CC_StateDefaultsConfig');
+AssertTrue(
+    ABS(astPositionState[1][E_SXR_SATT_Position.FILTER1].fPosition - 20.0) <= fTol,
+    'FILTER1 fPosition not set by FB_CC_StateDefaultsConfig');
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in SATT move test');
+(* FB_SATT_FilterConfig wrote material + thickness into arrFilters. *)
+AssertTrue(
+    fbSATT.arrFilters[1].sFilterMaterial = 'C',
+    'arrFilters[1] material not set by FB_SATT_FilterConfig');
+AssertTrue(
+    ABS(fbSATT.arrFilters[1].fFilterThickness_um - 25.0) <= fTol,
+    'arrFilters[1] thickness not set by FB_SATT_FilterConfig');
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestStateMove" Id="{6c59097f-e216-48c9-8846-19da78be43c4}">
+      <Declaration><![CDATA[(*
+    Smoke test for SATT state-move wiring. Walks OUT then FILTER1 and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_REFTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed
+    position. Two moves is enough to exercise the FB wiring; the
+    motion stack itself is covered by the
+    lcls-twincat-motion-abstraction test suite.
+*)
+METHOD TestStateMove
+VAR_INST
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
+END_VAR
+VAR CONSTANT
+    fTolerance : LREAL := 2.0;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSATTStateMove');
+
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
+
+CASE nTestStep OF
+    0:
+
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbSATT.eEnumSet := E_SXR_SATT_Position.OUT;
+            nTestStep       := 1;
+        END_IF
+    1:
+        (* OUT is configured at fPosition := 10 in afbStateDefaults[1]. *)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;
+            nTestStep       := 2;
+        END_IF
+    2:
+        (* FILTER1 is configured at fPosition := 20 in afbStateDefaults[2]. *)
+        IF fbSATT.eEnumGet = E_SXR_SATT_Position.FILTER1
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestSATTStateMove: OUT then FILTER1 reached within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
+
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestSATTStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbSATT.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>
@@ -140,34 +274,35 @@ END_IF
     <Method Name="TestTempFFO" Id="{f4f8a550-63b6-47ea-b8a6-24727446e218}">
       <Declaration><![CDATA[METHOD TestTempFFO
 VAR_INST
-    tonTimer: TON;
-    nStep: UINT := 0;
-    bOutChecked: BOOL := FALSE;
-    bInChecked: BOOL := FALSE;
+    tonTimer    : TON;
+    nStep       : UINT := 0;
+    bOutChecked : BOOL := FALSE;
+    bInChecked  : BOOL := FALSE;
 END_VAR
 VAR CONSTANT
-    nLastStep: UINT := 3;
+    nLastStep : UINT := 3;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Do we fault at the correct times?
-// Parasitically depends on state move test
+(* Do we fault at the correct times?
+   Parasitically depends on state move test. *)
 TEST('TestSATTTempFFO');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
 CASE nStep OF
     0:
-        // Set the thermocouple temperatures to crazy high number
+        (* Set the thermocouple temperatures to crazy high number. *)
         SetSATTTemp(100);
         nStep := nStep + 1;
     1:
-        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        (* Wait till we see "OUT" state and one other state (OUT
+           should be no fault). *)
         IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT THEN
             AssertNeitherTempFault('was in out position');
             bOutChecked := TRUE;
-        ELSIF fbSATT.eEnumGet <> E_SXR_SATT_Position.Unknown THEN
+        ELSIF fbSATT.eEnumGet <> E_SXR_SATT_Position.UNKNOWN THEN
             AssertBothTempFault('was in a target position');
             bInChecked := TRUE;
         END_IF
@@ -175,13 +310,13 @@ CASE nStep OF
             nStep := nStep + 1;
         END_IF
     2:
-        // Set the thermocouple temperatures to low again
+        (* Set the thermocouple temperatures to low again. *)
         SetSATTTemp(0);
         nStep := nStep + 1;
     3:
         AssertNeitherTempFault('has low temp reading');
         nStep := nStep + 1;
-END_CASE;
+END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout in SATT temp FFO test');

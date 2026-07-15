@@ -3,147 +3,265 @@
   <POU Name="FB_ATMTest" Id="{7b7c37ef-d7db-42bb-948f-8b077a7ccce5}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ATMTest EXTENDS FB_TestSuite
 VAR
-    fbATM: FB_ATM;
-    stYStage: ST_MotionStage;
-    stXStage: ST_MotionStage;
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : ARRAY[1..2] OF AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+    // X motor (align target to beam)
+    fbMotorX : FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'X');
+    (* FB_ATM is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_ATM.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
 
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..6
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    sDeviceName    : STRING := 'TST:ATM';
+    sTransitionKey : STRING := 'TST:ATM-TRANSITION';
+
+    (* Caller-owned file-reader status, bound to FB_ATM by REFERENCE
+       TO. In a real PRG these point at MOTION_GVL.fbPmpsFileReader;
+       here they stay FALSE so the DB read proceeds. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    fbATM : FB_ATM(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    (* stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbATM subsequently overrides per-state sName and
+       fDelta via its own FB_CC_InternalStateConfig array. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
 
-    bInit: BOOL;
+    afbStatePMPS : ARRAY[1..6] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_ATM_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:ATM-OUT'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:ATM-TARGET1'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:ATM-TARGET2'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET3],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:ATM-TARGET3'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET4],
+         stDefault       := stDefault,
+         fPosition       := 50,
+         sPmpsState      := 'TST:ATM-TARGET4'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET5],
+         stDefault       := stDefault,
+         fPosition       := 60,
+         sPmpsState      := 'TST:ATM-TARGET5')
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
-fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
-);
-
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
-
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbATM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbATM.stTarget1, sName:='T1', fPosition:=20, sPmpsState:='T1');
-fbSetup(stPositionState:=fbATM.stTarget2, sName:='T2', fPosition:=30, sPmpsState:='T2');
-fbSetup(stPositionState:=fbATM.stTarget3, sName:='T3', fPosition:=40, sPmpsState:='T3');
-fbSetup(stPositionState:=fbATM.stTarget4, sName:='T4', fPosition:=50, sPmpsState:='T4');
-fbSetup(stPositionState:=fbATM.stTarget5, sName:='T5', fPosition:=60, sPmpsState:='T5');
-
-// Standard FB call
-fbATM(
-    stYStage:=stYStage,
-    stXStage:=stXStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
-);
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorX.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorX.SetVelocity(Velocity := 15.5);
+    fbMotorX.RestoreMotionParams      := FALSE;
+    fbMotorX.DoNotRestoreNcParameters := TRUE;
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
+    bFileReaderBusy  := TRUE;
+    bFileReaderError := FALSE;
+    bFirstScan := FALSE;
+END_IF
 
 TestStateMove();
 TestTempFFO();
 
-bInit := TRUE;
+(* Fake PMPS handling. *)
+fbSubSysIO(
+    LA  := fbArbiter,
+    FFO := fbFFHWO
+);
+fbPDS();
+fbMotorX();
+fbMotorY();
+fbATM();
+
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;
 ]]></ST>
     </Implementation>
-    <Method Name="SetATMTemp" Id="{07ebf674-935a-442d-8dea-ed2efbbd9560}">
+    <Method Name="SetATMTemp" Id="{7b7c37f0-d7db-42bb-948f-8b077a7ccce6}">
       <Declaration><![CDATA[METHOD SetATMTemp
 VAR_INPUT
-    iTempC: INT;
+    iTempC : INT;
 END_VAR
 VAR
-    ptr: POINTER TO INT;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[
-ptr := ADR(fbATM.fbTempSensor1.iRaw);
-ptr^ := iTempC * 10;
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="TestStateMove" Id="{f3017196-77b1-444b-bcd3-e7d7d6c6f76f}">
-      <Declaration><![CDATA[METHOD TestStateMove
-VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
-END_VAR
-VAR CONSTANT
-    nLastState: UINT := E_ATM_States.TARGET5;
+    ptr : POINTER TO INT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
-TEST('TestATMStateMove');
+        <ST><![CDATA[ptr  := ADR(fbATM.fbTempSensor1.iRaw);
+ptr^ := iTempC * 10;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestStateMove" Id="{7b7c37f1-d7db-42bb-948f-8b077a7ccce7}">
+      <Declaration><![CDATA[(*
+    Smoke test for ATM state-move wiring. Walks OUT then TARGET1 and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_REFTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed
+    position. Two moves is enough to exercise the FB wiring; the
+    motion stack itself is covered by the
+    lcls-twincat-motion-abstraction test suite.
+*)
+METHOD TestStateMove
+VAR_INST
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
+END_VAR
+VAR CONSTANT
+    fTolerance : LREAL := 2.0;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestATMStateMove');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
 
-// Start in Unknown, then go through the state positions one by one
-IF fbATM.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
-    fbATM.eEnumSet := nIterState;
-END_IF
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in ATM move test');
+CASE nTestStep OF
+    0:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbATM.eEnumSet := E_ATM_States.OUT;
+            nTestStep      := 1;
+        END_IF
+    1:
+        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        IF fbATM.eEnumGet = E_ATM_States.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbATM.eEnumSet := E_ATM_States.TARGET1;
+            nTestStep      := 2;
+        END_IF
+    2:
+        (* TARGET1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        IF fbATM.eEnumGet = E_ATM_States.TARGET1
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestATMStateMove: OUT then TARGET1 reached within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
+
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestATMStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbATM.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="TestTempFFO" Id="{eda3686e-db0a-4f3e-a5a4-bddc09f8d415}">
+    <Method Name="TestTempFFO" Id="{7b7c37f2-d7db-42bb-948f-8b077a7ccce8}">
       <Declaration><![CDATA[METHOD TestTempFFO
 VAR_INST
-    tonTimer: TON;
-    nStep: UINT := 0;
-    bOutChecked: BOOL := FALSE;
-    bInChecked: BOOL := FALSE;
+    tonTimer    : TON;
+    nStep       : UINT := 0;
+    bOutChecked : BOOL := FALSE;
+    bInChecked  : BOOL := FALSE;
 END_VAR
 VAR CONSTANT
-    nLastStep: UINT := 3;
+    nLastStep : UINT := 3;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-// Do we fault at the correct times?
-// Parasitically depends on state move test
+(* Do we fault at the correct times?
+   Parasitically depends on state move test. *)
 TEST('TestATMTempFFO');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+(* Prepare a timeout *)
+tonTimer(IN := TRUE, PT := T#10s);
 
 CASE nStep OF
     0:
-        // Set the thermocouple temperatures to crazy high number
+        (* Set the thermocouple temperature to crazy high number. *)
         SetATMTemp(100);
         nStep := nStep + 1;
     1:
-        // Wait till we see "OUT" state and one other state (OUT should be no fault)
+        (* Wait till we see "OUT" state and one other state (OUT
+           should be no fault). *)
         IF fbATM.eEnumGet = E_ATM_States.OUT THEN
             AssertTrue(
                 fbATM.fbTempSensor1.FFO.i_xOK,
-                'Faulted even in out position!',
+                'Faulted even in out position!'
             );
             bOutChecked := TRUE;
         ELSIF fbATM.eEnumGet <> E_ATM_States.Unknown THEN
             AssertFalse(
                 fbATM.fbTempSensor1.FFO.i_xOK,
-                'No fault even for an in position!',
+                'No fault even for an in position!'
             );
             bInChecked := TRUE;
         END_IF
@@ -151,21 +269,22 @@ CASE nStep OF
             nStep := nStep + 1;
         END_IF
     2:
-        // Set the thermocouple temperatures to low again
+        (* Set the thermocouple temperature to low again. *)
         SetATMTemp(0);
         nStep := nStep + 1;
     3:
         AssertTrue(
             fbATM.fbTempSensor1.FFO.i_xOK,
-            'Faulted even with low temp!',
+            'Faulted even with low temp!'
         );
         nStep := nStep + 1;
-END_CASE;
+END_CASE
 
 IF tonTimer.Q OR nStep > nLastStep THEN
     AssertFalse(tonTimer.Q, 'Timeout in ATM temp FFO test');
     TEST_FINISHED();
-END_IF]]></ST>
+END_IF
+]]></ST>
       </Implementation>
     </Method>
   </POU>

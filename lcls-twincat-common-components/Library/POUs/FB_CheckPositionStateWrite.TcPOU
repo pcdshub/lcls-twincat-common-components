@@ -1,7 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_CheckPositionStateWrite" Id="{4a237718-942d-465c-a0b3-3b5d567db752}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_CheckPositionStateWrite
+    <Declaration><![CDATA[(*
+    OBSOLETE under the LCLS_Tc_Motion (ND) framework. File kept on disk for
+    history; excluded from Library.plcproj so it does not compile.
+
+    Why obsolete: this helper existed to mediate a race between PLC defaults
+    and EPICS-side writes to ST_PositionState fields. The legacy idiom in the
+    device FBs was "check bHadWrite; if no EPICS write happened this cycle,
+    overwrite the slot from PLC staging vars; otherwise let the operator edit
+    stand." That race no longer exists in the new framework:
+
+      1. All ST_PositionState EPICS-facing fields (sName, fPosition,
+         nEncoderCount, bMoveOk) carry pytmc "io: i" : read-only from EPICS.
+         The remaining state fields (fDelta, bLocked, bValid, bUseRawCounts,
+         bUpdated, stPMPS) have no pytmc pragma at all. There is no path for
+         an operator to write to a position state from EPICS in the ND
+         framework. The "from EPICS" half of the legacy race is gone.
+
+      2. Motion-tuning fields the legacy helper compared (fVelocity, fAccel,
+         fDecel) were removed from ST_PositionState : they live on the drive
+         layer now (FB_MotionStageNC.MotionCmd, set via SetMotionParam()).
+
+      3. The "apply PLC defaults once, then leave alone" job is owned by
+         FB_StateConfigurator / FB_StateSetup, gated by the per-slot
+         bUpdated latch that FB_PositionStateInternalND sets after first
+         full configuration. Cyclic calls become no-ops automatically;
+         re-application is the explicit knob bForceUpdate := TRUE.
+
+    Net: the helper's premise (mediate concurrent PLC/EPICS writers) is
+    structurally unrepresentable in the ND framework, and the framework
+    provides a stricter, finer-grained mechanism for the same intent. No
+    device FB should call this in migrated code.
+
+    Original 1-D contract preserved below verbatim for reference only.
+*)
+FUNCTION_BLOCK FB_CheckPositionStateWrite
 (*
     Save a position state during one cycle, then check it the next cycle
 *)

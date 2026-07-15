@@ -1,0 +1,606 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_PMPSTestSetup" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6b}" SpecialFunc="None">
+    <Declaration><![CDATA[
+(*
+    One-shot PMPS fake-DB seeder for the CC test suite. Mirrors
+    LCLS_Tc_Motion.FB_PMPSTestSetup: one FB_PMPSJsonTestHelperEx
+    instance per device, first call uses bNewDoc := TRUE, the rest
+    use bNewDoc := FALSE so the document at PMPS_GVL.BP_jsonDoc
+    accumulates every test device:
+
+        { "TST:ATM": { "TST:ATM-TRANSITION": {...}, ... },
+          "TST:LIC": { ... }, ... }
+
+    Only sPmpsState is populated per row. The helper fills the rest
+    of the JSON shape with default-zero values, which is enough for
+    the wiring smoke tests to look up state keys and request a move.
+    Tests that need richer beam params (rate, beam class, eV range,
+    reactive temperature) set them on the relevant astParams_XXX
+    entries before this FB ticks, or extend it.
+
+    The seeding runs once in CallAfterInit, before any test suite
+    body executes. The cyclic body is empty: no scheduling order
+    dependency between this FB and the test FBs.
+
+    Single point of truth: PMPS_GVL.BP_jsonDoc is global and test
+    FBs run concurrently. Seeding stays here so per-device writes
+    cannot race on the same cycle.
+*)
+{attribute 'call_after_init'}
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_CC_PMPSTestSetup
+VAR
+    (* All devices use the local FB_PMPSJsonTestHelper: it serializes the
+       seeded nRequestAssertionID into the DB 'id' (so each state gets a
+       unique assertion ID) and serializes nTempSP into reactive_temp
+       (needed by SATT/SLITS RTD thresholds). *)
+    fbJsonHelper_ATM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_LIC   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_PPM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_REF   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_GBS   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_IPM   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_WFS   : FB_PMPSJsonTestHelper;
+    fbJsonHelper_XPIM  : FB_PMPSJsonTestHelper;
+    fbJsonHelper_SATT  : FB_PMPSJsonTestHelper;
+    fbJsonHelper_SLITS : FB_PMPSJsonTestHelper;
+
+    (* astParams_XXX[0] is the transition key; the rest are named-state
+       keys in enum order. *)
+    astParams_ATM   : ARRAY[0..6] OF ST_DbStateParams;
+    astParams_LIC   : ARRAY[0..4] OF ST_DbStateParams;
+    astParams_PPM   : ARRAY[0..4] OF ST_DbStateParams;
+    astParams_REF   : ARRAY[0..2] OF ST_DbStateParams;
+    astParams_GBS   : ARRAY[0..10] OF ST_DbStateParams;
+    astParams_IPM   : ARRAY[0..5] OF ST_DbStateParams;
+    astParams_WFS   : ARRAY[0..6] OF ST_DbStateParams;
+    astParams_XPIM  : ARRAY[0..5] OF ST_DbStateParams;
+    astParams_SATT  : ARRAY[0..0] OF ST_DbStateParams;
+    astParams_SLITS : ARRAY[0..0] OF ST_DbStateParams;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+(* Seeding runs once at instantiation in CallAfterInit; body is a no-op. *)
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{cc000002-3a30-49c7-add4-72cbb7abbf6c}">
+      <Declaration><![CDATA[{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+(* ---- TST:ATM ---- *)
+astParams_ATM[0].sPmpsState                  := 'TST:ATM-TRANSITION';
+astParams_ATM[0].nRequestAssertionID         := 100;
+astParams_ATM[0].stReactiveParams.nTempSP   := 30;
+astParams_ATM[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_ATM[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[0].stBeamParams.nRate          := 1;
+astParams_ATM[0].stBeamParams.nTran          := 0;
+astParams_ATM[0].stBeamParams.nMachineMode   := 1;
+
+astParams_ATM[1].sPmpsState                  := 'TST:ATM-OUT';
+astParams_ATM[1].nRequestAssertionID         := 101;
+astParams_ATM[1].stReactiveParams.nTempSP   := 30;
+astParams_ATM[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_ATM[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[1].stBeamParams.nRate          := 10;
+astParams_ATM[1].stBeamParams.nTran          := 12;
+astParams_ATM[1].stBeamParams.nMachineMode   := 2;
+
+astParams_ATM[2].sPmpsState                  := 'TST:ATM-TARGET1';
+astParams_ATM[2].nRequestAssertionID         := 102;
+astParams_ATM[2].stReactiveParams.nTempSP   := 30;
+astParams_ATM[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_ATM[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[2].stBeamParams.nRate          := 50;
+astParams_ATM[2].stBeamParams.nTran          := 8;
+astParams_ATM[2].stBeamParams.nMachineMode   := 1;
+
+astParams_ATM[3].sPmpsState                  := 'TST:ATM-TARGET2';
+astParams_ATM[3].nRequestAssertionID         := 103;
+astParams_ATM[3].stReactiveParams.nTempSP   := 30;
+astParams_ATM[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_ATM[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[3].stBeamParams.nRate          := 50;
+astParams_ATM[3].stBeamParams.nTran          := 8;
+astParams_ATM[3].stBeamParams.nMachineMode   := 1;
+
+astParams_ATM[4].sPmpsState                  := 'TST:ATM-TARGET3';
+astParams_ATM[4].nRequestAssertionID         := 104;
+astParams_ATM[4].stReactiveParams.nTempSP   := 30;
+astParams_ATM[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_ATM[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[4].stBeamParams.nRate          := 50;
+astParams_ATM[4].stBeamParams.nTran          := 8;
+astParams_ATM[4].stBeamParams.nMachineMode   := 1;
+
+astParams_ATM[5].sPmpsState                  := 'TST:ATM-TARGET4';
+astParams_ATM[5].nRequestAssertionID         := 105;
+astParams_ATM[5].stReactiveParams.nTempSP   := 30;
+astParams_ATM[5].stBeamParams.nBeamClass     := 2#0010_0000;
+astParams_ATM[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[5].stBeamParams.nRate          := 50;
+astParams_ATM[5].stBeamParams.nTran          := 8;
+astParams_ATM[5].stBeamParams.nMachineMode   := 1;
+
+astParams_ATM[6].sPmpsState                  := 'TST:ATM-TARGET5';
+astParams_ATM[6].nRequestAssertionID         := 106;
+astParams_ATM[6].stReactiveParams.nTempSP   := 30;
+astParams_ATM[6].stBeamParams.nBeamClass     := 2#0100_0000;
+astParams_ATM[6].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_ATM[6].stBeamParams.nRate          := 50;
+astParams_ATM[6].stBeamParams.nTran          := 8;
+astParams_ATM[6].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:LIC ---- *)
+astParams_LIC[0].sPmpsState                  := 'TST:LIC-TRANSITION';
+astParams_LIC[0].nRequestAssertionID         := 200;
+astParams_LIC[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_LIC[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_LIC[0].stBeamParams.nRate          := 1;
+astParams_LIC[0].stBeamParams.nTran          := 0;
+astParams_LIC[0].stBeamParams.nMachineMode   := 1;
+
+astParams_LIC[1].sPmpsState                  := 'TST:LIC-OUT';
+astParams_LIC[1].nRequestAssertionID         := 201;
+astParams_LIC[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_LIC[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_LIC[1].stBeamParams.nRate          := 10;
+astParams_LIC[1].stBeamParams.nTran          := 12;
+astParams_LIC[1].stBeamParams.nMachineMode   := 2;
+
+astParams_LIC[2].sPmpsState                  := 'TST:LIC-MIRROR1';
+astParams_LIC[2].nRequestAssertionID         := 202;
+astParams_LIC[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_LIC[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_LIC[2].stBeamParams.nRate          := 50;
+astParams_LIC[2].stBeamParams.nTran          := 8;
+astParams_LIC[2].stBeamParams.nMachineMode   := 1;
+
+astParams_LIC[3].sPmpsState                  := 'TST:LIC-MIRROR2';
+astParams_LIC[3].nRequestAssertionID         := 203;
+astParams_LIC[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_LIC[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_LIC[3].stBeamParams.nRate          := 50;
+astParams_LIC[3].stBeamParams.nTran          := 8;
+astParams_LIC[3].stBeamParams.nMachineMode   := 1;
+
+astParams_LIC[4].sPmpsState                  := 'TST:LIC-TARGET';
+astParams_LIC[4].nRequestAssertionID         := 204;
+astParams_LIC[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_LIC[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_LIC[4].stBeamParams.nRate          := 50;
+astParams_LIC[4].stBeamParams.nTran          := 8;
+astParams_LIC[4].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:PPM ---- *)
+astParams_PPM[0].sPmpsState                  := 'TST:PPM-TRANSITION';
+astParams_PPM[0].stReactiveParams.nTempSP   := 30;
+astParams_PPM[0].nRequestAssertionID         := 300;
+astParams_PPM[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_PPM[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_PPM[0].stBeamParams.nRate          := 1;
+astParams_PPM[0].stBeamParams.nTran          := 0;
+astParams_PPM[0].stBeamParams.nMachineMode   := 1;
+
+astParams_PPM[1].sPmpsState                  := 'TST:PPM-OUT';
+astParams_PPM[1].stReactiveParams.nTempSP   := 30;
+astParams_PPM[1].nRequestAssertionID         := 301;
+astParams_PPM[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_PPM[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_PPM[1].stBeamParams.nRate          := 10;
+astParams_PPM[1].stBeamParams.nTran          := 12;
+astParams_PPM[1].stBeamParams.nMachineMode   := 2;
+
+astParams_PPM[2].sPmpsState                  := 'TST:PPM-POWERMETER';
+astParams_PPM[2].stReactiveParams.nTempSP   := 30;
+astParams_PPM[2].nRequestAssertionID         := 302;
+astParams_PPM[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_PPM[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_PPM[2].stBeamParams.nRate          := 50;
+astParams_PPM[2].stBeamParams.nTran          := 8;
+astParams_PPM[2].stBeamParams.nMachineMode   := 1;
+
+astParams_PPM[3].sPmpsState                  := 'TST:PPM-YAG1';
+astParams_PPM[3].stReactiveParams.nTempSP   := 30;
+astParams_PPM[3].nRequestAssertionID         := 303;
+astParams_PPM[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_PPM[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_PPM[3].stBeamParams.nRate          := 50;
+astParams_PPM[3].stBeamParams.nTran          := 8;
+astParams_PPM[3].stBeamParams.nMachineMode   := 1;
+
+astParams_PPM[4].sPmpsState                  := 'TST:PPM-YAG2';
+astParams_PPM[4].stReactiveParams.nTempSP   := 30;
+astParams_PPM[4].nRequestAssertionID         := 304;
+astParams_PPM[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_PPM[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_PPM[4].stBeamParams.nRate          := 50;
+astParams_PPM[4].stBeamParams.nTran          := 8;
+astParams_PPM[4].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:REF ---- *)
+astParams_REF[0].sPmpsState                  := 'TST:REF-TRANSITION';
+astParams_REF[0].nRequestAssertionID         := 600;
+astParams_REF[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_REF[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[0].stBeamParams.nRate          := 1;
+astParams_REF[0].stBeamParams.nTran          := 0;
+astParams_REF[0].stBeamParams.nMachineMode   := 1;
+
+astParams_REF[1].sPmpsState                  := 'TST:REF-OUT';
+astParams_REF[1].nRequestAssertionID         := 601;
+astParams_REF[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_REF[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[1].stBeamParams.nRate          := 10;
+astParams_REF[1].stBeamParams.nTran          := 12;
+astParams_REF[1].stBeamParams.nMachineMode   := 2;
+
+astParams_REF[2].sPmpsState                  := 'TST:REF-IN';
+astParams_REF[2].nRequestAssertionID         := 602;
+astParams_REF[2].stBeamParams.nBeamClass     := 2#1000_0000;
+astParams_REF[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_REF[2].stBeamParams.nRate          := 110;
+astParams_REF[2].stBeamParams.nTran          := 12.5;
+astParams_REF[2].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:GBS ---- *)
+astParams_GBS[0].sPmpsState                  := 'TST:GBS-TRANSITION';
+astParams_GBS[0].nRequestAssertionID         := 700;
+astParams_GBS[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_GBS[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[0].stBeamParams.nRate          := 1;
+astParams_GBS[0].stBeamParams.nTran          := 0;
+astParams_GBS[0].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[1].sPmpsState                  := 'TST:GBS-OUT';
+astParams_GBS[1].nRequestAssertionID         := 701;
+astParams_GBS[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_GBS[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[1].stBeamParams.nRate          := 10;
+astParams_GBS[1].stBeamParams.nTran          := 12;
+astParams_GBS[1].stBeamParams.nMachineMode   := 2;
+
+astParams_GBS[2].sPmpsState                  := 'TST:GBS-TARGET1a';
+astParams_GBS[2].nRequestAssertionID         := 702;
+astParams_GBS[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_GBS[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[2].stBeamParams.nRate          := 50;
+astParams_GBS[2].stBeamParams.nTran          := 8;
+astParams_GBS[2].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[3].sPmpsState                  := 'TST:GBS-TARGET1b';
+astParams_GBS[3].nRequestAssertionID         := 703;
+astParams_GBS[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_GBS[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[3].stBeamParams.nRate          := 50;
+astParams_GBS[3].stBeamParams.nTran          := 8;
+astParams_GBS[3].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[4].sPmpsState                  := 'TST:GBS-TARGET2a';
+astParams_GBS[4].nRequestAssertionID         := 704;
+astParams_GBS[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_GBS[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[4].stBeamParams.nRate          := 50;
+astParams_GBS[4].stBeamParams.nTran          := 8;
+astParams_GBS[4].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[5].sPmpsState                  := 'TST:GBS-TARGET2b';
+astParams_GBS[5].nRequestAssertionID         := 705;
+astParams_GBS[5].stBeamParams.nBeamClass     := 2#0010_0000;
+astParams_GBS[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[5].stBeamParams.nRate          := 50;
+astParams_GBS[5].stBeamParams.nTran          := 8;
+astParams_GBS[5].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[6].sPmpsState                  := 'TST:GBS-TARGET3a';
+astParams_GBS[6].nRequestAssertionID         := 706;
+astParams_GBS[6].stBeamParams.nBeamClass     := 2#0100_0000;
+astParams_GBS[6].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[6].stBeamParams.nRate          := 50;
+astParams_GBS[6].stBeamParams.nTran          := 8;
+astParams_GBS[6].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[7].sPmpsState                  := 'TST:GBS-TARGET3b';
+astParams_GBS[7].nRequestAssertionID         := 707;
+astParams_GBS[7].stBeamParams.nBeamClass     := 2#1000_0000;
+astParams_GBS[7].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[7].stBeamParams.nRate          := 50;
+astParams_GBS[7].stBeamParams.nTran          := 8;
+astParams_GBS[7].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[8].sPmpsState                  := 'TST:GBS-TARGET4';
+astParams_GBS[8].nRequestAssertionID         := 708;
+astParams_GBS[8].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_GBS[8].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[8].stBeamParams.nRate          := 50;
+astParams_GBS[8].stBeamParams.nTran          := 8;
+astParams_GBS[8].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[9].sPmpsState                  := 'TST:GBS-TARGET5';
+astParams_GBS[9].nRequestAssertionID         := 709;
+astParams_GBS[9].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_GBS[9].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[9].stBeamParams.nRate          := 50;
+astParams_GBS[9].stBeamParams.nTran          := 8;
+astParams_GBS[9].stBeamParams.nMachineMode   := 1;
+
+astParams_GBS[10].sPmpsState                 := 'TST:GBS-TARGET6';
+astParams_GBS[10].nRequestAssertionID        := 710;
+astParams_GBS[10].stBeamParams.nBeamClass    := 2#0001_0000;
+astParams_GBS[10].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_GBS[10].stBeamParams.nRate         := 50;
+astParams_GBS[10].stBeamParams.nTran         := 8;
+astParams_GBS[10].stBeamParams.nMachineMode  := 1;
+
+(* In-beam RTD setpoint for FB_GBSTest temp-FFO wiring: the two RTDs
+   fault when the reading exceeds nTempSP and are vetoed while OUT. *)
+astParams_GBS[0].stReactiveParams.nTempSP    := 30;
+astParams_GBS[1].stReactiveParams.nTempSP    := 30;
+astParams_GBS[2].stReactiveParams.nTempSP    := 30;
+astParams_GBS[3].stReactiveParams.nTempSP    := 30;
+astParams_GBS[4].stReactiveParams.nTempSP    := 30;
+astParams_GBS[5].stReactiveParams.nTempSP    := 30;
+astParams_GBS[6].stReactiveParams.nTempSP    := 30;
+astParams_GBS[7].stReactiveParams.nTempSP    := 30;
+astParams_GBS[8].stReactiveParams.nTempSP    := 30;
+astParams_GBS[9].stReactiveParams.nTempSP    := 30;
+astParams_GBS[10].stReactiveParams.nTempSP   := 30;
+
+(* ---- TST:IPM ---- *)
+astParams_IPM[0].sPmpsState                  := 'TST:IPM-TRANSITION';
+astParams_IPM[0].nRequestAssertionID         := 800;
+astParams_IPM[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_IPM[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[0].stBeamParams.nRate          := 1;
+astParams_IPM[0].stBeamParams.nTran          := 0;
+astParams_IPM[0].stBeamParams.nMachineMode   := 1;
+
+astParams_IPM[1].sPmpsState                  := 'TST:IPM-OUT';
+astParams_IPM[1].nRequestAssertionID         := 801;
+astParams_IPM[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_IPM[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[1].stBeamParams.nRate          := 10;
+astParams_IPM[1].stBeamParams.nTran          := 12;
+astParams_IPM[1].stBeamParams.nMachineMode   := 2;
+
+astParams_IPM[2].sPmpsState                  := 'TST:IPM-TARGET1';
+astParams_IPM[2].nRequestAssertionID         := 802;
+astParams_IPM[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_IPM[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[2].stBeamParams.nRate          := 50;
+astParams_IPM[2].stBeamParams.nTran          := 8;
+astParams_IPM[2].stBeamParams.nMachineMode   := 1;
+
+astParams_IPM[3].sPmpsState                  := 'TST:IPM-TARGET2';
+astParams_IPM[3].nRequestAssertionID         := 803;
+astParams_IPM[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_IPM[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[3].stBeamParams.nRate          := 50;
+astParams_IPM[3].stBeamParams.nTran          := 8;
+astParams_IPM[3].stBeamParams.nMachineMode   := 1;
+
+astParams_IPM[4].sPmpsState                  := 'TST:IPM-TARGET3';
+astParams_IPM[4].nRequestAssertionID         := 804;
+astParams_IPM[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_IPM[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[4].stBeamParams.nRate          := 50;
+astParams_IPM[4].stBeamParams.nTran          := 8;
+astParams_IPM[4].stBeamParams.nMachineMode   := 1;
+
+astParams_IPM[5].sPmpsState                  := 'TST:IPM-TARGET4';
+astParams_IPM[5].nRequestAssertionID         := 805;
+astParams_IPM[5].stBeamParams.nBeamClass     := 2#0010_0000;
+astParams_IPM[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_IPM[5].stBeamParams.nRate          := 50;
+astParams_IPM[5].stBeamParams.nTran          := 8;
+astParams_IPM[5].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:WFS ---- *)
+astParams_WFS[0].sPmpsState                  := 'TST:WFS-TRANSITION';
+astParams_WFS[0].stReactiveParams.nTempSP   := 30;
+astParams_WFS[0].nRequestAssertionID         := 900;
+astParams_WFS[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_WFS[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[0].stBeamParams.nRate          := 1;
+astParams_WFS[0].stBeamParams.nTran          := 0;
+astParams_WFS[0].stBeamParams.nMachineMode   := 1;
+
+astParams_WFS[1].sPmpsState                  := 'TST:WFS-OUT';
+astParams_WFS[1].stReactiveParams.nTempSP   := 30;
+astParams_WFS[1].nRequestAssertionID         := 901;
+astParams_WFS[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_WFS[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[1].stBeamParams.nRate          := 10;
+astParams_WFS[1].stBeamParams.nTran          := 12;
+astParams_WFS[1].stBeamParams.nMachineMode   := 2;
+
+astParams_WFS[2].sPmpsState                  := 'TST:WFS-TARGET1';
+astParams_WFS[2].stReactiveParams.nTempSP   := 30;
+astParams_WFS[2].nRequestAssertionID         := 902;
+astParams_WFS[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_WFS[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[2].stBeamParams.nRate          := 50;
+astParams_WFS[2].stBeamParams.nTran          := 8;
+astParams_WFS[2].stBeamParams.nMachineMode   := 1;
+
+astParams_WFS[3].sPmpsState                  := 'TST:WFS-TARGET2';
+astParams_WFS[3].stReactiveParams.nTempSP   := 30;
+astParams_WFS[3].nRequestAssertionID         := 903;
+astParams_WFS[3].stBeamParams.nBeamClass     := 2#0000_0100;
+astParams_WFS[3].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[3].stBeamParams.nRate          := 50;
+astParams_WFS[3].stBeamParams.nTran          := 8;
+astParams_WFS[3].stBeamParams.nMachineMode   := 1;
+
+astParams_WFS[4].sPmpsState                  := 'TST:WFS-TARGET3';
+astParams_WFS[4].stReactiveParams.nTempSP   := 30;
+astParams_WFS[4].nRequestAssertionID         := 904;
+astParams_WFS[4].stBeamParams.nBeamClass     := 2#0001_0000;
+astParams_WFS[4].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[4].stBeamParams.nRate          := 50;
+astParams_WFS[4].stBeamParams.nTran          := 8;
+astParams_WFS[4].stBeamParams.nMachineMode   := 1;
+
+astParams_WFS[5].sPmpsState                  := 'TST:WFS-TARGET4';
+astParams_WFS[5].stReactiveParams.nTempSP   := 30;
+astParams_WFS[5].nRequestAssertionID         := 905;
+astParams_WFS[5].stBeamParams.nBeamClass     := 2#0010_0000;
+astParams_WFS[5].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[5].stBeamParams.nRate          := 50;
+astParams_WFS[5].stBeamParams.nTran          := 8;
+astParams_WFS[5].stBeamParams.nMachineMode   := 1;
+
+astParams_WFS[6].sPmpsState                  := 'TST:WFS-TARGET5';
+astParams_WFS[6].stReactiveParams.nTempSP   := 30;
+astParams_WFS[6].nRequestAssertionID         := 906;
+astParams_WFS[6].stBeamParams.nBeamClass     := 2#0100_0000;
+astParams_WFS[6].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_WFS[6].stBeamParams.nRate          := 50;
+astParams_WFS[6].stBeamParams.nTran          := 8;
+astParams_WFS[6].stBeamParams.nMachineMode   := 1;
+
+(* ---- TST:XPIM ---- *)
+astParams_XPIM[0].sPmpsState                 := 'TST:XPIM-TRANSITION';
+astParams_XPIM[0].nRequestAssertionID        := 1000;
+astParams_XPIM[0].stBeamParams.nBeamClass    := 2#0000_1000;
+astParams_XPIM[0].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[0].stBeamParams.nRate         := 1;
+astParams_XPIM[0].stBeamParams.nTran         := 0;
+astParams_XPIM[0].stBeamParams.nMachineMode  := 1;
+
+astParams_XPIM[1].sPmpsState                 := 'TST:XPIM-OUT';
+astParams_XPIM[1].nRequestAssertionID        := 1001;
+astParams_XPIM[1].stBeamParams.nBeamClass    := 2#0000_0001;
+astParams_XPIM[1].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[1].stBeamParams.nRate         := 10;
+astParams_XPIM[1].stBeamParams.nTran         := 12;
+astParams_XPIM[1].stBeamParams.nMachineMode  := 2;
+
+astParams_XPIM[2].sPmpsState                 := 'TST:XPIM-DIAMOND';
+astParams_XPIM[2].nRequestAssertionID        := 1002;
+astParams_XPIM[2].stBeamParams.nBeamClass    := 2#0000_0010;
+astParams_XPIM[2].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[2].stBeamParams.nRate         := 50;
+astParams_XPIM[2].stBeamParams.nTran         := 8;
+astParams_XPIM[2].stBeamParams.nMachineMode  := 1;
+
+astParams_XPIM[3].sPmpsState                 := 'TST:XPIM-RETICLE';
+astParams_XPIM[3].nRequestAssertionID        := 1003;
+astParams_XPIM[3].stBeamParams.nBeamClass    := 2#0000_0100;
+astParams_XPIM[3].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[3].stBeamParams.nRate         := 50;
+astParams_XPIM[3].stBeamParams.nTran         := 8;
+astParams_XPIM[3].stBeamParams.nMachineMode  := 1;
+
+astParams_XPIM[4].sPmpsState                 := 'TST:XPIM-YAG';
+astParams_XPIM[4].nRequestAssertionID        := 1004;
+astParams_XPIM[4].stBeamParams.nBeamClass    := 2#0001_0000;
+astParams_XPIM[4].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[4].stBeamParams.nRate         := 50;
+astParams_XPIM[4].stBeamParams.nTran         := 8;
+astParams_XPIM[4].stBeamParams.nMachineMode  := 1;
+
+astParams_XPIM[5].sPmpsState                 := 'TST:XPIM-POWERMETER';
+astParams_XPIM[5].nRequestAssertionID        := 1005;
+astParams_XPIM[5].stBeamParams.nBeamClass    := 2#0010_0000;
+astParams_XPIM[5].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_XPIM[5].stBeamParams.nRate         := 50;
+astParams_XPIM[5].stBeamParams.nTran         := 8;
+astParams_XPIM[5].stBeamParams.nMachineMode  := 1;
+
+(* ---- AT1K4:L2SI (single reactive-temp key; the SATT filters are not
+   real PMPS states, so only the RTD reactive-temperature key is
+   seeded). nTempSP is the RTD fault threshold in degC: the SATT temp
+   FFO test faults at 100degC and clears at 0degC, so any threshold in
+   (0, 100) works. *)
+astParams_SATT[0].sPmpsState                 := 'AT1K4:L2SI-RTD';
+astParams_SATT[0].nRequestAssertionID        := 1100;
+astParams_SATT[0].stReactiveParams.nTempSP   := 30;
+astParams_SATT[0].stBeamParams.nBeamClass    := 2#0000_0001;
+astParams_SATT[0].stBeamParams.neVRange      := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_SATT[0].stBeamParams.nRate         := 10;
+astParams_SATT[0].stBeamParams.nTran         := 12;
+astParams_SATT[0].stBeamParams.nMachineMode  := 2;
+
+(* ---- SL1L0:POWER (single reactive-temp key; aperture geometry is
+   not state-keyed). nTempSP is the RTD fault threshold in degC: the
+   SLITS temp FFO test faults at 100degC and clears at 0degC, so any
+   threshold in (0, 100) works. *)
+astParams_SLITS[0].sPmpsState                := 'SL1L0:POWER-RTD';
+astParams_SLITS[0].nRequestAssertionID       := 1200;
+astParams_SLITS[0].stReactiveParams.nTempSP  := 30;
+astParams_SLITS[0].stBeamParams.nBeamClass   := 2#0000_0001;
+astParams_SLITS[0].stBeamParams.neVRange     := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_SLITS[0].stBeamParams.nRate        := 10;
+astParams_SLITS[0].stBeamParams.nTran        := 12;
+astParams_SLITS[0].stBeamParams.nMachineMode := 2;
+
+(* First helper creates the root document, the rest append. *)
+fbJsonHelper_ATM(
+    astBeamParams := astParams_ATM,
+    bExecute      := TRUE,
+    sDevName      := 'TST:ATM',
+    bNewDoc       := TRUE);
+
+fbJsonHelper_LIC(
+    astBeamParams := astParams_LIC,
+    bExecute      := TRUE,
+    sDevName      := 'TST:LIC',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_PPM(
+    astBeamParams := astParams_PPM,
+    bExecute      := TRUE,
+    sDevName      := 'TST:PPM',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_REF(
+    astBeamParams := astParams_REF,
+    bExecute      := TRUE,
+    sDevName      := 'TST:REF',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_GBS(
+    astBeamParams := astParams_GBS,
+    bExecute      := TRUE,
+    sDevName      := 'TST:GBS',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_IPM(
+    astBeamParams := astParams_IPM,
+    bExecute      := TRUE,
+    sDevName      := 'TST:IPM',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_WFS(
+    astBeamParams := astParams_WFS,
+    bExecute      := TRUE,
+    sDevName      := 'TST:WFS',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_XPIM(
+    astBeamParams := astParams_XPIM,
+    bExecute      := TRUE,
+    sDevName      := 'TST:XPIM',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_SATT(
+    astBeamParams := astParams_SATT,
+    bExecute      := TRUE,
+    sDevName      := 'AT1K4:L2SI',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_SLITS(
+    astBeamParams := astParams_SLITS,
+    bExecute      := TRUE,
+    sDevName      := 'SL1L0:POWER',
+    bNewDoc       := FALSE);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

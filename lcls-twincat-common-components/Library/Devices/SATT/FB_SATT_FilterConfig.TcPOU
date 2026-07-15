@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SATT_FilterConfig" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a21}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Per-filter writer of one ST_SATT_Filter slot in a SATT stage's
+   arrFilters table. Integrator-owned, one instance per populated slot.
+   Mirrors FB_CC_StatePMPSConfig: a one-shot write of sFilterMaterial and
+   fFilterThickness_um from CallAfterInit; empty body, so online edits
+   persist. Slot ref and values injected via FB_Init REFERENCE TO. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SATT_FilterConfig
+VAR_INPUT
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stFilter            : REFERENCE TO ST_SATT_Filter;
+    sFilterMaterial     : STRING;
+    fFilterThickness_um : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a23}">
+      <Declaration><![CDATA[(* One-shot write of the per-filter material and thickness into the
+   referenced arrFilters slot. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF __ISVALIDREF(THIS^.stFilter) THEN
+    THIS^.stFilter.sFilterMaterial     := THIS^.sFilterMaterial;
+    THIS^.stFilter.fFilterThickness_um := THIS^.fFilterThickness_um;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{2c9f4a10-7b3e-4d61-9a52-0e8c1f4b3a22}">
+      <Declaration><![CDATA[(* Stores the slot reference plus the per-filter material and
+   thickness at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains        : BOOL;
+    bInCopyCode         : BOOL;
+    stFilter            : REFERENCE TO ST_SATT_Filter;
+    sFilterMaterial     : STRING;
+    fFilterThickness_um : LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stFilter REF= stFilter;
+THIS^.sFilterMaterial     := sFilterMaterial;
+THIS^.fFilterThickness_um := fFilterThickness_um;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

@@ -1424,7 +1424,7 @@ External Setpoint Generation:
 			</Relations>
 		</DataType>
 	</DataTypes>
-	<Axis Id="6" CreateSymbols="true" AxisType="1">
+	<Axis Id="9" CreateSymbols="true" AxisType="1" GroupId="8">
 		<Name>__FILENAME__</Name>
 		<AxisPara>
 			<OtherSettings AllowMotionCmdToSlave="true"/>

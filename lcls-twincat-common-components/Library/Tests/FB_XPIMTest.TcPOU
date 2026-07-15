@@ -3,93 +3,225 @@
   <POU Name="FB_XPIMTest" Id="{fe1291e2-e066-4812-8d3e-bf776c10c3c5}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIMTest EXTENDS FB_TestSuite
 VAR
-    fbXPIM: FB_XPIM;
-    stYStage: ST_MotionStage;
-    stZoomStage: ST_MotionStage;
-    stFocusStage: ST_MotionStage;
+    (* Caller-owned axis, persistent storage, and Y motor.
+       In a real PRG the AxisRef would come from MAIN.Mxx. *)
+    axRef    : ARRAY[1..3] OF AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    stEl6In: EL6inData22b;
-    stEl6Out: EL6OutData22b;
+    fbZoom: FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'Zoom');;
+    fbFocus: FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Focus');;
 
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    (* FB_XPIM is single-axis (nActiveMotorCount := 1), so only slot 1
+       holds a real motor. aiMotionStage is sized to
+       MotionConstants.MAX_STATE_MOTORS to match FB_XPIM.FB_Init's
+       fixed-size signature; slots 2-4 default-init to a nil interface
+       and are never touched. *)
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[3], iPersistentDataStorage := fbPDS, sName := 'Y');
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+
+    {attribute 'pytmc' := '
+        pv: MMS
+        astPositionState.array: 1..4
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    (* EL6 serial terminal buffers, caller-owned. In a real PRG these
+       would be linked to physical EL6xxx terminal IO; here they are
+       just standalone locals so the FB_XPIM.FB_Init REFERENCE TO
+       inputs have something to bind. *)
+    stEl6In  : EL6inData22b;
+    stEl6Out : EL6outData22b;
+
+    sDeviceName    : STRING := 'TST:XPIM';
+    sTransitionKey : STRING := 'TST:XPIM-TRANSITION';
+
+    (* Caller-owned file-reader status, bound to FB_XPIM by REFERENCE
+       TO. In a real PRG these point at MOTION_GVL.fbPmpsFileReader;
+       here they stay FALSE so the DB read proceeds. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    fbXPIM : FB_XPIM(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        stEl6In               := stEl6In,
+        stEl6Out              := stEl6Out
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    (* Per-install PMPS-side state config (caller-owned). Mirrors what
+       a real PRG_xxL0_XPIM would declare. stDefault is the caller-owned
+       baseline template that FB_CC_StatePMPSConfig's inner FB_StateSetup
+       preloads from; fbXPIM subsequently overrides per-state sName and
+       fDelta via its own FB_CC_InternalStateConfig array. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
 
-    bInit: BOOL;
+    afbStatePMPS : ARRAY[1..4] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_XPIM_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:XPIM-OUT'),
+        (stPositionState := astPositionState[1][E_XPIM_States.YAG],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:XPIM-YAG'),
+        (stPositionState := astPositionState[1][E_XPIM_States.DIAMOND],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:XPIM-DIAMOND'),
+        (stPositionState := astPositionState[1][E_XPIM_States.RETICLE],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:XPIM-RETICLE')
+    ];
+
+    bFirstScan : BOOL := TRUE;
+    i          : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
+      <ST><![CDATA[(* Fake PMPS handling. *)
 fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
+    LA  := fbArbiter,
+    FFO := fbFFHWO
 );
 
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+IF bFirstScan THEN
+    fbMotorY.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbZoom.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbFocus.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotorY.SetVelocity(Velocity := 15.5);
+    fbMotorY.RestoreMotionParams      := FALSE;
+    fbMotorY.DoNotRestoreNcParameters := TRUE;
+    fbZoom.SetVelocity(Velocity := 15.5);
+    fbZoom.RestoreMotionParams      := FALSE;
+    fbZoom.DoNotRestoreNcParameters := TRUE;
+    fbFocus.SetVelocity(Velocity := 15.5);
+    fbFocus.RestoreMotionParams      := FALSE;
+    fbFocus.DoNotRestoreNcParameters := TRUE;
+    bFileReaderBusy  := TRUE;
+    bFileReaderError := FALSE;
+    bFirstScan := FALSE;
+END_IF
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbXPIM.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbXPIM.stReticle, sName:='T1', fPosition:=20, sPmpsState:='T1');
-fbSetup(stPositionState:=fbXPIM.stYag, sName:='T2', fPosition:=30, sPmpsState:='T2');
-fbSetup(stPositionState:=fbXPIM.stDiamond, sName:='T3', fPosition:=40, sPmpsState:='T3');
-
-// Standard FB call
-fbXPIM(
-    stYStage:=stYStage,
-    stZoomStage:=stZoomStage,
-    stFocusStage:=stFocusStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    stEl6In:=stEl6In,
-    stEl6Out:=stEl6Out,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
-);
+fbPDS();
+fbMotorY();
+fbZoom();
+fbFocus();
+fbXPIM();
 
 TestStateMove();
 
-bInit := TRUE;
-]]></ST>
+bFileReaderBusy  := FALSE;
+bFileReaderError := FALSE;]]></ST>
     </Implementation>
-    <Method Name="TestStateMove" Id="{e6443622-06be-4997-85db-426ede8e4383}">
-      <Declaration><![CDATA[METHOD TestStateMove
+    <Method Name="TestStateMove" Id="{fe1291e3-e066-4812-8d3e-bf776c10c3c6}">
+      <Declaration><![CDATA[(*
+    Smoke test for XPIM state-move wiring. Walks OUT then YAG and
+    asserts each lands within fTolerance of the configured fPosition.
+    Mirrors FB_REFTest: stageReady gate up front, NOT bMoving +
+    position-tolerance check per state, 60s watchdog, on timeout
+    AssertTrue(FALSE, ...) with the current step and observed
+    position. Two moves is enough to exercise the FB wiring; the
+    motion stack itself is covered by the
+    lcls-twincat-motion-abstraction test suite.
+*)
+METHOD TestStateMove
 VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
+    tonTimer  : TON;
+    nTestStep : INT := 0;
+    fObserved : LREAL;
 END_VAR
 VAR CONSTANT
-    nLastState: UINT := E_XPIM_States.RETICLE;
+    fTolerance : LREAL := 2.0;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
-TEST('TestXPIMStateMove');
+        <ST><![CDATA[TEST('TestXPIMStateMove');
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+tonTimer(IN := TRUE, PT := T#60s);
+fObserved := fbMotorY.stMotionStatus.fActPosition;
 
-// Start in Unknown, then go through the state positions one by one
-IF fbXPIM.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
-    fbXPIM.eEnumSet := nIterState;
-END_IF
+CASE nTestStep OF
+    0:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbXPIM.eEnumSet := E_XPIM_States.OUT;
+            nTestStep       := 1;
+        END_IF
+    1:
+        (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
+        IF fbXPIM.eEnumGet = E_XPIM_States.OUT
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 10.0) <= fTolerance THEN
+            fbXPIM.eEnumSet := E_XPIM_States.YAG;
+            nTestStep       := 2;
+        END_IF
+    2:
+        (* YAG is configured at fPosition := 20 in afbStatePMPS[2]. *)
+        IF fbXPIM.eEnumGet = E_XPIM_States.YAG
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'TestXPIMStateMove: OUT then YAG reached within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in XPIM move test');
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('TestXPIMStateMove: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbXPIM.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>

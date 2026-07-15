@@ -1,82 +1,44 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SXR_SATT_Stage" Id="{7fb611c7-2215-4e8f-8a28-e51a98acae9a}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_SXR_SATT_Stage
-(*
-    Function block for a single Solid ATTenuator (SATT) filter stack.
-    This is for the L2SI compact design with 4 filter stacks that each have
-    many filters.
-
-    This function block controls:
-    - Y motion
-    - Y filter states
-    - transmission calculation for one stack
-
-    There will be a fast fault during motion, but no other PMPS restrictions.
-*)
-VAR_IN_OUT
-    // Y motor (filter select)
-    stAxis : ST_MotionStage;
-    // The fast fault output to fault to.
-    fbFFHWO: FB_HardwareFFOutput;
-END_VAR
+    <Declaration><![CDATA[(* Single Solid Attenuator (SATT) filter stack (L2SI compact, 4 stacks
+   of 8 filters): single-axis mover via FB_PositionStateND (states OUT,
+   FILTER1..FILTER8). Not a PMPS state mover; only RTD reactive-temp
+   fault thresholds and a "device moving" fast fault. Per-cycle transmission
+   from filter material/thickness and beam energy. Deps injected via FB_Init. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SXR_SATT_Stage
 VAR_INPUT
-    // Settings for the OUT state.
-    stOut		: ST_PositionState;
-    // Settings for the FILTER1 state.
-    stFilter1	: ST_PositionState;
-    // Settings for the FILTER2 state.
-    stFilter2	: ST_PositionState;
-    // Settings for the FILTER3 state.
-    stFilter3	: ST_PositionState;
-    // Settings for the FILTER4 state.
-    stFilter4	: ST_PositionState;
-    // Settings for the FILTER5 state.
-    stFilter5	: ST_PositionState;
-    // Settings for the FILTER6 state.
-    stFilter6	: ST_PositionState;
-    // Settings for the FILTER7 state.
-    stFilter7	: ST_PositionState;
-    // Settings for the FILTER8 state.
-    stFilter8	: ST_PositionState;
-
+    (* Callers drive moves with`fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;`. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: STATE:SET
         io: io
     '}
-    eEnumSet: E_SXR_SATT_Position;
-    // Set this to TRUE to enable input state moves, or FALSE to disable them.
-    bEnable: BOOL;
-
-    // Filter configuration information
+    eEnumSet : E_SXR_SATT_Position;
+    (* Per-filter material / thickness table. Used by the transmission
+       calculation. Index 1 corresponds to FILTER1 (which is the
+       state at slot 2 in astPositionState, since OUT lives at slot 1
+       in E_SXR_SATT_Position). *)
     {attribute 'pytmc' := 'pv: FILTERS'}
-    arrFilters: ARRAY[1..8] OF ST_SATT_Filter;
-
-    // String name from PMPS database
-    sDeviceName: STRING;
-
-    // Debug helper for setting the stage's nEnableMode
-    nEnableMode : E_StageEnableMode;
+    arrFilters : ARRAY[1..8] OF ST_SATT_Filter;
 END_VAR
 VAR_OUTPUT
+    fTemp1                    : LREAL;
+    fTemp2                    : LREAL;
+    bIsStationary             : BOOL;
+    bError                    : BOOL;
     // The current position state as an enum.
     {attribute 'pytmc' := '
         pv: STATE:GET
         io: i
     '}
-    eEnumGet: E_SXR_SATT_Position;
-
-    fTemp1 : LREAL;
-    fTemp2 : LREAL;
-    bIsStationary : BOOL;
-    bError : BOOL;
-
+    eEnumGet : E_SXR_SATT_Position;
     {attribute 'pytmc' := '
         pv: MATERIAL
         io: i
     '}
-    sActiveFilterMaterial : STRING;
+    sActiveFilterMaterial     : STRING;
 
     {attribute 'pytmc' := '
         pv: THICKNESS
@@ -90,191 +52,199 @@ VAR_OUTPUT
         io: i
         field: DESC Filter transmission
     '}
-    fTransmission : LREAL;
-    fActiveFilterDensity : LREAL;
-    fActiveFilterAtomicMass : LREAL;
-    fAbsorptionConstant : LREAL;
+    fTransmission             : LREAL;
+    fActiveFilterDensity      : LREAL;
+    fActiveFilterAtomicMass   : LREAL;
+    fAbsorptionConstant       : LREAL;
 
-    iFilterIndex: INT := 0;
+    iFilterIndex              : INT := 0;
 END_VAR
 VAR
-    fbMotion: FB_MotionStage;
+    fbStates : FB_PositionStateND(
+        aiMotionStage        := aiMotionStage,
+        astPositionState     := astPositionState,
+        nActiveMotorCount    := 1,
+        eEnumSet             := eEnumSet,
+        eEnumGet             := eEnumGet,
+        bEnableMotion        := bEnableMotion,
+        eMotionRequestPolicy := E_MotionRequestPolicy.INTERRUPT
+    );
 
-    {attribute 'pytmc' := '
-        pv:
-        astPositionState.array: 1..9
-    '}
-    fbStates: FB_PositionState1D;
-    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    fbArrCheckWrite: FB_CheckPositionStateWrite;
-
-    bInitialized: BOOL := FALSE;
-
-    fbAtomicMass : FB_AtomicMass;
+    fbAtomicMass               : FB_AtomicMass;
     fbAttenuatorElementDensity : FB_AttenuatorElementDensity;
 
-    (* EL3202-0020: 0.01 °C per digit *)
+    (* EL3202-0020: 0.01 deg C per digit. Vetoed when the stage is in
+       OUT (no filter in beam, no temperature to monitor). *)
     {attribute 'pytmc' := 'pv: RTD:1'}
-    fbRTD_1: FB_CC_TempSensor := ( fResolution:=0.01 );
+    fbRTD_1 : FB_CC_TempSensor := (fResolution := 0.01);
     {attribute 'pytmc' := 'pv: RTD:2'}
-    fbRTD_2: FB_CC_TempSensor := ( fResolution:=0.01 );
+    fbRTD_2 : FB_CC_TempSensor := (fResolution := 0.01);
 
-    fbReadPMPSDB: FB_JsonDocToSafeBP;
-    astPickedDB: ARRAY[1..1] OF ST_DbStateParams;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    (* Per-cycle JSON DB read for the currently active filter's
+       PMPS state, just to pull the reactive temp setpoint into
+       astPickedDB[1].stReactiveParams.nTempSP. Not a PMPS BPTM
+       participant; just borrows the DB pipeline. *)
+    fbReadPMPSDB : FB_JsonDocToSafeBP;
+    astPickedDB  : ARRAY[1..1] OF ST_DbStateParams;
 
-    fbFF: FB_FastFault := (i_Desc := 'Device is moving',
-                           i_TypeCode := E_MotionFFType.DEVICE_MOVE,
-                           i_xAutoReset := TRUE);
-END_VAR
-]]></Declaration>
+    (* "Device is moving" fast fault. Raised while the Y motor is
+       moving or while we are sitting in UNKNOWN. *)
+    fbFF : FB_FastFault := (
+        i_Desc       := 'Device is moving',
+        i_TypeCode   := E_MotionFFType.DEVICE_MOVE,
+        i_xAutoReset := TRUE
+    );
+
+    (* REFERENCE TO backing fields populated by FB_Init. *)
+    {attribute 'no_copy'}
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName      : STRING;
+    (* PMPS DB key for the RTD reactive-temperature read. The filters are not real PMPS states,
+        so this device-level key names the DB entry to pull the reactive temp setpoint from.
+    *)
+    RTDPMPSState     : STRING;
+    bEnableMotion    : BOOL := TRUE;
+END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-IF NOT bInitialized THEN
-    bInitialized := TRUE;
-
-    (* Defaults for ST_MotionStage *)
-    stAxis.bHardwareEnable      := TRUE;
-    stAxis.bLimitBackwardEnable := TRUE;
-    stAxis.bLimitForwardEnable  := TRUE;
-    stAxis.bPowerSelf           := TRUE;
-    stAxis.nBrakeMode           := ENUM_StageBrakeMode.NO_BRAKE;
-    stAxis.nHomingMode          := ENUM_EpicsHomeCmd.NONE;
-
-    (* Defaults for visualization *)
-    // stExtra.fVisuStep			:= 0.1;
-
+      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
+IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(fbFFHWO) THEN
+    RETURN;
 END_IF
 
-stAxis.nEnableMode := nEnableMode;
-fbMotion(stMotionStage:=stAxis);
+fbStates();
 
-// We need to update from PLC or from EPICS, but not both
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=TRUE,
-    bSave:=FALSE,
-);
-IF NOT fbArrCheckWrite.bHadWrite THEN
-    astPositionState[E_SXR_SATT_Position.OUT] := stOut;
-    astPositionState[E_SXR_SATT_Position.FILTER1] := stFilter1;
-    astPositionState[E_SXR_SATT_Position.FILTER2] := stFilter2;
-    astPositionState[E_SXR_SATT_Position.FILTER3] := stFilter3;
-    astPositionState[E_SXR_SATT_Position.FILTER4] := stFilter4;
-    astPositionState[E_SXR_SATT_Position.FILTER5] := stFilter5;
-    astPositionState[E_SXR_SATT_Position.FILTER6] := stFilter6;
-    astPositionState[E_SXR_SATT_Position.FILTER7] := stFilter7;
-    astPositionState[E_SXR_SATT_Position.FILTER8] := stFilter8;
-END_IF
-
-fbStates(
-    stMotionStage:=stAxis,
-    astPositionState:=astPositionState,
-    eEnumSet:=eEnumSet,
-    eEnumGet:=eEnumGet,
-    bEnable:=bEnable,
-);
-
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=FALSE,
-    bSave:=TRUE,
-);
-
-stOut := astPositionState[E_SXR_SATT_Position.OUT];
-stFilter1 := astPositionState[E_SXR_SATT_Position.FILTER1];
-stFilter2 := astPositionState[E_SXR_SATT_Position.FILTER2];
-stFilter3 := astPositionState[E_SXR_SATT_Position.FILTER3];
-stFilter4 := astPositionState[E_SXR_SATT_Position.FILTER4];
-stFilter5 := astPositionState[E_SXR_SATT_Position.FILTER5];
-stFilter6 := astPositionState[E_SXR_SATT_Position.FILTER6];
-stFilter7 := astPositionState[E_SXR_SATT_Position.FILTER7];
-stFilter8 := astPositionState[E_SXR_SATT_Position.FILTER8];
-
-(* Filter indices are off by one due to "Out" being in position 1. *)
-iFilterIndex := UINT_TO_INT(eEnumGet - 1);
+(* Filter index is offset by one because E_SXR_SATT_Position.OUT
+   occupies slot 1 and FILTER1..FILTER8 occupy slots 2..9. *)
+iFilterIndex := UINT_TO_INT(eEnumGet) - 1;
 
 IF iFilterIndex >= 1 AND iFilterIndex <= 8 THEN
-    sActiveFilterMaterial := arrFilters[iFilterIndex].sFilterMaterial;
+    sActiveFilterMaterial     := arrFilters[iFilterIndex].sFilterMaterial;
     fActiveFilterThickness_um := arrFilters[iFilterIndex].fFilterThickness_um;
 
-    fbAtomicMass(sName:=sActiveFilterMaterial, fValue=>fActiveFilterAtomicMass);
-    fbAttenuatorElementDensity(sName:=sActiveFilterMaterial, fDensity=>fActiveFilterDensity);
+    fbAtomicMass(
+        sName  := sActiveFilterMaterial,
+        fValue => fActiveFilterAtomicMass
+    );
+    fbAttenuatorElementDensity(
+        sName    := sActiveFilterMaterial,
+        fDensity => fActiveFilterDensity
+    );
 
     fAbsorptionConstant := F_CalculateAbsorptionConstant(
-        sElement:=sActiveFilterMaterial,
-        fEnergyEV:=PMPS_GVL.stCurrentBeamParameters.neV,
-        fDensity_gm3:=fActiveFilterDensity,
-        fAtomicWeight:=fActiveFilterAtomicMass,
-        bError=>bError,
+        sElement      := sActiveFilterMaterial,
+        fEnergyEV     := PMPS_GVL.stCurrentBeamParameters.neV,
+        fDensity_gm3  := fActiveFilterDensity,
+        fAtomicWeight := fActiveFilterAtomicMass,
+        bError        => bError
     );
     fTransmission := F_CalculateTransmission(
-        fAbsorptionConstant:=fAbsorptionConstant,
-        fThickness_in_m:=fActiveFilterThickness_um * 1.0E-6
+        fAbsorptionConstant := fAbsorptionConstant,
+        fThickness_in_m     := fActiveFilterThickness_um * 1.0E-6
     );
 ELSE
-    sActiveFilterMaterial := '';
+    sActiveFilterMaterial     := '';
     fActiveFilterThickness_um := 0.0;
-    fAbsorptionConstant := 0.0;
-    fActiveFilterDensity := 0.0;
-    fActiveFilterAtomicMass := 0.0;
-    fTransmission := 1.0;
+    fAbsorptionConstant       := 0.0;
+    fActiveFilterDensity      := 0.0;
+    fActiveFilterAtomicMass   := 0.0;
+    fTransmission             := 1.0;
 END_IF
 
-bIsStationary := NOT stAxis.Axis.Status.Moving;
+(* "Device is moving" fault: stationary AND known position. Reads the
+   motor's NC status through the I_MotionStage interface; aiMotionStage
+   was nil-guarded above so slot 1 deref is safe. *)
+bIsStationary := NOT aiMotionStage[1].Axis.Status.Moving;
 fbFF(
-    i_DevName:=sDeviceName,
-    i_xOK:=bIsStationary AND eEnumGet <> E_SXR_SATT_Position.UNKNOWN,
+    i_DevName  := sDeviceName,
+    i_xOK      := bIsStationary AND eEnumGet <> E_SXR_SATT_Position.UNKNOWN,
     io_fbFFHWO := fbFFHWO
 );
 
-// There will be a single state provided on one of the filters for reactive temp
-// This database entry must exist, but the temperature can be blank
-IF stFilter1.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter1.stPMPS.sPmpsState;
-ELSIF stFilter2.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter2.stPMPS.sPmpsState;
-ELSIF stFilter3.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter3.stPMPS.sPmpsState;
-ELSIF stFilter4.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter4.stPMPS.sPmpsState;
-ELSIF stFilter5.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter5.stPMPS.sPmpsState;
-ELSIF stFilter6.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter6.stPMPS.sPmpsState;
-ELSIF stFilter7.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter7.stPMPS.sPmpsState;
-ELSIF stFilter8.stPMPS.sPmpsState <> '' THEN
-    astPickedDB[1].sPmpsState := stFilter8.stPMPS.sPmpsState;
-END_IF
-
-IF sDeviceName = '' THEN
-    sDeviceName := stAxis.sName;
-END_IF
+(* The RTD reactive-temperature read is keyed on the device-level
+   RTDPMPSState (the filters are not real PMPS states, so no per-
+   filter key is scanned). The named DB entry must exist; the
+   temperature field may be blank. *)
+astPickedDB[1].sPmpsState := RTDPMPSState;
 
 fbReadPMPSDB(
-    bExecute:=NOT MOTION_GVL.fbPmpsFileReader.bBusy,
-    jsonDoc:=PMPS_GVL.BP_jsonDoc,
-    sDeviceName:=sDeviceName,
-    arrStates:=astPickedDB,
-    io_fbFFHWO:=fbFFHWO,
+    bExecute    := NOT bFileReaderBusy,
+    jsonDoc     := PMPS_GVL.BP_jsonDoc,
+    sDeviceName := sDeviceName,
+    arrStates   := astPickedDB,
+    io_fbFFHWO  := fbFFHWO
 );
 
 fbRTD_1(
-    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
-    sDevName:=sDeviceName,
-    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
-    io_fbFFHWO:=fbFFHWO,
+    fFaultThreshold := astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    bVeto           := eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO      := fbFFHWO
 );
 fTemp1 := fbRTD_1.fTemp;
 
 fbRTD_2(
-    fFaultThreshold:=astPickedDB[1].stReactiveParams.nTempSP,
-    sDevName:=sDeviceName,
-    bVeto:=eEnumGet = E_SXR_SATT_Position.OUT,
-    io_fbFFHWO:=fbFFHWO,
+    fFaultThreshold := astPickedDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    bVeto           := eEnumGet = E_SXR_SATT_Position.OUT,
+    io_fbFFHWO      := fbFFHWO
 );
-fTemp2 := fbRTD_2.fTemp;
-]]></ST>
+fTemp2 := fbRTD_2.fTemp;]]></ST>
     </Implementation>
+    <Method Name="CallAfterInit" Id="{7fb611c8-2215-4e8f-8a28-e51a98acae9b}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover, running the Core / ND wiring chain. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{7fb611c9-2215-4e8f-8a28-e51a98acae9c}">
+      <Declaration><![CDATA[(* Stores all FB_Init inputs into instance fields. Every input is
+   REFERENCE TO and is REF= bound for the lifetime of the FB.
+   Inline-init of fbStates above runs first, capturing the FB_Init
+   params at construction time; this method then records the same
+   references on THIS^ for body-side use and live caller writes. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains     : BOOL;
+    bInCopyCode      : BOOL;
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    fbFFHWO          : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName      : STRING;
+    RTDPMPSState     : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.bFileReaderBusy 	REF=bFileReaderBusy;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

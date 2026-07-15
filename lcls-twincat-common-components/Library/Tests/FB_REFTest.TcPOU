@@ -1,88 +1,177 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REFTest" Id="{bc00a2b4-c887-49cb-85f5-b51e5f3fe97d}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
+    <Declaration><![CDATA[(*
+    Single integration smoke for FB_REF. Goal: prove the FB_REF wiring
+    (REFERENCE TO refs, CallAfterInit / CallAfterInitStateMover / CallAfterInitPMPS
+    chain, inline-init of fbStates, per-state name/fDelta defaults,
+    PMPS state-key registration) still drives FB_MotionStageNC into the
+    configured fPosition for a commanded state.
+*)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    fbREF: FB_REF;
-    stYStage: ST_MotionStage;
+    axRef    : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
-    stDefault: ST_PositionState := (
-        fVelocity:=10,
-        bMoveOk:=TRUE,
-        bValid:=TRUE
+    fbMotorX : FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'X');
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef[2], iPersistentDataStorage := fbPDS, sName := 'Y');
+
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..2
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    bEnableMotion         : BOOL;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    sDeviceName    : STRING := 'TST:REF';
+    sTransitionKey : STRING := 'TST:REF-TRANSITION';
+
+    (* Driven from the body to simulate the reader going busy then idle during cold start. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
     );
-    fbSetup: FB_StateSetupHelper;
 
-    fbFFHWO: FB_HardwareFFOutput;
-    fbArbiter: FB_Arbiter(1);
-    fbSubSysIO: FB_DummyArbIO;
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10.0,
+         sPmpsState      := 'TST:REF-OUT'),
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
+         stDefault       := stDefault,
+         fPosition       := 20.0,
+         sPmpsState      := 'TST:REF-IN')
+    ];
 
-    bInit: BOOL;
+    fbREF : FB_REF(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        fbArbiter        := fbArbiter,
+        sDeviceName      := sDeviceName,
+        sTransitionKey   := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow := FALSE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
+    );
+
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    nTestStep   : INT;
+    fGoal       : LREAL := 20.0;
+    fTolerance  : LREAL := 2.0;
+    fObserved   : LREAL;
+    bFirstScan  : BOOL := TRUE;
+    i	: UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Fake PMPS handling
-fbSubSysIO(
-    LA:=fbArbiter,
-    FFO:=fbFFHWO,
-);
+      <ST><![CDATA[TEST(__POUNAME());
 
-// Fake limit handling
-stYStage.bLimitBackwardEnable := TRUE;
-stYStage.bLimitForwardEnable := TRUE;
+CASE nTestStep OF
+    0:
+        IF bFirstScan THEN
+            fbMotorX.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+           fbMotorX.SetVelocity(Velocity := 15.5);
+           fbMotorX.RestoreMotionParams      := FALSE;
+           fbMotorX.DoNotRestoreNcParameters := TRUE;
 
-// Standard state setup
-fbSetup(stPositionState:=stDefault, bSetDefault:=TRUE);
-fbSetup(stPositionState:=fbREF.stOut, sName:='OUT', fPosition:=10, sPmpsState:='T0');
-fbSetup(stPositionState:=fbREF.stIn, sName:='T1', fPosition:=20, sPmpsState:='T1');
+           fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
 
-// Standard FB call
-fbREF(
-    stYStage:=stYStage,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=TRUE,
-    bEnableBeamParams:=TRUE,
-    bEnablePositionLimits:=TRUE,
-    sDeviceName:='DEVICE',
-    sTransitionKey:='T9',
-    bReadDBNow:=NOT bInit,
-);
+            bEnableMotion         := TRUE;
+            bEnableBeamParams     := TRUE;
+            bEnablePositionLimits := TRUE;
+            bReadDBNow            := TRUE;
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
+            bFirstScan := FALSE;
 
-TestStateMove();
+        END_IF
+        nTestStep      := 1;
+    1:
+        bFileReaderBusy  := FALSE;
+        bFileReaderError := FALSE;
+        nTestStep      := 2;
+    2:
+        (* Wait for cold-start stabilisation: PMPS DB parsed, motor
+           ready to accept moves, no residual error. *)
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbREF.eEnumSet := E_EpicsInOut.IN;
+            nTestStep      := 3;
+        END_IF
 
-bInit := TRUE;
-]]></ST>
-    </Implementation>
-    <Method Name="TestStateMove" Id="{3a2a7314-4b65-4375-be43-beb65ac4cd39}">
-      <Declaration><![CDATA[METHOD TestStateMove
-VAR_INST
-    tonTimer: TON;
-    nIterState: UINT := 0;
-END_VAR
-VAR CONSTANT
-    nLastState: UINT := E_EpicsInOut.IN;
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[
-// Sanity check: can we at least move to every named state?
-TEST('TestREFStateMove');
+    3:
+        fObserved := fbMotorY.stMotionStatus.fActPosition;
+        IF fbREF.eEnumGet = E_EpicsInOut.IN
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - fGoal) <= fTolerance THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'T01: REF reached IN within tolerance');
+            nTestStep := 4;
+        END_IF
+END_CASE
 
-// Prepare a timeout
-tonTimer(IN:=TRUE, PT:=T#10s);
+fbPDS();
+fbMotorX();
+fbMotorY();
 
-// Start in Unknown, then go through the state positions one by one
-IF fbREF.eEnumGet = nIterState THEN
-    nIterState := nIterState + 1;
-    fbREF.eEnumSet := nIterState;
-END_IF
+fbREF();
 
-IF tonTimer.Q OR nIterState > nLastState THEN
-    AssertFalse(tonTimer.Q, 'Timeout in REF move test');
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
+fbTestTimer();
+
+IF nTestStep = 4 THEN
+    TEST_FINISHED();
+ELSIF fbTestTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbREF.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
     TEST_FINISHED();
 END_IF
 ]]></ST>
-      </Implementation>
-    </Method>
+    </Implementation>
   </POU>
 </TcPlcObject>

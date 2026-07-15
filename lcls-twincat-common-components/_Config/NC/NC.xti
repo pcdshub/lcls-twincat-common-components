@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNcSafTaskDef" SubType="0">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.17" ClassName="CNcSafTaskDef" SubType="0">
 	<NC>
 		<SafTask Priority="4" CycleTime="20000" AmsPort="501" IoAtBegin="true" SafTaskInfo="256">
 			<Name>NC-Task 1 SAF</Name>
@@ -16,6 +16,8 @@
 		<SvbTask Priority="8" CycleTime="100000" AmsPort="511">
 			<Name>NC-Task 1 SVB</Name>
 		</SvbTask>
+		<Axis File="IPM_Y.xti" Id="13"/>
+		<Axis File="GBS_Y.xti" Id="12"/>
 		<Axis File="ATM_Y.xti" Id="1"/>
 		<Axis File="LIC_Y.xti" Id="2"/>
 		<Axis File="PPM_Y.xti" Id="3"/>
@@ -23,5 +25,9 @@
 		<Axis File="SATT_Y.xti" Id="7"/>
 		<Axis File="WFS_Y.xti" Id="5"/>
 		<Axis File="XPIM_Y.xti" Id="6"/>
+		<Axis File="SLIT_Bottom.xti" Id="9"/>
+		<Axis File="SLIT_North.xti" Id="10"/>
+		<Axis File="SLIT_South.xti" Id="11"/>
+		<Axis File="SLIT_Top.xti" Id="8"/>
 	</NC>
 </TcSmItem>

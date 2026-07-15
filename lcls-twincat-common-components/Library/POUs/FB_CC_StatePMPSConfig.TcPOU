@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_StatePMPSConfig" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b53}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Per-(state) writer of an ST_PositionState slot. Owned by the
+    integrator PRG. Stripped-down counterpart of motion-lib's
+    FB_PMPSStateConfigurator.
+
+    Performs a one-shot direct write of the slot from CallAfterInit:
+    copies the caller's stDefault baseline for the safety-relevant
+    fields (bMoveOk, bValid, bUseRawCounts, bLocked, nEncoderCount),
+    then overlays fPosition and stPMPS.sPmpsState. sName and fDelta
+    are deliberately NOT touched here: they are owned by the device
+    FB's FB_CC_InternalStateConfig array, so the two helpers' writes
+    do not overlap and their CallAfterInit ordering is irrelevant.
+
+    The FB body is empty; the inner FB_StateSetup is wired (refs +
+    template preload) at init purely as a defensive backstop, so that
+    a stray cyclic call to fbStateSetup stays safe and template-aware.
+
+    Online-view edits to the slot persist because nothing writes it
+    after init.
+*)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_CC_StatePMPSConfig
+VAR_INPUT
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stPositionState : REFERENCE TO ST_PositionState;
+    {attribute 'no_copy'}
+    stDefault       : REFERENCE TO ST_PositionState;
+    fPosition       : LREAL;
+    sPmpsState      : STRING;
+    fbStateSetup    : FB_StateSetup(
+        stDefault       := stDefault,
+        stPositionState := stPositionState,
+        bSetDefault     := TRUE
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b55}">
+      <Declaration><![CDATA[(* Re-binds the inner FB_StateSetup's REFs after FB_Init (defensive),
+   then performs a one-shot write of the slot: safety/baseline fields
+   from stDefault and fPosition / sPmpsState overlay. sName and fDelta
+   are owned by FB_CC_InternalStateConfig. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStateSetup.CallAfterInit(
+    stDefault       := THIS^.stDefault,
+    stPositionState := THIS^.stPositionState,
+    bSetDefault     := TRUE
+);
+
+IF __ISVALIDREF(THIS^.stPositionState) AND __ISVALIDREF(THIS^.stDefault) THEN
+    THIS^.stPositionState.bMoveOk       := THIS^.stDefault.bMoveOk;
+    THIS^.stPositionState.bValid        := THIS^.stDefault.bValid;
+    THIS^.stPositionState.bUseRawCounts := THIS^.stDefault.bUseRawCounts;
+    THIS^.stPositionState.bLocked       := THIS^.stDefault.bLocked;
+    THIS^.stPositionState.nEncoderCount := THIS^.stDefault.nEncoderCount;
+
+    THIS^.stPositionState.fPosition         := THIS^.fPosition;
+    THIS^.stPositionState.stPMPS.sPmpsState := THIS^.sPmpsState;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{6f8b2e10-3c5d-4a7f-9b14-8d0e1f4c2b54}">
+      <Declaration><![CDATA[(* Stores the slot reference, the device-common stDefault template
+   REF, plus the per-install fPosition + sPmpsState at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains    : BOOL;
+    bInCopyCode     : BOOL;
+    stPositionState : REFERENCE TO ST_PositionState;
+    stDefault       : REFERENCE TO ST_PositionState;
+    fPosition       : LREAL;
+    sPmpsState      : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.stDefault       REF= stDefault;
+THIS^.fPosition        := fPosition;
+THIS^.sPmpsState       := sPmpsState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

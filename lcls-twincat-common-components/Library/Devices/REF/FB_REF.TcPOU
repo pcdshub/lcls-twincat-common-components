@@ -1,50 +1,83 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_REF" Id="{cf150006-917c-41f6-925d-4a5a53f8485a}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_REF
-(*
-    Function block for reference laser (REF) controls:
-    - Y motion
-    - Y in and out states
-    - laser power and dimmer
-
-    The following IO link points are included and should be used:
-    - FB_REF.fbLaser.iShutdownINT should be linked to the output for the laser dimmer's shutdown voltage
-    - FB_REF.fbLaser.iLaserINT should be linked to the output for the laser dimmer's dimmer
-*)
-VAR_IN_OUT
-    // Y motor (state select).
-    stYStage: ST_MotionStage;
-    // The fast fault output to fault to.
-    fbFFHWO: FB_HardwareFFOutput;
-    // The arbiter to request beam conditions from.
-    fbArbiter: FB_Arbiter;
-END_VAR
+    <Declaration><![CDATA[(* Reference laser (REF): thin ND-framework state-mover wrapper.
+   Y in/out mover via FB_PositionStatePMPSND, plus a tick site for the
+   laser power/dimmer (FB_REF_Laser). Caller-owned motors, stage/state
+   arrays, fast-fault and arbiter are injected via FB_Init REFERENCE TO
+   and forwarded to fbStates; enum bridge and toggles re-forwarded each cycle. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_REF
 VAR_INPUT
-    // Settings for the OUT state.
-    stOut: ST_PositionState;
-    // Settings for the IN state.
-    stIn: ST_PositionState;
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
-    eEnumSet: E_EpicsInOut;
-    // Set this to TRUE to enable input state moves, or FALSE to disable them.
-    bEnableMotion: BOOL;
-    // Set this to TRUE to enable beam parameter checks, or FALSE to disable them.
-    bEnableBeamParams: BOOL;
-    // Set this to TRUE to enable position limit checks, or FALSE to disable them.
-    bEnablePositionLimits: BOOL;
-    // The name of the device for use in the PMPS DB lookup and diagnostic screens.
-    sDeviceName: STRING;
-    // The name of the transition state in the PMPS database.
-    sTransitionKey: STRING;
-    // Set this to TRUE to re-read the loaded database immediately (useful for debug).
-    bReadDBNow: BOOL;
-    // Passed to fbLaser.
-    fTermMax: LREAL := 200;
+    eEnumSet : E_EpicsInOut;
+    (* Run-time toggles forwarded into fbStates each cycle. PMPSND
+       captures these by value in its own FB_Init, so the body
+       re-writes fbStates.* every cycle to track live caller changes. *)
+    fTermMax               : LREAL := 200;
+END_VAR
+VAR
+
+
+    {attribute 'pytmc' := 'pv: LAS'}
+    fbLaser : FB_REF_Laser;
+
+    (* REFERENCE TO backing fields populated by FB_Init. *)
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
+    (* One configurator per REF state (OUT, IN). Writes the per-state
+       sName and fDelta. Ticked cyclically in the body AFTER fbStates
+       so its writes win over the template baseline FB_StateSetup
+       applied via FB_CC_StatePMPSConfig *)
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_InternalStateConfig[
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
+         sName           := 'OUT',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
+         sName           := 'IN',
+         fDelta          := FDELTA_DEFAULT)
+    ];
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
+    i : UINT;
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -52,86 +85,127 @@ VAR_OUTPUT
         pv: MMS:STATE:GET
         io: i
     '}
-    eEnumGet: E_EpicsInOut;
+     eEnumGet : E_EpicsInOut;
     // The PMPS database lookup associated with the current position state.
     stDbStateParams: ST_DbStateParams;
 END_VAR
-VAR
-    bInit: BOOL;
-
-    fbYStage: FB_MotionStage;
-
-    fbStateDefaults: FB_PositionState_Defaults;
-
-    {attribute 'pytmc' := '
-        pv: MMS
-        astPositionState.array: 1..2
-    '}
-    fbStates: FB_PositionStatePMPS1D;
-    astPositionState: ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    fbArrCheckWrite: FB_CheckPositionStateWrite;
-
-    {attribute 'pytmc' := 'pv: LAS'}
-    fbLaser: FB_REF_Laser;
-END_VAR
 VAR CONSTANT
-    fDelta: LREAL := 2;
-    fAccel: LREAL := 10;
+    (* REF-wide default tolerance for state in-position detection,
+       applied per-state by afbStateDefaults. *)
+    FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-IF NOT bInit THEN
-    bInit := TRUE;
-
-    stYStage.nEnableMode := ENUM_StageEnableMode.DURING_MOTION;
-
-    // Partial backcompat, this used to set fVelocity too but this should be set per install
-    fbStateDefaults(stPositionState:=stOut, sNameDefault:='OUT', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
-    fbStateDefaults(stPositionState:=stIn, sNameDefault:='IN', fDeltaDefault:=fDelta, fAccelDefault:=fAccel, fDecelDefault:=fAccel);
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(fbArbiter) THEN
+    RETURN;
 END_IF
 
-stYStage.bHardwareEnable := TRUE;
-stYStage.bPowerSelf := FALSE;
+fbStates(stDbStateParams=> stDbStateParams);
 
-fbYStage(stMotionStage:=stYStage);
-
-// We need to update from PLC or from EPICS, but not both
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=TRUE,
-    bSave:=FALSE,
-);
-IF NOT fbArrCheckWrite.bHadWrite THEN
-    astPositionState[E_EpicsInOut.OUT] := stOut;
-    astPositionState[E_EpicsInOut.IN] := stIn;
-END_IF
-
-fbStates(
-    stMotionStage:=stYStage,
-    astPositionState:=astPositionState,
-    eEnumSet:=eEnumSet,
-    eEnumGet:=eEnumGet,
-    fbFFHWO:=fbFFHWO,
-    fbArbiter:=fbArbiter,
-    bEnableMotion:=bEnableMotion,
-    bEnableBeamParams:=bEnableBeamParams,
-    bEnablePositionLimits:=bEnablePositionLimits,
-    sDeviceName:=sDeviceName,
-    sTransitionKey:=sTransitionKey,
-    bReadDBNow:=bReadDBNow,
-    stDbStateParams=>stDbStateParams,
-);
-
-fbArrCheckWrite(
-    astPositionState:=astPositionState,
-    bCheck:=FALSE,
-    bSave:=TRUE,
-);
-
-stOut := astPositionState[E_EpicsInOut.OUT];
-stIn := astPositionState[E_EpicsInOut.IN];
-
-fbLaser(fTermMax:=fTermMax);]]></ST>
+fbLaser(fTermMax := fTermMax);
+]]></ST>
     </Implementation>
+    <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485b}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
+   per-state device defaults. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR
+    i : UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_EpicsInOut.OUT]
+);
+afbStateDefaults[2].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_EpicsInOut.IN]
+);
+
+THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitPMPS(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{7da30f35-8f99-4688-81ce-5ec9994a1d33}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.fbArbiter        REF= fbArbiter;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams    := bEnableBeamParams;
+THIS^.bEnablePositionLimits:= bEnablePositionLimits;
+THIS^.bReadDBNow           := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="MaintMode" Id="{666c9def-1031-444c-b052-5be27153dffd}">
+      <Declaration><![CDATA[PROPERTY MaintMode : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e61914cd-8c2b-465a-8c3f-ee9ed709699d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[MaintMode := fbStates.stPMPSEpicsToPlc.bMaintMode;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{14311ec0-b236-48d5-af42-be1d3ad373fa}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[fbStates.stPMPSEpicsToPlc.bMaintMode := MaintMode;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

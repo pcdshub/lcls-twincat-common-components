@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.35" ClassName="CNestedPlcProjDef">
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.17" ClassName="CNestedPlcProjDef">
 	<DataTypes>
 		<DataType>
 			<Name GUID="{CBC83B73-B816-4597-A9E5-2B03263CA131}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">NCTOPLC_AXIS_REF_STATE</Name>
@@ -377,13 +377,13 @@
 			<Name GUID="{F7B9FC50-054E-4547-B468-83A9E72D8064}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_STATE3_FLAGS</Name>
 			<BitSize>32</BitSize>
 			<SubItem>
-				<Name>TouchProbe1InputState </Name>
+				<Name>TouchProbe1InputState</Name>
 				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
 				<BitSize>1</BitSize>
 				<BitOffs>0</BitOffs>
 			</SubItem>
 			<SubItem>
-				<Name>TouchProbe2InputState </Name>
+				<Name>TouchProbe2InputState</Name>
 				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
 				<BitSize>1</BitSize>
 				<BitOffs>1</BitOffs>
@@ -1031,150 +1031,393 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="Library\Library.tmc" TmcHash="{E61DDC8A-CB78-F4C4-0FDE-339392D6B954}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{EA7FF01D-5B9E-9D70-00F0-B5C27E76A324}" TmcPath="Library\Library.tmc">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+			<Vars VarGrpType="8" AreaNo="4">
+				<Name>PlcTask Retains</Name>
+				<Var>
+					<Name>PMPS_GVL.SuccessfulPreemption</Name>
+					<Comment><![CDATA[ Any time BPTM applies a new BP request which is confirmed]]></Comment>
+					<Type>UDINT</Type>
+					<InOut>7</InOut>
+				</Var>
+				<Var>
+					<Name>PMPS_GVL.AccumulatedFF</Name>
+					<Comment><![CDATA[ Any time a FF occurs]]></Comment>
+					<Type>UDINT</Type>
+					<InOut>7</InOut>
+				</Var>
+				<Var>
+					<Name>PMPS_GVL.BP_jsonDoc</Name>
+					<Type>SJsonValue</Type>
+					<InOut>7</InOut>
+				</Var>
+			</Vars>
+			<Vars VarGrpType="2" AreaNo="1">
+				<Name>PlcTask Outputs</Name>
+				<Var>
+					<Name>PRG_TEST.fbATMTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbATMTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbATMTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.axRef.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbLICTest.axRef.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbLICTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.axRef.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.iIlluminatorINT</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.bGigePower</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.fbSetIllPercent.iRaw</Name>
+					<Comment><![CDATA[ Connect this output to the terminal]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.axRef[3].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.axRef[4].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.iShutdownINT</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.iLaserINT</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.fbSetLasPercent.iRaw</Name>
+					<Comment><![CDATA[ Connect this output to the terminal]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSATTTest.axRef.PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSATTTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayStatus</Name>
+					<Comment><![CDATA[ PMPS aperture IO (caller-mapped to terminals). ]]></Comment>
+					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbWFSTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbWFSTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbWFSTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.axRef[1].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.axRef[2].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.axRef[3].PlcToNc</Name>
+					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbMotionAxis.fbBrake.bBrakeRelease</Name>
+					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbOpal.bOpalPower</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbLED.bLEDPower</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbCCTempSensorTest.fbFFHWO.q_xFastFaultOut</Name>
+					<Type>BOOL</Type>
+				</Var>
+			</Vars>
 			<Vars VarGrpType="1">
 				<Name>PlcTask Inputs</Name>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Name>PRG_TEST.fbATMTest.axRef[1].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbXStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
+					<Name>PRG_TEST.fbATMTest.axRef[2].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].bHome</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorX.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].bHome</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbATMTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbATMTest.fbATM.fbTempSensor1.bError</Name>
@@ -1198,408 +1441,281 @@ External Setpoint Generation:
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbGBSTest.axRef.NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.bHome</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.bHardwareEnable</Name>
+					<Name>PRG_TEST.fbGBSTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD1.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD1.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD1.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD1.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD2.bError</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD2.bUnderrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD2.bOverrange</Name>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbGBSTest.fbGBS.fbRTD2.iRaw</Name>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.axRef[1].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].bHome</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorX.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].bHome</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbIPMTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbLICTest.axRef.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].bHome</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbLICTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbPPMTest.axRef.NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.bHome</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.bHardwareEnable</Name>
+					<Name>PRG_TEST.fbPPMTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbPPMTest.fbPPM.fbPowerMeter.iVoltageINT</Name>
@@ -1657,184 +1773,110 @@ External Setpoint Generation:
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbREFTest.axRef[1].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbREFTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbREFTest.axRef[3].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbREFTest.axRef[4].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].bHome</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorX.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].bHome</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbREFTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.fbGetLasPercent.iRaw</Name>
@@ -1842,184 +1884,53 @@ External Setpoint Generation:
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbSATTTest.axRef.NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbMotion.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].bHome</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbSATTTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbSATTTest.fbSATT.fbRTD_1.bError</Name>
@@ -2054,64 +1965,200 @@ External Setpoint Generation:
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbTopBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbBottomBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbNorthBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbSouthBlade.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[1].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[2].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[3].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderULINT</Name>
+					<Type>ULINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderUINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
+					<Type>UINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
+					<Type>INT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
+					<Type>DINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bLimitBwd</Name>
+					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbLimSwStatus.bHomeSensor</Name>
+					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
+					<Type>BOOL</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbSlitsPowerTest.afbMotor[4].fbMotionInterlocksCommon.bHardwareEnable</Name>
+					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
+					<Type>BOOL</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayReq</Name>
@@ -2250,320 +2297,102 @@ External Setpoint Generation:
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbWFSTest.axRef[1].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbWFSTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.bHome</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.bHardwareEnable</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorZ.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.bHome</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.bHardwareEnable</Name>
+					<Name>PRG_TEST.fbWFSTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbZStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbWFSTest.fbWFS.fbThermoCouple1.bError</Name>
@@ -2607,392 +2436,155 @@ External Setpoint Generation:
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.Axis.NcToPlc</Name>
+					<Name>PRG_TEST.fbXPIMTest.axRef[1].NcToPlc</Name>
 					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbXPIMTest.axRef[2].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
+					<Name>PRG_TEST.fbXPIMTest.axRef[3].NcToPlc</Name>
+					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.bHome</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.bHardwareEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbZoom.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.bZoomEndFwd</Name>
-					<Comment><![CDATA[ Forward limit disable for zoom]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
+				</Var>
+				<Var>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.bZoomEndBwd</Name>
-					<Comment><![CDATA[ Backward limit disable for zoom]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.bFocusEndFwd</Name>
-					<Comment><![CDATA[ Forward limit disable for focus]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.bFocusEndBwd</Name>
-					<Comment><![CDATA[ Backward limit disable for focus]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbYStage.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbZoom.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbFocus.fbDriveVirtual.MasterAxis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].bHome</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbFocus.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbEncoderScaling.nRawEncoderULINT</Name>
 					<Type>ULINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].nRawEncoderUINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbEncoderScaling.nRawEncoderUINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
 					<Type>UINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].nRawEncoderINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbEncoderScaling.nRawEncoderINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
 					<Type>INT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].nRawEncoderDINT</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbEncoderScaling.nRawEncoderDINT</Name>
 					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
 					<Type>DINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbEncoderScaling.nRawEncoderUDINT</Name>
+					<Comment><![CDATA[ Raw encoder IO for INT (EL7062)]]></Comment>
+					<Type>UDINT</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbLimSwStatus.bLimitFwd</Name>
+					<Comment><![CDATA[ Hardware 
+ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].bLimitBackwardEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbLimSwStatus.bLimitBwd</Name>
 					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].bHome</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbLimSwStatus.bHomeSensor</Name>
 					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].bHardwareEnable</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbMotorY.fbMotionInterlocksCommon.bHardwareEnable</Name>
 					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbFlowSwitch.bFlowOk</Name>
 					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.Axis.NcToPlc</Name>
-					<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.bLimitForwardEnable</Name>
-					<Comment><![CDATA[ NC Forward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.bLimitBackwardEnable</Name>
-					<Comment><![CDATA[ NC Backward Limit Switch: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.bHome</Name>
-					<Comment><![CDATA[ NO Home Switch: TRUE if at home]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.bHardwareEnable</Name>
-					<Comment><![CDATA[ NC STO Input: TRUE if ok to move]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.nRawEncoderULINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for ULINT (Biss-C)]]></Comment>
-					<Type>ULINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.nRawEncoderUINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for UINT (Relative Encoders)]]></Comment>
-					<Type>UINT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.nRawEncoderINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (LVDT)]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.nRawEncoderDINT</Name>
-					<Comment><![CDATA[ Raw encoder IO for INT (EL5072 LVDT)]]></Comment>
-					<Type>DINT</Type>
 				</Var>
 				<Var>
 					<Name>PRG_TEST.fbCCTempSensorTest.fbTempSensor.bError</Name>
@@ -3011,490 +2603,99 @@ External Setpoint Generation:
 					<Type>INT</Type>
 				</Var>
 			</Vars>
-			<Vars VarGrpType="2" AreaNo="1">
-				<Name>PlcTask Outputs</Name>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbXStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbATM.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.stXStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbATMTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbLIC.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbLICTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.iIlluminatorINT</Name>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.bGigePower</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbPPM.fbGige.fbSetIllPercent.iRaw</Name>
-					<Comment><![CDATA[ Connect this output to the terminal]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbPPMTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.iShutdownINT</Name>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.iLaserINT</Name>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbREF.fbLaser.fbSetLasPercent.iRaw</Name>
-					<Comment><![CDATA[ Connect this output to the terminal]]></Comment>
-					<Type>INT</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbREFTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbMotion.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbSATT.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSATTTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbTopBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbBottomBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbNorthBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.fbSouthBlade.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbSlitsPower.AptArrayStatus</Name>
-					<Type GUID="{67AC048F-B785-4A4D-B941-B11E2213F502}">ST_PMPS_Aperture_IO</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M1.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M2.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M3.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.M4.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbSlitsPowerTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbZStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbWFS.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.stZStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbWFSTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbYStage.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbZoom.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbFocus.fbDriveVirtual.MasterAxis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[1].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[2].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbStates.astMotionStageMax[3].bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbOpal.bOpalPower</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbLED.bLEDPower</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stYStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stZoomStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.Axis.PlcToNc</Name>
-					<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.stFocusStage.bBrakeRelease</Name>
-					<Comment><![CDATA[ NC Brake Output: TRUE to release brake]]></Comment>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-				<Var>
-					<Name>PRG_TEST.fbCCTempSensorTest.fbFFHWO.q_xFastFaultOut</Name>
-					<Type>BOOL</Type>
-				</Var>
-			</Vars>
-			<Vars VarGrpType="8" AreaNo="4">
-				<Name>PlcTask Retains</Name>
-				<Var>
-					<Name>PMPS_GVL.SuccessfulPreemption</Name>
-					<Comment><![CDATA[ Any time BPTM applies a new BP request which is confirmed]]></Comment>
-					<Type>UDINT</Type>
-					<InOut>7</InOut>
-				</Var>
-				<Var>
-					<Name>PMPS_GVL.AccumulatedFF</Name>
-					<Comment><![CDATA[ Any time a FF occurs]]></Comment>
-					<Type>UDINT</Type>
-					<InOut>7</InOut>
-				</Var>
-				<Var>
-					<Name>PMPS_GVL.BP_jsonDoc</Name>
-					<Type>SJsonValue</Type>
-					<InOut>7</InOut>
-				</Var>
-			</Vars>
+			<UnrestoredVarLinks ImportTime="2026-06-11T14:24:35">
+				<OwnerA Name="InputDst" Prefix="TIPC^Library^Library Instance" Type="1">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
+						<Link VarA="PRG_TEST.fbATMTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^LIC_Y">
+						<Link VarA="PRG_TEST.fbLICTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^PPM_Y">
+						<Link VarA="PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
+						<Link VarA="PRG_TEST.fbREFTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SATT_Y">
+						<Link VarA="PRG_TEST.fbSATTTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
+						<Link VarA="PRG_TEST.fbWFSTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
+						<Link VarA="PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+				<OwnerA Name="OutputSrc" Prefix="TIPC^Library^Library Instance" Type="2">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
+						<Link VarA="PRG_TEST.fbATMTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^LIC_Y">
+						<Link VarA="PRG_TEST.fbLICTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^PPM_Y">
+						<Link VarA="PRG_TEST.fbPPMTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
+						<Link VarA="PRG_TEST.fbREFTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SATT_Y">
+						<Link VarA="PRG_TEST.fbSATTTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
+						<Link VarA="PRG_TEST.fbWFSTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
+						<Link VarA="PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+			</UnrestoredVarLinks>
+			<UnrestoredVarLinks ImportTime="2026-06-29T20:24:35">
+				<OwnerA Name="InputDst" Prefix="TIPC^Library^Library Instance" Type="1">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
+						<Link VarA="PRG_TEST.fbREFTest.axRef.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+				<OwnerA Name="OutputSrc" Prefix="TIPC^Library^Library Instance" Type="2">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
+						<Link VarA="PRG_TEST.fbREFTest.axRef.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+			</UnrestoredVarLinks>
+			<UnrestoredVarLinks ImportTime="2026-07-14T15:34:54">
+				<OwnerA Name="InputDst" Prefix="TIPC^Library^Library Instance" Type="1">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
+						<Link VarA="PRG_TEST.fbATMTest.axRef.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^IPM_Y">
+						<Link VarA="PRG_TEST.fbIPMTest.axRef.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
+						<Link VarA="PRG_TEST.fbWFSTest.axRef.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
+						<Link VarA="PRG_TEST.fbXPIMTest.axRef.NcToPlc" TypeA="MC.NCTOPLC_AXIS_REF" InOutA="0" GuidA="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" VarB="Outputs^ToPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+				<OwnerA Name="OutputSrc" Prefix="TIPC^Library^Library Instance" Type="2">
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
+						<Link VarA="PRG_TEST.fbATMTest.axRef.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^IPM_Y">
+						<Link VarA="PRG_TEST.fbIPMTest.axRef.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
+						<Link VarA="PRG_TEST.fbWFSTest.axRef.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+					<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
+						<Link VarA="PRG_TEST.fbXPIMTest.axRef.PlcToNc" TypeA="MC.PLCTONC_AXIS_REF" InOutA="1" GuidA="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" VarB="Inputs^FromPlc" RestoreInfo="ANotFound"/>
+					</OwnerB>
+				</OwnerA>
+			</UnrestoredVarLinks>
 			<Contexts>
 				<Context>
-					<Id NeedCalleeCall="true">0</Id>
+					<Id>0</Id>
 					<Name>PlcTask</Name>
 					<ManualConfig>
 						<OTCID>#x02010050</OTCID>
@@ -3511,32 +2712,56 @@ External Setpoint Generation:
 	<Mappings>
 		<OwnerA Name="Library Instance">
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^ATM_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbATMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbATMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbATMTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbATMTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^GBS_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbGBSTest.axRef.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbGBSTest.axRef.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^IPM_Y">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbIPMTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbIPMTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^LIC_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbLICTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbLICTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbLICTest.axRef.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbLICTest.axRef.PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^PPM_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbPPMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbPPMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbPPMTest.axRef.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbPPMTest.axRef.PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^REF_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbREFTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbREFTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbREFTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbREFTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SATT_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbSATTTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbSATTTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSATTTest.axRef.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSATTTest.axRef.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_Bottom">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_North">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[3].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[3].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_South">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[4].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[4].PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^SLIT_Top">
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbSlitsPowerTest.axRef[1].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbSlitsPowerTest.axRef[1].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^WFS_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbWFSTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbWFSTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbWFSTest.axRef[2].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbWFSTest.axRef[2].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^XPIM_Y">
-				<Link VarA="PlcTask Inputs^PRG_TEST.fbXPIMTest.stYStage.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^PRG_TEST.fbXPIMTest.stYStage.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^PRG_TEST.fbXPIMTest.axRef[3].NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^PRG_TEST.fbXPIMTest.axRef[3].PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>
