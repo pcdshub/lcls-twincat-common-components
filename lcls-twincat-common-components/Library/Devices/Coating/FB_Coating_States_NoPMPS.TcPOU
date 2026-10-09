@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_Coating_States_NoPMPS" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b05}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Simple 2-state coating selector, no PMPS: thin ND-framework wrapper
+   around FB_PositionStateND, ported from a deprecated EXTENDS
+   FB_PositionStateBase device. Single motor, no beam-safety gating.
+
+   The integrator supplies sName/fPosition/fDelta/nEncoderCount for
+   every state via FB_CC_StateDefaultsConfig (Convention B, the same
+   split FB_SXR_SATT_Stage uses). This FB owns none of that config
+   itself. FB_KBO_Coating_States uses the other split (Convention A,
+   device owns sName/fDelta). Motor and state array are caller-owned,
+   injected via FB_Init. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_Coating_States_NoPMPS
+VAR_INPUT
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    eEnumSet : E_Coating_States;
+END_VAR
+VAR
+    (* REFERENCE TO backing fields populated by FB_Init. *)
+    {attribute 'no_copy'}
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    bEnableMotion : BOOL := TRUE;
+
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStateND(
+        aiMotionStage        := aiMotionStage,
+        astPositionState     := astPositionState,
+        nActiveMotorCount    := 1,
+        eEnumSet             := eEnumSet,
+        eEnumGet             := eEnumGet,
+        bEnableMotion        := bEnableMotion,
+        eMotionRequestPolicy := E_MotionRequestPolicy.INTERRUPT
+    );
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    eEnumGet : E_Coating_States;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState) THEN
+    RETURN;
+END_IF
+
+fbStates();
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b06}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover. No per-state config to write here -
+   that's entirely the integrator's job via FB_CC_StateDefaultsConfig. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b07}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

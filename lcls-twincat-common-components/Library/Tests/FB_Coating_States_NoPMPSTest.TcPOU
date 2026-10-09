@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_Coating_States_NoPMPSTest" Id="{7d1a3e5c-9f2b-46d8-8a4e-3c6b1f9d2e07}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Integration smoke for FB_Coating_States_NoPMPS. Proves the
+    Convention-B wiring (integrator owns every per-state field via
+    FB_CC_StateDefaultsConfig, the device FB owns nothing) drives
+    FB_MotionStageNC to the configured fPosition for each commanded
+    state, with no PMPS/arbiter/FFO involved.
+*)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_Coating_States_NoPMPSTest EXTENDS FB_TestSuite
+VAR
+    axRef : AXIS_REF;
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+    {attribute 'pytmc' := '
+        pv: COAT
+        array: 1..1 | 1..2
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    stDefault : ST_PositionState := (
+        fDelta        := 0.2,
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_StateDefaultsConfig[
+        (stPositionState := astPositionState[1][E_Coating_States.Coating1], stDefault := stDefault, sName := 'Coating1', fPosition := 10.0),
+        (stPositionState := astPositionState[1][E_Coating_States.Coating2], stDefault := stDefault, sName := 'Coating2', fPosition := 20.0)
+    ];
+
+    fbCoating : FB_Coating_States_NoPMPS(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState
+    );
+
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    nTestStep   : INT;
+    fObserved   : LREAL;
+    bFirstScan  : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TEST(__POUNAME());
+
+fObserved := fbMotorY.stMotionStatus.fActPosition;
+
+CASE nTestStep OF
+    0:
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+            bFirstScan := FALSE;
+        END_IF
+        nTestStep := 1;
+    1:
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbCoating.eEnumSet := E_Coating_States.Coating2;
+            nTestStep          := 2;
+        END_IF
+    2:
+        (* Coating2 is configured at fPosition := 20 in afbStateDefaults[2]. *)
+        IF fbCoating.eEnumGet = E_Coating_States.Coating2
+           AND NOT fbMotorY.stMotionStatus.bMoving
+           AND ABS(fObserved - 20.0) <= 2.0 THEN
+            AssertTrue(
+                Condition := TRUE,
+                Message   := 'T01: Coating selector reached Coating2 within tolerance');
+            nTestStep := 3;
+        END_IF
+END_CASE
+
+fbPDS();
+fbMotorY();
+
+fbCoating();
+
+fbTestTimer();
+
+IF nTestStep = 3 THEN
+    TEST_FINISHED();
+ELSIF fbTestTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbCoating.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fObserved))));
+    TEST_FINISHED();
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

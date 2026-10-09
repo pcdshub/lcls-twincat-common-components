@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_KBO_Coating_States" Id="{deb77316-43c4-4f5a-8975-bf0e9f29db7b}" SpecialFunc="None">
+    <Declaration><![CDATA[(* KBO mirror coating selector (Si/B4C): thin ND-framework wrapper
+   around FB_PositionStatePMPSND, modeled on FB_REF. Single motor,
+   PMPS-gated. Motion dynamics (velocity/accel/decel) are the caller's
+   responsibility, set directly on the motor or left to the NC axis's
+   own configured defaults - this FB doesn't touch them, matching the
+   ND policy that state movers carry no motion parameters.
+   Motor, stage/state arrays, fast-fault, and arbiter are caller-owned,
+   injected via FB_Init.
+
+   To support a 3+-state or differently-named coating mirror, clone
+   this FB and its enum and resize the array. That's the established
+   pattern here (FB_WFS has 6 states, FB_SXR_SATT_Stage has 9), not a
+   runtime-configurable count. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_KBO_Coating_States
+VAR_INPUT
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: SET
+        io: io
+    '}
+    eEnumSet : E_KBO_CoatingStates;
+END_VAR
+VAR
+    (* REFERENCE TO backing fields populated by FB_Init. *)
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
+
+    (* One configurator per KBO state (Si, B4C). Writes the per-state
+       sName and fDelta. Per-state nEncoderCount / sPmpsState are owned
+       by the integrator via FB_CC_StatePMPSEncConfig (fPosition is not
+       integrator-set: it's recomputed each cycle from nEncoderCount by
+       FB_PositionStateInternalND, since bUseRawCounts := TRUE here). *)
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_InternalStateConfig[
+        (stPositionState := astPositionState[1][E_KBO_CoatingStates.Si],
+         sName           := 'Si',
+         fDelta          := FDELTA_DEFAULT),
+        (stPositionState := astPositionState[1][E_KBO_CoatingStates.B4C],
+         sName           := 'B4C',
+         fDelta          := FDELTA_DEFAULT)
+    ];
+
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := 1,
+        eEnumSet              := eEnumSet,
+        eEnumGet              := eEnumGet,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
+END_VAR
+VAR_OUTPUT
+    // The current position state as an enum.
+    {attribute 'pytmc' := '
+        pv: GET
+        io: i
+    '}
+    eEnumGet : E_KBO_CoatingStates;
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR CONSTANT
+    // State in-position tolerance, applied per-state by afbStateDefaults.
+    // Units in Millimeters (matches prior install values).
+    FDELTA_DEFAULT  : LREAL := 0.1;
+    // Reference motion dynamics for this mirror - NOT applied by this FB.
+    // The caller sets these on the motor (e.g. SetMotionParam) or relies
+    // on the NC axis's own configured defaults. Y/X pair documents what
+    // the prior install used, for whoever wires up a real axis.
+    FVELOCITY_DEFAULT : LREAL := 0.150;
+    FYACCEL_DEFAULT   : LREAL := 10;
+    FYDECEL_DEFAULT   : LREAL := 10;
+    FXACCEL_DEFAULT   : LREAL := 100;
+    FXDECEL_DEFAULT   : LREAL := 100;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(fbArbiter) THEN
+    RETURN;
+END_IF
+
+fbStates(stDbStateParams=> stDbStateParams);
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{cf150007-917c-41f6-925d-4a5a53f8485c}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
+   forwarded nil refs, so this re-supplies the now-valid refs via
+   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
+   per-state device defaults. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_KBO_CoatingStates.Si]
+);
+afbStateDefaults[2].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_KBO_CoatingStates.B4C]
+);
+
+THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := 1,
+    eEnumSet              := eEnumSet,
+    eEnumGet              := eEnumGet,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitPMPS(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{7da30f35-8f99-4688-81ce-5ec9994a1d34}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.fbArbiter        REF= fbArbiter;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams    := bEnableBeamParams;
+THIS^.bEnablePositionLimits:= bEnablePositionLimits;
+THIS^.bReadDBNow           := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

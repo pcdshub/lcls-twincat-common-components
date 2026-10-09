@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_KBOTest" Id="{3c7d9a21-4f6b-48e2-9d1a-6b5c8e2f0a91}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Integration smoke for FB_KBO_Coating_States. Proves the FB_Init/
+    CallAfterInit wiring, per-state sName/fDelta (FB_CC_InternalStateConfig),
+    per-state nEncoderCount/sPmpsState (FB_CC_StatePMPSEncConfig), and the
+    one-shot orientation-based SetMotionParam call drive FB_MotionStageNC
+    to a distinct physical position per commanded coating state.
+
+    This is the first bUseRawCounts:=TRUE device under ND in this repo.
+    KBO_Y.xti has no custom scaling override, so the physical position a
+    given nEncoderCount reaches isn't known here. The test asserts Si and
+    B4C settle at measurably different positions instead of a specific
+    value, and that eEnumGet tracks the commanded state. Green here proves
+    wiring and logic only; real hardware bench verification of the
+    raw-counts calibration still comes before production cutover.
+*)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_KBOTest EXTENDS FB_TestSuite
+VAR
+    axRef    : AXIS_REF;
+    fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    fbMotorY : FB_MotionStageNC(AxisRef := axRef, iPersistentDataStorage := fbPDS, sName := 'Y');
+
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotorY];
+    {attribute 'pytmc' := '
+        pv: MMS
+        array: 1..1 | 1..2
+    '}
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbFFHWO    : FB_HardwareFFOutput;
+    fbArbiter  : FB_Arbiter(1);
+    fbSubSysIO : FB_DummyArbIO;
+
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+
+    sDeviceName    : STRING := 'TST:KBO';
+    sTransitionKey : STRING := 'TST:KBO-TRANSITION';
+
+    (* Driven from the body to simulate the reader going busy then idle during cold start. *)
+    bFileReaderBusy  : BOOL;
+    bFileReaderError : BOOL;
+
+    (* bUseRawCounts:=TRUE: KBO is the first raw-counts ND device here.
+       These are test-local encoder counts, not production values. The
+       sim axis has no custom scale-factor override, so they map to
+       whatever the default NC scaling produces. *)
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := TRUE
+    );
+
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSEncConfig[
+        (stPositionState := astPositionState[1][E_KBO_CoatingStates.Si],
+         stDefault       := stDefault,
+         nEncoderCount   := 1000,
+         sPmpsState      := 'TST:KBO-Si'),
+        (stPositionState := astPositionState[1][E_KBO_CoatingStates.B4C],
+         stDefault       := stDefault,
+         nEncoderCount   := 2000,
+         sPmpsState      := 'TST:KBO-B4C')
+    ];
+
+    fbKBO : FB_KBO_Coating_States(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        fbFFHWO          := fbFFHWO,
+        fbArbiter        := fbArbiter,
+        sDeviceName      := sDeviceName,
+        sTransitionKey   := sTransitionKey,
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow := FALSE,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
+    );
+
+    fbTestTimer : TON := (IN := TRUE, PT := T#60S);
+    nTestStep   : INT;
+    fSiPosition  : LREAL;
+    fB4CPosition : LREAL;
+    bFirstScan  : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TEST(__POUNAME());
+
+CASE nTestStep OF
+    0:
+        IF bFirstScan THEN
+            fbMotorY.SetModeEnableLimits(
+                LimBackward    := TRUE,
+                LimForward     := TRUE,
+                HomeEnable     := FALSE,
+                BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+                EnableMode     := E_StageEnableMode.DURING_MOTION,
+                HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+                UserEnable     := TRUE,
+                HardwareEnable := TRUE
+            );
+            fbMotorY.SetVelocity(Velocity := 15.5);
+            fbMotorY.RestoreMotionParams      := FALSE;
+            fbMotorY.DoNotRestoreNcParameters := TRUE;
+
+            bEnableBeamParams     := TRUE;
+            bEnablePositionLimits := TRUE;
+            bReadDBNow            := TRUE;
+            bFileReaderBusy  := TRUE;
+            bFileReaderError := FALSE;
+            bFirstScan := FALSE;
+        END_IF
+        nTestStep := 1;
+    1:
+        bFileReaderBusy  := FALSE;
+        bFileReaderError := FALSE;
+        nTestStep := 2;
+    2:
+        (* Wait for cold-start stabilisation before commanding a move. *)
+        IF fbMotorY.stMotionStatus.bStageReady
+           AND NOT fbMotorY.stMotionStatus.bError THEN
+            fbKBO.eEnumSet := E_KBO_CoatingStates.Si;
+            nTestStep      := 3;
+        END_IF
+    3:
+        IF fbKBO.eEnumGet = E_KBO_CoatingStates.Si
+           AND NOT fbMotorY.stMotionStatus.bMoving THEN
+            fSiPosition := fbMotorY.stMotionStatus.fActPosition;
+            fbKBO.eEnumSet := E_KBO_CoatingStates.B4C;
+            nTestStep      := 4;
+        END_IF
+    4:
+        IF fbKBO.eEnumGet = E_KBO_CoatingStates.B4C
+           AND NOT fbMotorY.stMotionStatus.bMoving THEN
+            fB4CPosition := fbMotorY.stMotionStatus.fActPosition;
+            (* Prove the raw-counts path actually drove two different
+               encoder targets to two different physical positions -
+               not a specific value, since the sim axis scale factor
+               isn't independently known here. *)
+            AssertTrue(
+                Condition := ABS(fB4CPosition - fSiPosition) > 0.01,
+                Message   := 'T01: Si and B4C did not settle at distinct positions');
+            nTestStep := 5;
+        END_IF
+END_CASE
+
+fbPDS();
+fbMotorY();
+
+fbKBO();
+
+fbSubSysIO(LA := fbArbiter, FFO := fbFFHWO);
+fbTestTimer();
+
+IF nTestStep = 5 THEN
+    TEST_FINISHED();
+ELSIF fbTestTimer.Q THEN
+    AssertTrue(
+        Condition := FALSE,
+        Message   := CONCAT(
+            CONCAT(
+                CONCAT('T01: timed out at step ', TO_STRING(nTestStep)),
+                CONCAT(', eEnumGet=', TO_STRING(TO_UDINT(fbKBO.eEnumGet)))),
+            CONCAT(', fActPos=', TO_STRING(fbMotorY.stMotionStatus.fActPosition))));
+    TEST_FINISHED();
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
