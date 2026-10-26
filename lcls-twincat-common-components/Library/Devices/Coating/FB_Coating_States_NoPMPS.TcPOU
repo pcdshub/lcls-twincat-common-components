@@ -22,7 +22,6 @@ VAR_INPUT
     eEnumSet : E_Coating_States;
 END_VAR
 VAR
-    (* REFERENCE TO backing fields populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -60,10 +59,7 @@ fbStates();
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b06}">
-      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
-   forwarded nil refs, so this re-supplies the now-valid refs via
-   fbStates.CallAfterInitStateMover. No per-state config to write here -
-   that's entirely the integrator's job via FB_CC_StateDefaultsConfig. *)
+      <Declaration><![CDATA[
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
@@ -81,10 +77,7 @@ METHOD CallAfterInit
       </Implementation>
     </Method>
     <Method Name="FB_Init" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b07}">
-      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
-//The return value is not evaluated. For a specific influence, you can also declare the
-//methods explicitly and provide additional code there with the standard initialization
-//code. You can evaluate the return value.
+      <Declaration><![CDATA[
 METHOD FB_Init: BOOL
 VAR_INPUT
     bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
