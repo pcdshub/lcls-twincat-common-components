@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <DUT Name="E_Coating_States" Id="{b4f2a3c5-6e7f-48a9-9b1c-2d3e4f5a6b7c}">
-    <Declaration><![CDATA[{attribute 'qualified only'}
+    <Declaration><![CDATA[(* Coating-state enum. UINT-typed so REFERENCE TO E_Coating_States
+   is bridge-compatible with the ND mover's REFERENCE TO UINT. *)
+{attribute 'qualified_only'}
+{attribute 'strict'}
 TYPE E_Coating_States :
 (
     Unknown := 0,
     Coating1 := 1,
     Coating2 := 2
-);
+) UINT;
 END_TYPE
 ]]></Declaration>
   </DUT>
