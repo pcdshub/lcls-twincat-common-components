@@ -47,7 +47,8 @@ END_VAR
     <Implementation>
       <ST><![CDATA[TestTempFFO();
 TestApertureMotion();
-fbSlitsPower(bMoveOk := TRUE);
+      TestBridgeGating();
+      fbSlitsPower(bMoveOk := TRUE);
 ]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
@@ -261,6 +262,48 @@ END_FOR
 IF tonTimer.Q OR nStep = 3 THEN
     TEST_FINISHED();
 END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestBridgeGating" Id="{abd1e7b6-c60a-40ee-b98f-52bcbf96a2f7}">
+      <Declaration><![CDATA[(*
+    Aperture trust gating. A PMPS aperture request is latched as the limit
+    only while the arbiter bridge is healthy and the request xOK is TRUE.
+    An untrusted request must leave the last trusted limit in place.
+*)
+METHOD TestBridgeGating
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsBridgeGating');
+
+// Healthy bridge and xOK: the request becomes the trusted limit.
+fbSlitsPower.bBridgeOK := TRUE;
+fbSlitsPower.SetAptWidthHeight(Width := 50.0, Height := 40.0);
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(fbSlitsPower.bAptTrusted, 'request trusted with bridge ok and xOK');
+AssertTrue(
+    fbSlitsPower.rTrustedAptWidth = 50.0 AND fbSlitsPower.rTrustedAptHeight = 40.0,
+    'trusted limit latched from the request'
+);
+
+// xOK drops while the width changes: the last trusted limit holds.
+fbSlitsPower.AptArrayReq.Width := 10.0;
+fbSlitsPower.AptArrayReq.xOK   := FALSE;
+fbSlitsPower.M_UpdateAptTrust();
+AssertFalse(fbSlitsPower.bAptTrusted, 'request untrusted when xOK is FALSE');
+AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'untrusted xOK keeps the last trusted width');
+
+// Bridge down with xOK TRUE: still untrusted.
+fbSlitsPower.AptArrayReq.xOK := TRUE;
+fbSlitsPower.bBridgeOK       := FALSE;
+fbSlitsPower.M_UpdateAptTrust();
+AssertFalse(fbSlitsPower.bAptTrusted, 'request untrusted when the bridge is down');
+AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'bridge down keeps the last trusted width');
+
+// Leave the shared instance in a healthy, wide-open state.
+fbSlitsPower.bBridgeOK := TRUE;
+fbSlitsPower.SetAptWidthHeight(Width := 100.0, Height := 100.0);
+TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>

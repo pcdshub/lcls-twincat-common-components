@@ -153,9 +153,13 @@ THIS^.fApertureMargin := fApertureMargin;
     <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
       <Declaration><![CDATA[(* Integrator-driven PMPS aperture-safety reconciliation, called each cycle
    with index = this device's slot in astApertures. Mirrors actual geometry
-   into AptArrayStatus, faults FFO when actual gap exceeds the authorized
-   envelope (or always, out of PMPS mode), and in PMPS mode snaps the request
-   into compliance. Caller must ensure index is valid (no short-circuit). *)
+         into AptArrayStatus. The authorized envelope is the last aperture request
+         received while the arbiter bridge was healthy and xOK was TRUE
+         (rTrustedAptWidth/Height). Faults FFO when the actual gap exceeds that
+         envelope, on a confirmed bridge failure, or always in Local mode. In PMPS
+         mode it also snaps the request into compliance. An untrusted request
+         (xOK FALSE) is logged and ignored. Caller must ensure index is valid
+         (no short-circuit). *)
 METHOD M_UpdatePMPS : BOOL
 VAR_INPUT
     index : INT;
@@ -171,26 +175,40 @@ THIS^.AptArrayStatus.xOK    :=
     AND NOT (THIS^.aiMotionStage[E_SlitsBlade.NORTH ].MotionStatus.bError)
     AND NOT (THIS^.aiMotionStage[E_SlitsBlade.SOUTH ].MotionStatus.bError);
 
-// Aperture-envelope evaluation.
-IF ( THIS^.rActApertureSizeX > (AptArrayReq.Width  - (2 * ABS(THIS^.rActCenterX)))
-     AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width  > 0 )
-OR ( THIS^.rActApertureSizeY > (AptArrayReq.Height - (2 * ABS(THIS^.rActCenterY)))
-     AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height > 0 ) THEN
-    FFO.i_xOK := FALSE;
-ELSE
-    FFO.i_xOK := TRUE;
-END_IF
+// Aperture-envelope evaluation against the last trusted PMPS request.
+M_UpdateAptTrust();
 
-IF xPMPSMode THEN
-    IF THIS^.rActApertureSizeX > AptArrayReq.Width THEN
-        rReqApertureSizeX := AptArrayReq.Width - fApertureMargin;
+bOverAperture :=
+    ( THIS^.rActApertureSizeX > (rTrustedAptWidth  - (2 * ABS(THIS^.rActCenterX)))
+      AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width  > 0 )
+ OR ( THIS^.rActApertureSizeY > (rTrustedAptHeight - (2 * ABS(THIS^.rActCenterY)))
+      AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height > 0 );
+
+rBadXOK(CLK := bBridgeOK AND NOT AptArrayReq.xOK AND NOT bBridgeConfirmedBad);
+
+IF bBridgeConfirmedBad THEN
+    FFO.i_xOK := FALSE;
+ELSIF bBridgeOK AND NOT AptArrayReq.xOK THEN
+    // Untrusted request: hold the last trusted limit and do not act on it.
+    FFO.i_xOK := NOT bOverAperture;
+    IF rBadXOK.Q THEN
+        fbLogger(
+            sMsg  := 'PMPS aperture request xOK FALSE, ignoring untrusted request.',
+            eSevr := TcEventSeverity.Warning
+        );
     END_IF
-    IF THIS^.rActApertureSizeY > AptArrayReq.Height THEN
-        rReqApertureSizeY := AptArrayReq.Height - fApertureMargin;
+ELSIF bBridgeOK AND xPMPSMode THEN
+    FFO.i_xOK := NOT bOverAperture;
+    IF THIS^.rActApertureSizeX > rTrustedAptWidth THEN
+        rReqApertureSizeX := rTrustedAptWidth - fApertureMargin;
     END_IF
-ELSE
+    IF THIS^.rActApertureSizeY > rTrustedAptHeight THEN
+        rReqApertureSizeY := rTrustedAptHeight - fApertureMargin;
+    END_IF
+ELSIF bBridgeOK THEN
     FFO.i_xOK := FALSE;
 END_IF
+// Bridge down but not yet confirmed bad: FFO.i_xOK keeps its last value.
 
 FFO(
     i_xAutoReset := TRUE,
