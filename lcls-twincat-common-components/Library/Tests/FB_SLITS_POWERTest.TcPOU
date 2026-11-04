@@ -47,9 +47,9 @@ END_VAR
     <Implementation>
       <ST><![CDATA[TestTempFFO();
 TestApertureMotion();
-      TestBridgeGating();
+TestBridgeGating();
 TestAptNonFinite();
-      fbSlitsPower(bMoveOk := TRUE);
+fbSlitsPower(bMoveOk := TRUE);
 ]]></ST>
     </Implementation>
     <Method Name="AssertAllTempFault" Id="{a1603777-4833-427d-b165-49d0eb54db77}">
