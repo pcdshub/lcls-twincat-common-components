@@ -439,6 +439,22 @@ rReqCenterY       := CenterY;
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="SetAptRequest" Id="{3b9d6e41-8c2f-4a75-b1d0-6e47a2c9f813}">
+      <Declaration><![CDATA[(* Drives the AT %I* aperture request, which cannot be written from outside
+   the FB. Used by simulation and tests. *)
+METHOD INTERNAL SetAptRequest
+VAR_INPUT
+    Width  : REAL;
+    Height : REAL;
+    xOK    : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width  := Width;
+THIS^.AptArrayReq.Height := Height;
+THIS^.AptArrayReq.xOK    := xOK;]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
       <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
 VAR_INPUT

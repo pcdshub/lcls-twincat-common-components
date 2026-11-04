@@ -294,20 +294,20 @@ AssertTrue(
 
 // NaN width: trusted flags stay TRUE but the limit holds.
 dwBits := 16#7FC00000;
-fbSlitsPower.AptArrayReq.Width := pReal^;
+fbSlitsPower.SetAptRequest(Width := pReal^, Height := 40.0, xOK := TRUE);
 fbSlitsPower.M_UpdateAptTrust();
 AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'NaN width keeps the last trusted width');
 AssertTrue(fbSlitsPower.rTrustedAptHeight = 40.0, 'NaN width leaves the trusted height alone');
 
 // +Inf width.
 dwBits := 16#7F800000;
-fbSlitsPower.AptArrayReq.Width := pReal^;
+fbSlitsPower.SetAptRequest(Width := pReal^, Height := 40.0, xOK := TRUE);
 fbSlitsPower.M_UpdateAptTrust();
 AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, '+Inf width keeps the last trusted width');
 
 // -Inf height.
 dwBits := 16#FF800000;
-fbSlitsPower.AptArrayReq.Height := pReal^;
+fbSlitsPower.SetAptRequest(Width := 50.0, Height := pReal^, xOK := TRUE);
 fbSlitsPower.M_UpdateAptTrust();
 AssertTrue(fbSlitsPower.rTrustedAptHeight = 40.0, '-Inf height keeps the last trusted height');
 
@@ -347,15 +347,14 @@ AssertTrue(
 );
 
 // xOK drops while the width changes: the last trusted limit holds.
-fbSlitsPower.AptArrayReq.Width := 10.0;
-fbSlitsPower.AptArrayReq.xOK   := FALSE;
+fbSlitsPower.SetAptRequest(Width := 10.0, Height := 40.0, xOK := FALSE);
 fbSlitsPower.M_UpdateAptTrust();
 AssertFalse(fbSlitsPower.bAptTrusted, 'request untrusted when xOK is FALSE');
 AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'untrusted xOK keeps the last trusted width');
 
 // Bridge down with xOK TRUE: still untrusted.
-fbSlitsPower.AptArrayReq.xOK := TRUE;
-fbSlitsPower.bBridgeOK       := FALSE;
+fbSlitsPower.SetAptRequest(Width := 10.0, Height := 40.0, xOK := TRUE);
+fbSlitsPower.bBridgeOK := FALSE;
 fbSlitsPower.M_UpdateAptTrust();
 AssertFalse(fbSlitsPower.bAptTrusted, 'request untrusted when the bridge is down');
 AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'bridge down keeps the last trusted width');
