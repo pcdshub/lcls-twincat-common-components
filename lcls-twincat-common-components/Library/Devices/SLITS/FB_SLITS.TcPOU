@@ -196,9 +196,12 @@ VAR
     AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
     AptArrayReq    AT %I* : ST_PMPS_Aperture_IO;
 
-    (* Last AptArrayReq captured while trusted (bBridgeOK AND xOK). Operator
-       gap requests and the PMPS aperture limit use these, so a stale or
-       invalid request never loosens the limit. *)
+    (* PMPS sanitizers for the raw AptArrayReq Width/Height. Each holds the last
+       trusted value while the bridge/xOK is untrusted or the reading is
+       NaN/Inf. Operator gap requests and the PMPS aperture limit use the
+       outputs below, so a stale or invalid request never loosens the limit. *)
+    fbTrustedAptWidth  : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    fbTrustedAptHeight : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
     rTrustedAptWidth  : REAL;
     rTrustedAptHeight : REAL;
     // TRUE when bBridgeOK AND AptArrayReq.xOK.
@@ -257,6 +260,8 @@ END_VAR
         <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
 THIS^.fbFFHWO       REF= fbFFHWO;
 THIS^.sDeviceName   := sDeviceName;
+fbTrustedAptWidth.sName  := CONCAT(sDeviceName, ' aperture width');
+fbTrustedAptHeight.sName := CONCAT(sDeviceName, ' aperture height');
 ]]></ST>
       </Implementation>
     </Method>
@@ -360,18 +365,19 @@ rActCenterY := LREAL_TO_REAL(
       </Implementation>
     </Method>
     <Method Name="M_UpdateAptTrust" Id="{c2a19fb7-5699-4cb0-a912-605d406f11b1}">
-      <Declaration><![CDATA[(* Refreshes bAptTrusted and latches the PMPS aperture request into
-   rTrustedAptWidth/Height only while the bridge is healthy and the request
-   xOK is TRUE. A stale or invalid request keeps the last good limit.
-   Idempotent, so both M_CalculatePositions and M_UpdatePMPS call it. *)
+      <Declaration><![CDATA[(* Refreshes bAptTrusted and sanitizes the PMPS aperture request into
+         rTrustedAptWidth/Height via FB_FallibleRealFromEtherCAT: the request is taken
+         only while the bridge is healthy, xOK is TRUE and the value is finite. A stale,
+         invalid or NaN/Inf request keeps the last good limit.
+         Idempotent, so both M_CalculatePositions and M_UpdatePMPS call it. *)
 METHOD INTERNAL M_UpdateAptTrust
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[bAptTrusted := bBridgeOK AND AptArrayReq.xOK;
-IF bAptTrusted THEN
-    rTrustedAptWidth  := AptArrayReq.Width;
-    rTrustedAptHeight := AptArrayReq.Height;
-END_IF
+fbTrustedAptWidth(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Width);
+fbTrustedAptHeight(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Height);
+rTrustedAptWidth  := fbTrustedAptWidth.fValue;
+rTrustedAptHeight := fbTrustedAptHeight.fValue;
 ]]></ST>
       </Implementation>
     </Method>
