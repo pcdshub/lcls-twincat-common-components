@@ -48,6 +48,7 @@ END_VAR
       <ST><![CDATA[TestTempFFO();
 TestApertureMotion();
       TestBridgeGating();
+TestAptNonFinite();
       fbSlitsPower(bMoveOk := TRUE);
 ]]></ST>
     </Implementation>
@@ -262,6 +263,65 @@ END_FOR
 IF tonTimer.Q OR nStep = 3 THEN
     TEST_FINISHED();
 END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestAptNonFinite" Id="{6f0b2c3e-5d1a-4c8e-9b47-2a1e8d3c7f60}">
+      <Declaration><![CDATA[(*
+    Aperture request sanitization. A NaN/Inf width or height must never replace
+    the trusted limit, even with a healthy bridge and xOK TRUE; the next finite
+    request is accepted again.
+*)
+METHOD TestAptNonFinite
+VAR
+    dwBits  : DWORD;
+    pReal   : POINTER TO REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsAptNonFinite');
+
+pReal := ADR(dwBits);
+
+// Establish a trusted limit.
+fbSlitsPower.bBridgeOK := TRUE;
+fbSlitsPower.SetAptWidthHeight(Width := 50.0, Height := 40.0);
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(
+    fbSlitsPower.rTrustedAptWidth = 50.0 AND fbSlitsPower.rTrustedAptHeight = 40.0,
+    'trusted limit established before the non-finite readings'
+);
+
+// NaN width: trusted flags stay TRUE but the limit holds.
+dwBits := 16#7FC00000;
+fbSlitsPower.AptArrayReq.Width := pReal^;
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, 'NaN width keeps the last trusted width');
+AssertTrue(fbSlitsPower.rTrustedAptHeight = 40.0, 'NaN width leaves the trusted height alone');
+
+// +Inf width.
+dwBits := 16#7F800000;
+fbSlitsPower.AptArrayReq.Width := pReal^;
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(fbSlitsPower.rTrustedAptWidth = 50.0, '+Inf width keeps the last trusted width');
+
+// -Inf height.
+dwBits := 16#FF800000;
+fbSlitsPower.AptArrayReq.Height := pReal^;
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(fbSlitsPower.rTrustedAptHeight = 40.0, '-Inf height keeps the last trusted height');
+
+// Finite values are accepted again.
+fbSlitsPower.SetAptWidthHeight(Width := 60.0, Height := 45.0);
+fbSlitsPower.M_UpdateAptTrust();
+AssertTrue(
+    fbSlitsPower.rTrustedAptWidth = 60.0 AND fbSlitsPower.rTrustedAptHeight = 45.0,
+    'finite request is trusted again after the non-finite readings'
+);
+
+// Leave the shared instance in a healthy, wide-open state.
+fbSlitsPower.SetAptWidthHeight(Width := 100.0, Height := 100.0);
+TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
