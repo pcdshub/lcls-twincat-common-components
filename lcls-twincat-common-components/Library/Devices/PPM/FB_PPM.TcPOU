@@ -252,6 +252,18 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumGet" Id="{afc84f5d-c074-4a10-b242-128e46ae70fb}">
+      <Declaration><![CDATA[(* Current position state. Read-only; written by the state mover. *)
+PROPERTY EnumGet : E_PPM_States]]></Declaration>
+      <Get Name="Get" Id="{ae4a99a0-aa07-40e5-9fe8-f7ccc5bdd67d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumGet := eEnumGet;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="EnumSet" Id="{1506b76c-dd31-480d-bc94-f9f569f83ed4}">
       <Declaration><![CDATA[(* Request a new move, e.g. `fbPPM.EnumSet := E_PPM_States.YAG1;`.
    The state mover consumes and clears the request. *)

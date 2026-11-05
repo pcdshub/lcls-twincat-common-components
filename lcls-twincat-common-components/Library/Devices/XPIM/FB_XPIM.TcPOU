@@ -226,6 +226,18 @@ THIS^.stEl6In          REF= stEl6In;
 THIS^.stEl6Out         REF= stEl6Out;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumGet" Id="{e9fb9851-7f70-4da2-840a-b85ea1cf0c38}">
+      <Declaration><![CDATA[(* Current position state. Read-only; written by the state mover. *)
+PROPERTY EnumGet : E_XPIM_States]]></Declaration>
+      <Get Name="Get" Id="{b62c8fc2-31db-4fe2-ad80-0c3e37e08213}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumGet := eEnumGet;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="EnumSet" Id="{12602291-7990-4746-8f23-822ecd5658ce}">
       <Declaration><![CDATA[(* Request a new move, e.g. `fbXPIM.EnumSet := E_XPIM_States.YAG;`.
    The state mover consumes and clears the request. *)

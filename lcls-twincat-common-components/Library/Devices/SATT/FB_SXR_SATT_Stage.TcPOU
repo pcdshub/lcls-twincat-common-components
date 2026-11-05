@@ -250,6 +250,18 @@ THIS^.sDeviceName      := sDeviceName;
 THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumGet" Id="{176f7c09-c56c-42e7-b20a-6b0da2f13387}">
+      <Declaration><![CDATA[(* Current position state. Read-only; written by the state mover. *)
+PROPERTY EnumGet : E_SXR_SATT_Position]]></Declaration>
+      <Get Name="Get" Id="{63dfefc0-6337-4760-bade-4056669f937c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumGet := eEnumGet;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="EnumSet" Id="{b7616b49-7981-48ca-aef7-a43b09424e67}">
       <Declaration><![CDATA[(* Request a new move, e.g. `fbSATT.EnumSet := E_SXR_SATT_Position.FILTER1;`.
    The state mover consumes and clears the request. *)

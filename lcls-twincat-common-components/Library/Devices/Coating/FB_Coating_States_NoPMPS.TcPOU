@@ -93,6 +93,18 @@ END_VAR]]></Declaration>
 THIS^.astPositionState REF= astPositionState;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumGet" Id="{82900509-1fb4-4919-9e80-5962027d071a}">
+      <Declaration><![CDATA[(* Current position state. Read-only; written by the state mover. *)
+PROPERTY EnumGet : E_Coating_States]]></Declaration>
+      <Get Name="Get" Id="{39def1cf-6f28-4f13-9acb-27339259f10b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumGet := eEnumGet;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="EnumSet" Id="{9c11b2da-dab1-4f61-9973-46a58278635f}">
       <Declaration><![CDATA[(* Request a new move, e.g. `fbCoating.EnumSet := E_Coating_States.Coating2;`.
    The state mover consumes and clears the request. *)
