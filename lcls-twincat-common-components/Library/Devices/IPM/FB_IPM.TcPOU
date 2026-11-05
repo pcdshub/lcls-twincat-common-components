@@ -8,15 +8,18 @@
    bridge and toggles re-forwarded each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_IPM
-VAR_INPUT
+VAR
+    (* State-enum bridge bound to FB_PositionStatePMPSND's REFERENCE TO
+       UINT param via the shared UINT base. EPICS owns it through the
+       pytmc pragma; PLC code must go through the EnumSet property
+       instead of touching it directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet : E_IPM_States;
-END_VAR
-VAR
+
     (* REFERENCE TO backing fields populated by FB_Init. Same names as
        FB_Init params; THIS^. disambiguates inside FB_Init.
        Live-bound to caller storage for the lifetime of the FB. *)
@@ -209,5 +212,26 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{0b7ad22a-1836-4b96-a458-b56e6a6feb81}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbIPM.EnumSet := E_IPM_States.TARGET1;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_IPM_States]]></Declaration>
+      <Get Name="Get" Id="{1baa0b43-41f7-4be6-9cab-45720b2ae8e8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{233babf7-d8df-41ad-b39f-281d68239e4b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

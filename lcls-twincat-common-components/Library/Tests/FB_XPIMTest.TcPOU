@@ -189,16 +189,16 @@ CASE nTestStep OF
     0:
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbXPIM.eEnumSet := E_XPIM_States.OUT;
-            nTestStep       := 1;
+            fbXPIM.EnumSet := E_XPIM_States.OUT;
+            nTestStep      := 1;
         END_IF
     1:
         (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
         IF fbXPIM.eEnumGet = E_XPIM_States.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
-            fbXPIM.eEnumSet := E_XPIM_States.YAG;
-            nTestStep       := 2;
+            fbXPIM.EnumSet := E_XPIM_States.YAG;
+            nTestStep      := 2;
         END_IF
     2:
         (* YAG is configured at fPosition := 20 in afbStatePMPS[2]. *)

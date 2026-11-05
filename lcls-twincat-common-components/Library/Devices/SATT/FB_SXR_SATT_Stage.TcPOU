@@ -9,13 +9,6 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SXR_SATT_Stage
 VAR_INPUT
-    (* Callers drive moves with`fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;`. *)
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: STATE:SET
-        io: io
-    '}
-    eEnumSet : E_SXR_SATT_Position;
     (* Per-filter material / thickness table. Used by the transmission
        calculation. Index 1 corresponds to FILTER1 (which is the
        state at slot 2 in astPositionState, since OUT lives at slot 1
@@ -60,6 +53,17 @@ VAR_OUTPUT
     iFilterIndex              : INT := 0;
 END_VAR
 VAR
+    (* State-enum bridge bound to FB_PositionStateND's REFERENCE TO UINT
+       param via the shared UINT base. EPICS owns it through the pytmc
+       pragma; PLC code must go through the EnumSet property instead of
+       touching it directly. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: STATE:SET
+        io: io
+    '}
+    eEnumSet : E_SXR_SATT_Position;
+
     fbStates : FB_PositionStateND(
         aiMotionStage        := aiMotionStage,
         astPositionState     := astPositionState,
@@ -246,5 +250,26 @@ THIS^.sDeviceName      := sDeviceName;
 THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{b7616b49-7981-48ca-aef7-a43b09424e67}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbSATT.EnumSet := E_SXR_SATT_Position.FILTER1;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_SXR_SATT_Position]]></Declaration>
+      <Get Name="Get" Id="{5da9a31e-56f3-40ba-b74f-384ca8163935}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{60c02dbe-7fb8-4781-abdf-ebabce3efb88}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

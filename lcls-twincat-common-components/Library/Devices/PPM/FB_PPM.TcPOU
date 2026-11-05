@@ -9,12 +9,6 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_PPM
 VAR_INPUT
-    // Set this to a non-unknown value to request a new move.
-    {attribute 'pytmc' := '
-        pv: MMS:STATE:SET
-        io: io
-    '}
-    eEnumSet : E_PPM_States;
     (* Flow meter offset in engineering units (per-install). *)
     fFlowOffset   : LREAL := 0;
     (* Power-meter responsivity (calibrated per gentec); if zero the
@@ -31,6 +25,17 @@ VAR_INPUT
 
 END_VAR
 VAR
+    (* State-enum bridge bound to FB_PositionStatePMPSND's REFERENCE TO
+       UINT param via the shared UINT base. EPICS owns it through the
+       pytmc pragma; PLC code must go through the EnumSet property
+       instead of touching it directly. *)
+    // Set this to a non-unknown value to request a new move.
+    {attribute 'pytmc' := '
+        pv: MMS:STATE:SET
+        io: io
+    '}
+    eEnumSet : E_PPM_States;
+
     {attribute 'pytmc' := 'pv: SPM'}
     fbPowerMeter : FB_PPM_PowerMeter;
 
@@ -247,5 +252,26 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{1506b76c-dd31-480d-bc94-f9f569f83ed4}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbPPM.EnumSet := E_PPM_States.YAG1;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_PPM_States]]></Declaration>
+      <Get Name="Get" Id="{55206e57-6826-4a46-bf1e-9668598485f3}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{5656aeca-43fb-4c7d-b66c-cf721d261347}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

@@ -8,21 +8,19 @@
    fbStates; device enum bridge and toggles re-forwarded each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_ATM
-VAR_INPUT
-    (* Device-specific state-enum bridges. Typed as E_ATM_States (UINT
-       base) so the caller surface is enum-checked; the inline-init
-       below binds them to FB_PositionStatePMPSND's REFERENCE TO UINT
-       params via the shared UINT base. Callers drive moves with
-       `fbATM.eEnumSet := E_ATM_States.TARGET1;` and read
-       `fbATM.eEnumGet`. *)
+VAR
+    (* Device-specific state-enum bridge. Typed as E_ATM_States (UINT
+       base); the inline-init below binds it to
+       FB_PositionStatePMPSND's REFERENCE TO UINT param via the shared
+       UINT base. EPICS owns it through the pytmc pragma; PLC code
+       must go through the EnumSet property instead of touching it
+       directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet : E_ATM_States;
-END_VAR
-VAR
 
     {attribute 'pytmc' := 'pv: STC:01'}
     fbTempSensor1 : FB_CC_TempSensor;
@@ -215,5 +213,26 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{d6867564-423e-4de5-8672-3b648d7df078}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbATM.EnumSet := E_ATM_States.TARGET1;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_ATM_States]]></Declaration>
+      <Get Name="Get" Id="{9fcfe38e-096e-4ba8-8d70-7fd16ad47420}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{bcf7d591-82dd-413a-95e8-044611b7da05}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

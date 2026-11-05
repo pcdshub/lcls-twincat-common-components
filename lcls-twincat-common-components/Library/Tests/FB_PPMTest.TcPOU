@@ -188,16 +188,16 @@ CASE nTestStep OF
     1:
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbPPM.eEnumSet := E_PPM_States.OUT;
-            nTestStep      := 2;
+            fbPPM.EnumSet := E_PPM_States.OUT;
+            nTestStep     := 2;
         END_IF
     2:
         (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
         IF fbPPM.eEnumGet = E_PPM_States.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
-            fbPPM.eEnumSet := E_PPM_States.POWERMETER;
-            nTestStep      := 3;
+            fbPPM.EnumSet := E_PPM_States.POWERMETER;
+            nTestStep     := 3;
         END_IF
     3:
         (* POWERMETER is configured at fPosition := 20 in afbStatePMPS[2]. *)

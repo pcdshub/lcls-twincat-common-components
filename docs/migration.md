@@ -264,7 +264,7 @@ fbPDS();
 fbMotorY();
 fbFFHWO.Execute();
 
-// Command a filter:  fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER3;
+// Command a filter:  fbSATT.EnumSet := E_SXR_SATT_Position.FILTER3;
 ```
 
 ## Notes
@@ -286,5 +286,8 @@ fbFFHWO.Execute();
   never appears in `aiMotionStage` or `astPositionState`. The device sizes
   `aiMotionStage` to `MotionConstants.MAX_STATE_MOTORS` to match `FB_Init`'s
   fixed-size signature, so the unused slots stay nil and are never touched.
-- **Commanding moves:** write `fbPPM.eEnumSet := E_PPM_States.YAG1;` and read
-  back `fbPPM.eEnumGet`.
+- **Commanding moves:** write `fbPPM.EnumSet := E_PPM_States.YAG1;` and read
+  back `fbPPM.eEnumGet` (a `VAR_OUTPUT`). The `eEnumSet` backing variable is
+  private to the FB and owned by EPICS (pytmc); PLC code requests moves only
+  through the `EnumSet` property, so EPICS and PLC writers are never mixed on
+  the same variable by accident.

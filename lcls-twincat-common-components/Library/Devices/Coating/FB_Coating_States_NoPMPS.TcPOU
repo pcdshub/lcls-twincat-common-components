@@ -13,15 +13,17 @@
    injected via FB_Init. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_Coating_States_NoPMPS
-VAR_INPUT
+VAR
+    (* State-enum bridge bound to FB_PositionStateND's REFERENCE TO UINT
+       param via the shared UINT base. EPICS owns it through the pytmc
+       pragma; PLC code must go through the EnumSet property instead of
+       touching it directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     eEnumSet : E_Coating_States;
-END_VAR
-VAR
     {attribute 'no_copy'}
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -91,5 +93,26 @@ END_VAR]]></Declaration>
 THIS^.astPositionState REF= astPositionState;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{9c11b2da-dab1-4f61-9973-46a58278635f}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbCoating.EnumSet := E_Coating_States.Coating2;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_Coating_States]]></Declaration>
+      <Get Name="Get" Id="{8e4b8823-1c26-481c-99b9-da1f4f4ee831}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ee289a61-67ea-4545-8d3c-adce6c116fda}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>

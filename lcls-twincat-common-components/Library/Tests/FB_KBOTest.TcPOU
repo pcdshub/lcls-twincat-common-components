@@ -125,15 +125,15 @@ CASE nTestStep OF
         (* Wait for cold-start stabilisation before commanding a move. *)
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbKBO.eEnumSet := E_KBO_CoatingStates.Si;
-            nTestStep      := 3;
+            fbKBO.EnumSet := E_KBO_CoatingStates.Si;
+            nTestStep     := 3;
         END_IF
     3:
         IF fbKBO.eEnumGet = E_KBO_CoatingStates.Si
            AND NOT fbMotorY.stMotionStatus.bMoving THEN
             fSiPosition := fbMotorY.stMotionStatus.fActPosition;
-            fbKBO.eEnumSet := E_KBO_CoatingStates.B4C;
-            nTestStep      := 4;
+            fbKBO.EnumSet := E_KBO_CoatingStates.B4C;
+            nTestStep     := 4;
         END_IF
     4:
         IF fbKBO.eEnumGet = E_KBO_CoatingStates.B4C

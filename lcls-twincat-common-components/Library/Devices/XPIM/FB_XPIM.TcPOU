@@ -8,15 +8,17 @@
    injected via FB_Init REFERENCE TO and forwarded to fbStates each cycle. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_XPIM
-VAR_INPUT
+VAR
+    (* State-enum bridge bound to FB_PositionStatePMPSND's REFERENCE TO
+       UINT param via the shared UINT base. EPICS owns it through the
+       pytmc pragma; PLC code must go through the EnumSet property
+       instead of touching it directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
         io: io
     '}
     eEnumSet : E_XPIM_States;
-END_VAR
-VAR
 
     {attribute 'pytmc' := 'pv: MFW'}
     fbFilterWheel : FB_XPIM_FilterWheel;
@@ -224,5 +226,26 @@ THIS^.stEl6In          REF= stEl6In;
 THIS^.stEl6Out         REF= stEl6Out;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="EnumSet" Id="{12602291-7990-4746-8f23-822ecd5658ce}">
+      <Declaration><![CDATA[(* Request a new move, e.g. `fbXPIM.EnumSet := E_XPIM_States.YAG;`.
+   The state mover consumes and clears the request. *)
+PROPERTY EnumSet : E_XPIM_States]]></Declaration>
+      <Get Name="Get" Id="{a7c4e6d2-3b19-4f58-9d0e-6c21b8f35a40}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EnumSet := eEnumSet;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b8d5f7e3-4c2a-4a69-8e1f-7d32c9a46b51}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eEnumSet := EnumSet;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
   </POU>
 </TcPlcObject>
