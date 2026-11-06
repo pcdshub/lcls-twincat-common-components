@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CC_StatePMPSEncConfig" Id="{8a2c4e61-7f91-4b3d-ae05-2c6d9f1b3e74}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Per-state writer for raw-counts devices (bUseRawCounts := TRUE)
+    that need a different nEncoderCount per state, e.g. two physical
+    coating positions. Owned by the integrator PRG.
+
+    A sibling of FB_CC_StatePMPSConfig. That FB sources nEncoderCount
+    from a shared stDefault template: fine when every state shares one
+    value, wrong when they differ. Adding an override there would
+    force all 10 existing call sites to supply the new parameter too.
+
+    Skips fPosition. FB_PositionStateInternalND recomputes it every
+    cycle from nEncoderCount via the axis's NC scaling factor, so a
+    value written here would just get overwritten next scan - the old
+    FB_PositionStateBase_WithPMPS-based devices never set it either.
+
+    One-shot write in CallAfterInit: copies bMoveOk/bValid/bUseRawCounts/
+    bLocked from stDefault, then sets nEncoderCount and sPmpsState. sName
+    and fDelta stay with FB_CC_InternalStateConfig on the device FB side.
+    Body is empty, so online-view edits to the slot persist.
+*)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_CC_StatePMPSEncConfig
+VAR_INPUT
+END_VAR
+VAR
+    {attribute 'no_copy'}
+    stPositionState : REFERENCE TO ST_PositionState;
+    {attribute 'no_copy'}
+    stDefault       : REFERENCE TO ST_PositionState;
+    nEncoderCount   : UDINT;
+    sPmpsState      : STRING;
+    fbStateSetup    : FB_StateSetup(
+        stDefault       := stDefault,
+        stPositionState := stPositionState,
+        bSetDefault     := TRUE
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{8a2c4e61-7f91-4b3d-ae05-2c6d9f1b3e76}">
+      <Declaration><![CDATA[(* One-shot write: stDefault baseline, then nEncoderCount/sPmpsState
+   overlay. Leaves fPosition alone - FB_PositionStateInternalND
+   recomputes it from nEncoderCount every cycle. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+VAR_INPUT
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbStateSetup.CallAfterInit(
+    stDefault       := THIS^.stDefault,
+    stPositionState := THIS^.stPositionState,
+    bSetDefault     := TRUE
+);
+
+IF __ISVALIDREF(THIS^.stPositionState) AND __ISVALIDREF(THIS^.stDefault) THEN
+    THIS^.stPositionState.bMoveOk       := THIS^.stDefault.bMoveOk;
+    THIS^.stPositionState.bValid        := THIS^.stDefault.bValid;
+    THIS^.stPositionState.bUseRawCounts := THIS^.stDefault.bUseRawCounts;
+    THIS^.stPositionState.bLocked       := THIS^.stDefault.bLocked;
+
+    THIS^.stPositionState.nEncoderCount     := THIS^.nEncoderCount;
+    THIS^.stPositionState.stPMPS.sPmpsState := THIS^.sPmpsState;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{8a2c4e61-7f91-4b3d-ae05-2c6d9f1b3e75}">
+      <Declaration><![CDATA[(* Stores the slot reference, the stDefault template ref, and the
+   per-install nEncoderCount/sPmpsState. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains    : BOOL;
+    bInCopyCode     : BOOL;
+    stPositionState : REFERENCE TO ST_PositionState;
+    stDefault       : REFERENCE TO ST_PositionState;
+    nEncoderCount   : UDINT;
+    sPmpsState      : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stPositionState REF= stPositionState;
+THIS^.stDefault       REF= stDefault;
+THIS^.nEncoderCount    := nEncoderCount;
+THIS^.sPmpsState       := sPmpsState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

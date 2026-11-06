@@ -186,16 +186,16 @@ CASE nTestStep OF
     0:
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbATM.eEnumSet := E_ATM_States.OUT;
-            nTestStep      := 1;
+            fbATM.EnumSet := E_ATM_States.OUT;
+            nTestStep     := 1;
         END_IF
     1:
         (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
         IF fbATM.eEnumGet = E_ATM_States.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
-            fbATM.eEnumSet := E_ATM_States.TARGET1;
-            nTestStep      := 2;
+            fbATM.EnumSet := E_ATM_States.TARGET1;
+            nTestStep     := 2;
         END_IF
     2:
         (* TARGET1 is configured at fPosition := 20 in afbStatePMPS[2]. *)

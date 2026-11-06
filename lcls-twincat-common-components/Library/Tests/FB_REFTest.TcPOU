@@ -134,8 +134,8 @@ CASE nTestStep OF
            ready to accept moves, no residual error. *)
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbREF.eEnumSet := E_EpicsInOut.IN;
-            nTestStep      := 3;
+            fbREF.EnumSet := E_EpicsInOut.IN;
+            nTestStep     := 3;
         END_IF
 
     3:

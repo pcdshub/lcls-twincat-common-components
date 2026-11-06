@@ -139,16 +139,16 @@ CASE nTestStep OF
 
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbLIC.eEnumSet := E_LIC_States.OUT;
-            nTestStep      := 1;
+            fbLIC.EnumSet := E_LIC_States.OUT;
+            nTestStep     := 1;
         END_IF
     1:
         (* OUT is configured at fPosition := 10 in afbStatePMPS[1]. *)
         IF fbLIC.eEnumGet = E_LIC_States.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
-            fbLIC.eEnumSet := E_LIC_States.MIRROR1;
-            nTestStep      := 2;
+            fbLIC.EnumSet := E_LIC_States.MIRROR1;
+            nTestStep     := 2;
         END_IF
     2:
         (* MIRROR1 is configured at fPosition := 20 in afbStatePMPS[2]. *)
