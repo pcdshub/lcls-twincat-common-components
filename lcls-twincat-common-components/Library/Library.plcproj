@@ -38,6 +38,8 @@
     <Folder Include="Devices\IPM" />
     <Folder Include="Devices\XPIM" />
     <Folder Include="Devices\PPM" />
+    <Folder Include="Devices\KBO" />
+    <Folder Include="Devices\Coating" />
     <Folder Include="DUTs" />
     <Folder Include="Tests" />
     <Folder Include="POUs" />
@@ -67,6 +69,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\FB_PPM_PowerMeter.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\KBO\E_KBO_CoatingStates.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\KBO\FB_KBO_Coating_States.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Coating\E_Coating_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Coating\FB_Coating_States_NoPMPS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\E_REF_States.TcDUT">
@@ -153,6 +167,9 @@
     <Compile Include="POUs\FB_CC_StatePMPSConfig.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CC_StatePMPSEncConfig.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_FDQ_FlowMeter.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -169,6 +186,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_IPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_KBOTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\FB_Coating_States_NoPMPSTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\FB_SATTTest.TcPOU">

@@ -233,16 +233,16 @@ CASE nTestStep OF
 
         IF fbMotorY.stMotionStatus.bStageReady
            AND NOT fbMotorY.stMotionStatus.bError THEN
-            fbSATT.eEnumSet := E_SXR_SATT_Position.OUT;
-            nTestStep       := 1;
+            fbSATT.EnumSet := E_SXR_SATT_Position.OUT;
+            nTestStep      := 1;
         END_IF
     1:
         (* OUT is configured at fPosition := 10 in afbStateDefaults[1]. *)
         IF fbSATT.eEnumGet = E_SXR_SATT_Position.OUT
            AND NOT fbMotorY.stMotionStatus.bMoving
            AND ABS(fObserved - 10.0) <= fTolerance THEN
-            fbSATT.eEnumSet := E_SXR_SATT_Position.FILTER1;
-            nTestStep       := 2;
+            fbSATT.EnumSet := E_SXR_SATT_Position.FILTER1;
+            nTestStep      := 2;
         END_IF
     2:
         (* FILTER1 is configured at fPosition := 20 in afbStateDefaults[2]. *)

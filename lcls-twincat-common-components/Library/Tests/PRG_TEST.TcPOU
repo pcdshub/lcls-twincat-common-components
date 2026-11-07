@@ -9,6 +9,8 @@ VAR
     fbATMTest: FB_ATMTest;
     fbGBSTest: FB_GBSTest;
     fbIPMTest: FB_IPMTest;
+    fbKBOTest: FB_KBOTest;
+    fbCoatingNoPMPSTest: FB_Coating_States_NoPMPSTest;
     fbLICTest: FB_LICTest;
     fbPPMTest: FB_PPMTest;
     fbREFTest: FB_REFTest;

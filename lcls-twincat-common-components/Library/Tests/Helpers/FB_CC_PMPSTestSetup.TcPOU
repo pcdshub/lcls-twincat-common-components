@@ -45,6 +45,7 @@ VAR
     fbJsonHelper_XPIM  : FB_PMPSJsonTestHelper;
     fbJsonHelper_SATT  : FB_PMPSJsonTestHelper;
     fbJsonHelper_SLITS : FB_PMPSJsonTestHelper;
+    fbJsonHelper_KBO   : FB_PMPSJsonTestHelper;
 
     (* astParams_XXX[0] is the transition key; the rest are named-state
        keys in enum order. *)
@@ -58,6 +59,8 @@ VAR
     astParams_XPIM  : ARRAY[0..5] OF ST_DbStateParams;
     astParams_SATT  : ARRAY[0..0] OF ST_DbStateParams;
     astParams_SLITS : ARRAY[0..0] OF ST_DbStateParams;
+    (* [0]=transition, [1]=Si, [2]=B4C *)
+    astParams_KBO   : ARRAY[0..2] OF ST_DbStateParams;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -539,6 +542,31 @@ astParams_SLITS[0].stBeamParams.nRate        := 10;
 astParams_SLITS[0].stBeamParams.nTran        := 12;
 astParams_SLITS[0].stBeamParams.nMachineMode := 2;
 
+(* ---- TST:KBO ---- [0]=transition, [1]=Si, [2]=B4C *)
+astParams_KBO[0].sPmpsState                  := 'TST:KBO-TRANSITION';
+astParams_KBO[0].nRequestAssertionID         := 1300;
+astParams_KBO[0].stBeamParams.nBeamClass     := 2#0000_1000;
+astParams_KBO[0].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_KBO[0].stBeamParams.nRate          := 1;
+astParams_KBO[0].stBeamParams.nTran          := 0;
+astParams_KBO[0].stBeamParams.nMachineMode   := 1;
+
+astParams_KBO[1].sPmpsState                  := 'TST:KBO-Si';
+astParams_KBO[1].nRequestAssertionID         := 1301;
+astParams_KBO[1].stBeamParams.nBeamClass     := 2#0000_0001;
+astParams_KBO[1].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_KBO[1].stBeamParams.nRate          := 10;
+astParams_KBO[1].stBeamParams.nTran          := 12;
+astParams_KBO[1].stBeamParams.nMachineMode   := 2;
+
+astParams_KBO[2].sPmpsState                  := 'TST:KBO-B4C';
+astParams_KBO[2].nRequestAssertionID         := 1302;
+astParams_KBO[2].stBeamParams.nBeamClass     := 2#0000_0010;
+astParams_KBO[2].stBeamParams.neVRange       := 2#1111_1111_1111_1111_1111_1111_1111_1111;
+astParams_KBO[2].stBeamParams.nRate          := 50;
+astParams_KBO[2].stBeamParams.nTran          := 8;
+astParams_KBO[2].stBeamParams.nMachineMode   := 1;
+
 (* First helper creates the root document, the rest append. *)
 fbJsonHelper_ATM(
     astBeamParams := astParams_ATM,
@@ -598,6 +626,12 @@ fbJsonHelper_SLITS(
     astBeamParams := astParams_SLITS,
     bExecute      := TRUE,
     sDevName      := 'SL1L0:POWER',
+    bNewDoc       := FALSE);
+
+fbJsonHelper_KBO(
+    astBeamParams := astParams_KBO,
+    bExecute      := TRUE,
+    sDevName      := 'TST:KBO',
     bNewDoc       := FALSE);
 ]]></ST>
       </Implementation>

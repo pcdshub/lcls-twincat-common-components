@@ -29,5 +29,7 @@
 		<Axis File="SLIT_North.xti" Id="10"/>
 		<Axis File="SLIT_South.xti" Id="11"/>
 		<Axis File="SLIT_Top.xti" Id="8"/>
+		<Axis File="KBO_Y.xti" Id="14"/>
+		<Axis File="COATING_Y.xti" Id="15"/>
 	</NC>
 </TcSmItem>

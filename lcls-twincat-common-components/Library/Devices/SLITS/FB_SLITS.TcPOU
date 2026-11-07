@@ -20,6 +20,14 @@ VAR_INPUT
     '}
     bMoveOk : BOOL;
 
+    (* Arbiter bridge (PMPS_PRE) health: connection up and inbound data valid.
+       AptArrayReq is untrustworthy while FALSE. Defaults to TRUE so an
+       integrator that has no bridge diagnostics keeps the xOK-only behaviour. *)
+    bBridgeOK : BOOL := TRUE;
+    (* TRUE only once the bridge is confirmed bad, not while an unconfirmed
+       zero reading is still inside the debounce window. Gates the FFO trip. *)
+    bBridgeConfirmedBad : BOOL;
+
     (* Per-blade encoder zero-offsets (EPICS-settable). *)
     {attribute 'pytmc' := '
     pv: Offset_Top
@@ -188,6 +196,19 @@ VAR
     AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
     AptArrayReq    AT %I* : ST_PMPS_Aperture_IO;
 
+    (* PMPS sanitizers for the raw AptArrayReq Width/Height. Each holds the last
+       trusted value while the bridge/xOK is untrusted or the reading is
+       NaN/Inf. Operator gap requests and the PMPS aperture limit use the
+       outputs below, so a stale or invalid request never loosens the limit. *)
+    fbTrustedAptWidth  : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    fbTrustedAptHeight : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    rTrustedAptWidth  : REAL;
+    rTrustedAptHeight : REAL;
+    // TRUE when bBridgeOK AND AptArrayReq.xOK.
+    bAptTrusted   : BOOL;
+    bOverAperture : BOOL;
+    rBadXOK       : R_TRIG;
+
     (* REF backing fields, populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
@@ -239,6 +260,8 @@ END_VAR
         <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
 THIS^.fbFFHWO       REF= fbFFHWO;
 THIS^.sDeviceName   := sDeviceName;
+fbTrustedAptWidth.sName  := CONCAT(sDeviceName, ' aperture width');
+fbTrustedAptHeight.sName := CONCAT(sDeviceName, ' aperture height');
 ]]></ST>
       </Implementation>
     </Method>
@@ -268,14 +291,16 @@ END_IF
     </Method>
     <Method Name="M_CalculatePositions" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109a}">
       <Declaration><![CDATA[(* Legacy ACT_CalculatePositions equivalent. Detects EPICS request changes
-   (rejecting aperture sizes beyond the PMPS-authorized envelope), recomputes
+         (rejecting aperture sizes beyond the last trusted PMPS envelope), recomputes
    per-blade targets from requested gap + center + encoder offset, and refreshes
    actual aperture geometry feedback from caller-owned motor positions. *)
 METHOD M_CalculatePositions
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
-    IF rReqApertureSizeX <= AptArrayReq.Width THEN
+              <ST><![CDATA[M_UpdateAptTrust();
+
+      IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
+          IF rReqApertureSizeX <= rTrustedAptWidth THEN
         rOldReqApertureSizeX := rReqApertureSizeX;
         bExecuteMotionX      := TRUE;
         fbLogger(sMsg := 'Requested new X gap.', eSevr := TcEventSeverity.Verbose);
@@ -294,7 +319,7 @@ IF rOldReqCenterX <> rReqCenterX THEN
 END_IF
 
 IF rOldReqApertureSizeY <> rReqApertureSizeY THEN
-    IF rReqApertureSizeY <= AptArrayReq.Height THEN
+    IF rReqApertureSizeY <= rTrustedAptHeight THEN
         rOldReqApertureSizeY := rReqApertureSizeY;
         bExecuteMotionY      := TRUE;
         fbLogger(sMsg := 'Requested new Y gap.', eSevr := TcEventSeverity.Verbose);
@@ -336,6 +361,23 @@ rActCenterY := LREAL_TO_REAL(
     ((aiMotionStage[E_SlitsBlade.TOP].MotionStatus.fActPosition    - rEncoderOffsetTop)
    + (aiMotionStage[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - rEncoderOffsetBottom)) / 2
 );
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UpdateAptTrust" Id="{c2a19fb7-5699-4cb0-a912-605d406f11b1}">
+      <Declaration><![CDATA[(* Refreshes bAptTrusted and sanitizes the PMPS aperture request into
+         rTrustedAptWidth/Height via FB_FallibleRealFromEtherCAT: the request is taken
+         only while the bridge is healthy, xOK is TRUE and the value is finite. A stale,
+         invalid or NaN/Inf request keeps the last good limit.
+         Idempotent, so both M_CalculatePositions and M_UpdatePMPS call it. *)
+METHOD INTERNAL M_UpdateAptTrust
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bAptTrusted := bBridgeOK AND AptArrayReq.xOK;
+fbTrustedAptWidth(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Width);
+fbTrustedAptHeight(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Height);
+rTrustedAptWidth  := fbTrustedAptWidth.fValue;
+rTrustedAptHeight := fbTrustedAptHeight.fValue;
 ]]></ST>
       </Implementation>
     </Method>
@@ -397,6 +439,22 @@ rReqCenterY       := CenterY;
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="SetAptRequest" Id="{3b9d6e41-8c2f-4a75-b1d0-6e47a2c9f813}">
+      <Declaration><![CDATA[(* Drives the AT %I* aperture request, which cannot be written from outside
+   the FB. Used by simulation and tests. *)
+METHOD INTERNAL SetAptRequest
+VAR_INPUT
+    Width  : REAL;
+    Height : REAL;
+    xOK    : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width  := Width;
+THIS^.AptArrayReq.Height := Height;
+THIS^.AptArrayReq.xOK    := xOK;]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
       <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
 VAR_INPUT
@@ -406,7 +464,8 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.AptArrayReq.Width := Width;
-THIS^.AptArrayReq.Height := Height;]]></ST>
+THIS^.AptArrayReq.Height := Height;
+THIS^.AptArrayReq.xOK := TRUE;]]></ST>
       </Implementation>
     </Method>
   </POU>
