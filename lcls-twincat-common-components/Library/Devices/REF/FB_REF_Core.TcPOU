@@ -29,8 +29,9 @@ VAR
     {attribute 'pytmc' := 'pv: LAS'}
     fbLaser : FB_REF_Laser;
 
-    // Laser terminal full scale, set through FB_Init of the derived FB_REF.
-    fTermMax : LREAL := 200;
+    // Laser terminal full scale, bound to the caller's variable through FB_Init of the derived FB_REF.
+    {attribute 'no_copy'}
+    fTermMax              : REFERENCE TO LREAL;
 
     (* REFERENCE TO backing fields populated by FB_Init. Same names as
        FB_Init params; THIS^. disambiguates inside FB_Init.
@@ -98,6 +99,7 @@ END_VAR]]></Declaration>
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter)
+   OR NOT __ISVALIDREF(fTermMax)
    OR NOT __ISVALIDREF(eEnumSetRef)
    OR NOT __ISVALIDREF(eEnumGetRef) THEN
     RETURN;

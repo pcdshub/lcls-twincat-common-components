@@ -27,7 +27,8 @@ VAR
     bFileReaderBusy       : REFERENCE TO BOOL;
     {attribute 'no_copy'}
     bFileReaderError      : REFERENCE TO BOOL;
-    fTermMax : LREAL;
+    {attribute 'no_copy'}
+    fTermMax              : REFERENCE TO LREAL;
 
     fbREF : FB_REF(
         aiMotionStage         := aiMotionStage,
@@ -92,7 +93,7 @@ VAR_INPUT
     bReadDBNow             : BOOL;
     bFileReaderBusy        : REFERENCE TO BOOL;
     bFileReaderError       : REFERENCE TO BOOL;
-    fTermMax               : LREAL;
+    fTermMax               : REFERENCE TO LREAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
@@ -106,7 +107,7 @@ THIS^.bEnablePositionLimits := bEnablePositionLimits;
 THIS^.bReadDBNow            := bReadDBNow;
 THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;
-THIS^.fTermMax := fTermMax;]]></ST>
+THIS^.fTermMax              REF= fTermMax;]]></ST>
       </Implementation>
     </Method>
   </POU>

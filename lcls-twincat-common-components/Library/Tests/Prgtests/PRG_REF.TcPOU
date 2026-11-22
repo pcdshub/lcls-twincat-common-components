@@ -36,6 +36,9 @@ VAR
          sPmpsState      := 'TST:REF-IN')
     ];
 
+    // Live laser terminal range; write it to change the scale at run time.
+    fTermMax : LREAL := 200;
+
     fbHost : FB_REFHost(
         aiMotionStage         := aiMotionStage,
         astPositionState      := astPositionState,
@@ -48,7 +51,7 @@ VAR
         bReadDBNow            := TRUE,
         bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
         bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
-        fTermMax              := 200
+        fTermMax              := fTermMax
     );
 
     i          : UINT;

@@ -78,7 +78,7 @@ VAR_INPUT
     bReadDBNow             : BOOL;
     bFileReaderBusy        : REFERENCE TO BOOL;
     bFileReaderError       : REFERENCE TO BOOL;
-    fTermMax               : LREAL;
+    fTermMax               : REFERENCE TO LREAL;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -94,7 +94,7 @@ SUPER^.bReadDBNow            := bReadDBNow;
 SUPER^.bFileReaderBusy       REF= bFileReaderBusy;
 SUPER^.bFileReaderError      REF= bFileReaderError;
 
-SUPER^.fTermMax := fTermMax;
+SUPER^.fTermMax              REF= fTermMax;
 
 SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
 SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
@@ -158,7 +158,7 @@ VAR_INPUT
     bReadDBNow             : BOOL;
     bFileReaderBusy        : REFERENCE TO BOOL;
     bFileReaderError       : REFERENCE TO BOOL;
-    fTermMax               : LREAL;
+    fTermMax               : REFERENCE TO LREAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[THIS^.CallAfterInitREF(

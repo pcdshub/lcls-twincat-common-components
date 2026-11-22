@@ -58,6 +58,8 @@ VAR
          sPmpsState      := 'TST:REF-IN')
     ];
 
+    fTermMax : LREAL := 200;
+
     fbREF : FB_REF(
         aiMotionStage    := aiMotionStage,
         astPositionState := astPositionState,
@@ -70,7 +72,7 @@ VAR
         bReadDBNow := FALSE,
         bFileReaderBusy       := bFileReaderBusy,
         bFileReaderError      := bFileReaderError,
-        fTermMax              := 200
+        fTermMax              := fTermMax
     );
 
     fbTestTimer : TON := (IN := TRUE, PT := T#60S);
