@@ -26,9 +26,6 @@ VAR
     {attribute 'pytmc' := 'pv: CIL'}
     fbLED : FB_XPIM_LED;
 
-    {attribute 'pytmc' := 'pv: MFW'}
-    fbFilterWheel : FB_XPIM_FilterWheel;
-
     {attribute 'pytmc' := 'pv: CAM'}
     fbOpal : FB_XPIM_Opal;
 
@@ -38,6 +35,12 @@ VAR
     stEl6In  : REFERENCE TO EL6inData22b;
     {attribute 'no_copy'}
     stEl6Out : REFERENCE TO EL6outData22b;
+
+    {attribute 'pytmc' := 'pv: MFW'}
+    fbFilterWheel : FB_XPIM_FilterWheel(
+        stIn_EL6  := stEl6In,
+        stOut_EL6 := stEl6Out
+    );
 
     afbStateDefaults : ARRAY[1..4] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_XPIM_States.OUT],
@@ -70,9 +73,7 @@ IF THIS^.ReferencesValid()
    AND __ISVALIDREF(stEl6In)
    AND __ISVALIDREF(stEl6Out) THEN
     fbFilterWheel(
-        bExecute  := TRUE,
-        stIn_EL6  := stEl6In,
-        stOut_EL6 := stEl6Out
+        bExecute := TRUE
     );
     fbOpal();
 END_IF
@@ -134,6 +135,10 @@ SUPER^.bFileReaderBusy       REF= bFileReaderBusy;
 SUPER^.bFileReaderError      REF= bFileReaderError;
 THIS^.stEl6In                REF= stEl6In;
 THIS^.stEl6Out               REF= stEl6Out;
+THIS^.fbFilterWheel.CallAfterInitFilterWheel(
+    stIn_EL6  := stEl6In,
+    stOut_EL6 := stEl6Out
+);
 
 SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
 SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
