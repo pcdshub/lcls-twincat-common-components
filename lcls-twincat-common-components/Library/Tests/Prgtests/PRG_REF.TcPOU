@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_REF" Id="{88406a3e-c8e8-47e7-9f74-2d15d5f7c1bb}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style program with a FB_REF nested in FB_REFInitHost. It follows
+   PRG_ATMInit: one motor, the PMPS state-name configurators and the host. The
+   arbiter, fast-fault output, persistent storage and DB reader are shared in
+   GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. The configurators are in
+   the PRG, because the host's references are not bound yet when its
+   declaration initialisers run. The PMPS DB is plc-cc-motion.json. *)
+PROGRAM PRG_REF
+VAR
+    {attribute 'TcNcAxis' := 'PRG_REF_Y'}
+    axRef         : AXIS_REF;
+    fbMotor       : FB_MotionStageNC(
+        AxisRef                := axRef,
+        iPersistentDataStorage := GVL_PRG.fbPDS,
+        sName                  := 'REFINIT'
+    );
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotor];
+
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+    afbStatePMPS : ARRAY[1..2] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_EpicsInOut.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10.0,
+         sPmpsState      := 'TST:REF-OUT'),
+        (stPositionState := astPositionState[1][E_EpicsInOut.IN],
+         stDefault       := stDefault,
+         fPosition       := 20.0,
+         sPmpsState      := 'TST:REF-IN')
+    ];
+
+    fbHost : FB_REFHost(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := GVL_PRG.fbFastFaultOutput1,
+        fbArbiter             := GVL_PRG.fbArbiter1,
+        sDeviceName           := 'TST:REF',
+        sTransitionKey        := 'TST:REF-TRANSITION',
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError,
+        fTermMax              := 200
+    );
+
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotor.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotor.SetVelocity(
+        Velocity := 15.5
+    );
+    fbMotor.RestoreMotionParams      := FALSE;
+    fbMotor.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+
+FOR i := 1 TO 2 DO
+    afbStatePMPS[i]();
+END_FOR
+
+fbHost();
+fbMotor();
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_REF">
+      <LineId Id="1" Count="25" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

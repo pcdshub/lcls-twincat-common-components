@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_ATM" Id="{320538ce-3d32-464e-a1a8-5a9249218d56}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style device program that nests an FB_ATM. It follows PRG_PMPS in
+   the motion library: one motor, the PMPS state-name configurators and the
+   host. The arbiter, fast-fault output, persistent storage and DB reader are
+   shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. The
+   configurators are in the PRG, because the host's own references are not bound
+   yet when its declaration initialisers run. The PMPS DB is plc-cc-motion.json. *)
+PROGRAM PRG_ATM
+VAR
+    {attribute 'TcNcAxis' := 'PRG_ATM_X'}
+    axRef         : AXIS_REF;
+    fbMotor       : FB_MotionStageNC(
+        AxisRef                := axRef,
+        iPersistentDataStorage := GVL_PRG.fbPDS,
+        sName                  := 'INIT'
+    );
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotor];
+
+    // States of the nested FB_ATM, named and keyed for the PMPS DB below.
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+    afbStatePMPS : ARRAY[1..6] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_ATM_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:ATMNEST-OUT'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:ATMNEST-TARGET1'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:ATMNEST-TARGET2'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET3],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:ATMNEST-TARGET3'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET4],
+         stDefault       := stDefault,
+         fPosition       := 50,
+         sPmpsState      := 'TST:ATMNEST-TARGET4'),
+        (stPositionState := astPositionState[1][E_ATM_States.TARGET5],
+         stDefault       := stDefault,
+         fPosition       := 60,
+         sPmpsState      := 'TST:ATMNEST-TARGET5')
+    ];
+
+    fbHost : FB_ATMHost(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := GVL_PRG.fbFastFaultOutput1,
+        fbArbiter             := GVL_PRG.fbArbiter1,
+        sDeviceName           := 'TST:ATMNEST',
+        sTransitionKey        := 'TST:ATMNEST-TRANSITION',
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError
+    );
+
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotor.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotor.SetVelocity(
+        Velocity := 15.5
+    );
+    fbMotor.RestoreMotionParams      := FALSE;
+    fbMotor.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+
+FOR i := 1 TO 6 DO
+    afbStatePMPS[i]();
+END_FOR
+
+fbHost();
+fbMotor();
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_ATM">
+      <LineId Id="1" Count="25" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

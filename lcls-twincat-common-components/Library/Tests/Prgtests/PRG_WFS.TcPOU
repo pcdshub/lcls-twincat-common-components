@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_WFS" Id="{c95a6119-a30d-4279-810f-f1b0bc730c7a}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style program with a FB_WFS nested in FB_WFSInitHost. It follows
+   PRG_ATMInit: one motor, the PMPS state-name configurators and the host. The
+   arbiter, fast-fault output, persistent storage and DB reader are shared in
+   GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. The configurators are in
+   the PRG, because the host's references are not bound yet when its
+   declaration initialisers run. The PMPS DB is plc-cc-motion.json. *)
+PROGRAM PRG_WFS
+VAR
+    {attribute 'TcNcAxis' := 'PRG_WFS_Y'}
+    axRef         : AXIS_REF;
+    fbMotor       : FB_MotionStageNC(
+        AxisRef                := axRef,
+        iPersistentDataStorage := GVL_PRG.fbPDS,
+        sName                  := 'WFSINIT'
+    );
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotor];
+
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    stDefault : ST_PositionState := (
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+    afbStatePMPS : ARRAY[1..6] OF FB_CC_StatePMPSConfig[
+        (stPositionState := astPositionState[1][E_WFS_States.OUT],
+         stDefault       := stDefault,
+         fPosition       := 10,
+         sPmpsState      := 'TST:WFS-OUT'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET1],
+         stDefault       := stDefault,
+         fPosition       := 20,
+         sPmpsState      := 'TST:WFS-TARGET1'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET2],
+         stDefault       := stDefault,
+         fPosition       := 30,
+         sPmpsState      := 'TST:WFS-TARGET2'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET3],
+         stDefault       := stDefault,
+         fPosition       := 40,
+         sPmpsState      := 'TST:WFS-TARGET3'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET4],
+         stDefault       := stDefault,
+         fPosition       := 50,
+         sPmpsState      := 'TST:WFS-TARGET4'),
+        (stPositionState := astPositionState[1][E_WFS_States.TARGET5],
+         stDefault       := stDefault,
+         fPosition       := 60,
+         sPmpsState      := 'TST:WFS-TARGET5')
+    ];
+
+    fbHost : FB_WFSHost(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := GVL_PRG.fbFastFaultOutput1,
+        fbArbiter             := GVL_PRG.fbArbiter1,
+        sDeviceName           := 'TST:WFS',
+        sTransitionKey        := 'TST:WFS-TRANSITION',
+        bEnableBeamParams     := TRUE,
+        bEnablePositionLimits := TRUE,
+        bReadDBNow            := TRUE,
+        bFileReaderBusy       := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bFileReaderError      := MOTION_GVL.fbPmpsFileReader.bError
+    );
+
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotor.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.IF_ENABLED,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.LOW_LIMIT,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotor.SetVelocity(
+        Velocity := 15.5
+    );
+    fbMotor.RestoreMotionParams      := FALSE;
+    fbMotor.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+
+FOR i := 1 TO 6 DO
+    afbStatePMPS[i]();
+END_FOR
+
+fbHost();
+fbMotor();
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_WFS">
+      <LineId Id="1" Count="25" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
