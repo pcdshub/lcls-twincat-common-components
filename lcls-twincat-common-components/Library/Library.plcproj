@@ -229,6 +229,12 @@
     <Compile Include="Version\Global_Version.TcGVL">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\SLITS\FB_SLITS_THERMAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SLITS\E_SlitsAxis.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Library.tmc">

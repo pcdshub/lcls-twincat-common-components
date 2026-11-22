@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITS_THERMAL" Id="{8a4b8a53-4e73-45c2-b1f8-330181dd7db6}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Thermal variant of FB_SLITS. Adds 8 thermocouple RTDs, a flow switch and
+   a reactive-temp DB lookup (FB_JsonDocToSafeBP keyed by sPmpsState) driving
+   every RTD fault. Request handling and motion are inherited from FB_SLITS.
+   The body calls SUPER^() then drives the RTDs behind a REF nil-guard.
+   FB_SLITS_POWER extends this FB with the PMPS arbiter aperture handshake. *)
+{attribute 'analysis' := '-33'}
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SLITS_THERMAL EXTENDS FB_SLITS
+
+VAR
+    {attribute 'pytmc' := 'pv: FSW'}
+    fbFlowSwitch : FB_XTES_Flowswitch;
+
+    {attribute 'pytmc' := 'pv: TOP:RTD:01'}
+    RTD_TOP_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: TOP:RTD:02'}
+    RTD_TOP_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: BOTTOM:RTD:01'}
+    RTD_Bottom_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: BOTTOM:RTD:02'}
+    RTD_Bottom_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: NORTH:RTD:01'}
+    RTD_North_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: NORTH:RTD:02'}
+    RTD_North_2 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: SOUTH:RTD:01'}
+    RTD_South_1 : FB_CC_TempSensor;
+    {attribute 'pytmc' := 'pv: SOUTH:RTD:02'}
+    RTD_South_2 : FB_CC_TempSensor;
+    (* PMPS reactive-DB key for the device's allowed temperature. *)
+    sPmpsState : STRING;
+    fbReadPMPSDB : FB_JsonDocToSafeBP;
+    astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
+    (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls.
+       Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
+       instead of reaching into MOTION_GVL.fbPmpsFileReader directly.
+    *)
+    bFileReaderBusy : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.aiMotionStage)
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO) OR NOT __ISVALIDREF(bFileReaderBusy) THEN
+    RETURN;
+END_IF
+
+
+// Parent body: request handling, target calculation and blade motion.
+SUPER^();
+
+// DB lookup on the falling edge of the file-reader busy flag; an unbound
+// reference keeps the slit inert.
+astTempDB[1].sPmpsState := sPmpsState;
+fbReadPMPSDB(
+    bExecute    := NOT bFileReaderBusy,
+    jsonDoc     := PMPS_GVL.BP_jsonDoc,
+    sDeviceName := sDeviceName,
+    arrStates   := astTempDB,
+    io_fbFFHWO  := fbFFHWO
+);
+
+// All 8 RTDs share the same fault threshold (resolved from the DB).
+RTD_TOP_1(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_TOP_2(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_Bottom_1(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_Bottom_2(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_North_1(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_North_2(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_South_1(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+RTD_South_2(
+    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
+    sDevName        := sDeviceName,
+    io_fbFFHWO      := fbFFHWO
+);
+
+fbFlowSwitch();
+]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{d76cfe43-4f21-4fd6-abc2-f831774ed068}">
+      <Declaration><![CDATA[(* Records sPmpsState and REF-binds the caller-owned file-reader busy flag;
+   aiMotionStage (4 blades), fbFFHWO and sDeviceName are handled by base
+   FB_SLITS.FB_Init. Blade wiring runs from CallAfterInit. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains  : BOOL;
+    bInCopyCode   : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK       : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitTHERMAL(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName     := sDeviceName,
+    bBridgeOK       := bBridgeOK,
+    sPmpsState      := sPmpsState,
+    bFileReaderBusy := bFileReaderBusy
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CallAfterInitTHERMAL" Id="{721939b4-d6d0-4c57-b0c1-079fd562bdec}">
+      <Declaration><![CDATA[(* Provides every FB_SLITS_THERMAL FB_Init input, through the FB_SLITS re-wire.
+   An FB that nests an FB_SLITS_THERMAL calls it from its own CallAfterInit. *)
+METHOD CallAfterInitTHERMAL
+VAR_INPUT
+    aiMotionStage   : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO         : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName     : STRING;
+    bBridgeOK       : REFERENCE TO BOOL;
+    sPmpsState      : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.CallAfterInitSLITS(
+    aiMotionStage := aiMotionStage,
+    fbFFHWO       := fbFFHWO,
+    sDeviceName   := sDeviceName,
+    bBridgeOK     := bBridgeOK
+);
+
+THIS^.sPmpsState := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
