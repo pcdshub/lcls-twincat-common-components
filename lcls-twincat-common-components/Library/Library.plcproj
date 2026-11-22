@@ -265,6 +265,9 @@
     <Compile Include="Devices\Coating\FB_Coating_States_NoPMPS_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\SATT\FB_SXR_SATT_Stage_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Library.tmc">
