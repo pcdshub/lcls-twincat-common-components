@@ -322,20 +322,5 @@ TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SLITS_POWERTest">
-      <LineId Id="1" Count="5" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_POWERTest.TestApertureMotion">
-      <LineId Id="1" Count="68" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_POWERTest.TestAptNonFinite">
-      <LineId Id="1" Count="42" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_POWERTest.TestBridgeGating">
-      <LineId Id="1" Count="29" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_POWERTest.TestUpdatePMPS">
-      <LineId Id="1" Count="34" />
-    </LineIds>
   </POU>
 </TcPlcObject>

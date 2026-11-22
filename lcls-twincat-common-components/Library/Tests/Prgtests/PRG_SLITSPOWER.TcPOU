@@ -8,13 +8,13 @@
    plc-cc-motion.json. *)
 PROGRAM PRG_SLITSPOWER
 VAR
-	{attribute 'TcNcAxis' := 'PRG_SLITSPOWER_Top'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSPOWER_Top'}
     axTop : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSPOWER_Bottom'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSPOWER_Bottom'}
     axBottom : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSPOWER_North'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSPOWER_North'}
     axNorth : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSPOWER_South'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSPOWER_South'}
     axSouth : AXIS_REF;
 
     afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
@@ -112,11 +112,5 @@ fbHost.UpdatePMPS(
 );
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_SLITSPOWER">
-      <LineId Id="1" Count="18" />
-      <LineId Id="29" Count="0" />
-      <LineId Id="20" Count="7" />
-      <LineId Id="31" Count="33" />
-    </LineIds>
   </POU>
 </TcPlcObject>

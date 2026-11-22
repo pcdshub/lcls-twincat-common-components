@@ -116,14 +116,5 @@ THIS^.stEl6In REF= stEl6In;
 THIS^.stEl6Out REF= stEl6Out;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_XPIMHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_XPIMHost.CallAfterInit">
-      <LineId Id="1" Count="15" />
-    </LineIds>
-    <LineIds Name="FB_XPIMHost.FB_Init">
-      <LineId Id="1" Count="12" />
-    </LineIds>
   </POU>
 </TcPlcObject>

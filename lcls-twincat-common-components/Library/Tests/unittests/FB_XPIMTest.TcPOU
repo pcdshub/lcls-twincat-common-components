@@ -227,11 +227,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_XPIMTest">
-      <LineId Id="1" Count="60" />
-    </LineIds>
-    <LineIds Name="FB_XPIMTest.TestStateMove">
-      <LineId Id="1" Count="44" />
-    </LineIds>
   </POU>
 </TcPlcObject>

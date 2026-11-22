@@ -284,17 +284,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_ATMTest">
-      <LineId Id="1" Count="47" />
-    </LineIds>
-    <LineIds Name="FB_ATMTest.SetATMTemp">
-      <LineId Id="1" Count="2" />
-    </LineIds>
-    <LineIds Name="FB_ATMTest.TestStateMove">
-      <LineId Id="1" Count="45" />
-    </LineIds>
-    <LineIds Name="FB_ATMTest.TestTempFFO">
-      <LineId Id="1" Count="48" />
-    </LineIds>
   </POU>
 </TcPlcObject>

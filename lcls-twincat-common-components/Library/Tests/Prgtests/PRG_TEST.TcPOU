@@ -72,8 +72,5 @@ END_VAR
       <ST><![CDATA[// Run the tests
 TcUnit.RUN();]]></ST>
     </Implementation>
-    <LineIds Name="PRG_TEST">
-      <LineId Id="1" Count="1" />
-    </LineIds>
   </POU>
 </TcPlcObject>

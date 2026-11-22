@@ -17,8 +17,5 @@ END_VAR
 GVL_PRG.fbFastFaultOutput1.Execute();
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_PMPS_POST">
-      <LineId Id="1" Count="6" />
-    </LineIds>
   </POU>
 </TcPlcObject>

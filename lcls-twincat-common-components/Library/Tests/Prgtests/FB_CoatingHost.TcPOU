@@ -55,14 +55,5 @@ END_VAR]]></Declaration>
 THIS^.astPositionState REF= astPositionState;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_CoatingHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_CoatingHost.CallAfterInit">
-      <LineId Id="1" Count="4" />
-    </LineIds>
-    <LineIds Name="FB_CoatingHost.FB_Init">
-      <LineId Id="1" Count="1" />
-    </LineIds>
   </POU>
 </TcPlcObject>

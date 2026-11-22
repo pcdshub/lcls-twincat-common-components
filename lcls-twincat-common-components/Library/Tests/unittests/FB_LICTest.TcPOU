@@ -192,11 +192,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_LICTest">
-      <LineId Id="1" Count="3" />
-    </LineIds>
-    <LineIds Name="FB_LICTest.TestStateMove">
-      <LineId Id="1" Count="78" />
-    </LineIds>
   </POU>
 </TcPlcObject>

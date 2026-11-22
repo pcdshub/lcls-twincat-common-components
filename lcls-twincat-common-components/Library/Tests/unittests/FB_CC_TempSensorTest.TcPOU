@@ -112,17 +112,5 @@ TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_CC_TempSensorTest">
-      <LineId Id="1" Count="3" />
-    </LineIds>
-    <LineIds Name="FB_CC_TempSensorTest.SetTempAndRunFB">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_CC_TempSensorTest.TestAutoReset">
-      <LineId Id="1" Count="39" />
-    </LineIds>
-    <LineIds Name="FB_CC_TempSensorTest.TestBasic">
-      <LineId Id="1" Count="28" />
-    </LineIds>
   </POU>
 </TcPlcObject>

@@ -109,14 +109,5 @@ THIS^.bFileReaderError      REF= bFileReaderError;
 THIS^.fTermMax := fTermMax;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_REFHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_REFHost.CallAfterInit">
-      <LineId Id="1" Count="14" />
-    </LineIds>
-    <LineIds Name="FB_REFHost.FB_Init">
-      <LineId Id="1" Count="11" />
-    </LineIds>
   </POU>
 </TcPlcObject>

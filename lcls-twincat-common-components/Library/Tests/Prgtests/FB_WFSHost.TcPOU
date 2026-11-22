@@ -104,14 +104,5 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_WFSHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_WFSHost.CallAfterInit">
-      <LineId Id="1" Count="13" />
-    </LineIds>
-    <LineIds Name="FB_WFSHost.FB_Init">
-      <LineId Id="1" Count="10" />
-    </LineIds>
   </POU>
 </TcPlcObject>

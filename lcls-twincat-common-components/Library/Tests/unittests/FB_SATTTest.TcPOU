@@ -326,26 +326,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SATTTest">
-      <LineId Id="1" Count="28" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.AssertBothTempFault">
-      <LineId Id="1" Count="9" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.AssertNeitherTempFault">
-      <LineId Id="1" Count="9" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.SetSATTTemp">
-      <LineId Id="1" Count="8" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.TestConfig">
-      <LineId Id="1" Count="30" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.TestStateMove">
-      <LineId Id="1" Count="45" />
-    </LineIds>
-    <LineIds Name="FB_SATTTest.TestTempFFO">
-      <LineId Id="1" Count="39" />
-    </LineIds>
   </POU>
 </TcPlcObject>

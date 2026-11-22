@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.17" TcProjectVariant="PRGTest" TcVersionFixed="true">
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.17" TcProjectVariant="UnitTest" TcVersionFixed="true">
 	<Project ProjectGUID="{AB70FBBB-83F0-4609-9FD5-DF42CB839A31}" TargetNetId="192.168.0.9.1.1" Target64Bit="true" ShowHideConfigurations="#x3c6">
 		<System>
 			<Tasks>
-				<Task Id="5" Disabled="true" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
+				<Task Id="5" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
 					<Name>PlcTask</Name>
 					<ProjectVariant PvUseDisable="true">
 						<Variant>
@@ -16,7 +16,7 @@
 						</Variant>
 					</ProjectVariant>
 				</Task>
-				<Task Id="6" Priority="14" CycleTime="100000" AmsPort="351" AdtTasks="true">
+				<Task Id="6" Disabled="true" Priority="14" CycleTime="100000" AmsPort="351" AdtTasks="true">
 					<Name>PRGTask</Name>
 					<ProjectVariant PvUseDisable="true">
 						<Variant>
@@ -49,5 +49,6 @@
 	</Project>
 	<Mappings>
 		<MappingInfo Identifier="{05000010-2001-0850-1000-040300205008}" Id="#x02030010" Watchdog="14000000040000000400000004000000"/>
+		<MappingInfo Identifier="{05000010-2002-0850-1000-040301205008}" Id="#x02030020" Watchdog="14000000040000000400000004000000"/>
 	</Mappings>
 </TcSmProject>

@@ -115,14 +115,5 @@ END_VAR
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SLITSTHERMALHost">
-      <LineId Id="1" Count="3" />
-    </LineIds>
-    <LineIds Name="FB_SLITSTHERMALHost.CallAfterInit">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_SLITSTHERMALHost.FB_Init">
-      <LineId Id="1" Count="4" />
-    </LineIds>
   </POU>
 </TcPlcObject>

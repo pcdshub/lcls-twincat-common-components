@@ -231,20 +231,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SLITS_THERMALTest">
-      <LineId Id="1" Count="2" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_THERMALTest.AssertAllTempFault">
-      <LineId Id="1" Count="32" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_THERMALTest.AssertNoneTempFault">
-      <LineId Id="1" Count="32" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_THERMALTest.SetSlitsTemp">
-      <LineId Id="1" Count="31" />
-    </LineIds>
-    <LineIds Name="FB_SLITS_THERMALTest.TestTempFFO">
-      <LineId Id="1" Count="42" />
-    </LineIds>
   </POU>
 </TcPlcObject>

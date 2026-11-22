@@ -124,14 +124,5 @@ THIS^.fTermMax := fTermMax;
 THIS^.fTermMin := fTermMin;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_PPMHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_PPMHost.CallAfterInit">
-      <LineId Id="1" Count="17" />
-    </LineIds>
-    <LineIds Name="FB_PPMHost.FB_Init">
-      <LineId Id="1" Count="14" />
-    </LineIds>
   </POU>
 </TcPlcObject>

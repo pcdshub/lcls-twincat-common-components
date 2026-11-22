@@ -15,10 +15,10 @@
 FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS_THERMAL
 VAR_INPUT
     {attribute 'pytmc' := '
-		pv: MODE
-		field: ZNAM Local
-		field: ONAM PMPS
-		io: io
+        pv: MODE
+        field: ZNAM Local
+        field: ONAM PMPS
+        io: io
     '}
     xPMPSMode : BOOL := TRUE;
 END_VAR

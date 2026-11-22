@@ -320,23 +320,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_GBSTest">
-      <LineId Id="1" Count="2" />
-    </LineIds>
-    <LineIds Name="FB_GBSTest.AssertBothTempFault">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_GBSTest.AssertNeitherTempFault">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_GBSTest.SetGBSTemp">
-      <LineId Id="1" Count="6" />
-    </LineIds>
-    <LineIds Name="FB_GBSTest.TestStateMove">
-      <LineId Id="1" Count="77" />
-    </LineIds>
-    <LineIds Name="FB_GBSTest.TestTempFFO">
-      <LineId Id="1" Count="38" />
-    </LineIds>
   </POU>
 </TcPlcObject>

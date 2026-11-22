@@ -103,14 +103,5 @@ THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_ATMHost">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_ATMHost.CallAfterInit">
-      <LineId Id="1" Count="13" />
-    </LineIds>
-    <LineIds Name="FB_ATMHost.FB_Init">
-      <LineId Id="1" Count="10" />
-    </LineIds>
   </POU>
 </TcPlcObject>

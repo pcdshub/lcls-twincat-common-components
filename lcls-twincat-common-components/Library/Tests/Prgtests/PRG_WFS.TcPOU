@@ -98,8 +98,5 @@ fbHost();
 fbMotor();
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_WFS">
-      <LineId Id="1" Count="25" />
-    </LineIds>
   </POU>
 </TcPlcObject>

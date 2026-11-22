@@ -24,57 +24,57 @@
 FUNCTION_BLOCK FB_SLITS
 VAR_INPUT
     {attribute 'pytmc' := '
-		pv: PMPS_OK
-		io: i
-		field: ZNAM False
-		field: ONAM True
+        pv: PMPS_OK
+        io: i
+        field: ZNAM False
+        field: ONAM True
     '}
     bMoveOk : BOOL;
 
     (* Per-blade encoder zero-offsets (EPICS-settable). *)
     {attribute 'pytmc' := '
-		pv: Offset_Top
-		io: io
+        pv: Offset_Top
+        io: io
     '}
     rEncoderOffsetTop : REAL;
 
     {attribute 'pytmc' := '
-		pv: ZeroOffset_Bottom
-		io: io
+        pv: ZeroOffset_Bottom
+        io: io
     '}
     rEncoderOffsetBottom : REAL;
 
     {attribute 'pytmc' := '
-		pv: ZeroOffset_North
-		io: io
+        pv: ZeroOffset_North
+        io: io
     '}
     rEncoderOffsetNorth : REAL;
 
     {attribute 'pytmc' := '
-		pv: ZeroOffset_South
-		io: io
+        pv: ZeroOffset_South
+        io: io
     '}
     rEncoderOffsetSouth : REAL;
 END_VAR
 VAR_OUTPUT
     {attribute 'pytmc' := '
-		pv: ACTUAL_XWIDTH
-		io: io
+        pv: ACTUAL_XWIDTH
+        io: io
     '}
     rActApertureSizeX : REAL;
     {attribute 'pytmc' := '
-		pv: ACTUAL_YWIDTH
-		io: io
+        pv: ACTUAL_YWIDTH
+        io: io
     '}
     rActApertureSizeY : REAL;
     {attribute 'pytmc' := '
-		pv: ACTUAL_XCENTER
-		io: io
+        pv: ACTUAL_XCENTER
+        io: io
     '}
     rActCenterX : REAL;
     {attribute 'pytmc' := '
-		pv: ACTUAL_YCENTER
-		io: io
+        pv: ACTUAL_YCENTER
+        io: io
     '}
     rActCenterY : REAL;
 END_VAR
@@ -133,23 +133,23 @@ VAR
 
     (* EPICS request / actual aperture geometry. *)
     {attribute 'pytmc' := '
-		pv: XWID_REQ
-		io: io
+        pv: XWID_REQ
+        io: io
     '}
     rReqApertureSizeX : REAL;
     {attribute 'pytmc' := '
-		pv: YWID_REQ
-		io: io
+        pv: YWID_REQ
+        io: io
     '}
     rReqApertureSizeY : REAL;
     {attribute 'pytmc' := '
-		pv: XCEN_REQ
-		io: io
+        pv: XCEN_REQ
+        io: io
     '}
     rReqCenterX : REAL;
     {attribute 'pytmc' := '
-		pv: YCEN_REQ
-		io: io
+        pv: YCEN_REQ
+        io: io
     '}
     rReqCenterY : REAL;
 
@@ -157,26 +157,26 @@ VAR
     (* Edge-trigger request flags. Cleared on the rising edge each
        cycle but no preset move is dispatched (stub: legacy parity). *)
     {attribute 'pytmc' := '
-		pv: OPEN
-		io: io
-		field: ZNAM False
-		field: ONAM True
+        pv: OPEN
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bOpen : BOOL;
 
     {attribute 'pytmc' := '
-		pv: CLOSE
-		io: io
-		field: ZNAM False
-		field: ONAM True
+        pv: CLOSE
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bClose : BOOL;
 
     {attribute 'pytmc' := '
-		pv: BLOCK
-		io: io
-		field: ZNAM False
-		field: ONAM True
+        pv: BLOCK
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bBlock : BOOL;
 
@@ -650,68 +650,5 @@ fbCheckAptHeight(
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SLITS">
-      <LineId Id="3" Count="8" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.CallAfterInit">
-      <LineId Id="3" Count="0" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.CallAfterInitCore">
-      <LineId Id="3" Count="23" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.CallAfterInitSLITS">
-      <LineId Id="3" Count="7" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.ExecuteMotionX.Get">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.ExecuteMotionX.Set">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.ExecuteMotionY.Get">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.ExecuteMotionY.Set">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.FB_Init">
-      <LineId Id="3" Count="5" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.HandleRequests">
-      <LineId Id="3" Count="12" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.M_CalculatePositions">
-      <LineId Id="3" Count="63" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.M_CheckPMPS">
-      <LineId Id="3" Count="19" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.M_GapRequestAllowed">
-      <LineId Id="3" Count="0" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.M_Motion">
-      <LineId Id="3" Count="26" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.M_PreCalculate">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.SetActualAperture">
-      <LineId Id="3" Count="3" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_SLITS.SetApertureRequest">
-      <LineId Id="3" Count="3" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

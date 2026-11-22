@@ -9,7 +9,7 @@
    TST:SATT-RTD in plc-cc-motion.json. *)
 PROGRAM PRG_SATT
 VAR
-	{attribute 'TcNcAxis' := 'PRG_SATT_Y'}
+    {attribute 'TcNcAxis' := 'PRG_SATT_Y'}
     axRef         : AXIS_REF;
     fbMotor       : FB_MotionStageNC(
         AxisRef                := axRef,
@@ -80,8 +80,5 @@ fbHost();
 fbMotor();
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_SATT">
-      <LineId Id="1" Count="25" />
-    </LineIds>
   </POU>
 </TcPlcObject>

@@ -110,8 +110,5 @@ ELSIF fbTestTimer.Q THEN
 END_IF
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_Coating_States_NoPMPSTest">
-      <LineId Id="1" Count="60" />
-    </LineIds>
   </POU>
 </TcPlcObject>

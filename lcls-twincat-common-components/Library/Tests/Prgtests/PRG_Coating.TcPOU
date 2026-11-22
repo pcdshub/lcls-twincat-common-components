@@ -7,7 +7,7 @@
    reader are shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. It has no PMPS DB. *)
 PROGRAM PRG_Coating
 VAR
-	{attribute 'TcNcAxis' := 'PRG_COATING_Y'}
+    {attribute 'TcNcAxis' := 'PRG_COATING_Y'}
     axRef         : AXIS_REF;
     fbMotor       : FB_MotionStageNC(
         AxisRef                := axRef,
@@ -66,8 +66,5 @@ fbHost();
 fbMotor();
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_Coating">
-      <LineId Id="1" Count="25" />
-    </LineIds>
   </POU>
 </TcPlcObject>

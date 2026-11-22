@@ -304,17 +304,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_WFSTest">
-      <LineId Id="1" Count="48" />
-    </LineIds>
-    <LineIds Name="FB_WFSTest.SetWFSTemp">
-      <LineId Id="1" Count="6" />
-    </LineIds>
-    <LineIds Name="FB_WFSTest.TestStateMove">
-      <LineId Id="1" Count="44" />
-    </LineIds>
-    <LineIds Name="FB_WFSTest.TestTempFFO">
-      <LineId Id="1" Count="60" />
-    </LineIds>
   </POU>
 </TcPlcObject>

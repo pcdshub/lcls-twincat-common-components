@@ -142,17 +142,5 @@ TEST_FINISHED();
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_SLITSTest">
-      <LineId Id="1" Count="2" />
-    </LineIds>
-    <LineIds Name="FB_SLITSTest.CheckCase">
-      <LineId Id="1" Count="11" />
-    </LineIds>
-    <LineIds Name="FB_SLITSTest.TestCheckPMPS">
-      <LineId Id="1" Count="23" />
-    </LineIds>
-    <LineIds Name="FB_SLITSTest.TestUnlimitedGap">
-      <LineId Id="1" Count="17" />
-    </LineIds>
   </POU>
 </TcPlcObject>

@@ -298,23 +298,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_PPMTest">
-      <LineId Id="1" Count="3" />
-    </LineIds>
-    <LineIds Name="FB_PPMTest.AssertBothTempFault">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_PPMTest.AssertNeitherTempFault">
-      <LineId Id="1" Count="7" />
-    </LineIds>
-    <LineIds Name="FB_PPMTest.SetPPMTemp">
-      <LineId Id="1" Count="6" />
-    </LineIds>
-    <LineIds Name="FB_PPMTest.TestStateMove">
-      <LineId Id="1" Count="78" />
-    </LineIds>
-    <LineIds Name="FB_PPMTest.TestTempFFO">
-      <LineId Id="1" Count="39" />
-    </LineIds>
   </POU>
 </TcPlcObject>

@@ -8,13 +8,13 @@
    plc-cc-motion.json. *)
 PROGRAM PRG_SLITSTHERMAL
 VAR
-	{attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Top'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Top'}
     axTop : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Bottom'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Bottom'}
     axBottom : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_North'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_North'}
     axNorth : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_South'}
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_South'}
     axSouth : AXIS_REF;
 
     afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
@@ -100,8 +100,5 @@ IF bAllReady AND NOT bConfigured THEN
 END_IF
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_SLITSTHERMAL">
-      <LineId Id="1" Count="26" />
-    </LineIds>
   </POU>
 </TcPlcObject>

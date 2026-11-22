@@ -99,8 +99,5 @@ fbHost();
 fbMotor();
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_ATM">
-      <LineId Id="1" Count="25" />
-    </LineIds>
   </POU>
 </TcPlcObject>

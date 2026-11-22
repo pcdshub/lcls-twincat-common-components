@@ -208,11 +208,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <LineIds Name="FB_IPMTest">
-      <LineId Id="1" Count="1" />
-    </LineIds>
-    <LineIds Name="FB_IPMTest.TestStateMove">
-      <LineId Id="1" Count="90" />
-    </LineIds>
   </POU>
 </TcPlcObject>

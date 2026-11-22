@@ -7,13 +7,13 @@
    reader are shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. *)
 PROGRAM PRG_SLITS
 VAR
-	{attribute 'TcNcAxis' := 'PRG_SLITS_Top'}
+    {attribute 'TcNcAxis' := 'PRG_SLITS_Top'}
     axTop : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITS_Bottom'}
+    {attribute 'TcNcAxis' := 'PRG_SLITS_Bottom'}
     axBottom : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITS_North'}
+    {attribute 'TcNcAxis' := 'PRG_SLITS_North'}
     axNorth : AXIS_REF;
-	{attribute 'TcNcAxis' := 'PRG_SLITS_South'}
+    {attribute 'TcNcAxis' := 'PRG_SLITS_South'}
     axSouth : AXIS_REF;
 
     afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
@@ -102,8 +102,5 @@ fbHost.CheckPMPS(
 );
 ]]></ST>
     </Implementation>
-    <LineIds Name="PRG_SLITS">
-      <LineId Id="1" Count="26" />
-    </LineIds>
   </POU>
 </TcPlcObject>

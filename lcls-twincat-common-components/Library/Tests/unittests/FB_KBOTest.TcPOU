@@ -169,8 +169,5 @@ ELSIF fbTestTimer.Q THEN
 END_IF
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_KBOTest">
-      <LineId Id="1" Count="80" />
-    </LineIds>
   </POU>
 </TcPlcObject>
