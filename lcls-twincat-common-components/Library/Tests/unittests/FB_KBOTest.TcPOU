@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_KBOTest" Id="{3c7d9a21-4f6b-48e2-9d1a-6b5c8e2f0a91}" SpecialFunc="None">
     <Declaration><![CDATA[(*
@@ -139,10 +139,7 @@ CASE nTestStep OF
         IF fbKBO.eEnumGet = E_KBO_CoatingStates.B4C
            AND NOT fbMotorY.stMotionStatus.bMoving THEN
             fB4CPosition := fbMotorY.stMotionStatus.fActPosition;
-            (* Prove the raw-counts path actually drove two different
-               encoder targets to two different physical positions -
-               not a specific value, since the sim axis scale factor
-               isn't independently known here. *)
+            (* The two raw-count targets reach two different positions. *)
             AssertTrue(
                 Condition := ABS(fB4CPosition - fSiPosition) > 0.01,
                 Message   := 'T01: Si and B4C did not settle at distinct positions');
@@ -172,5 +169,8 @@ ELSIF fbTestTimer.Q THEN
 END_IF
 ]]></ST>
     </Implementation>
+    <LineIds Name="FB_KBOTest">
+      <LineId Id="1" Count="80" />
+    </LineIds>
   </POU>
 </TcPlcObject>

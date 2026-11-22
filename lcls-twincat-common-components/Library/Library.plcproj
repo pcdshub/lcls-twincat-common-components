@@ -45,6 +45,8 @@
     <Folder Include="POUs" />
     <Folder Include="Tests\Helpers" />
     <Folder Include="Version" />
+    <Folder Include="Tests\unittests" />
+    <Folder Include="Tests\Prgtests" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Devices\ATM\E_ATM_States.TcDUT">
@@ -176,54 +178,11 @@
     <Compile Include="POUs\FB_XTES_Flowswitch.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_ATMTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_CC_TempSensorTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_GBSTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_IPMTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_KBOTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_Coating_States_NoPMPSTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_SATTTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_LICTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_PPMTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_REFTest.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>false</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="Tests\FB_SLITS_POWERTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_WFSTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\FB_XPIMTest.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
       <SubType>Code</SubType>
       <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
     <Compile Include="Tests\Helpers\FB_CC_PMPSTestSetup.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\PRG_TEST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Version\Global_Version.TcGVL">
@@ -266,6 +225,57 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\SATT\FB_SXR_SATT_Stage_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Helpers\U_TestRealBits.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_TEST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_ATMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_CC_TempSensorTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_Coating_States_NoPMPSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_GBSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_IPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_KBOTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_LICTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_REFTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SATTTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITS_POWERTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITS_THERMALTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_WFSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_XPIMTest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

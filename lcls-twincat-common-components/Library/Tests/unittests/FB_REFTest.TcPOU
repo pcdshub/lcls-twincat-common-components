@@ -11,7 +11,7 @@
 {attribute 'analysis' := '-33'}
 FUNCTION_BLOCK FB_REFTest EXTENDS FB_TestSuite
 VAR
-    axRef    : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF AXIS_REF;
+    axRef    : ARRAY[1..2] OF AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
 
     fbMotorX : FB_MotionStageNC(AxisRef := axRef[1], iPersistentDataStorage := fbPDS, sName := 'X');
@@ -69,7 +69,8 @@ VAR
         bEnablePositionLimits := TRUE,
         bReadDBNow := FALSE,
         bFileReaderBusy       := bFileReaderBusy,
-        bFileReaderError      := bFileReaderError
+        bFileReaderError      := bFileReaderError,
+        fTermMax              := 200
     );
 
     fbTestTimer : TON := (IN := TRUE, PT := T#60S);
@@ -173,5 +174,8 @@ ELSIF fbTestTimer.Q THEN
 END_IF
 ]]></ST>
     </Implementation>
+    <LineIds Name="FB_REFTest">
+      <LineId Id="1" Count="89" />
+    </LineIds>
   </POU>
 </TcPlcObject>

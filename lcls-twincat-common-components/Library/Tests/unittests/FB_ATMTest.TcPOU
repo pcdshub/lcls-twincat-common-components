@@ -3,8 +3,6 @@
   <POU Name="FB_ATMTest" Id="{7b7c37ef-d7db-42bb-948f-8b077a7ccce5}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ATMTest EXTENDS FB_TestSuite
 VAR
-    (* Caller-owned axis, persistent storage, and Y motor.
-       In a real PRG the AxisRef would come from MAIN.Mxx. *)
     axRef    : ARRAY[1..2] OF AXIS_REF;
     fbPDS    : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
     // X motor (align target to beam)
@@ -147,12 +145,11 @@ bFileReaderError := FALSE;
 VAR_INPUT
     iTempC : INT;
 END_VAR
-VAR
-    ptr : POINTER TO INT;
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[ptr  := ADR(fbATM.fbTempSensor1.iRaw);
-ptr^ := iTempC * 10;]]></ST>
+        <ST><![CDATA[fbATM.fbTempSensor1.SetRawCounts(
+    Counts := iTempC * 10
+);]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{7b7c37f1-d7db-42bb-948f-8b077a7ccce7}">
@@ -287,5 +284,17 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <LineIds Name="FB_ATMTest">
+      <LineId Id="1" Count="47" />
+    </LineIds>
+    <LineIds Name="FB_ATMTest.SetATMTemp">
+      <LineId Id="1" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_ATMTest.TestStateMove">
+      <LineId Id="1" Count="45" />
+    </LineIds>
+    <LineIds Name="FB_ATMTest.TestTempFFO">
+      <LineId Id="1" Count="48" />
+    </LineIds>
   </POU>
 </TcPlcObject>

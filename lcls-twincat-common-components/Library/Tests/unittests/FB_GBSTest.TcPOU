@@ -157,15 +157,15 @@ AssertTrue(
 VAR_INPUT
     iTempC : INT;
 END_VAR
-VAR
-    ptr : POINTER TO INT;
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[ptr  := ADR(fbGBS.fbRTD1.iRaw);
-ptr^ := iTempC * 10;
+        <ST><![CDATA[fbGBS.fbRTD1.SetRawCounts(
+    Counts := iTempC * 10
+);
 
-ptr  := ADR(fbGBS.fbRTD2.iRaw);
-ptr^ := iTempC * 10;]]></ST>
+fbGBS.fbRTD2.SetRawCounts(
+    Counts := iTempC * 10
+);]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{2c4e0000-0000-0000-0000-000000000002}">
@@ -320,5 +320,23 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <LineIds Name="FB_GBSTest">
+      <LineId Id="1" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_GBSTest.AssertBothTempFault">
+      <LineId Id="1" Count="7" />
+    </LineIds>
+    <LineIds Name="FB_GBSTest.AssertNeitherTempFault">
+      <LineId Id="1" Count="7" />
+    </LineIds>
+    <LineIds Name="FB_GBSTest.SetGBSTemp">
+      <LineId Id="1" Count="6" />
+    </LineIds>
+    <LineIds Name="FB_GBSTest.TestStateMove">
+      <LineId Id="1" Count="77" />
+    </LineIds>
+    <LineIds Name="FB_GBSTest.TestTempFFO">
+      <LineId Id="1" Count="38" />
+    </LineIds>
   </POU>
 </TcPlcObject>

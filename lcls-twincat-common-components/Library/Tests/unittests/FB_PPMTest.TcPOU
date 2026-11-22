@@ -47,7 +47,11 @@ VAR
         bEnablePositionLimits := TRUE,
         bReadDBNow            := TRUE,
         bFileReaderBusy       := bFileReaderBusy,
-        bFileReaderError      := bFileReaderError
+        bFileReaderError      := bFileReaderError,
+        fResponsivity         := 0.05,
+        iTermBits             := 15,
+        fTermMax              := 10000,
+        fTermMin              := 0
     );
 
     (* Per-install PMPS-side state config (caller-owned). Mirrors what
@@ -127,15 +131,15 @@ AssertTrue(
 VAR_INPUT
     iTempC : INT;
 END_VAR
-VAR
-    ptr : POINTER TO INT;
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[ptr  := ADR(fbPPM.fbYagTempSensor.iRaw);
-ptr^ := iTempC * 10;
+        <ST><![CDATA[fbPPM.fbYagTempSensor.SetRawCounts(
+    Counts := iTempC * 10
+);
 
-ptr  := ADR(fbPPM.fbPowerMeter.fbTempSensor.iRaw);
-ptr^ := iTempC * 10;]]></ST>
+fbPPM.fbPowerMeter.fbTempSensor.SetRawCounts(
+    Counts := iTempC * 10
+);]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{6d196413-6cf3-4cc4-b625-5ae4ecbdc9a3}">
@@ -294,5 +298,23 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <LineIds Name="FB_PPMTest">
+      <LineId Id="1" Count="3" />
+    </LineIds>
+    <LineIds Name="FB_PPMTest.AssertBothTempFault">
+      <LineId Id="1" Count="7" />
+    </LineIds>
+    <LineIds Name="FB_PPMTest.AssertNeitherTempFault">
+      <LineId Id="1" Count="7" />
+    </LineIds>
+    <LineIds Name="FB_PPMTest.SetPPMTemp">
+      <LineId Id="1" Count="6" />
+    </LineIds>
+    <LineIds Name="FB_PPMTest.TestStateMove">
+      <LineId Id="1" Count="78" />
+    </LineIds>
+    <LineIds Name="FB_PPMTest.TestTempFFO">
+      <LineId Id="1" Count="39" />
+    </LineIds>
   </POU>
 </TcPlcObject>

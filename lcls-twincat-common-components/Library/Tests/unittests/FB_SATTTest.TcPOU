@@ -19,8 +19,9 @@ VAR
 
     fbFFHWO : FB_HardwareFFOutput;
 
-    sDeviceName : STRING := 'AT1K4:L2SI';
+    sDeviceName : STRING := 'TST:SATT';
     bFileReaderBusy :  BOOL;
+    bBridgeOK       :  BOOL := TRUE;
     fbArbiter  : FB_Arbiter(1);
     fbSubSysIO : FB_DummyArbIO;
 
@@ -29,8 +30,9 @@ VAR
         astPositionState := astPositionState,
         fbFFHWO          := fbFFHWO,
         bFileReaderBusy  := bFileReaderBusy,
+        bBridgeOK        := bBridgeOK,
         sDeviceName      := sDeviceName,
-        RTDPMPSState     := 'AT1K4:L2SI-RTD'
+        RTDPMPSState     := 'TST:SATT-RTD'
     );
 
     stDefault : ST_PositionState := (
@@ -86,8 +88,7 @@ END_VAR
     fbMotorY.DoNotRestoreNcParameters := TRUE;
     bFirstScan := FALSE;
 END_IF
-// avoid a division by Zero in F_CalculateAbsorbptionConstant from Physics Library
-// protection must be added there on neV
+// A positive energy, so the absorption calculation runs.
 PMPS_GVL.stCurrentBeamParameters.neV := 250.0;
 fbPDS();
 fbMotorY();
@@ -141,16 +142,16 @@ AssertTrue(
 VAR_INPUT
     iTempC : INT;
 END_VAR
-VAR
-    ptr : POINTER TO INT;
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
         <ST><![CDATA[
-ptr  := ADR(fbSATT.fbRTD_1.iRaw);
-ptr^ := iTempC * 100;
+fbSATT.fbRTD_1.SetRawCounts(
+    Counts := iTempC * 100
+);
 
-ptr  := ADR(fbSATT.fbRTD_2.iRaw);
-ptr^ := iTempC * 100;
+fbSATT.fbRTD_2.SetRawCounts(
+    Counts := iTempC * 100
+);
 ]]></ST>
       </Implementation>
     </Method>
@@ -325,5 +326,26 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <LineIds Name="FB_SATTTest">
+      <LineId Id="1" Count="28" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.AssertBothTempFault">
+      <LineId Id="1" Count="9" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.AssertNeitherTempFault">
+      <LineId Id="1" Count="9" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.SetSATTTemp">
+      <LineId Id="1" Count="8" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.TestConfig">
+      <LineId Id="1" Count="30" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.TestStateMove">
+      <LineId Id="1" Count="45" />
+    </LineIds>
+    <LineIds Name="FB_SATTTest.TestTempFFO">
+      <LineId Id="1" Count="39" />
+    </LineIds>
   </POU>
 </TcPlcObject>

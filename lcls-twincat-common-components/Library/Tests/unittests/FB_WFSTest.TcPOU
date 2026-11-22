@@ -150,15 +150,15 @@ TestTempFFO();
 VAR_INPUT
     iTempC : INT;
 END_VAR
-VAR
-    ptr : POINTER TO INT;
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[ptr  := ADR(fbWFS.fbThermoCouple1.iRaw);
-ptr^ := iTempC * 10;
+        <ST><![CDATA[fbWFS.fbThermoCouple1.SetRawCounts(
+    Counts := iTempC * 10
+);
 
-ptr  := ADR(fbWFS.fbThermoCouple2.iRaw);
-ptr^ := iTempC * 10;]]></ST>
+fbWFS.fbThermoCouple2.SetRawCounts(
+    Counts := iTempC * 10
+);]]></ST>
       </Implementation>
     </Method>
     <Method Name="TestStateMove" Id="{a0e8e497-91d8-4707-b6b1-4494ed854f9c}">
@@ -304,5 +304,17 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <LineIds Name="FB_WFSTest">
+      <LineId Id="1" Count="48" />
+    </LineIds>
+    <LineIds Name="FB_WFSTest.SetWFSTemp">
+      <LineId Id="1" Count="6" />
+    </LineIds>
+    <LineIds Name="FB_WFSTest.TestStateMove">
+      <LineId Id="1" Count="44" />
+    </LineIds>
+    <LineIds Name="FB_WFSTest.TestTempFFO">
+      <LineId Id="1" Count="60" />
+    </LineIds>
   </POU>
 </TcPlcObject>

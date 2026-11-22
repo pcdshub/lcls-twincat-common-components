@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITS_THERMALTest" Id="{23da6ffc-a885-4775-a559-d5a3c3d5d143}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Tests for FB_SLITS_THERMAL: the reactive-temperature fault on the 8 RTDs.
+   The file-reader busy flag is a local BOOL so the test can produce the
+   rising edge a real PMPS file read gives. *)
+FUNCTION_BLOCK FB_SLITS_THERMALTest EXTENDS FB_TestSuite
+VAR
+    (* Caller-owned AxisRefs and persistent storage. In a real PRG the
+       AxisRefs come from MAIN.Mxx. Indexed by E_SlitsBlade (1..4). *)
+    axRef : ARRAY[1..4] OF AXIS_REF;
+
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    (* Four blade motors, indexed by E_SlitsBlade. *)
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRef[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'Top'),
+        (AxisRef := axRef[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'Bottom'),
+        (AxisRef := axRef[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'North'),
+        (AxisRef := axRef[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'South')
+    ];
+
+    (* I_MotionStage array bound into FB_SLITS_THERMAL via
+       FB_Init. Order matches E_SlitsBlade (TOP / BOTTOM / NORTH /
+       SOUTH = 1..4). *)
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
+    ];
+
+    fbFFHWO     : FB_HardwareFFOutput;
+
+    // Arbiter bridge health, healthy for these tests.
+    bBridgeOK : BOOL := TRUE;
+
+    fbSlitsThermal : FB_SLITS_THERMAL(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := 'TST:THERMAL',
+        bBridgeOK       := bBridgeOK,
+        sPmpsState      := 'TST:THERMAL-RTD',
+        bFileReaderBusy := bSimFileReaderBusy
+    );
+
+    bSimFileReaderBusy : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TestTempFFO();
+fbSlitsThermal(bMoveOk := TRUE);
+]]></ST>
+    </Implementation>
+    <Method Name="AssertAllTempFault" Id="{b20a7467-b8ca-464a-a597-061bf461251e}">
+      <Declaration><![CDATA[METHOD AssertAllTempFault
+VAR_INPUT
+    Message : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertFalse(
+    fbSlitsThermal.RTD_TOP_1.FFO.i_xOK,
+    CONCAT('Slits Top 1 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_TOP_2.FFO.i_xOK,
+    CONCAT('Slits Top 2 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_Bottom_1.FFO.i_xOK,
+    CONCAT('Slits Bottom 1 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_Bottom_2.FFO.i_xOK,
+    CONCAT('Slits Bottom 2 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_North_1.FFO.i_xOK,
+    CONCAT('Slits North 1 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_North_2.FFO.i_xOK,
+    CONCAT('Slits North 2 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_South_1.FFO.i_xOK,
+    CONCAT('Slits South 1 RTD expected fault: ', Message)
+);
+AssertFalse(
+    fbSlitsThermal.RTD_South_2.FFO.i_xOK,
+    CONCAT('Slits South 2 RTD expected fault: ', Message)
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="AssertNoneTempFault" Id="{e296bc1a-038d-4df3-981f-7d4947fbc91e}">
+      <Declaration><![CDATA[METHOD AssertNoneTempFault
+VAR_INPUT
+    Message : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertTrue(
+    fbSlitsThermal.RTD_TOP_1.FFO.i_xOK,
+    CONCAT('Slits Top 1 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_TOP_2.FFO.i_xOK,
+    CONCAT('Slits Top 2 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_Bottom_1.FFO.i_xOK,
+    CONCAT('Slits Bottom 1 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_Bottom_2.FFO.i_xOK,
+    CONCAT('Slits Bottom 2 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_North_1.FFO.i_xOK,
+    CONCAT('Slits North 1 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_North_2.FFO.i_xOK,
+    CONCAT('Slits North 2 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_South_1.FFO.i_xOK,
+    CONCAT('Slits South 1 RTD expected ok: ', Message)
+);
+AssertTrue(
+    fbSlitsThermal.RTD_South_2.FFO.i_xOK,
+    CONCAT('Slits South 2 RTD expected ok: ', Message)
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetSlitsTemp" Id="{97ec40d6-ad14-4fef-9720-cf4c3689f657}">
+      <Declaration><![CDATA[METHOD SetSlitsTemp
+VAR_INPUT
+    iTempC : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlitsThermal.RTD_TOP_1.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_TOP_2.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_Bottom_1.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_Bottom_2.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_North_1.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_North_2.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_South_1.SetRawCounts(
+    Counts := iTempC * 10
+);
+
+fbSlitsThermal.RTD_South_2.SetRawCounts(
+    Counts := iTempC * 10
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestTempFFO" Id="{8b79da4f-a845-4a7f-96ce-dc93a8362820}">
+      <Declaration><![CDATA[METHOD TestTempFFO
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 4;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Do we fault at the correct times?
+TEST('TestSlitsTempFFO');
+
+// Prepare a timeout
+tonTimer(IN := TRUE, PT := T#10s);
+
+CASE nStep OF
+    0:
+        // Toggle the file-reader busy flag each cycle for the rising edge, then hold.
+        bSimFileReaderBusy := TRUE;
+         nStep := nStep + 1;
+
+    1:
+        bSimFileReaderBusy :=FALSE;
+        IF fbSlitsThermal.RTD_TOP_1.fFaultThreshold > 0 THEN
+            nStep := nStep + 1;
+        END_IF
+    2:
+        // Set the thermocouple temperatures to a crazy-high number.
+        SetSlitsTemp(100);
+        nStep := nStep + 1;
+    3:
+        // We should see faults on all RTDs at 100C.
+        AssertAllTempFault('has high temp reading');
+        nStep := nStep + 1;
+    4:
+        // Set the thermocouple temperatures back to low.
+        SetSlitsTemp(0);
+        nStep := nStep + 1;
+    5:
+        AssertNoneTempFault('has low temp reading');
+        nStep := nStep + 1;
+END_CASE
+
+IF nStep = 6 THEN
+    TEST_FINISHED();
+ELSIF tonTimer.Q THEN
+    AssertFalse(tonTimer.Q, 'Timeout in Slits temp FFO test');
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_SLITS_THERMALTest">
+      <LineId Id="1" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_SLITS_THERMALTest.AssertAllTempFault">
+      <LineId Id="1" Count="32" />
+    </LineIds>
+    <LineIds Name="FB_SLITS_THERMALTest.AssertNoneTempFault">
+      <LineId Id="1" Count="32" />
+    </LineIds>
+    <LineIds Name="FB_SLITS_THERMALTest.SetSlitsTemp">
+      <LineId Id="1" Count="31" />
+    </LineIds>
+    <LineIds Name="FB_SLITS_THERMALTest.TestTempFFO">
+      <LineId Id="1" Count="42" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

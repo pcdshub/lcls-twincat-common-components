@@ -60,9 +60,7 @@ jsonDevice := fbJson.AddObjectMember(jsonRoot, sDevName);
 FOR nIter := LOWER_BOUND(astBeamParams, 1) TO UPPER_BOUND(astBeamParams, 1) DO
     ajsonState[nIter] := fbJson.AddObjectMember(jsonDevice, astBeamParams[nIter].sPmpsState);
 
-    // Prefer the seeded assertion ID as the DB 'id' so it is unique and
-    // meaningful; fall back to a running counter when a state leaves
-    // nRequestAssertionID unset, so 'id' is never 0.
+    // Use the seeded assertion ID, else a running counter.
     nId := nId + 1;
     IF astBeamParams[nIter].nRequestAssertionID <> 0 THEN
         fbJson.AddIntMember(

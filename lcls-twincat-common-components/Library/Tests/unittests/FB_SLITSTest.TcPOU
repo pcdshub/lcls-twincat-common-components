@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITSTest" Id="{0846e309-86fd-4534-9c75-1bd0de4d2cd4}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Tests for the plain FB_SLITS: the legacy M_CheckPMPS aperture check and the
+   unlimited gap request that scatter slits use. Logic only, no axis motion:
+   the actual aperture is set directly and the FFO state is read back after
+   each call. *)
+FUNCTION_BLOCK FB_SLITSTest EXTENDS FB_TestSuite
+VAR
+    axRef : ARRAY[1..4] OF AXIS_REF;
+
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRef[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'Top'),
+        (AxisRef := axRef[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'Bottom'),
+        (AxisRef := axRef[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'North'),
+        (AxisRef := axRef[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'South')
+    ];
+
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
+    ];
+
+    fbFFHWO : FB_HardwareFFOutput;
+
+    // Arbiter bridge health the slit reads; the tests toggle it.
+    bBridgeOK : BOOL := TRUE;
+
+    fbSlits : FB_SLITS(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := 'SL1K3:SCATTER',
+        bBridgeOK       := bBridgeOK
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TestCheckPMPS();
+TestUnlimitedGap();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckCase" Id="{663c1d5c-a74a-4d7f-b042-33f8954cc6ac}">
+      <Declaration><![CDATA[(* Sets the actual gap and the PMPS aperture, runs M_CheckPMPS and asserts the
+   FFO state. bExpectOk is the expected FFO.i_xOK. The aperture lives in the
+   global PMPS_GVL, which library code compares every cycle (F_SafeBPCompare);
+   a NaN left there faults the PLC. So the previous values are put back before
+   the method returns, in the same cycle. *)
+METHOD CheckCase
+VAR_INPUT
+    fActX     : REAL;
+    fActY     : REAL;
+    fPmpsW    : REAL;
+    fPmpsH    : REAL;
+    bExpectOk : BOOL;
+    sMessage  : STRING;
+END_VAR
+VAR
+    fSavedWidth  : REAL;
+    fSavedHeight : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fSavedWidth  := PMPS_GVL.stCurrentBeamParameters.astApertures[2].Width;
+fSavedHeight := PMPS_GVL.stCurrentBeamParameters.astApertures[2].Height;
+
+PMPS_GVL.stCurrentBeamParameters.astApertures[2].Width  := fPmpsW;
+PMPS_GVL.stCurrentBeamParameters.astApertures[2].Height := fPmpsH;
+fbSlits.SetActualAperture(ApertureSizeX := fActX, ApertureSizeY := fActY, CenterX := 0.0, CenterY := 0.0);
+fbSlits.M_CheckPMPS(2);
+AssertTrue(fbSlits.FFO.i_xOK = bExpectOk, sMessage);
+
+PMPS_GVL.stCurrentBeamParameters.astApertures[2].Width  := fSavedWidth;
+PMPS_GVL.stCurrentBeamParameters.astApertures[2].Height := fSavedHeight;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestCheckPMPS" Id="{c84f77ad-9356-474f-b632-c55e3a3bbdf4}">
+      <Declaration><![CDATA[(* Pins the deployed M_CheckPMPS truth table. The FFO faults when either actual
+   gap is below the PMPS aperture plus 0.001, and clears only when both are
+   above it. This is the behavior shipped in the per-PLC copies, kept as is.
+   It also checks the input protection: the PMPS aperture holds its last good
+   value while the bridge is down or the reading is NaN/Inf. *)
+METHOD TestCheckPMPS
+VAR
+    uBits : U_TestRealBits;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsCheckPMPS');
+
+bBridgeOK := TRUE;
+
+CheckCase(20.0,    20.0,    10.0, 10.0, TRUE,  'both gaps above the PMPS aperture clears the fault');
+CheckCase(5.0,     20.0,    10.0, 10.0, FALSE, 'X gap below the PMPS width faults');
+CheckCase(20.0,    5.0,     10.0, 10.0, FALSE, 'Y gap below the PMPS height faults');
+CheckCase(10.0005, 20.0,    10.0, 10.0, FALSE, 'X gap inside the 0.001 margin faults');
+CheckCase(10.002,  10.002,  10.0, 10.0, TRUE,  'both gaps just above the margin clears the fault');
+
+// Bridge down: the last PMPS aperture (10.0) holds, so a 20.0 gap stays ok.
+CheckCase(20.0, 20.0, 10.0, 10.0, TRUE, 'gap ok before the bridge goes down');
+bBridgeOK := FALSE;
+CheckCase(20.0, 20.0, 100.0, 100.0, TRUE, 'bridge down holds the last PMPS aperture');
+bBridgeOK := TRUE;
+CheckCase(20.0, 20.0, 100.0, 100.0, FALSE, 'bridge back, the new PMPS aperture applies');
+
+// NaN width with a healthy bridge: the last good width (100.0) is kept.
+uBits.dwBits := 16#7FC00000;
+CheckCase(20.0, 200.0, uBits.rValue, 100.0, FALSE, 'NaN PMPS width keeps the last good width');
+
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestUnlimitedGap" Id="{76462dd8-8bd7-4821-9c50-b0d687b6f942}">
+      <Declaration><![CDATA[(* The base type has no aperture limit: a changed gap request is accepted
+   whatever its size (legacy scatter slit behavior), flags the motion for the
+   axis and sets the blade targets from the requested gap. *)
+METHOD TestUnlimitedGap
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsUnlimitedGap');
+
+fbSlits.ExecuteMotionX := FALSE;
+fbSlits.ExecuteMotionY := FALSE;
+fbSlits.SetApertureRequest(ApertureSizeX := 1000.0, ApertureSizeY := 800.0, CenterX := 0.0, CenterY := 0.0);
+fbSlits.M_CalculatePositions();
+
+AssertTrue(fbSlits.ExecuteMotionX, 'large X gap request dispatches X motion');
+AssertTrue(fbSlits.ExecuteMotionY, 'large Y gap request dispatches Y motion');
+AssertTrue(fbSlits.rOldReqApertureSizeX = 1000.0, 'large X gap request latched');
+AssertTrue(fbSlits.rOldReqApertureSizeY = 800.0, 'large Y gap request latched');
+AssertTrue(fbSlits.fPosNorthBlade = 500.0 AND fbSlits.fPosSouthBlade = -500.0, 'X blade targets from the requested gap');
+AssertTrue(fbSlits.fPosTopBlade = 400.0 AND fbSlits.fPosBottomBlade = -400.0, 'Y blade targets from the requested gap');
+
+fbSlits.ExecuteMotionX := FALSE;
+fbSlits.ExecuteMotionY := FALSE;
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_SLITSTest">
+      <LineId Id="1" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_SLITSTest.CheckCase">
+      <LineId Id="1" Count="11" />
+    </LineIds>
+    <LineIds Name="FB_SLITSTest.TestCheckPMPS">
+      <LineId Id="1" Count="23" />
+    </LineIds>
+    <LineIds Name="FB_SLITSTest.TestUnlimitedGap">
+      <LineId Id="1" Count="17" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

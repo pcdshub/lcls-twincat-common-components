@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_TEST" Id="{f53165b1-b00c-43dc-a7bd-df3f4a7d5ece}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+PROGRAM PRG_TEST
+VAR
+    (* Seeds PMPS_GVL.BP_jsonDoc with the fake test PMPS DB in before any test FB body runs. *)
+     fbPmpsTestSetup: FB_CC_PMPSTestSetup;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := ATM_X;
+        .axRef[2] := ATM_Y
+    '}
+    fbATMTest: FB_ATMTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := GBS_Y;
+    '}
+    fbGBSTest: FB_GBSTest;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := IPM_X;
+        .axRef[2] := IPM_Y
+    '}
+    fbIPMTest: FB_IPMTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := LIC_Y;
+    '}
+    fbLICTest: FB_LICTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := PPM_Y;
+    '}
+    fbPPMTest: FB_PPMTest;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := REF_X;
+        .axRef[2] := REF_Y
+    '}
+    fbREFTest: FB_REFTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := SATT_Y;
+    '}
+    fbSATTTest: FB_SATTTest;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := WFS_Z;
+        .axRef[2] := WFS_Y
+    '}
+    fbWFSTest: FB_WFSTest;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := XPIM_Z;
+        .axRef[2] := XPIM_F;
+        .axRef[3] := XPIM_Y
+    '}
+    fbXPIMTest: FB_XPIMTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := KBO_Y;
+    '}
+    fbKBOTest: FB_KBOTest;
+    {attribute 'TcNcAxis' := '
+        .axRef := COATING_Y;
+    '}
+    fbCoatingNoPMPSTest: FB_Coating_States_NoPMPSTest;
+    fbSlitsTest: FB_SLITSTest;
+    {attribute 'TcNcAxis' := '
+        .axRef[1] := SLIT_Top;
+        .axRef[2] := SLIT_Bottom;
+        .axRef[3] := SLIT_North;
+        .axRef[4] := SLIT_South
+    '}
+    fbSlitsPowerTest: FB_SLITS_POWERTest;
+    fbSlitsThermalTest: FB_SLITS_THERMALTest;
+    fbCCTempSensorTest: FB_CC_TempSensorTest;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Run the tests
+TcUnit.RUN();]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_TEST">
+      <LineId Id="1" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
