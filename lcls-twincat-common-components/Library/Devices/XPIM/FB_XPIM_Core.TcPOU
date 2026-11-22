@@ -3,7 +3,9 @@
   <POU Name="FB_XPIM_Core" Id="{265f7e55-fbcd-4922-b984-8435ff7f65b7}" SpecialFunc="None">
     <Declaration><![CDATA[(* XTES Profile Imager (XPIM) core, an abstract base by convention: thin
    ND-framework state-mover wrapper that holds only references, interfaces, the
-   sub-FBs and fbStates. The state bridge is here as REFERENCE TO UINT
+   flow switch and fbStates. The filter wheel, the Opal camera and the EL6
+   terminal buffers belong to FB_XPIM, so an imager without them, such as the
+   IM2K0 variant, derives this core directly. The state bridge is here as REFERENCE TO UINT
    (eEnumSetRef and eEnumGetRef) and the body runs on it, but the enum
    variables, the state storage and the state names belong to the derived type
    (FB_XPIM), which passes them in. The derived body calls SUPER^() to run this
@@ -26,22 +28,8 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_XPIM_Core
 VAR
-    {attribute 'pytmc' := 'pv: MFW'}
-    fbFilterWheel : FB_XPIM_FilterWheel;
-
-    {attribute 'pytmc' := 'pv: CAM'}
-    fbOpal : FB_XPIM_Opal;
-
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch : FB_XTES_Flowswitch;
-
-    (* EL6 serial terminal buffers, caller-owned and physically linked to the
-       EL6xxx terminal IO. Provided by the derived FB_XPIM, and passed through
-       to FB_XPIM_FilterWheel each cycle. *)
-    {attribute 'no_copy'}
-    stEl6In  : REFERENCE TO EL6inData22b;
-    {attribute 'no_copy'}
-    stEl6Out : REFERENCE TO EL6outData22b;
 
     (* REFERENCE TO backing fields populated by FB_Init. Same names as
        FB_Init params; THIS^. disambiguates inside FB_Init.
@@ -110,9 +98,7 @@ END_VAR]]></Declaration>
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(fbArbiter)
    OR NOT __ISVALIDREF(eEnumSetRef)
-   OR NOT __ISVALIDREF(eEnumGetRef)
-   OR NOT __ISVALIDREF(stEl6In)
-   OR NOT __ISVALIDREF(stEl6Out) THEN
+   OR NOT __ISVALIDREF(eEnumGetRef) THEN
     RETURN;
 END_IF
 
@@ -120,16 +106,23 @@ fbStates(
     stDbStateParams => stDbStateParams
 );
 
-// The filter wheel comm state machine runs continuously.
-fbFilterWheel(
-    bExecute  := TRUE,
-    stIn_EL6  := stEl6In,
-    stOut_EL6 := stEl6Out
-);
-
-fbOpal();
 fbFlowSwitch();]]></ST>
     </Implementation>
+    <Method Name="ReferencesValid" Id="{83203ceb-ba83-475c-8df0-f23687227d76}">
+      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. A derived body checks it
+   after SUPER^() before it ticks sub-FBs of its own. *)
+METHOD PROTECTED ReferencesValid : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
+                AND __ISVALIDREF(astPositionState)
+                AND __ISVALIDREF(fbFFHWO)
+                AND __ISVALIDREF(fbArbiter)
+                AND __ISVALIDREF(eEnumSetRef)
+                AND __ISVALIDREF(eEnumGetRef);
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="CallAfterInit" Id="{2af9fe11-05cb-4e0a-bec3-8d08a2278eca}">
       <Declaration><![CDATA[(* Auto-fired after FB_Init. Wires fbStates through CallAfterInitCore. *)
 {attribute 'call_after_init'}

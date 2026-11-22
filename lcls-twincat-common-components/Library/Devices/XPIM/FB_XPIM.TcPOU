@@ -2,7 +2,7 @@
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_XPIM" Id="{aa9f645d-c463-4c9e-8962-8aa3b3b2b9c3}" SpecialFunc="None">
     <Declaration><![CDATA[(* XTES Profile Imager (XPIM) with the library state enum E_XPIM_States: FB_XPIM_Core plus the
-   enum bridge and the per-state defaults. FB_Init repeats the core inputs and
+   enum bridge, the per-state defaults, the LED, the filter wheel and the Opal camera. FB_Init repeats the core inputs and
    binds the bridge. An FB that nests an FB_XPIM calls CallAfterInitXPIM
    from its own CallAfterInit. *)
 {attribute 'call_after_init'}
@@ -25,6 +25,19 @@ VAR
        FB's CallAfterInit calls. *)
     {attribute 'pytmc' := 'pv: CIL'}
     fbLED : FB_XPIM_LED;
+
+    {attribute 'pytmc' := 'pv: MFW'}
+    fbFilterWheel : FB_XPIM_FilterWheel;
+
+    {attribute 'pytmc' := 'pv: CAM'}
+    fbOpal : FB_XPIM_Opal;
+
+    (* EL6 serial terminal buffers, caller-owned and physically linked to the
+       EL6xxx terminal IO. Passed to FB_XPIM_FilterWheel each cycle. *)
+    {attribute 'no_copy'}
+    stEl6In  : REFERENCE TO EL6inData22b;
+    {attribute 'no_copy'}
+    stEl6Out : REFERENCE TO EL6outData22b;
 
     afbStateDefaults : ARRAY[1..4] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_XPIM_States.OUT],
@@ -51,6 +64,18 @@ VAR_OUTPUT
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[SUPER^();
+
+// The filter wheel comm state machine runs continuously once its buffers are bound.
+IF THIS^.ReferencesValid()
+   AND __ISVALIDREF(stEl6In)
+   AND __ISVALIDREF(stEl6Out) THEN
+    fbFilterWheel(
+        bExecute  := TRUE,
+        stIn_EL6  := stEl6In,
+        stOut_EL6 := stEl6Out
+    );
+    fbOpal();
+END_IF
 
 fbLED(
     enumXPIM := eEnumGet
@@ -107,8 +132,8 @@ SUPER^.bEnablePositionLimits := bEnablePositionLimits;
 SUPER^.bReadDBNow            := bReadDBNow;
 SUPER^.bFileReaderBusy       REF= bFileReaderBusy;
 SUPER^.bFileReaderError      REF= bFileReaderError;
-SUPER^.stEl6In               REF= stEl6In;
-SUPER^.stEl6Out              REF= stEl6Out;
+THIS^.stEl6In                REF= stEl6In;
+THIS^.stEl6Out               REF= stEl6Out;
 
 SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
 SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
