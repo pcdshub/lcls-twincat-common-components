@@ -1,34 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_PPM" Id="{21ba0056-420c-4281-af9c-7f35e47eaf5b}" SpecialFunc="None">
-    <Declaration><![CDATA[(* Power and Profile Monitor (PPM): thin ND-framework state-mover wrapper.
-   Y mover via FB_PositionStatePMPSND (states OUT, POWERMETER, YAG1, YAG2),
-   plus a tick site for power meter, GigE camera/illuminator, flow meter,
-   YAG thermocouple and flow switch. Caller-owned deps injected via FB_Init
-   REFERENCE TO and forwarded to fbStates; toggles re-forwarded each cycle. *)
+    <Declaration><![CDATA[(* Power and Profile Monitor (PPM) with the library state enum E_PPM_States
+   (OUT, POWERMETER, YAG1, YAG2): FB_PPM_Core plus the enum bridge, the power
+   meter and the per-state defaults. The power-meter calibration and terminal
+   range are mandatory FB_Init inputs: fResponsivity (calibrated per gentec; 0
+   means the responsive energy is not calculated), iTermBits, fTermMax and
+   fTermMin (the defaults 15, 10000 and 0 fit an EL3062; an EL3602 needs
+   iTermBits 31 with the range the terminal is configured for). The flow meter
+   offset is the FlowOffset property. An FB that nests an FB_PPM calls
+   CallAfterInitPPM from its own CallAfterInit. *)
 {attribute 'call_after_init'}
-FUNCTION_BLOCK FB_PPM
-VAR_INPUT
-    (* Flow meter offset in engineering units (per-install). *)
-    fFlowOffset   : LREAL := 0;
-    (* Power-meter responsivity (calibrated per gentec); if zero the
-       responsive energy is not calculated. *)
-    fResponsivity : LREAL;
-
-    (* Passed straight through to FB_PPM_PowerMeter's analog input.
-       Defaults are correct for EL3062; EL3602 needs iTermBits:=31
-       with fTermMax/fTermMin matching the terminal's configured
-       voltage range. *)
-    iTermBits : UINT := 15;
-    fTermMax  : REAL := 10000;
-    fTermMin  : REAL := 0;
-
-END_VAR
+FUNCTION_BLOCK FB_PPM EXTENDS FB_PPM_Core
 VAR
-    (* State-enum bridge bound to FB_PositionStatePMPSND's REFERENCE TO
-       UINT param via the shared UINT base. EPICS owns it through the
-       pytmc pragma; PLC code must go through the EnumSet property
-       instead of touching it directly. *)
+    (* Device-specific state-enum bridge. Typed as E_PPM_States (UINT
+       base); FB_Init binds it to the base's REFERENCE TO UINT
+       bridge. EPICS owns it through the pytmc pragma; PLC code
+       must go through the EnumSet property instead of touching it
+       directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
@@ -39,45 +28,14 @@ VAR
     {attribute 'pytmc' := 'pv: SPM'}
     fbPowerMeter : FB_PPM_PowerMeter;
 
-    {attribute 'pytmc' := 'pv: CAM'}
-    fbGige : FB_PPM_Gige;
+    // Power-meter calibration and terminal range, set through FB_Init.
+    fResponsivity : LREAL;
+    iTermBits     : UINT;
+    fTermMax      : REAL;
+    fTermMin      : REAL;
 
-    {attribute 'pytmc' := 'pv: FWM'}
-    fbFlowMeter : FB_AnalogInput := (iTermBits := 15, fTermMax := 60, fTermMin := 0);
-
-    {attribute 'pytmc' := 'pv: YAG:STC'}
-    fbYagTempSensor : FB_CC_TempSensor;
-
-    {attribute 'pytmc' := 'pv: FSW'}
-    fbFlowSwitch : FB_XTES_Flowswitch;
-
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
-    {attribute 'no_copy'}
-    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
-    {attribute 'no_copy'}
-    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
-                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-    {attribute 'no_copy'}
-    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
-    {attribute 'no_copy'}
-    fbArbiter             : REFERENCE TO FB_Arbiter;
-    sDeviceName           : STRING;
-    sTransitionKey        : STRING;
-    bEnableMotion         : BOOL := TRUE;
-    bEnableBeamParams     : BOOL;
-    bEnablePositionLimits : BOOL;
-    bReadDBNow            : BOOL;
-
-    bFileReaderBusy       : REFERENCE TO BOOL;
-    bFileReaderError      : REFERENCE TO BOOL;
-
-    (* One configurator per PPM state. Writes the per-state sName and
-       fDelta. Ticked cyclically in the body AFTER fbStates so its
-       writes win over the template baseline FB_StateSetup applied via
-       FB_CC_StatePMPSConfig. Idempotent once stPositionState.bUpdated
-       trips. *)
+    (* One configurator per PPM state. Writes the per-state sName and fDelta
+       once in its CallAfterInit, which InitStateDefaults calls. *)
     afbStateDefaults : ARRAY[1..4] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_PPM_States.OUT],
          sName           := 'OUT',
@@ -92,30 +50,7 @@ VAR
          sName           := 'YAG2',
          fDelta          := FDELTA_DEFAULT)
     ];
-
-    {attribute 'pytmc' := 'pv: MMS'}
-    fbStates : FB_PositionStatePMPSND(
-        aiMotionStage         := aiMotionStage,
-        astPositionState      := astPositionState,
-        nActiveMotorCount     := 1,
-        eEnumSet              := eEnumSet,
-        eEnumGet              := eEnumGet,
-        bEnableMotion         := bEnableMotion,
-        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-        bEnableBeamParams     := bEnableBeamParams,
-        bEnablePositionLimits := bEnablePositionLimits,
-        bReadDBNow            := bReadDBNow,
-        bFileReaderBusy       := bFileReaderBusy,
-        bFileReaderError      := bFileReaderError,
-        fbFFHWO               := fbFFHWO,
-        fbArbiter             := fbArbiter,
-        sDeviceName           := sDeviceName,
-        sTransitionKey        := sTransitionKey
-    );
-
-    i : UINT;
 END_VAR
-
 VAR_OUTPUT
     // The current position state as an enum.
     {attribute 'pytmc' := '
@@ -123,108 +58,48 @@ VAR_OUTPUT
         io: i
     '}
     eEnumGet: E_PPM_States;
-    // The PMPS database lookup associated with the current position state.
-    stDbStateParams: ST_DbStateParams;
-END_VAR
-
-VAR CONSTANT
-    (* PPM-wide default tolerance for state in-position detection,
-       applied per-state by afbStateDefaults. *)
-    FDELTA_DEFAULT : LREAL := 2;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
-IF NOT __ISVALIDREF(aiMotionStage)
-   OR NOT __ISVALIDREF(astPositionState)
-   OR NOT __ISVALIDREF(fbFFHWO)
-   OR NOT __ISVALIDREF(fbArbiter) THEN
+      <ST><![CDATA[SUPER^();
+
+IF NOT THIS^.ReferencesValid() THEN
     RETURN;
 END_IF
 
-(* Device-side per-state defaults (afbStateDefaults) are written
-   once in FB_CC_InternalStateConfig.CallAfterInit; no cyclic tick. *)
-fbStates(stDbStateParams=> stDbStateParams);
-
-(* Power meter: consumes the current state enum + axis NC state for
-   background auto-collection, and the PMPS DB temp setpoint to drive
-   its thermocouple FFO. Vetoes the temp FFO outside POWERMETER. *)
+// Power meter, temperature FFO vetoed outside POWERMETER.
 fbPowerMeter(
-    fTempSP       := fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVetoTempFFO  := eEnumGet <> E_PPM_States.POWERMETER,
-    sDeviceName   := sDeviceName,
-    fbFFHWO       := fbFFHWO,
-    eEnumGet      := eEnumGet,
-    stYAxisState  := aiMotionStage[1].Axis.NcToPlc.AxisState,
-    fResponsivity := fResponsivity,
-    iTermBits     := iTermBits,
-    fTermMax      := fTermMax,
-    fTermMin      := fTermMin
-);
-
-fbGige();
-fbFlowMeter(fOffset := fFlowOffset);
-
-(* YAG thermocouple: only faults when the YAG is actually in-beam
-   (i.e. not OUT). Driven by the same PMPS DB temp setpoint. *)
-fbYagTempSensor(
-    fFaultThreshold := fbStates.stDbStateParams.stReactiveParams.nTempSP,
-    bVeto           := eEnumGet = E_PPM_States.OUT,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-
-fbFlowSwitch();]]></ST>
+    fTempSP      := fbStates.stDbStateParams.stReactiveParams.nTempSP,
+    bVetoTempFFO := eEnumGet <> E_PPM_States.POWERMETER,
+    sDeviceName  := sDeviceName,
+    fbFFHWO      := fbFFHWO,
+    eEnumGet     := eEnumGet,
+    stYAxisState := aiMotionStage[1].Axis.NcToPlc.AxisState
+);]]></ST>
     </Implementation>
-    <Method Name="CallAfterInit" Id="{21ba0057-420c-4281-af9c-7f35e47eaf5c}">
-      <Declaration><![CDATA[(* Auto-fired after FB_Init. fbStates' inline-init ran first and
-   forwarded nil refs, so this re-supplies the now-valid refs via
-   fbStates.CallAfterInitStateMover / CallAfterInitPMPS and writes the
-   per-state device defaults. *)
+    <Method Name="CallAfterInit" Id="{fdbf7a93-7d53-46b3-a8dd-92d5bbadf0a1}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init, together with the base CallAfterInit. Binds the
+   state bridge to this FB's enum variables and initializes the states. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[afbStateDefaults[1].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_PPM_States.OUT]);
-afbStateDefaults[2].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_PPM_States.POWERMETER]);
-afbStateDefaults[3].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_PPM_States.YAG1]);
-afbStateDefaults[4].CallAfterInit(stPositionState := THIS^.astPositionState[1][E_PPM_States.YAG2]);
+        <ST><![CDATA[SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
+SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
 
-THIS^.fbStates.CallAfterInitStateMover(
-    aiMotionStage         := aiMotionStage,
-    astPositionState      := astPositionState,
-    nActiveMotorCount     := 1,
-    eEnumSet              := eEnumSet,
-    eEnumGet              := eEnumGet,
-    bEnableMotion         := bEnableMotion,
-    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-);
-
-THIS^.fbStates.CallAfterInitPMPS(
-    aiMotionStage         := aiMotionStage,
-    astPositionState      := astPositionState,
-    bEnableBeamParams     := bEnableBeamParams,
-    bEnablePositionLimits := bEnablePositionLimits,
-    bReadDBNow            := bReadDBNow,
-    bFileReaderBusy       := bFileReaderBusy,
-    bFileReaderError      := bFileReaderError,
-    fbFFHWO               := fbFFHWO,
-    fbArbiter             := fbArbiter,
-    sDeviceName           := sDeviceName,
-    sTransitionKey        := sTransitionKey
-);
+THIS^.InitStateDefaults();
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="FB_init" Id="{21ba0058-420c-4281-af9c-7f35e47eaf5d}">
-      <Declaration><![CDATA[(* Stores FB_Init inputs into instance fields; every non-value input is
-   REFERENCE TO, REF= bound for the FB lifetime. fbStates inline-init
-   captured these params at construction, so this records the same refs
-   on THIS^ for body use and live caller writes. *)
-{attribute 'analysis' := '-33'}
-METHOD FB_Init : BOOL
+    <Method Name="CallAfterInitPPM" Id="{4e388afc-47d9-49b3-800a-9726601ad89e}">
+      <Declaration><![CDATA[(* Provides every FB_PPM_Core input, binds the state bridge, initializes the
+   states through InitStateDefaults, wires fbStates and configures the power
+   meter from the stored calibration. FB_Init calls it with the PRG arguments. An FB
+   that instantiates FB_PPM inside itself calls it again from its own
+   CallAfterInit: the nested FB's CallAfterInit runs before the host's, with
+   nil references, so this method has to redo the whole wiring, base included.
+   The base holds only references, so the derived type supplies them. *)
+METHOD CallAfterInitPPM
 VAR_INPUT
-    bInitRetains           : BOOL;
-    bInCopyCode            : BOOL;
     aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
                                             OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
@@ -235,21 +110,40 @@ VAR_INPUT
     bEnableBeamParams      : BOOL;
     bEnablePositionLimits  : BOOL;
     bReadDBNow             : BOOL;
-    bFileReaderBusy       : REFERENCE TO BOOL;
-    bFileReaderError      : REFERENCE TO BOOL;
-END_VAR]]></Declaration>
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
+    fResponsivity          : LREAL;
+    iTermBits              : UINT;
+    fTermMax               : REAL;
+    fTermMin               : REAL;
+END_VAR
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
-THIS^.astPositionState REF= astPositionState;
-THIS^.fbFFHWO          REF= fbFFHWO;
-THIS^.fbArbiter        REF= fbArbiter;
-THIS^.sDeviceName      := sDeviceName;
-THIS^.sTransitionKey   := sTransitionKey;
-THIS^.bEnableBeamParams     := bEnableBeamParams;
-THIS^.bEnablePositionLimits := bEnablePositionLimits;
-THIS^.bReadDBNow            := bReadDBNow;
-THIS^.bFileReaderBusy       REF= bFileReaderBusy;
-THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+        <ST><![CDATA[SUPER^.aiMotionStage         REF= aiMotionStage;
+SUPER^.astPositionState      REF= astPositionState;
+SUPER^.fbFFHWO               REF= fbFFHWO;
+SUPER^.fbArbiter             REF= fbArbiter;
+SUPER^.sDeviceName           := sDeviceName;
+SUPER^.sTransitionKey        := sTransitionKey;
+SUPER^.bEnableBeamParams     := bEnableBeamParams;
+SUPER^.bEnablePositionLimits := bEnablePositionLimits;
+SUPER^.bReadDBNow            := bReadDBNow;
+SUPER^.bFileReaderBusy       REF= bFileReaderBusy;
+SUPER^.bFileReaderError      REF= bFileReaderError;
+
+SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
+SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
+//
+THIS^.InitStateDefaults();
+SUPER^.CallAfterInitCore();
+
+fbPowerMeter.Configure(
+    Responsivity := fResponsivity,
+    TermBits     := iTermBits,
+    TermMax      := fTermMax,
+    TermMin      := fTermMin
+);
+]]></ST>
       </Implementation>
     </Method>
     <Property Name="EnumGet" Id="{afc84f5d-c074-4a10-b242-128e46ae70fb}">
@@ -285,5 +179,82 @@ END_VAR
         </Implementation>
       </Set>
     </Property>
+    <Method Name="FB_Init" Id="{b7072410-6042-48bb-ba4a-b765b0e46f89}">
+      <Declaration><![CDATA[(* Repeats the eleven FB_PPM_Core inputs, as a derived FB_Init must, and
+   forwards them to CallAfterInitPPM, which provides them to the base, binds
+   the state bridge and wires the states. Runs before any CallAfterInit. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
+    fResponsivity          : LREAL;
+    iTermBits              : UINT;
+    fTermMax               : REAL;
+    fTermMin               : REAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitPPM(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
+    fResponsivity         := fResponsivity,
+    iTermBits             := iTermBits,
+    fTermMax              := fTermMax,
+    fTermMin              := fTermMin
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="InitStateDefaults" Id="{f100856c-d13d-4335-bf2b-8c71776cff60}">
+      <Declaration><![CDATA[(* Full init of every state of astPositionState: gives it its name (sName) and
+   its in-position tolerance (fDelta, FDELTA_DEFAULT) by running afbStateDefaults. astPositionState belongs to the caller, so the
+   configurators can only be given the slots once this FB holds the caller's
+   reference, and have to run again when a host FB re-wires this one. Returns
+   without writing while astPositionState is nil: a nested FB_PPM runs its own
+   CallAfterInit before its host has supplied the reference, and indexing a nil
+   reference yields an address that passes __ISVALIDREF but faults on the first
+   write. *)
+METHOD PROTECTED InitStateDefaults
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.astPositionState) THEN
+    RETURN;
+END_IF
+
+afbStateDefaults[1].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_PPM_States.OUT]
+);
+afbStateDefaults[2].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_PPM_States.POWERMETER]
+);
+afbStateDefaults[3].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_PPM_States.YAG1]
+);
+afbStateDefaults[4].CallAfterInit(
+    stPositionState := THIS^.astPositionState[1][E_PPM_States.YAG2]
+);
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
