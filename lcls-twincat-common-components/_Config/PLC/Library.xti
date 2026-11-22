@@ -1031,7 +1031,7 @@ External Setpoint Generation:
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6439B808-E041-452D-8BCF-38D96753B7FB}" Name="Library" PrjFilePath="..\..\Library\Library.plcproj" TmcFilePath="..\..\Library\Library.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{C8B362C3-C12A-8F98-7C95-FC7184D49A51}" TmcPath="Library\Library.tmc">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{289C5046-1630-4F1C-6A4D-9F03439DFBDB}" TmcPath="Library\Library.tmc">
 			<Name>Library Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="8" ContextId="1" AreaNo="20">
@@ -1243,11 +1243,11 @@ External Setpoint Generation:
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbOpal.bOpalPower</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbLED.bLEDPower</Name>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbLED.bLEDPower</Name>
+					<Name>PRG_TEST.fbXPIMTest.fbXPIM.fbOpal.bOpalPower</Name>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
@@ -3825,11 +3825,11 @@ External Setpoint Generation:
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_XPIM.fbHost.fbXPIM.fbOpal.bOpalPower</Name>
+					<Name>PRG_XPIM.fbHost.fbXPIM.fbLED.bLEDPower</Name>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>
-					<Name>PRG_XPIM.fbHost.fbXPIM.fbLED.bLEDPower</Name>
+					<Name>PRG_XPIM.fbHost.fbXPIM.fbOpal.bOpalPower</Name>
 					<Type>BOOL</Type>
 				</Var>
 				<Var>

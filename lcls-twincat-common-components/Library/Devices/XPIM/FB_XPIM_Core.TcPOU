@@ -108,21 +108,6 @@ fbStates(
 
 fbFlowSwitch();]]></ST>
     </Implementation>
-    <Method Name="ReferencesValid" Id="{83203ceb-ba83-475c-8df0-f23687227d76}">
-      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. A derived body checks it
-   after SUPER^() before it ticks sub-FBs of its own. *)
-METHOD PROTECTED ReferencesValid : BOOL
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
-                AND __ISVALIDREF(astPositionState)
-                AND __ISVALIDREF(fbFFHWO)
-                AND __ISVALIDREF(fbArbiter)
-                AND __ISVALIDREF(eEnumSetRef)
-                AND __ISVALIDREF(eEnumGetRef);
-]]></ST>
-      </Implementation>
-    </Method>
     <Method Name="CallAfterInit" Id="{2af9fe11-05cb-4e0a-bec3-8d08a2278eca}">
       <Declaration><![CDATA[(* Auto-fired after FB_Init. Wires fbStates through CallAfterInitCore. *)
 {attribute 'call_after_init'}
@@ -210,6 +195,21 @@ THIS^.bEnablePositionLimits := bEnablePositionLimits;
 THIS^.bReadDBNow            := bReadDBNow;
 THIS^.bFileReaderBusy       REF= bFileReaderBusy;
 THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ReferencesValid" Id="{83203ceb-ba83-475c-8df0-f23687227d76}">
+      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. A derived body checks it
+   after SUPER^() before it ticks sub-FBs of its own. *)
+METHOD PROTECTED ReferencesValid : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
+                AND __ISVALIDREF(astPositionState)
+                AND __ISVALIDREF(fbFFHWO)
+                AND __ISVALIDREF(fbArbiter)
+                AND __ISVALIDREF(eEnumSetRef)
+                AND __ISVALIDREF(eEnumGetRef);
+]]></ST>
       </Implementation>
     </Method>
   </POU>

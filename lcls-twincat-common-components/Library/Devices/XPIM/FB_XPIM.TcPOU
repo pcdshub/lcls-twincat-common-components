@@ -66,18 +66,18 @@ VAR_OUTPUT
     eEnumGet: E_XPIM_States;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[SUPER^();
-
-// The filter wheel comm state machine runs continuously once its buffers are bound.
-IF THIS^.ReferencesValid()
-   AND __ISVALIDREF(stEl6In)
-   AND __ISVALIDREF(stEl6Out) THEN
-    fbFilterWheel(
-        bExecute := TRUE
-    );
-    fbOpal();
+      <ST><![CDATA[IF NOT THIS^.ReferencesValid()
+   AND NOT __ISVALIDREF(stEl6In)
+   AND NOT __ISVALIDREF(stEl6Out) THEN
+   RETURN;
 END_IF
 
+SUPER^();
+
+fbFilterWheel(
+    bExecute := TRUE
+);
+fbOpal();
 fbLED(
     enumXPIM := eEnumGet
 );]]></ST>
