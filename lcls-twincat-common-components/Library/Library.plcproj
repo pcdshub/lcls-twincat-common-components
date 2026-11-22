@@ -235,6 +235,21 @@
     <Compile Include="Devices\SLITS\E_SlitsAxis.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\ATM\FB_ATM_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\GBS\FB_GBS_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\IPM\FB_IPM_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\WFS\FB_WFS_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Library.tmc">

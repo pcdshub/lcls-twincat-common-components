@@ -7,12 +7,24 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Reset the FFO for transitions to bVeto
-// bAutoreset is False, but we still want to clear the fault on veto
+      <ST><![CDATA[// Clear the fault on veto; bAutoReset stays FALSE.
 rtVetoReset(CLK:=bVeto);
 FFO.i_xReset := rtVetoReset.Q;
 
 SUPER^(bAutoReset:=FALSE, io_fbFFHWO:=io_fbFFHWO);]]></ST>
     </Implementation>
+    <Method Name="SetRawCounts" Id="{01e6c1fb-fbf7-461e-ad3d-c6b17a91ff35}">
+      <Declaration><![CDATA[(* Test seam: writes the raw terminal counts that the IO link normally supplies,
+   so tests drive the sensor without reaching into the base FB. *)
+METHOD INTERNAL SetRawCounts
+VAR_INPUT
+    Counts : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.iRaw := Counts;
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
