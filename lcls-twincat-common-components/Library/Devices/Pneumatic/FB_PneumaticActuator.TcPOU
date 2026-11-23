@@ -141,7 +141,9 @@ xMPS_OK := (stPneumaticActuator.eState = E_PnuematicActuatorPositionState.RETRAC
 // Insert and retract requests cannot both be active
 fbCore.ExclusiveCommands(
     bInsertCmd := stPneumaticActuator.bInsertCmd,
-    bRetractCmd := stPneumaticActuator.bRetractCmd);
+    bRetractCmd := stPneumaticActuator.bRetractCmd,
+    bInsertCmdOut => stPneumaticActuator.bInsertCmd,
+    bRetractCmdOut => stPneumaticActuator.bRetractCmd);
 
 // Redundant: clear the opposite output and request when one output is active
 IF stPneumaticActuator.bInsertOutput THEN

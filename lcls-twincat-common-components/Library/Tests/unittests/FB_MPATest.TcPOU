@@ -8,12 +8,24 @@
 FUNCTION_BLOCK FB_MPATest EXTENDS FB_TestSuite
 VAR
     afbFFHWO : ARRAY[1..6] OF FB_HardwareFFOutput;
-    fbSutState : FB_MPA;
-    fbSutSelf : FB_MPA;
-    fbSutCommand : FB_MPA;
-    fbSutExclusion : FB_MPA;
-    fbSutMps : FB_MPA;
-    fbSutTimeout : FB_MPA;
+    fbSutState : FB_MPA(
+        fbFFHWO := afbFFHWO[1],
+        sName := 'TST:MPA:1');
+    fbSutSelf : FB_MPA(
+        fbFFHWO := afbFFHWO[2],
+        sName := 'TST:MPA:2');
+    fbSutCommand : FB_MPA(
+        fbFFHWO := afbFFHWO[3],
+        sName := 'TST:MPA:3');
+    fbSutExclusion : FB_MPA(
+        fbFFHWO := afbFFHWO[4],
+        sName := 'TST:MPA:4');
+    fbSutMps : FB_MPA(
+        fbFFHWO := afbFFHWO[5],
+        sName := 'TST:MPA:5');
+    fbSutTimeout : FB_MPA(
+        fbFFHWO := afbFFHWO[6],
+        sName := 'TST:MPA:6');
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -33,22 +45,22 @@ METHOD PRIVATE GivenLimitSwitchCombinationsThenStateIsDerived
 
 fbSutState.InsertedLS := TRUE;
 fbSutState.RetractedLS := TRUE;
-fbSutState(io_fbFFHWO := afbFFHWO[1]);
+fbSutState();
 AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.INVALID, Message := 'Both limit switches must give INVALID');
 
 fbSutState.InsertedLS := FALSE;
 fbSutState.RetractedLS := TRUE;
-fbSutState(io_fbFFHWO := afbFFHWO[1]);
+fbSutState();
 AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.RETRACTED, Message := 'Out limit switch only must give RETRACTED');
 
 fbSutState.InsertedLS := TRUE;
 fbSutState.RetractedLS := FALSE;
-fbSutState(io_fbFFHWO := afbFFHWO[1]);
+fbSutState();
 AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.INSERTED, Message := 'In limit switch only must give INSERTED');
 
 fbSutState.InsertedLS := FALSE;
 fbSutState.RetractedLS := FALSE;
-fbSutState(io_fbFFHWO := afbFFHWO[1]);
+fbSutState();
 AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.MOVING, Message := 'Neither limit switch must give MOVING');
 
 TEST_FINISHED();]]></ST>
@@ -65,12 +77,10 @@ fbSutSelf.RetractedLS := TRUE;
 fbSutSelf.InsertedLS := FALSE;
 fbSutSelf(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[2]);
+    ibRetractOK := TRUE);
 fbSutSelf(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[2]);
+    ibRetractOK := TRUE);
 
 AssertTrue(Condition := fbSutSelf.RetractCmd, Message := 'A retracted actuator must command retract');
 AssertFalse(Condition := fbSutSelf.InsertCmd, Message := 'The insert command must stay clear');
@@ -89,22 +99,20 @@ METHOD PRIVATE GivenInsertCommandThenOutputFollowsInterlock
         <ST><![CDATA[TEST(__POUNAME());
 
 // The first scan clears the commands, so scan once before a command is set.
-fbSutCommand(io_fbFFHWO := afbFFHWO[3]);
+fbSutCommand();
 
 fbSutCommand.InsertedLS := FALSE;
 fbSutCommand.RetractedLS := FALSE;
 fbSutCommand.InsertCmd := TRUE;
 fbSutCommand(
     ibInsertOK := FALSE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[3]);
+    ibRetractOK := TRUE);
 AssertFalse(Condition := fbSutCommand.q_stAct.q_bInsert, Message := 'Insert must not drive the output without permission');
 
 fbSutCommand.InsertCmd := TRUE;
 fbSutCommand(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[3]);
+    ibRetractOK := TRUE);
 AssertTrue(Condition := fbSutCommand.q_stAct.q_bInsert, Message := 'Insert must drive the output with permission');
 AssertFalse(Condition := fbSutCommand.q_stAct.q_bRetract, Message := 'The retract output must stay off');
 
@@ -119,7 +127,7 @@ METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
         <ST><![CDATA[TEST(__POUNAME());
 
 // The first scan clears the commands, so scan once before a command is set.
-fbSutExclusion(io_fbFFHWO := afbFFHWO[4]);
+fbSutExclusion();
 
 fbSutExclusion.InsertedLS := FALSE;
 fbSutExclusion.RetractedLS := FALSE;
@@ -127,8 +135,7 @@ fbSutExclusion.InsertCmd := TRUE;
 fbSutExclusion.RetractCmd := TRUE;
 fbSutExclusion(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[4]);
+    ibRetractOK := TRUE);
 
 AssertFalse(Condition := fbSutExclusion.InsertCmd, Message := 'The insert command must be cleared');
 AssertFalse(Condition := fbSutExclusion.RetractCmd, Message := 'The retract command must be cleared');
@@ -144,29 +151,26 @@ METHOD PRIVATE GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand
         <ST><![CDATA[TEST(__POUNAME());
 
 // The first scan clears the commands, so scan once before a command is set.
-fbSutMps(io_fbFFHWO := afbFFHWO[5]);
+fbSutMps();
 
 fbSutMps.InsertedLS := FALSE;
 fbSutMps.RetractedLS := FALSE;
 fbSutMps.InsertCmd := TRUE;
 fbSutMps(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[5]);
+    ibRetractOK := TRUE);
 AssertFalse(Condition := fbSutMps.xMPS_OK, Message := 'Moving must not be MPS OK');
 
 fbSutMps.InsertedLS := TRUE;
 fbSutMps(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[5]);
+    ibRetractOK := TRUE);
 AssertTrue(Condition := fbSutMps.xMPS_OK, Message := 'Inserted after an insert command must be MPS OK');
 
 fbSutMps.RetractedLS := TRUE;
 fbSutMps(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[5]);
+    ibRetractOK := TRUE);
 AssertFalse(Condition := fbSutMps.xMPS_OK, Message := 'Both limit switches must not be MPS OK');
 
 TEST_FINISHED();]]></ST>
@@ -186,7 +190,7 @@ END_VAR
 CASE nStep OF
     0:
         // The first scan clears the commands, so scan once before a command is set.
-        fbSutTimeout(io_fbFFHWO := afbFFHWO[6]);
+        fbSutTimeout();
         AssertEquals_TIME(Expected := T#5S, Actual := fbSutTimeout.TimeoutDuration, Message := 'Default timeout must be 5 s');
         fbSutTimeout.TimeoutDuration := T#20MS;
         fbSutTimeout.InsertedLS := FALSE;
@@ -203,8 +207,7 @@ END_CASE
 
 fbSutTimeout(
     ibInsertOK := TRUE,
-    ibRetractOK := TRUE,
-    io_fbFFHWO := afbFFHWO[6]);
+    ibRetractOK := TRUE);
 fbWait(IN := nStep >= 1, PT := T#200MS);
 
 IF nStep = 2 THEN

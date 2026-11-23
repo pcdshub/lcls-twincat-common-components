@@ -52,18 +52,21 @@ bRetractTimedOut := NOT bOutLimitSwitch AND tonRetractTimeout.Q;]]></ST>
       </Implementation>
     </Method>
     <Method Name="ExclusiveCommands" Id="{af67ca6b-e304-4ade-8c4f-e79907fffdab}">
-      <Declaration><![CDATA[(* An insert and a retract request set together cancel each other. *)
+      <Declaration><![CDATA[(* An insert and a retract request set together cancel each other. The requests that stay are
+   returned in bInsertCmdOut and bRetractCmdOut. *)
 METHOD ExclusiveCommands
-VAR_IN_OUT
+VAR_INPUT
     bInsertCmd : BOOL;
     bRetractCmd : BOOL;
 END_VAR
+VAR_OUTPUT
+    bInsertCmdOut : BOOL;
+    bRetractCmdOut : BOOL;
+END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF bRetractCmd AND bInsertCmd THEN
-    bRetractCmd := FALSE;
-    bInsertCmd := FALSE;
-END_IF]]></ST>
+        <ST><![CDATA[bInsertCmdOut := bInsertCmd AND NOT bRetractCmd;
+bRetractCmdOut := bRetractCmd AND NOT bInsertCmd;]]></ST>
       </Implementation>
     </Method>
     <Property Name="InsertTimeoutElapsed" Id="{92a949e6-daa8-430b-b2ed-dddc969858d4}">

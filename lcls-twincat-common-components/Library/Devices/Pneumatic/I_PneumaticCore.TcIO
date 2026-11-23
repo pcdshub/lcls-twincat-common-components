@@ -18,9 +18,13 @@ END_VAR
     </Method>
     <Method Name="ExclusiveCommands" Id="{97b9c496-ac80-4172-94e9-716565a41058}">
       <Declaration><![CDATA[METHOD ExclusiveCommands
-VAR_IN_OUT
+VAR_INPUT
     bInsertCmd : BOOL;
     bRetractCmd : BOOL;
+END_VAR
+VAR_OUTPUT
+    bInsertCmdOut : BOOL;
+    bRetractCmdOut : BOOL;
 END_VAR
 ]]></Declaration>
     </Method>

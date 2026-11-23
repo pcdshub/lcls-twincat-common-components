@@ -41,21 +41,23 @@ AssertTrue(
 TEST_FINISHED();]]></ST>
       </Implementation>
     </Method>
-    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{1224b0f4-80ae-4b46-8bb1-ebb4a213cd60}">
+    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{60d26801-45da-4ab4-a2e6-1e6c4079616c}">
       <Declaration><![CDATA[(* An insert and a retract request together cancel each other. *)
 METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
 VAR
     fbSut : FB_PneumaticCore;
-    bInsertCmd : BOOL := TRUE;
-    bRetractCmd : BOOL := TRUE;
+    bInsertCmd : BOOL;
+    bRetractCmd : BOOL;
 END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[TEST(__POUNAME());
 
 fbSut.ExclusiveCommands(
-    bInsertCmd := bInsertCmd,
-    bRetractCmd := bRetractCmd);
+    bInsertCmd := TRUE,
+    bRetractCmd := TRUE,
+    bInsertCmdOut => bInsertCmd,
+    bRetractCmdOut => bRetractCmd);
 
 AssertFalse(Condition := bInsertCmd, Message := 'Insert request must be cancelled');
 AssertFalse(Condition := bRetractCmd, Message := 'Retract request must be cancelled');
@@ -63,21 +65,23 @@ AssertFalse(Condition := bRetractCmd, Message := 'Retract request must be cancel
 TEST_FINISHED();]]></ST>
       </Implementation>
     </Method>
-    <Method Name="GivenOneCommandThenItIsKept" Id="{88b50dae-07c9-4fbc-9897-79d712f35c90}">
+    <Method Name="GivenOneCommandThenItIsKept" Id="{34de78d7-b602-41b2-a374-465c296335a4}">
       <Declaration><![CDATA[(* A single request is left alone. *)
 METHOD PRIVATE GivenOneCommandThenItIsKept
 VAR
     fbSut : FB_PneumaticCore;
-    bInsertCmd : BOOL := TRUE;
-    bRetractCmd : BOOL := FALSE;
+    bInsertCmd : BOOL;
+    bRetractCmd : BOOL;
 END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[TEST(__POUNAME());
 
 fbSut.ExclusiveCommands(
-    bInsertCmd := bInsertCmd,
-    bRetractCmd := bRetractCmd);
+    bInsertCmd := TRUE,
+    bRetractCmd := FALSE,
+    bInsertCmdOut => bInsertCmd,
+    bRetractCmdOut => bRetractCmd);
 
 AssertTrue(Condition := bInsertCmd, Message := 'A single insert request must stay');
 AssertFalse(Condition := bRetractCmd, Message := 'The retract request must stay clear');

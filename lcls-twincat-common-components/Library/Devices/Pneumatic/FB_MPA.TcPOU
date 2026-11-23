@@ -4,8 +4,9 @@
     <Declaration><![CDATA[(*
     Legacy MPA actuator block of the kfe and lfe projects, kept as it behaved. It is not the
     library actuator: it commands itself to match a limit switch it finds active, takes its
-    fast fault name from sName, passes the fast fault output as VAR_IN_OUT, and its MPS rule
-    follows the commanded direction. FB_PneumaticActuator is the library block for new devices.
+    fast fault name from sName, and its MPS rule follows the commanded direction. The fast fault
+    output and sName are mandatory and come through FB_Init. A nested MPA gets them again from
+    CallAfterInitMPA. FB_PneumaticActuator is the library block for new devices.
     The limit switch state, the insert and retract exclusion and the output timeout come from
     FB_PneumaticCore, which FB_PneumaticActuator uses as well. bEnableFF FALSE skips the fast fault.
 *)
@@ -21,7 +22,6 @@ VAR_INPUT
     pv: FF_Reset
     '}
     i_xReset: BOOL;
-    sName: STRING;
     bEnableFF: BOOL := TRUE;
 END_VAR
 VAR_OUTPUT
@@ -38,10 +38,11 @@ VAR_OUTPUT
     '}
     xDone:Bool; // Motion is Done
 END_VAR
-VAR_IN_OUT
-    io_fbFFHWO    :    FB_HardwareFFOutput;
-END_VAR
 VAR
+    // Fast fault output the fault is raised on, and the name of the device in the fault
+    fbFFHWO: REFERENCE TO FB_HardwareFFOutput;
+    sName: STRING;
+
     // PMPS
     fbFF    :    FB_FastFault :=(
         i_xAutoReset := TRUE,
@@ -75,6 +76,10 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[
+IF NOT __ISVALIDREF(fbFFHWO) THEN
+    RETURN;
+END_IF
+
 (*Initialize*)
 fbFSInit( CLK := TRUE, Q => xFirstPass);
 (*IO Mapping*)
@@ -118,7 +123,9 @@ END_IF
 (* Can't have bRetract_SW and  bInsert_SW both be true*)
 fbCore.ExclusiveCommands(
     bInsertCmd := q_stAct.bInsert_SW,
-    bRetractCmd := q_stAct.bRetract_SW);
+    bRetractCmd := q_stAct.bRetract_SW,
+    bInsertCmdOut => q_stAct.bInsert_SW,
+    bRetractCmdOut => q_stAct.bRetract_SW);
 
 (* Make the state consistent if we can *)
 IF NOT (q_stAct.bRetract_SW OR q_stAct.bInsert_SW) THEN
@@ -167,12 +174,42 @@ IF bEnableFF THEN
     fbFF(i_DevName := sName,
         i_xOK := xMPS_OK,
         i_xReset := i_xReset,
-        io_fbFFHWO := io_fbFFHWO);
+        io_fbFFHWO := fbFFHWO);
 END_IF
 
 (*Soft IO Mapping*)
 ACT_IO();]]></ST>
     </Implementation>
+    <Method Name="CallAfterInitMPA" Id="{1307ee02-c964-4b0d-b3e3-8107def010b9}">
+      <Declaration><![CDATA[(* Rebinds the fast fault output and the name. Call from the CallAfterInit of an enclosing FB. *)
+METHOD CallAfterInitMPA
+VAR_INPUT
+    fbFFHWO : REFERENCE TO FB_HardwareFFOutput;
+    sName : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbFFHWO REF= fbFFHWO;
+THIS^.sName := sName;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{f8c83a0a-680d-4665-aefd-945fc7da00d9}">
+      <Declaration><![CDATA[(* Stores the mandatory fast fault output and device name at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInitRetains : BOOL;
+    // TRUE: the instance will be copied to the copy code afterward (online change)
+    bInCopyCode : BOOL;
+    fbFFHWO : REFERENCE TO FB_HardwareFFOutput;
+    sName : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbFFHWO REF= fbFFHWO;
+THIS^.sName := sName;]]></ST>
+      </Implementation>
+    </Method>
     <Property Name="InsertedLS" Id="{812a1c9a-744b-4748-b834-3ccaf504cf3b}">
       <Declaration><![CDATA[(* Inserted limit switch input. Settable so tests and simulation can drive it. *)
 PROPERTY InsertedLS : BOOL]]></Declaration>
