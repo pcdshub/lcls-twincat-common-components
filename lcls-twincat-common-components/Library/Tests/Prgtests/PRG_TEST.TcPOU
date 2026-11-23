@@ -66,6 +66,9 @@ VAR
     fbSlitsPowerTest: FB_SLITS_POWERTest;
     fbSlitsThermalTest: FB_SLITS_THERMALTest;
     fbCCTempSensorTest: FB_CC_TempSensorTest;
+    fbPneumaticCoreTest: FB_PneumaticCoreTest;
+    fbPneumaticActuatorTest: FB_PneumaticActuatorTest;
+    fbMPATest: FB_MPATest;
 END_VAR
 ]]></Declaration>
     <Implementation>

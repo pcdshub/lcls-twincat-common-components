@@ -40,6 +40,7 @@
     <Folder Include="Devices\PPM" />
     <Folder Include="Devices\KBO" />
     <Folder Include="Devices\Coating" />
+    <Folder Include="Devices\Pneumatic" />
     <Folder Include="DUTs" />
     <Folder Include="Tests" />
     <Folder Include="POUs" />
@@ -153,6 +154,30 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\WFS\FB_WFS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\E_PnuematicActuatorPositionState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\ST_PneumaticActuator.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\ST_MPA.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\I_PneumaticCore.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\I_PneumaticActuator.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_PneumaticCore.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_PneumaticActuator.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_MPA.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\GBS\E_GBS_States.TcDUT">
@@ -324,6 +349,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\unittests\FB_Coating_States_NoPMPSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PneumaticCoreTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PneumaticActuatorTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_MPATest.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\unittests\FB_GBSTest.TcPOU">

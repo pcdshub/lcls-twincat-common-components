@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_MPATest" Id="{9972eb67-0105-4791-ad19-60d3652a852b}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Characterization tests of the legacy FB_MPA. They pin the behaviour the projects rely on: the
+   limit switch state, the self-command, the interlocked outputs, the command exclusion, the MPS
+   rule that follows the command and the output timeout. *)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_MPATest EXTENDS FB_TestSuite
+VAR
+    afbFFHWO : ARRAY[1..6] OF FB_HardwareFFOutput;
+    fbSutState : FB_MPA;
+    fbSutSelf : FB_MPA;
+    fbSutCommand : FB_MPA;
+    fbSutExclusion : FB_MPA;
+    fbSutMps : FB_MPA;
+    fbSutTimeout : FB_MPA;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GivenLimitSwitchCombinationsThenStateIsDerived();
+GivenRestingAtLimitSwitchThenItCommandsItselfToMatch();
+GivenInsertCommandThenOutputFollowsInterlock();
+GivenInsertAndRetractTogetherThenBothAreCancelled();
+GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand();
+GivenNoLimitSwitchThenTimeoutSetsErrorAndDefaultIsFiveSeconds();]]></ST>
+    </Implementation>
+    <Method Name="GivenLimitSwitchCombinationsThenStateIsDerived" Id="{e526fdc0-f34c-48c7-8945-d8913d77d437}">
+      <Declaration><![CDATA[(* All four limit switch combinations give the state of the library table. *)
+METHOD PRIVATE GivenLimitSwitchCombinationsThenStateIsDerived
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutState.InsertedLS := TRUE;
+fbSutState.RetractedLS := TRUE;
+fbSutState(io_fbFFHWO := afbFFHWO[1]);
+AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.INVALID, Message := 'Both limit switches must give INVALID');
+
+fbSutState.InsertedLS := FALSE;
+fbSutState.RetractedLS := TRUE;
+fbSutState(io_fbFFHWO := afbFFHWO[1]);
+AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.RETRACTED, Message := 'Out limit switch only must give RETRACTED');
+
+fbSutState.InsertedLS := TRUE;
+fbSutState.RetractedLS := FALSE;
+fbSutState(io_fbFFHWO := afbFFHWO[1]);
+AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.INSERTED, Message := 'In limit switch only must give INSERTED');
+
+fbSutState.InsertedLS := FALSE;
+fbSutState.RetractedLS := FALSE;
+fbSutState(io_fbFFHWO := afbFFHWO[1]);
+AssertTrue(Condition := fbSutState.q_stAct.eState = E_PnuematicActuatorPositionState.MOVING, Message := 'Neither limit switch must give MOVING');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenRestingAtLimitSwitchThenItCommandsItselfToMatch" Id="{bd6ef86b-c483-4dd0-8772-ec74729c4529}">
+      <Declaration><![CDATA[(* With no command and a limit switch active, the block raises the command of that direction and drives its output. *)
+METHOD PRIVATE GivenRestingAtLimitSwitchThenItCommandsItselfToMatch
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutSelf.RetractedLS := TRUE;
+fbSutSelf.InsertedLS := FALSE;
+fbSutSelf(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[2]);
+fbSutSelf(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[2]);
+
+AssertTrue(Condition := fbSutSelf.RetractCmd, Message := 'A retracted actuator must command retract');
+AssertFalse(Condition := fbSutSelf.InsertCmd, Message := 'The insert command must stay clear');
+AssertTrue(Condition := fbSutSelf.q_stAct.q_bRetract, Message := 'The retract output must be on');
+AssertFalse(Condition := fbSutSelf.q_stAct.q_bInsert, Message := 'The insert output must be off');
+AssertTrue(Condition := fbSutSelf.xDone, Message := 'The actuator must be done');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertCommandThenOutputFollowsInterlock" Id="{f0a78663-f506-43db-b145-b8f283546902}">
+      <Declaration><![CDATA[(* An insert command drives the insert output only when the insert interlock bit allows it. *)
+METHOD PRIVATE GivenInsertCommandThenOutputFollowsInterlock
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+// The first scan clears the commands, so scan once before a command is set.
+fbSutCommand(io_fbFFHWO := afbFFHWO[3]);
+
+fbSutCommand.InsertedLS := FALSE;
+fbSutCommand.RetractedLS := FALSE;
+fbSutCommand.InsertCmd := TRUE;
+fbSutCommand(
+    ibInsertOK := FALSE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[3]);
+AssertFalse(Condition := fbSutCommand.q_stAct.q_bInsert, Message := 'Insert must not drive the output without permission');
+
+fbSutCommand.InsertCmd := TRUE;
+fbSutCommand(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[3]);
+AssertTrue(Condition := fbSutCommand.q_stAct.q_bInsert, Message := 'Insert must drive the output with permission');
+AssertFalse(Condition := fbSutCommand.q_stAct.q_bRetract, Message := 'The retract output must stay off');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{d18a970b-e861-4ac4-8b83-69eb9d55642b}">
+      <Declaration><![CDATA[(* Both commands set at once are cleared. *)
+METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+// The first scan clears the commands, so scan once before a command is set.
+fbSutExclusion(io_fbFFHWO := afbFFHWO[4]);
+
+fbSutExclusion.InsertedLS := FALSE;
+fbSutExclusion.RetractedLS := FALSE;
+fbSutExclusion.InsertCmd := TRUE;
+fbSutExclusion.RetractCmd := TRUE;
+fbSutExclusion(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[4]);
+
+AssertFalse(Condition := fbSutExclusion.InsertCmd, Message := 'The insert command must be cleared');
+AssertFalse(Condition := fbSutExclusion.RetractCmd, Message := 'The retract command must be cleared');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand" Id="{e7c6ea6a-db9b-496e-b80e-50736a2a7a46}">
+      <Declaration><![CDATA[(* MPS OK is TRUE when the commanded direction has reached its limit switch, FALSE while moving or when both limit switches are active. *)
+METHOD PRIVATE GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+// The first scan clears the commands, so scan once before a command is set.
+fbSutMps(io_fbFFHWO := afbFFHWO[5]);
+
+fbSutMps.InsertedLS := FALSE;
+fbSutMps.RetractedLS := FALSE;
+fbSutMps.InsertCmd := TRUE;
+fbSutMps(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[5]);
+AssertFalse(Condition := fbSutMps.xMPS_OK, Message := 'Moving must not be MPS OK');
+
+fbSutMps.InsertedLS := TRUE;
+fbSutMps(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[5]);
+AssertTrue(Condition := fbSutMps.xMPS_OK, Message := 'Inserted after an insert command must be MPS OK');
+
+fbSutMps.RetractedLS := TRUE;
+fbSutMps(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[5]);
+AssertFalse(Condition := fbSutMps.xMPS_OK, Message := 'Both limit switches must not be MPS OK');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenNoLimitSwitchThenTimeoutSetsErrorAndDefaultIsFiveSeconds" Id="{e976c078-c676-4ccb-9f69-bf20af4567ef}">
+      <Declaration><![CDATA[(* The default timeout is 5 s. An output that stays on without its limit switch sets bErrorPresent. *)
+METHOD PRIVATE GivenNoLimitSwitchThenTimeoutSetsErrorAndDefaultIsFiveSeconds
+VAR_INST
+    nStep : INT;
+    fbWait : TON;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+CASE nStep OF
+    0:
+        // The first scan clears the commands, so scan once before a command is set.
+        fbSutTimeout(io_fbFFHWO := afbFFHWO[6]);
+        AssertEquals_TIME(Expected := T#5S, Actual := fbSutTimeout.TimeoutDuration, Message := 'Default timeout must be 5 s');
+        fbSutTimeout.TimeoutDuration := T#20MS;
+        fbSutTimeout.InsertedLS := FALSE;
+        fbSutTimeout.RetractedLS := FALSE;
+        fbSutTimeout.InsertCmd := TRUE;
+        nStep := 1;
+
+    1:
+        IF fbWait.Q THEN
+            AssertTrue(Condition := fbSutTimeout.q_stAct.bErrorPresent, Message := 'The timeout must set the error');
+            nStep := 2;
+        END_IF
+END_CASE
+
+fbSutTimeout(
+    ibInsertOK := TRUE,
+    ibRetractOK := TRUE,
+    io_fbFFHWO := afbFFHWO[6]);
+fbWait(IN := nStep >= 1, PT := T#200MS);
+
+IF nStep = 2 THEN
+    TEST_FINISHED();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

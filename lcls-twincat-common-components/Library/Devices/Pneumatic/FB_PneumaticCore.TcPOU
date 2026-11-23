@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PneumaticCore" Id="{cbfe7c5c-3126-400b-af71-f63656e73d06}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Behaviour shared by the pneumatic actuator blocks FB_PneumaticActuator and FB_MPA. It holds only
+    what both do the same way:
+        State: the position state from the two limit switches (in AND out is INVALID, only out is
+            RETRACTED, only in is INSERTED, neither is MOVING).
+        ExclusiveCommands: an insert and a retract request set together cancel each other.
+        CheckTimeouts: an output that stays on without its limit switch being reached for longer
+            than the timeout. The caller picks the time and decides what an elapsed timeout means.
+    Each block owns everything else: command handling, the outputs, the MPS rule, the fast fault
+    and the error reporting. A block calls these methods where its own sequence needs them, so the
+    order of its steps does not change.
+*)
+{attribute 'no_explicit_call' := 'FB_PneumaticCore has no body. Call its methods.'}
+FUNCTION_BLOCK FB_PneumaticCore IMPLEMENTS I_PneumaticCore
+VAR
+    tonInsertTimeout : TON;
+    tonRetractTimeout : TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CheckTimeouts" Id="{29d33ded-61d3-4961-893f-3feabe8fd645}">
+      <Declaration><![CDATA[(* Runs the timeout timer of each output. A timeout is reported while its output has been on for the
+   timeout time and its limit switch is still not reached. *)
+METHOD CheckTimeouts
+VAR_INPUT
+    bInsertOutput : BOOL;
+    bRetractOutput : BOOL;
+    bInLimitSwitch : BOOL;
+    bOutLimitSwitch : BOOL;
+    tTimeout : TIME;
+END_VAR
+VAR_OUTPUT
+    bInsertTimedOut : BOOL;
+    bRetractTimedOut : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[tonInsertTimeout(
+    IN := bInsertOutput,
+    PT := tTimeout);
+tonRetractTimeout(
+    IN := bRetractOutput,
+    PT := tTimeout);
+
+bInsertTimedOut := NOT bInLimitSwitch AND tonInsertTimeout.Q;
+bRetractTimedOut := NOT bOutLimitSwitch AND tonRetractTimeout.Q;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ExclusiveCommands" Id="{af67ca6b-e304-4ade-8c4f-e79907fffdab}">
+      <Declaration><![CDATA[(* An insert and a retract request set together cancel each other. *)
+METHOD ExclusiveCommands
+VAR_IN_OUT
+    bInsertCmd : BOOL;
+    bRetractCmd : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bRetractCmd AND bInsertCmd THEN
+    bRetractCmd := FALSE;
+    bInsertCmd := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="InsertTimeoutElapsed" Id="{92a949e6-daa8-430b-b2ed-dddc969858d4}">
+      <Declaration><![CDATA[(* The insert timeout timer has elapsed, whatever the limit switch says. *)
+PROPERTY InsertTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{cd7156ed-5454-48be-8e6e-5d9c052b04b4}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertTimeoutElapsed := tonInsertTimeout.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="RetractTimeoutElapsed" Id="{5f0b629e-c3c1-4331-b9ab-ef3a3315134e}">
+      <Declaration><![CDATA[(* The retract timeout timer has elapsed, whatever the limit switch says. *)
+PROPERTY RetractTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{17796502-5a0a-4e60-83ef-f0f334544a93}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractTimeoutElapsed := tonRetractTimeout.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="State" Id="{e5e6533a-6512-46a5-8b0b-09d6f22db816}">
+      <Declaration><![CDATA[(* Position state from the limit switches. *)
+METHOD State : E_PnuematicActuatorPositionState
+VAR_INPUT
+    bInLimitSwitch : BOOL;
+    bOutLimitSwitch : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bInLimitSwitch AND bOutLimitSwitch THEN
+    State := E_PnuematicActuatorPositionState.INVALID;
+ELSIF NOT bInLimitSwitch AND bOutLimitSwitch THEN
+    State := E_PnuematicActuatorPositionState.RETRACTED;
+ELSIF bInLimitSwitch AND NOT bOutLimitSwitch THEN
+    State := E_PnuematicActuatorPositionState.INSERTED;
+ELSE
+    State := E_PnuematicActuatorPositionState.MOVING;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

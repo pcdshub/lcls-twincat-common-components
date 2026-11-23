@@ -1,0 +1,268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_MPA" Id="{cb866698-d8bc-42c2-8e0e-dd29cc758464}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Legacy MPA actuator block of the kfe and lfe projects, kept as it behaved. It is not the
+    library actuator: it commands itself to match a limit switch it finds active, takes its
+    fast fault name from sName, passes the fast fault output as VAR_IN_OUT, and its MPS rule
+    follows the commanded direction. FB_PneumaticActuator is the library block for new devices.
+    The limit switch state, the insert and retract exclusion and the output timeout come from
+    FB_PneumaticCore, which FB_PneumaticActuator uses as well. bEnableFF FALSE skips the fast fault.
+*)
+FUNCTION_BLOCK FB_MPA
+VAR_INPUT
+    (*EPS Interlock Bits*)
+    ibInsertOK: BOOL;
+    ibRetractOK: BOOL;
+    ibPMPS_OK:BOOL;
+    ibOverrideInterlock:BOOL; (*if true interlocks are ignored*)
+    // Reset fault
+    {attribute 'pytmc' := '
+    pv: FF_Reset
+    '}
+    i_xReset: BOOL;
+    sName: STRING;
+    bEnableFF: BOOL := TRUE;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+    pv:
+    '}
+    q_stAct     :    ST_MPA;
+    {attribute 'pytmc' := '
+    pv: MPS_FAULT
+    '}
+    xMPS_OK:BOOL;
+    {attribute 'pytmc' := '
+    pv: MOT_DONE
+    '}
+    xDone:Bool; // Motion is Done
+END_VAR
+VAR_IN_OUT
+    io_fbFFHWO    :    FB_HardwareFFOutput;
+END_VAR
+VAR
+    // PMPS
+    fbFF    :    FB_FastFault :=(
+        i_xAutoReset := TRUE,
+        i_Desc := 'Device is moving',
+        i_TypeCode := 16#1010);
+
+    (*Init*)
+    xFirstPass    :    BOOL;
+    fbFSInit        :    R_TRIG;
+
+    (* Shared behaviour of the pneumatic actuator blocks *)
+    fbCore: FB_PneumaticCore;
+
+    (* Timeouts*)
+    tTimeOutDuration: TIME:= T#5S;
+    bInsertTimedOut: BOOL;
+    bRetractTimedOut: BOOL;
+
+    (*IO*)
+    i_xInsertedLS    AT%I*: BOOL;
+    i_xRetractedLS    AT%I*: BOOL;
+    q_xInsert_DO    AT%Q*: BOOL;
+    q_xRetract_DO    AT%Q*: BOOL;
+
+    (* Reset Triggers *)
+    rtInsert: R_TRIG;
+    rtRemove: R_TRIG;
+END_VAR
+
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+(*Initialize*)
+fbFSInit( CLK := TRUE, Q => xFirstPass);
+(*IO Mapping*)
+ACT_IO();
+
+IF xFirstPass THEN
+    q_stAct.eState := E_PnuematicActuatorPositionState.INVALID;
+    q_stAct.bRetract_SW := FALSE;
+    q_stAct.bInsert_SW := FALSE;
+END_IF
+
+
+(* Manage States*)
+q_stAct.eState := fbCore.State(
+    bInLimitSwitch := q_stAct.i_bInLS,
+    bOutLimitSwitch := q_stAct.i_bOutLS);
+
+(*Set the Done signal*)
+xDone := (q_stAct.bRetract_SW AND q_stAct.eState=E_PnuematicActuatorPositionState.RETRACTED) OR (q_stAct.eState=E_PnuematicActuatorPositionState.INSERTED AND q_stAct.bInsert_SW);
+
+
+(*MPS FAULT*)
+(**)
+xMPS_OK := (q_stAct.bRetract_SW AND i_xRetractedLS) XOR (i_xInsertedLS AND q_stAct.bInsert_SW);
+//xMPS_OK := i_xRetractedLS XOR i_xInsertedLS;
+//xMPS_OK := (q_stAct.eState=RETRACTED) OR (q_stAct.eState=INSERTED);
+//xMPS_OK := (q_stAct.eState=RETRACTED) ;
+
+(*PMPS PERMISSION*)
+
+(* Reset the other command bit when one goes high *)
+rtInsert(CLK:=q_stAct.bInsert_SW);
+IF rtInsert.Q THEN
+    q_stAct.bRetract_SW := FALSE;
+END_IF
+rtRemove(CLK:=q_stAct.bRetract_SW);
+IF rtRemove.Q THEN
+    q_stAct.bInsert_SW := FALSE;
+END_IF
+
+(* Can't have bRetract_SW and  bInsert_SW both be true*)
+fbCore.ExclusiveCommands(
+    bInsertCmd := q_stAct.bInsert_SW,
+    bRetractCmd := q_stAct.bRetract_SW);
+
+(* Make the state consistent if we can *)
+IF NOT (q_stAct.bRetract_SW OR q_stAct.bInsert_SW) THEN
+    IF q_stAct.eState = E_PnuematicActuatorPositionState.RETRACTED THEN
+        q_stAct.bRetract_SW := TRUE;
+    ELSIF q_stAct.eState = E_PnuematicActuatorPositionState.INSERTED THEN
+        q_stAct.bInsert_SW := TRUE;
+    END_IF
+END_IF
+
+q_stAct.bRetractOK := ibRetractOK;
+q_stAct.bInsertOK := ibInsertOK;
+
+(*Actuate the device*)
+q_stAct.q_bRetract := q_stAct.bRetractOK AND q_stAct.bRetract_SW;
+q_stAct.q_bInsert := q_stAct.bInsertOK AND q_stAct.bInsert_SW;
+
+IF q_stAct.q_bInsert THEN
+    q_stAct.q_bRetract := FALSE;
+    q_stAct.bRetract_SW:= FALSE;
+ELSIF q_stAct.q_bRetract THEN
+    q_stAct.q_bInsert := FALSE;
+    q_stAct.bInsert_SW:= FALSE;
+END_IF;
+
+
+
+
+(*Timers*)
+fbCore.CheckTimeouts(
+    bInsertOutput := q_stAct.q_bInsert,
+    bRetractOutput := q_stAct.q_bRetract,
+    bInLimitSwitch := q_stAct.i_bInLS,
+    bOutLimitSwitch := q_stAct.i_bOutLS,
+    tTimeout := tTimeOutDuration,
+    bInsertTimedOut => bInsertTimedOut,
+    bRetractTimedOut => bRetractTimedOut);
+
+///Check moving postion timout
+IF bInsertTimedOut OR bRetractTimedOut THEN
+    q_stAct.bErrorPresent := TRUE;
+END_IF
+
+(*FAST FAULT*)
+IF bEnableFF THEN
+    fbFF(i_DevName := sName,
+        i_xOK := xMPS_OK,
+        i_xReset := i_xReset,
+        io_fbFFHWO := io_fbFFHWO);
+END_IF
+
+(*Soft IO Mapping*)
+ACT_IO();]]></ST>
+    </Implementation>
+    <Property Name="InsertedLS" Id="{812a1c9a-744b-4748-b834-3ccaf504cf3b}">
+      <Declaration><![CDATA[(* Inserted limit switch input. Settable so tests and simulation can drive it. *)
+PROPERTY InsertedLS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{24e26031-df73-4459-b753-5e6ed5d716b1}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertedLS := i_xInsertedLS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{d523f58d-fb23-45c0-83a5-b4052bfd5071}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[i_xInsertedLS := InsertedLS;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="RetractedLS" Id="{c3d6a7fa-fbbb-4819-a638-2277c015090a}">
+      <Declaration><![CDATA[(* Retracted limit switch input. Settable so tests and simulation can drive it. *)
+PROPERTY RetractedLS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{39037495-7da3-45a5-9c4a-d4862cd30ceb}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractedLS := i_xRetractedLS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{7352f6e5-19bf-4f83-948d-b8828a446ef5}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[i_xRetractedLS := RetractedLS;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="TimeoutDuration" Id="{b37cc1cf-4759-4e5b-a187-d914a7d82ad9}">
+      <Declaration><![CDATA[(* Time an output may stay on without reaching its limit switch. Default 5 s. *)
+PROPERTY TimeoutDuration : TIME]]></Declaration>
+      <Get Name="Get" Id="{8d63bb8f-9a31-436d-838b-caf58db4d421}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[TimeoutDuration := tTimeOutDuration;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{c58afb99-00c5-43c2-8286-8f44840ada8f}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[tTimeOutDuration := TimeoutDuration;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="InsertCmd" Id="{8c76249c-195d-40c9-aa74-ef053317a39f}">
+      <Declaration><![CDATA[(* Insert request, the bit the IN_CMD PV writes. Settable so tests and simulation can drive it. *)
+PROPERTY InsertCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f8551b05-6b31-4d3e-8571-b4cc0e7e5406}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertCmd := q_stAct.bInsert_SW;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{93a94d89-250d-445c-8606-1254c4892110}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[q_stAct.bInsert_SW := InsertCmd;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="RetractCmd" Id="{f2a24ff2-07ca-4d75-bfa5-6fb9c3101785}">
+      <Declaration><![CDATA[(* Retract request, the bit the OUT_CMD PV writes. Settable so tests and simulation can drive it. *)
+PROPERTY RetractCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a2752d9d-c878-44d7-94ae-29c0a93bccfe}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractCmd := q_stAct.bRetract_SW;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a3f15b69-d5e5-45ee-9d49-55df8cd19b28}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[q_stAct.bRetract_SW := RetractCmd;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Action Name="ACT_IO" Id="{57068de5-6c7f-4be2-94ad-5467e24dfe72}">
+      <Implementation>
+        <ST><![CDATA[(*Inputs*)
+q_stAct.i_bInLS :=  i_xInsertedLS;
+q_stAct.i_bOutLS := i_xRetractedLS;
+
+(*outputs*)
+q_xInsert_DO:=q_stAct.q_bInsert;
+q_xRetract_DO:=q_stAct.q_bRetract;]]></ST>
+      </Implementation>
+    </Action>
+  </POU>
+</TcPlcObject>

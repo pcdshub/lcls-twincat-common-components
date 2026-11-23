@@ -1,0 +1,555 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PneumaticActuator" Id="{2f07bb5c-4a09-4cf3-874c-6ca5c05d35a8}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Pneumatic actuator, single or double acting, ported from the legacy
+    FB_MotionPneumaticActuator. Implements I_PneumaticActuator. The limit switch state, the
+    insert and retract exclusion and the output timeout come from FB_PneumaticCore, which
+    FB_MPA uses as well.
+
+    Position state from the limit switches (in = inserted LS, out = retracted LS):
+        in AND out         INVALID
+        NOT in AND out     RETRACTED
+        in AND NOT out     INSERTED
+        NOT in AND NOT out MOVING
+    bDone: the commanded direction has reached its limit switch. bBusy: a command
+    is active and its limit switch is not reached. xMPS_OK is TRUE only when the
+    state is RETRACTED or INSERTED. The fast fault (device 'MPA', type code
+    E_MotionFFType.PNEUMATIC_MOVE) trips when xMPS_OK is FALSE.
+
+    Insert and retract requests are mutually exclusive: both set at once clears both.
+    Single acting: ibSingleCntrl TRUE and ibCntrlHold TRUE keeps the output on after
+    arrival. Double acting: both FALSE, the output drops once the limit switch of the
+    commanded direction has been active for LimitSwitchLatchDuration (default 1 s).
+    An output that does not reach its limit switch within TimeoutDuration (default
+    10 s) sets bError and sErrorMessage until bReset is set.
+
+    Mandatory dependency: the fast fault output is passed through FB_Init as a
+    REFERENCE TO (replaces the legacy VAR_IN_OUT io_fbFFHWO). The FB body returns
+    while the reference is invalid. When this FB is a member of another FB, the
+    enclosing FB passes its own reference in CallAfterInit through
+    CallAfterInitActuator.
+
+    VAR_INPUT is kept for the bits driven every cycle by interlocks or the PLC
+    program (ibInsertOK, ibRetractOK, ibPMPS_OK, ibSingleCntrl, ibCntrlHold,
+    ibOverrideInterlock, i_xReset, i_xAutoReset), so the call style of the legacy
+    FB is unchanged. Timeouts are properties. IO members i_xInsertedLS,
+    i_xRetractedLS, q_xInsert_DO and q_xRetract_DO keep their names for TcLinkTo.
+
+    Legacy behaviour kept as is: ibPMPS_OK and ibOverrideInterlock are unused (PMPS
+    permission is not implemented), and LogEvents (legacy ACT_Logger) is never called by the body.
+*)
+FUNCTION_BLOCK FB_PneumaticActuator IMPLEMENTS I_PneumaticActuator
+VAR_INPUT
+    // Actuator can be inserted
+    ibInsertOK : BOOL;
+    // Actuator can be retracted
+    ibRetractOK : BOOL;
+    // To be linked to the arbiter bit (unused, as in the legacy FB)
+    ibPMPS_OK : BOOL;
+    // TRUE if the actuator needs one output (single acting), FALSE if it needs two
+    ibSingleCntrl : BOOL;
+    // Output must keep its value. TRUE for single acting, FALSE for double acting
+    ibCntrlHold : BOOL;
+    // If TRUE interlocks are ignored (unused, as in the legacy FB)
+    ibOverrideInterlock : BOOL;
+    {attribute 'pytmc' := '
+    pv: FFO_Reset
+    '}
+    i_xReset : BOOL;
+    {attribute 'pytmc' := '
+    pv: FFO_AutoReset
+    '}
+    i_xAutoReset : BOOL;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+    pv:
+    '}
+    stPneumaticActuator : ST_PneumaticActuator;
+    {attribute 'pytmc' := '
+     pv: MPS_OK
+     field: ZNAM FALSE
+     field: ONAM TRUE
+     field: DESC TRUE if MPS signal is OK
+    '}
+    xMPS_OK : BOOL;
+END_VAR
+VAR
+    // Fast fault output the fault is raised on
+    fbFFHWO : REFERENCE TO FB_HardwareFFOutput;
+    // Fault occurs while the actuator is not at a limit switch
+    fbFF : FB_FastFault := (
+        i_DevName := 'MPA',
+        i_Desc := 'Fault occurs when the device is moving',
+        i_TypeCode := E_MotionFFType.PNEUMATIC_MOVE);
+
+    ftInit : R_TRIG;
+    bFirstPass : BOOL;
+
+    // Shared behaviour of the pneumatic actuator blocks
+    fbCore : FB_PneumaticCore;
+    // Time an output may stay on without reaching its limit switch
+    tTimeOutDuration : TIME := T#10S;
+    bInsertTimedOut : BOOL;
+    bRetractTimedOut : BOOL;
+    // Time a limit switch must stay active before a double acting output drops
+    tLimitSwitchLatchDuration : TIME := T#1S;
+    tonInsertLimitSwitch : TON;
+    tonRetractLimitSwitch : TON;
+
+    fbLogger : FB_LogMessage := (eSubsystem := E_SubSystem.MOTION);
+    ePrevState : E_PnuematicActuatorPositionState;
+    ftAction : R_TRIG;
+
+    i_xInsertedLS AT %I* : BOOL;
+    i_xRetractedLS AT %I* : BOOL;
+    q_xInsert_DO AT %Q* : BOOL;
+    q_xRetract_DO AT %Q* : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(fbFFHWO) THEN
+    RETURN;
+END_IF
+
+ftInit(CLK := TRUE, Q => bFirstPass);
+IF bFirstPass THEN
+    stPneumaticActuator.eState := E_PnuematicActuatorPositionState.INVALID;
+    stPneumaticActuator.bRetractCmd := FALSE;
+    stPneumaticActuator.bInsertCmd := FALSE;
+END_IF
+
+UpdateIO();
+
+// Position state from the limit switches
+stPneumaticActuator.eState := fbCore.State(
+    bInLimitSwitch := stPneumaticActuator.bInLimitSwitch,
+    bOutLimitSwitch := stPneumaticActuator.bOutLimitSwitch);
+
+stPneumaticActuator.bDone := (stPneumaticActuator.bRetractCmd AND stPneumaticActuator.eState = E_PnuematicActuatorPositionState.RETRACTED)
+    OR (stPneumaticActuator.bInsertCmd AND stPneumaticActuator.eState = E_PnuematicActuatorPositionState.INSERTED);
+stPneumaticActuator.bBusy := (stPneumaticActuator.bRetractCmd AND stPneumaticActuator.eState <> E_PnuematicActuatorPositionState.RETRACTED)
+    OR (stPneumaticActuator.bInsertCmd AND stPneumaticActuator.eState <> E_PnuematicActuatorPositionState.INSERTED);
+
+// MPS faults when the actuator is in motion
+xMPS_OK := (stPneumaticActuator.eState = E_PnuematicActuatorPositionState.RETRACTED)
+    OR (stPneumaticActuator.eState = E_PnuematicActuatorPositionState.INSERTED);
+
+// PMPS permission: yet to be implemented
+
+// Insert and retract requests cannot both be active
+fbCore.ExclusiveCommands(
+    bInsertCmd := stPneumaticActuator.bInsertCmd,
+    bRetractCmd := stPneumaticActuator.bRetractCmd);
+
+// Redundant: clear the opposite output and request when one output is active
+IF stPneumaticActuator.bInsertOutput THEN
+    stPneumaticActuator.bRetractOutput := FALSE;
+    stPneumaticActuator.bRetractCmd := FALSE;
+END_IF
+IF stPneumaticActuator.bRetractOutput THEN
+    stPneumaticActuator.bInsertOutput := FALSE;
+    stPneumaticActuator.bInsertCmd := FALSE;
+END_IF
+
+stPneumaticActuator.bRetractOutput := stPneumaticActuator.bRetractOK
+    AND stPneumaticActuator.bRetractCmd
+    AND NOT stPneumaticActuator.bInsertCmd;
+stPneumaticActuator.bInsertOutput := stPneumaticActuator.bInsertOK
+    AND stPneumaticActuator.bInsertCmd
+    AND NOT stPneumaticActuator.bRetractCmd;
+
+// Double acting: drop the output once the actuator is seated in its limit switch
+IF NOT ibSingleCntrl AND NOT ibCntrlHold THEN
+    IF stPneumaticActuator.bRetractCmd
+        AND stPneumaticActuator.bOutLimitSwitch
+        AND tonRetractLimitSwitch.Q THEN
+        stPneumaticActuator.bRetractOutput := FALSE;
+    END_IF
+    IF stPneumaticActuator.bInsertCmd
+        AND stPneumaticActuator.bInLimitSwitch
+        AND tonInsertLimitSwitch.Q THEN
+        stPneumaticActuator.bInsertOutput := FALSE;
+    END_IF
+END_IF
+
+fbCore.CheckTimeouts(
+    bInsertOutput := stPneumaticActuator.bInsertOutput,
+    bRetractOutput := stPneumaticActuator.bRetractOutput,
+    bInLimitSwitch := stPneumaticActuator.bInLimitSwitch,
+    bOutLimitSwitch := stPneumaticActuator.bOutLimitSwitch,
+    tTimeout := tTimeOutDuration,
+    bInsertTimedOut => bInsertTimedOut,
+    bRetractTimedOut => bRetractTimedOut);
+tonInsertLimitSwitch(IN := stPneumaticActuator.bInLimitSwitch, PT := tLimitSwitchLatchDuration);
+tonRetractLimitSwitch(IN := stPneumaticActuator.bOutLimitSwitch, PT := tLimitSwitchLatchDuration);
+
+// Moving position timeout
+IF bInsertTimedOut THEN
+    stPneumaticActuator.bError := TRUE;
+    stPneumaticActuator.sErrorMessage := 'Actuator insert timeout';
+ELSIF bRetractTimedOut THEN
+    stPneumaticActuator.bError := TRUE;
+    stPneumaticActuator.sErrorMessage := 'Actuator retract timeout';
+END_IF
+stPneumaticActuator.bError R= stPneumaticActuator.bReset;
+
+fbFF(
+    i_xOK := xMPS_OK,
+    i_xReset := i_xReset,
+    i_xAutoReset := i_xAutoReset,
+    io_fbFFHWO := fbFFHWO
+);
+
+UpdateIO();]]></ST>
+    </Implementation>
+    <Method Name="UpdateIO" Id="{60848ba4-a65f-4284-9cf1-48a0ecc8af78}">
+      <Declaration><![CDATA[(* Soft IO mapping: copies the limit switch inputs into the status struct, the
+   command outputs into the digital outputs, and the interlock bits into the
+   struct. Runs at the start and end of every body scan. *)
+METHOD UpdateIO
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Inputs
+stPneumaticActuator.bInLimitSwitch := i_xInsertedLS;
+stPneumaticActuator.bOutLimitSwitch := i_xRetractedLS;
+
+// Outputs
+q_xInsert_DO := stPneumaticActuator.bInsertOutput;
+q_xRetract_DO := stPneumaticActuator.bRetractOutput;
+
+// EPICS
+stPneumaticActuator.bRetractOK := ibRetractOK;
+stPneumaticActuator.bInsertOK := ibInsertOK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="LogEvents" Id="{13872233-2ed3-4b1f-aa46-893d344f713d}">
+      <Declaration><![CDATA[(* Logs timeouts, insert and retract commands and state changes. Kept as in the
+   legacy FB: the body does not call it. *)
+METHOD LogEvents
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Log timeouts
+IF fbCore.InsertTimeoutElapsed OR fbCore.RetractTimeoutElapsed THEN
+    fbLogger(
+        sMsg := stPneumaticActuator.sErrorMessage,
+        eSevr := TcEventSeverity.Warning);
+END_IF
+
+// Log actuator commands
+ftAction(CLK := stPneumaticActuator.bRetractOutput OR stPneumaticActuator.bInsertOutput);
+IF ftAction.Q THEN
+    IF stPneumaticActuator.bRetractOutput THEN
+        fbLogger(
+            sMsg := 'Actuator commanded retract',
+            eSevr := TcEventSeverity.Info);
+    END_IF
+    IF stPneumaticActuator.bInsertOutput THEN
+        fbLogger(
+            sMsg := 'Actuator commanded insert',
+            eSevr := TcEventSeverity.Info);
+    END_IF
+END_IF
+
+// Log state changes
+IF ePrevState <> stPneumaticActuator.eState THEN
+    CASE stPneumaticActuator.eState OF
+        E_PnuematicActuatorPositionState.INVALID:
+            fbLogger(
+                sMsg := 'Actuator invalid position.',
+                eSevr := TcEventSeverity.Critical);
+        E_PnuematicActuatorPositionState.MOVING:
+            fbLogger(
+                sMsg := 'Actuator moving',
+                eSevr := TcEventSeverity.Warning);
+        E_PnuematicActuatorPositionState.RETRACTED:
+            fbLogger(
+                sMsg := 'Actuator Retracted.',
+                eSevr := TcEventSeverity.Info);
+        E_PnuematicActuatorPositionState.INSERTED:
+            fbLogger(
+                sMsg := 'Actuator Inserted.',
+                eSevr := TcEventSeverity.Info);
+    END_CASE
+    ePrevState := stPneumaticActuator.eState;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Busy" Id="{9bc6d5a9-702c-47e7-8166-1ff1bf1a1058}">
+      <Declaration><![CDATA[PROPERTY Busy : BOOL]]></Declaration>
+      <Get Name="Get" Id="{558243f3-fc44-4d78-977b-d7c698f621b2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Busy := stPneumaticActuator.bBusy;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="CallAfterInitActuator" Id="{d4f39575-c492-4742-a42f-29167fd1a19f}">
+      <Declaration><![CDATA[(* Rebinds the fast fault output. Call from the CallAfterInit of an enclosing FB. *)
+METHOD CallAfterInitActuator
+VAR_INPUT
+    fbFFHWO : REFERENCE TO FB_HardwareFFOutput;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbFFHWO REF= fbFFHWO;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Done" Id="{53888b0c-796a-4245-8b1e-1dabf8118611}">
+      <Declaration><![CDATA[PROPERTY Done : BOOL]]></Declaration>
+      <Get Name="Get" Id="{d2ff4d2e-d252-4f85-b4bd-65a712cbc7de}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Done := stPneumaticActuator.bDone;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Error" Id="{8404d4fe-ff22-4c3b-958c-f587f956d75f}">
+      <Declaration><![CDATA[PROPERTY Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a498d7b7-9e5e-4cf0-a2a9-9446879be052}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Error := stPneumaticActuator.bError;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="FB_Init" Id="{dac1e0fe-6d03-496d-91c2-c314cf683124}">
+      <Declaration><![CDATA[(* Stores the mandatory fast fault output at instantiation. *)
+METHOD FB_Init : BOOL
+VAR_INPUT
+    // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInitRetains : BOOL;
+    // TRUE: the instance will be copied to the copy code afterward (online change)
+    bInCopyCode : BOOL;
+    fbFFHWO : REFERENCE TO FB_HardwareFFOutput;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.fbFFHWO REF= fbFFHWO;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Insert" Id="{a33cb450-2ea7-4a10-9312-12390589f06f}">
+      <Declaration><![CDATA[METHOD Insert
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stPneumaticActuator.bInsertCmd := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="LimitSwitchLatchDuration" Id="{15253413-d704-404d-8a3c-d865fc8362d2}">
+      <Declaration><![CDATA[// Time a limit switch must stay active before a double acting output drops. Default 1 s
+PROPERTY LimitSwitchLatchDuration : TIME]]></Declaration>
+      <Get Name="Get" Id="{eb7e98dc-a4e2-43de-bbb8-e9fdbc838711}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[LimitSwitchLatchDuration := tLimitSwitchLatchDuration;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{1c1a16fc-46f8-4b5a-8046-8ea23c898e3b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[tLimitSwitchLatchDuration := LimitSwitchLatchDuration;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="MpsOk" Id="{f1e56251-3052-4465-a343-5e527db84d31}">
+      <Declaration><![CDATA[PROPERTY MpsOk : BOOL]]></Declaration>
+      <Get Name="Get" Id="{834fba7d-bc63-4096-8553-84a44455d44b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[MpsOk := xMPS_OK;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Retract" Id="{c6502e4a-23e6-4bc8-bdad-76fb44e83e7c}">
+      <Declaration><![CDATA[METHOD Retract
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stPneumaticActuator.bRetractCmd := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="State" Id="{796b8ae2-ff6f-4a82-98d3-f17470befb7d}">
+      <Declaration><![CDATA[PROPERTY State : E_PnuematicActuatorPositionState]]></Declaration>
+      <Get Name="Get" Id="{b50988d7-db5a-4efe-afeb-c177ea018b3b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[State := stPneumaticActuator.eState;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="TimeoutDuration" Id="{583d0873-ceb5-41d1-a4c4-b8ed03dc4dc0}">
+      <Declaration><![CDATA[// Time an output may stay on without reaching its limit switch. Default 10 s
+PROPERTY TimeoutDuration : TIME]]></Declaration>
+      <Get Name="Get" Id="{561597dc-1058-4d8e-a121-bc170eab9e4f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[TimeoutDuration := tTimeOutDuration;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{5ba17003-76d0-481a-89f5-5fae3cf1147b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[tTimeOutDuration := TimeoutDuration;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="InsertedLS" Id="{d50b4eb3-ae12-4eca-9f67-e090df9f3108}">
+      <Declaration><![CDATA[// Inserted limit switch input. Settable so tests and simulation can drive it
+PROPERTY InsertedLS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{ea485854-f877-4192-ab40-5a385f18d333}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertedLS := i_xInsertedLS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{5247fb4e-0dbd-4913-9100-258129e88869}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[i_xInsertedLS := InsertedLS;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="RetractedLS" Id="{9bfc5da6-1e31-4e16-b573-11cb52db9b36}">
+      <Declaration><![CDATA[// Retracted limit switch input. Settable so tests and simulation can drive it
+PROPERTY RetractedLS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{84a292e3-3f2d-4a68-b4a0-0e5923f21879}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractedLS := i_xRetractedLS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{00eabfeb-cd40-49b6-a01f-8f06716f48ce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[i_xRetractedLS := RetractedLS;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="InsertOutput" Id="{ce818098-9e63-48fe-ad1e-4b0e10280a30}">
+      <Declaration><![CDATA[// Insert digital output
+PROPERTY InsertOutput : BOOL]]></Declaration>
+      <Get Name="Get" Id="{8c941bba-a2eb-4c74-80f5-d00d9a85b317}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertOutput := q_xInsert_DO;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="RetractOutput" Id="{42776977-6a41-4fac-81de-856b16eab600}">
+      <Declaration><![CDATA[// Retract digital output
+PROPERTY RetractOutput : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f7e3f2fc-6773-42ca-b59b-cd9cd4fe132a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractOutput := q_xRetract_DO;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="InsertCmd" Id="{df39559b-4075-4827-a23c-96d0b4b660a0}">
+      <Declaration><![CDATA[// Insert request, the same bit Insert() raises. Write FALSE to clear it
+PROPERTY InsertCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{6ec1283a-9887-49a2-bff1-0d60fdd85b71}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertCmd := stPneumaticActuator.bInsertCmd;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{5c6cbdd8-67ed-4261-853f-dcd6e7a6f5c1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stPneumaticActuator.bInsertCmd := InsertCmd;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="RetractCmd" Id="{affaf238-45d1-4fcd-a1e6-f07f70369464}">
+      <Declaration><![CDATA[// Retract request, the same bit Retract() raises. Write FALSE to clear it
+PROPERTY RetractCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{99d24730-1d7b-4978-8d16-ff3c3e3a65de}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractCmd := stPneumaticActuator.bRetractCmd;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{bc1d3d75-474a-40ae-ae93-e05d7402cf84}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stPneumaticActuator.bRetractCmd := RetractCmd;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="ErrorMessage" Id="{cc079e73-010e-4ac8-b70e-342f7c938ef6}">
+      <Declaration><![CDATA[// Text of the active timeout error
+PROPERTY ErrorMessage : STRING]]></Declaration>
+      <Get Name="Get" Id="{8bd0509c-857d-4374-bd3f-a3d990f743ca}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ErrorMessage := stPneumaticActuator.sErrorMessage;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="ErrorReset" Id="{1fb44bda-b5e4-4db8-a6ae-d9d57053d2a6}">
+      <Declaration><![CDATA[// Error reset request, the same bit as the reset PV
+PROPERTY ErrorReset : BOOL]]></Declaration>
+      <Get Name="Get" Id="{1257d8fa-858a-40fc-9f3a-a03e969704b1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ErrorReset := stPneumaticActuator.bReset;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ff19a5e1-fc0c-448e-a1ac-69e10cd2a790}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stPneumaticActuator.bReset := ErrorReset;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+  </POU>
+</TcPlcObject>

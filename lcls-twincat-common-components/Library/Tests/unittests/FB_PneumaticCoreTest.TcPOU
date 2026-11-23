@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PneumaticCoreTest" Id="{d4c45ca2-0b7e-45de-bf78-6c2831012df3}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Tests of the behaviour FB_PneumaticActuator and FB_MPA share: the position state from the limit
+   switches, the exclusion of insert and retract requests, and the output timeout. *)
+{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_PneumaticCoreTest EXTENDS FB_TestSuite
+VAR
+    fbSutTimeout : FB_PneumaticCore;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GivenLimitSwitchCombinationsThenStateIsDerived();
+GivenInsertAndRetractTogetherThenBothAreCancelled();
+GivenOneCommandThenItIsKept();
+GivenOutputOnWithoutLimitSwitchThenTimeoutIsReported();]]></ST>
+    </Implementation>
+    <Method Name="GivenLimitSwitchCombinationsThenStateIsDerived" Id="{021d6aee-cfd3-4b5e-bf99-455dc34939c2}">
+      <Declaration><![CDATA[(* Both active is INVALID, only out is RETRACTED, only in is INSERTED, neither is MOVING. *)
+METHOD PRIVATE GivenLimitSwitchCombinationsThenStateIsDerived
+VAR
+    fbSut : FB_PneumaticCore;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+AssertTrue(
+    Condition := fbSut.State(bInLimitSwitch := TRUE, bOutLimitSwitch := TRUE) = E_PnuematicActuatorPositionState.INVALID,
+    Message := 'Both limit switches must give INVALID');
+AssertTrue(
+    Condition := fbSut.State(bInLimitSwitch := FALSE, bOutLimitSwitch := TRUE) = E_PnuematicActuatorPositionState.RETRACTED,
+    Message := 'Out limit switch only must give RETRACTED');
+AssertTrue(
+    Condition := fbSut.State(bInLimitSwitch := TRUE, bOutLimitSwitch := FALSE) = E_PnuematicActuatorPositionState.INSERTED,
+    Message := 'In limit switch only must give INSERTED');
+AssertTrue(
+    Condition := fbSut.State(bInLimitSwitch := FALSE, bOutLimitSwitch := FALSE) = E_PnuematicActuatorPositionState.MOVING,
+    Message := 'Neither limit switch must give MOVING');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{1224b0f4-80ae-4b46-8bb1-ebb4a213cd60}">
+      <Declaration><![CDATA[(* An insert and a retract request together cancel each other. *)
+METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
+VAR
+    fbSut : FB_PneumaticCore;
+    bInsertCmd : BOOL := TRUE;
+    bRetractCmd : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSut.ExclusiveCommands(
+    bInsertCmd := bInsertCmd,
+    bRetractCmd := bRetractCmd);
+
+AssertFalse(Condition := bInsertCmd, Message := 'Insert request must be cancelled');
+AssertFalse(Condition := bRetractCmd, Message := 'Retract request must be cancelled');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenOneCommandThenItIsKept" Id="{88b50dae-07c9-4fbc-9897-79d712f35c90}">
+      <Declaration><![CDATA[(* A single request is left alone. *)
+METHOD PRIVATE GivenOneCommandThenItIsKept
+VAR
+    fbSut : FB_PneumaticCore;
+    bInsertCmd : BOOL := TRUE;
+    bRetractCmd : BOOL := FALSE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSut.ExclusiveCommands(
+    bInsertCmd := bInsertCmd,
+    bRetractCmd := bRetractCmd);
+
+AssertTrue(Condition := bInsertCmd, Message := 'A single insert request must stay');
+AssertFalse(Condition := bRetractCmd, Message := 'The retract request must stay clear');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenOutputOnWithoutLimitSwitchThenTimeoutIsReported" Id="{857cedba-c50e-44b0-8f8d-bb50c534fa4e}">
+      <Declaration><![CDATA[(* An output on without its limit switch times out. The limit switch of that direction ends the
+   report. An output that is off never times out. *)
+METHOD PRIVATE GivenOutputOnWithoutLimitSwitchThenTimeoutIsReported
+VAR_INST
+    nStep : INT;
+    fbWait : TON;
+    bInsertTimedOut : BOOL;
+    bRetractTimedOut : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+CASE nStep OF
+    0:
+        nStep := 1;
+
+    1:
+        IF fbWait.Q THEN
+            AssertTrue(Condition := bInsertTimedOut, Message := 'Insert output without limit switch must time out');
+            AssertTrue(Condition := fbSutTimeout.InsertTimeoutElapsed, Message := 'Insert timer must have elapsed');
+            AssertFalse(Condition := bRetractTimedOut, Message := 'Retract output is off and must not time out');
+            AssertFalse(Condition := fbSutTimeout.RetractTimeoutElapsed, Message := 'Retract timer must not have elapsed');
+            nStep := 2;
+        END_IF
+
+    2:
+        fbSutTimeout.CheckTimeouts(
+            bInsertOutput := TRUE,
+            bRetractOutput := FALSE,
+            bInLimitSwitch := TRUE,
+            bOutLimitSwitch := FALSE,
+            tTimeout := T#20MS,
+            bInsertTimedOut => bInsertTimedOut,
+            bRetractTimedOut => bRetractTimedOut);
+        AssertFalse(Condition := bInsertTimedOut, Message := 'Reaching the limit switch must end the timeout report');
+        nStep := 3;
+END_CASE
+
+IF nStep < 2 THEN
+    fbSutTimeout.CheckTimeouts(
+        bInsertOutput := TRUE,
+        bRetractOutput := FALSE,
+        bInLimitSwitch := FALSE,
+        bOutLimitSwitch := FALSE,
+        tTimeout := T#20MS,
+        bInsertTimedOut => bInsertTimedOut,
+        bRetractTimedOut => bRetractTimedOut);
+END_IF
+fbWait(IN := nStep = 1, PT := T#200MS);
+
+IF nStep = 3 THEN
+    TEST_FINISHED();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

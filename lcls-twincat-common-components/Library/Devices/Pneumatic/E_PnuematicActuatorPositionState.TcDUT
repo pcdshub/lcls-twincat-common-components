@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_PnuematicActuatorPositionState" Id="{1a6e1017-6c16-4286-ab40-eac1934b099c}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+// Defines the positions for a pnuematic actuator
+TYPE E_PnuematicActuatorPositionState :
+(
+   RETRACTED    := 0, // Out limit switch is active
+   INSERTED    := 1, // In limit switch is active
+   MOVING    := 2, // Neither limit switches is Active
+   INVALID :=3 // Invalid state
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_PneumaticCore" Id="{ffa8e96f-fadc-4004-a845-6738863ddf56}">
+    <Declaration><![CDATA[(*
+    What FB_PneumaticActuator and FB_MPA share: the position state from the two limit switches,
+    the rule that an insert and a retract request cancel each other, and the timeout of an output
+    that does not reach its limit switch.
+*)
+INTERFACE I_PneumaticCore
+]]></Declaration>
+    <Method Name="State" Id="{05fc219d-f37b-4cfd-98a7-0424a2548a3d}">
+      <Declaration><![CDATA[METHOD State : E_PnuematicActuatorPositionState
+VAR_INPUT
+    bInLimitSwitch : BOOL;
+    bOutLimitSwitch : BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="ExclusiveCommands" Id="{97b9c496-ac80-4172-94e9-716565a41058}">
+      <Declaration><![CDATA[METHOD ExclusiveCommands
+VAR_IN_OUT
+    bInsertCmd : BOOL;
+    bRetractCmd : BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="CheckTimeouts" Id="{78c61fbe-f2fa-4ae6-90c2-69061863cf2a}">
+      <Declaration><![CDATA[METHOD CheckTimeouts
+VAR_INPUT
+    bInsertOutput : BOOL;
+    bRetractOutput : BOOL;
+    bInLimitSwitch : BOOL;
+    bOutLimitSwitch : BOOL;
+    tTimeout : TIME;
+END_VAR
+VAR_OUTPUT
+    bInsertTimedOut : BOOL;
+    bRetractTimedOut : BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="InsertTimeoutElapsed" Id="{5941fd68-877e-4429-bc96-49fae16c8b15}">
+      <Declaration><![CDATA[PROPERTY InsertTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{82cadbff-b216-4255-a475-ece2e199a942}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="RetractTimeoutElapsed" Id="{a5ee096b-328a-4318-9ae0-00a4c6ca1216}">
+      <Declaration><![CDATA[PROPERTY RetractTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{94d624cb-6114-44e3-99ac-1ca3de2e759e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>
