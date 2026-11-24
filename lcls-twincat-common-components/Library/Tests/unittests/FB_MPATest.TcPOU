@@ -32,7 +32,7 @@ END_VAR
       <ST><![CDATA[GivenLimitSwitchCombinationsThenStateIsDerived();
 GivenRestingAtLimitSwitchThenItCommandsItselfToMatch();
 GivenInsertCommandThenOutputFollowsInterlock();
-GivenInsertAndRetractTogetherThenBothAreCancelled();
+GivenInsertAndRetractTogetherThenInsertWins();
 GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand();
 GivenNoLimitSwitchThenTimeoutSetsErrorAndDefaultIsFiveSeconds();]]></ST>
     </Implementation>
@@ -119,9 +119,9 @@ AssertFalse(Condition := fbSutCommand.q_stAct.q_bRetract, Message := 'The retrac
 TEST_FINISHED();]]></ST>
       </Implementation>
     </Method>
-    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{d18a970b-e861-4ac4-8b83-69eb9d55642b}">
-      <Declaration><![CDATA[(* Both commands set at once are cleared. *)
-METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
+    <Method Name="GivenInsertAndRetractTogetherThenInsertWins" Id="{d18a970b-e861-4ac4-8b83-69eb9d55642b}">
+      <Declaration><![CDATA[(* Both commands set at once: the rising edge logic lets the insert command win and clears the retract command. *)
+METHOD PRIVATE GivenInsertAndRetractTogetherThenInsertWins
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[TEST(__POUNAME());
@@ -137,7 +137,7 @@ fbSutExclusion(
     ibInsertOK := TRUE,
     ibRetractOK := TRUE);
 
-AssertFalse(Condition := fbSutExclusion.InsertCmd, Message := 'The insert command must be cleared');
+AssertTrue(Condition := fbSutExclusion.InsertCmd, Message := 'The insert command must win the tie');
 AssertFalse(Condition := fbSutExclusion.RetractCmd, Message := 'The retract command must be cleared');
 
 TEST_FINISHED();]]></ST>
