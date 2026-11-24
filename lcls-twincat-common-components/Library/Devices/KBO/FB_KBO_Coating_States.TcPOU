@@ -10,11 +10,6 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_KBO_Coating_States EXTENDS FB_KBO_Coating_States_Core
 VAR
-    (* Device-specific state-enum bridge. Typed as E_KBO_CoatingStates (UINT
-       base); FB_Init binds it to the base's REFERENCE TO UINT
-       bridge. EPICS owns it through the pytmc pragma; PLC code
-       must go through the EnumSet property instead of touching it
-       directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: SET
@@ -22,9 +17,7 @@ VAR
     '}
     eEnumSet : E_KBO_CoatingStates;
 
-    (* One configurator per LIC state (OUT, MIRROR1, MIRROR2, TARGET). Writes the
-       per-state sName and fDelta once in its CallAfterInit, which this
-       FB's CallAfterInit calls. *)
+    (* One configurator per LIC state (OUT, MIRROR1, MIRROR2, TARGET).*)
     afbStateDefaults : ARRAY[1..2] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_KBO_CoatingStates.Si],
          sName           := 'Si',

@@ -4,9 +4,8 @@
     <Declaration><![CDATA[(*
     Legacy MPA actuator block of the kfe and lfe projects, kept as it behaved. It is not the
     library actuator: it commands itself to match a limit switch it finds active, takes its
-    fast fault name from sName, and its MPS rule follows the commanded direction. The fast fault
-    output and sName are mandatory and come through FB_Init. A nested MPA gets them again from
-    CallAfterInitMPA. FB_PneumaticActuator is the library block for new devices.
+    fast fault name from sName, and its MPS rule follows the commanded direction.
+    FB_PneumaticActuator is the library block for new devices.
     The limit switch state, the insert and retract exclusion and the output timeout come from
     FB_PneumaticCore, which FB_PneumaticActuator uses as well. bEnableFF FALSE skips the fast fault.
 *)
@@ -28,7 +27,7 @@ VAR_OUTPUT
     {attribute 'pytmc' := '
     pv:
     '}
-    q_stAct     :    ST_MPA;
+    q_stAct :  ST_MPA;
     {attribute 'pytmc' := '
     pv: MPS_FAULT
     '}
@@ -44,10 +43,11 @@ VAR
     sName: STRING;
 
     // PMPS
-    fbFF    :    FB_FastFault :=(
+    fbFF :  FB_FastFault :=(
         i_xAutoReset := TRUE,
         i_Desc := 'Device is moving',
-        i_TypeCode := 16#1010);
+        i_TypeCode := 16#1010
+    );
 
     (*Init*)
     xFirstPass    :    BOOL;
@@ -68,13 +68,9 @@ VAR
     (* Reset Triggers *)
     rtInsert: R_TRIG;
     rtRemove: R_TRIG;
-END_VAR
-
-
-]]></Declaration>
+END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
-IF NOT __ISVALIDREF(fbFFHWO) THEN
+      <ST><![CDATA[IF NOT __ISVALIDREF(fbFFHWO) THEN
     RETURN;
 END_IF
 
@@ -98,10 +94,12 @@ fbCore(
     bInsertOutput := q_stAct.q_bInsert,
     bRetractOutput := q_stAct.q_bRetract,
     tTimeout := tTimeOutDuration,
-    eState => q_stAct.eState);
+    eState => q_stAct.eState
+);
 
 (*Set the Done signal*)
-xDone := (q_stAct.bRetract_SW AND q_stAct.eState=E_PnuematicActuatorPositionState.RETRACTED) OR (q_stAct.eState=E_PnuematicActuatorPositionState.INSERTED AND q_stAct.bInsert_SW);
+xDone := (q_stAct.bRetract_SW AND q_stAct.eState=E_PnuematicActuatorPositionState.RETRACTED)
+        OR (q_stAct.eState=E_PnuematicActuatorPositionState.INSERTED AND q_stAct.bInsert_SW);
 
 
 (*MPS FAULT*)
@@ -153,10 +151,6 @@ ELSIF q_stAct.q_bRetract THEN
     q_stAct.bInsert_SW:= FALSE;
 END_IF;
 
-
-
-
-
 ///Check moving postion timout
 IF fbCore.bInsertTimedOut OR fbCore.bRetractTimedOut THEN
     q_stAct.bErrorPresent := TRUE;
@@ -167,7 +161,8 @@ IF bEnableFF THEN
     fbFF(i_DevName := sName,
         i_xOK := xMPS_OK,
         i_xReset := i_xReset,
-        io_fbFFHWO := fbFFHWO);
+        io_fbFFHWO := fbFFHWO
+   );
 END_IF
 
 (*Soft IO Mapping*)
@@ -203,6 +198,22 @@ END_VAR
 THIS^.sName := sName;]]></ST>
       </Implementation>
     </Method>
+    <Property Name="InsertCmd" Id="{8c76249c-195d-40c9-aa74-ef053317a39f}">
+      <Declaration><![CDATA[(* Insert request, the bit the IN_CMD PV writes. Settable so tests and simulation can drive it. *)
+PROPERTY InsertCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f8551b05-6b31-4d3e-8571-b4cc0e7e5406}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertCmd := q_stAct.bInsert_SW;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{93a94d89-250d-445c-8606-1254c4892110}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[q_stAct.bInsert_SW := InsertCmd;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
     <Property Name="InsertedLS" Id="{812a1c9a-744b-4748-b834-3ccaf504cf3b}">
       <Declaration><![CDATA[(* Inserted limit switch input. Settable so tests and simulation can drive it. *)
 PROPERTY InsertedLS : BOOL]]></Declaration>
@@ -216,6 +227,22 @@ PROPERTY InsertedLS : BOOL]]></Declaration>
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
           <ST><![CDATA[i_xInsertedLS := InsertedLS;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="RetractCmd" Id="{f2a24ff2-07ca-4d75-bfa5-6fb9c3101785}">
+      <Declaration><![CDATA[(* Retract request, the bit the OUT_CMD PV writes. Settable so tests and simulation can drive it. *)
+PROPERTY RetractCmd : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a2752d9d-c878-44d7-94ae-29c0a93bccfe}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractCmd := q_stAct.bRetract_SW;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a3f15b69-d5e5-45ee-9d49-55df8cd19b28}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[q_stAct.bRetract_SW := RetractCmd;]]></ST>
         </Implementation>
       </Set>
     </Property>
@@ -248,38 +275,6 @@ PROPERTY TimeoutDuration : TIME]]></Declaration>
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
           <ST><![CDATA[tTimeOutDuration := TimeoutDuration;]]></ST>
-        </Implementation>
-      </Set>
-    </Property>
-    <Property Name="InsertCmd" Id="{8c76249c-195d-40c9-aa74-ef053317a39f}">
-      <Declaration><![CDATA[(* Insert request, the bit the IN_CMD PV writes. Settable so tests and simulation can drive it. *)
-PROPERTY InsertCmd : BOOL]]></Declaration>
-      <Get Name="Get" Id="{f8551b05-6b31-4d3e-8571-b4cc0e7e5406}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[InsertCmd := q_stAct.bInsert_SW;]]></ST>
-        </Implementation>
-      </Get>
-      <Set Name="Set" Id="{93a94d89-250d-445c-8606-1254c4892110}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[q_stAct.bInsert_SW := InsertCmd;]]></ST>
-        </Implementation>
-      </Set>
-    </Property>
-    <Property Name="RetractCmd" Id="{f2a24ff2-07ca-4d75-bfa5-6fb9c3101785}">
-      <Declaration><![CDATA[(* Retract request, the bit the OUT_CMD PV writes. Settable so tests and simulation can drive it. *)
-PROPERTY RetractCmd : BOOL]]></Declaration>
-      <Get Name="Get" Id="{a2752d9d-c878-44d7-94ae-29c0a93bccfe}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[RetractCmd := q_stAct.bRetract_SW;]]></ST>
-        </Implementation>
-      </Get>
-      <Set Name="Set" Id="{a3f15b69-d5e5-45ee-9d49-55df8cd19b28}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[q_stAct.bRetract_SW := RetractCmd;]]></ST>
         </Implementation>
       </Set>
     </Property>

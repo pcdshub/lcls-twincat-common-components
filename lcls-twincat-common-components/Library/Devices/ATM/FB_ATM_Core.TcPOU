@@ -6,8 +6,7 @@
    sub-FBs. The state bridge is here as REFERENCE TO UINT (eEnumSetRef and
    eEnumGetRef) and the body runs on it, but the enum variables, the state
    storage and the state names belong to the derived type, which passes them
-   in. The derived body calls SUPER^() to run this logic, so the FB cannot carry
-   no_explicit_call. Y mover via FB_PositionStatePMPSND over one motor, plus a
+   in. Y mover via FB_PositionStatePMPSND over one motor, plus a
    tick site for the in-beam thermocouple and flow meter.
 
    A derived type supplies everything that depends on the state list:
@@ -23,9 +22,7 @@
    FB_ATM is the library derived type (E_ATM_States). A device with another
    state list derives this FB the same way.
 
-   Caller-owned dependencies are injected through FB_Init as REFERENCE TO and
-   forwarded to fbStates in CallAfterInit. State 1 is OUT, which vetoes the
-   thermocouple. *)
+   State 1 is OUT, which vetoes the thermocouple. *)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_ATM_Core
 VAR
@@ -35,9 +32,6 @@ VAR
     {attribute 'pytmc' := 'pv: FWM'}
     fbFlowMeter : FB_AnalogInput := (iTermBits := 15, fTermMax := 60, fTermMin := 0);
 
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
     {attribute 'no_copy'}
     aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -56,9 +50,6 @@ VAR
     bFileReaderBusy       : REFERENCE TO BOOL;
     bFileReaderError      : REFERENCE TO BOOL;
 
-    (* State bridge, bound by the derived type to its enum variables.
-       eEnumSetRef receives move requests and eEnumGetRef reports the
-       current state. Both are UINT views of those variables. *)
     {attribute 'no_copy'}
     eEnumSetRef           : REFERENCE TO UINT;
     {attribute 'no_copy'}

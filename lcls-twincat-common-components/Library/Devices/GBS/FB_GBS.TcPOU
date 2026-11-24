@@ -8,11 +8,6 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_GBS EXTENDS FB_GBS_Core
 VAR
-    (* Device-specific state-enum bridge. Typed as E_GBS_States (UINT
-       base); FB_Init binds it to the base's REFERENCE TO UINT
-       bridge. EPICS owns it through the pytmc pragma; PLC code
-       must go through the EnumSet property instead of touching it
-       directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: MMS:STATE:SET
@@ -20,9 +15,7 @@ VAR
     '}
     eEnumSet : E_GBS_States;
 
-    (* One configurator per GBS state. Writes the
-       per-state sName and fDelta once in its CallAfterInit, which this
-       FB's CallAfterInit calls. *)
+    (* One configurator per GBS state. *)
     afbStateDefaults : ARRAY[1..10] OF FB_CC_InternalStateConfig[
         (stPositionState := astPositionState[1][E_GBS_States.OUT],
          sName           := 'OUT',

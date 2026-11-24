@@ -91,7 +91,7 @@ VAR
     fbRTD_2 : FB_CC_TempSensor := (fResolution := 0.01);
 
     bFileReaderBusy       : REFERENCE TO BOOL;
-    (* Per-cycle JSON DB read for the currently active filter's
+    (* JSON DB read for the currently active filter's
        PMPS state, just to pull the reactive temp setpoint into
        astPickedDB[1].stReactiveParams.nTempSP. Not a PMPS BPTM
        participant; just borrows the DB pipeline. *)
@@ -106,7 +106,6 @@ VAR
         i_xAutoReset := TRUE
     );
 
-    (* REFERENCE TO backing fields populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -130,8 +129,7 @@ VAR CONSTANT
     nOutState     : UINT := 1;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* Nil-ref guards: every REFERENCE TO backing field must be bound. *)
-IF NOT __ISVALIDREF(aiMotionStage)
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
    OR NOT __ISVALIDREF(astPositionState)
    OR NOT __ISVALIDREF(fbFFHWO)
    OR NOT __ISVALIDREF(bBridgeOK)

@@ -34,10 +34,7 @@ VAR
     sPmpsState : STRING;
     fbReadPMPSDB : FB_JsonDocToSafeBP;
     astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
-    (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls.
-       Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
-       instead of reaching into MOTION_GVL.fbPmpsFileReader directly.
-    *)
+    (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls. *)
     bFileReaderBusy : REFERENCE TO BOOL;
 END_VAR
 ]]></Declaration>
@@ -107,6 +104,32 @@ RTD_South_2(
 fbFlowSwitch();
 ]]></ST>
     </Implementation>
+    <Method Name="CallAfterInitTHERMAL" Id="{721939b4-d6d0-4c57-b0c1-079fd562bdec}">
+      <Declaration><![CDATA[(* Provides every FB_SLITS_THERMAL FB_Init input, through the FB_SLITS re-wire.
+   An FB that nests an FB_SLITS_THERMAL calls it from its own CallAfterInit. *)
+METHOD CallAfterInitTHERMAL
+VAR_INPUT
+    aiMotionStage   : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO         : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName     : STRING;
+    bBridgeOK       : REFERENCE TO BOOL;
+    sPmpsState      : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.CallAfterInitSLITS(
+    aiMotionStage := aiMotionStage,
+    fbFFHWO       := fbFFHWO,
+    sDeviceName   := sDeviceName,
+    bBridgeOK     := bBridgeOK
+);
+
+THIS^.sPmpsState := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="FB_Init" Id="{d76cfe43-4f21-4fd6-abc2-f831774ed068}">
       <Declaration><![CDATA[(* Records sPmpsState and REF-binds the caller-owned file-reader busy flag;
    aiMotionStage (4 blades), fbFFHWO and sDeviceName are handled by base
@@ -133,32 +156,6 @@ END_VAR
     sPmpsState      := sPmpsState,
     bFileReaderBusy := bFileReaderBusy
 );
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="CallAfterInitTHERMAL" Id="{721939b4-d6d0-4c57-b0c1-079fd562bdec}">
-      <Declaration><![CDATA[(* Provides every FB_SLITS_THERMAL FB_Init input, through the FB_SLITS re-wire.
-   An FB that nests an FB_SLITS_THERMAL calls it from its own CallAfterInit. *)
-METHOD CallAfterInitTHERMAL
-VAR_INPUT
-    aiMotionStage   : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
-    fbFFHWO         : REFERENCE TO FB_HardwareFFOutput;
-    sDeviceName     : STRING;
-    bBridgeOK       : REFERENCE TO BOOL;
-    sPmpsState      : STRING;
-    bFileReaderBusy : REFERENCE TO BOOL;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[SUPER^.CallAfterInitSLITS(
-    aiMotionStage := aiMotionStage,
-    fbFFHWO       := fbFFHWO,
-    sDeviceName   := sDeviceName,
-    bBridgeOK     := bBridgeOK
-);
-
-THIS^.sPmpsState := sPmpsState;
-THIS^.bFileReaderBusy REF= bFileReaderBusy;
 ]]></ST>
       </Implementation>
     </Method>

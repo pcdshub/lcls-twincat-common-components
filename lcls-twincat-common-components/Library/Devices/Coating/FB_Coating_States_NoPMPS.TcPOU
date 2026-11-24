@@ -11,10 +11,6 @@
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_Coating_States_NoPMPS EXTENDS FB_Coating_States_NoPMPS_Core
 VAR
-    (* Device-specific state-enum bridge. Typed as E_Coating_States (UINT
-       base); FB_Init binds it to the base's REFERENCE TO UINT bridge. EPICS
-       owns it through the pytmc pragma; PLC code must go through the EnumSet
-       property instead of touching it directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: SET
@@ -69,25 +65,6 @@ SUPER^.CallAfterInitCore();
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="FB_Init" Id="{56608830-5eb9-4667-998e-34612d34b65f}">
-      <Declaration><![CDATA[(* Repeats the core inputs, as a derived FB_Init must, and forwards them to
-   CallAfterInitCoating. Runs before any CallAfterInit. *)
-{attribute 'analysis' := '-33'}
-METHOD FB_Init : BOOL
-VAR_INPUT
-    bInitRetains     : BOOL;
-    bInCopyCode      : BOOL;
-    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
-    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
-                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[THIS^.CallAfterInitCoating(
-    aiMotionStage    := aiMotionStage,
-    astPositionState := astPositionState
-);]]></ST>
-      </Implementation>
-    </Method>
     <Property Name="EnumGet" Id="{82900509-1fb4-4919-9e80-5962027d071a}">
       <Declaration><![CDATA[(* Current position state. Read-only; written by the state mover. *)
 PROPERTY EnumGet : E_Coating_States]]></Declaration>
@@ -121,5 +98,24 @@ END_VAR
         </Implementation>
       </Set>
     </Property>
+    <Method Name="FB_Init" Id="{56608830-5eb9-4667-998e-34612d34b65f}">
+      <Declaration><![CDATA[(* Repeats the core inputs, as a derived FB_Init must, and forwards them to
+   CallAfterInitCoating. Runs before any CallAfterInit. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains     : BOOL;
+    bInCopyCode      : BOOL;
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitCoating(
+    aiMotionStage    := aiMotionStage,
+    astPositionState := astPositionState
+);]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

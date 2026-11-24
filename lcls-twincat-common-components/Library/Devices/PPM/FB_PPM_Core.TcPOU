@@ -21,9 +21,7 @@
        configurators. The base CallAfterInit runs on its own through the
        call_after_init attribute.
    FB_PPM is the library derived type (E_PPM_States).
-
-   Caller-owned dependencies are injected through FB_Init as REFERENCE TO and
-   forwarded to fbStates in CallAfterInit. *)
+*)
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_PPM_Core
 VAR
@@ -42,9 +40,6 @@ VAR
     // Flow meter offset in engineering units (per-install); see FlowOffset.
     fFlowOffset : LREAL := 0;
 
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
     {attribute 'no_copy'}
     aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -63,9 +58,6 @@ VAR
     bFileReaderBusy       : REFERENCE TO BOOL;
     bFileReaderError      : REFERENCE TO BOOL;
 
-    (* State bridge, bound by the derived type to its enum variables.
-       eEnumSetRef receives move requests and eEnumGetRef reports the
-       current state. Both are UINT views of those variables. *)
     {attribute 'no_copy'}
     eEnumSetRef           : REFERENCE TO UINT;
     {attribute 'no_copy'}
@@ -134,21 +126,6 @@ fbYagTempSensor(
 
 fbFlowSwitch();]]></ST>
     </Implementation>
-    <Method Name="ReferencesValid" Id="{4dae0a8e-a29c-420b-955f-690aca3f289b}">
-      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. The derived body checks it
-   after SUPER^() before it ticks the power meter. *)
-METHOD PROTECTED ReferencesValid : BOOL
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
-                AND __ISVALIDREF(astPositionState)
-                AND __ISVALIDREF(fbFFHWO)
-                AND __ISVALIDREF(fbArbiter)
-                AND __ISVALIDREF(eEnumSetRef)
-                AND __ISVALIDREF(eEnumGetRef);
-]]></ST>
-      </Implementation>
-    </Method>
     <Method Name="CallAfterInit" Id="{81e5b97b-0964-47cc-aaa1-3f027902a674}">
       <Declaration><![CDATA[(* Auto-fired after FB_Init. Wires fbStates through CallAfterInitCore. *)
 {attribute 'call_after_init'}
@@ -258,5 +235,20 @@ END_VAR
         </Implementation>
       </Set>
     </Property>
+    <Method Name="ReferencesValid" Id="{4dae0a8e-a29c-420b-955f-690aca3f289b}">
+      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. The derived body checks it
+   after SUPER^() before it ticks the power meter. *)
+METHOD PROTECTED ReferencesValid : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
+                AND __ISVALIDREF(astPositionState)
+                AND __ISVALIDREF(fbFFHWO)
+                AND __ISVALIDREF(fbArbiter)
+                AND __ISVALIDREF(eEnumSetRef)
+                AND __ISVALIDREF(eEnumGetRef);
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

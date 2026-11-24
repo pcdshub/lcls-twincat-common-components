@@ -31,9 +31,6 @@ VAR
     {attribute 'pytmc' := 'pv: FSW'}
     fbFlowSwitch : FB_XTES_Flowswitch;
 
-    (* REFERENCE TO backing fields populated by FB_Init. Same names as
-       FB_Init params; THIS^. disambiguates inside FB_Init.
-       Live-bound to caller storage for the lifetime of the FB. *)
     {attribute 'no_copy'}
     aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     {attribute 'no_copy'}
@@ -52,9 +49,6 @@ VAR
     bFileReaderBusy       : REFERENCE TO BOOL;
     bFileReaderError      : REFERENCE TO BOOL;
 
-    (* State bridge, bound by the derived type to its enum variables.
-       eEnumSetRef receives move requests and eEnumGetRef reports the
-       current state. Both are UINT views of those variables. *)
     {attribute 'no_copy'}
     eEnumSetRef           : REFERENCE TO UINT;
     {attribute 'no_copy'}

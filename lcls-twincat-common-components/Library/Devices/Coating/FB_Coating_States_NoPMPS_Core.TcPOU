@@ -39,8 +39,7 @@ VAR
     );
 END_VAR
 VAR CONSTANT
-    (* Number of motors the state mover drives. Every device here has one state
-       motor, in slot 1; the code around fbStates assumes it. *)
+    (* Number of motors the state mover drives.*)
     nStateMotorCount : UINT := 1;
 END_VAR]]></Declaration>
     <Implementation>
