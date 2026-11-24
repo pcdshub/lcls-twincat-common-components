@@ -91,8 +91,6 @@ VAR
     fbCore : FB_PneumaticCore;
     // Time an output may stay on without reaching its limit switch
     tTimeOutDuration : TIME := T#10S;
-    bInsertTimedOut : BOOL;
-    bRetractTimedOut : BOOL;
     // Time a limit switch must stay active before a double acting output drops
     tLimitSwitchLatchDuration : TIME := T#1S;
     tonInsertLimitSwitch : TON;
@@ -123,9 +121,14 @@ END_IF
 UpdateIO();
 
 // Position state from the limit switches
-stPneumaticActuator.eState := fbCore.State(
+// The output bits are those of the previous scan, so the timeout is reported one scan late
+fbCore(
     bInLimitSwitch := stPneumaticActuator.bInLimitSwitch,
-    bOutLimitSwitch := stPneumaticActuator.bOutLimitSwitch);
+    bOutLimitSwitch := stPneumaticActuator.bOutLimitSwitch,
+    bInsertOutput := stPneumaticActuator.bInsertOutput,
+    bRetractOutput := stPneumaticActuator.bRetractOutput,
+    tTimeout := tTimeOutDuration,
+    eState => stPneumaticActuator.eState);
 
 stPneumaticActuator.bDone := (stPneumaticActuator.bRetractCmd AND stPneumaticActuator.eState = E_PnuematicActuatorPositionState.RETRACTED)
     OR (stPneumaticActuator.bInsertCmd AND stPneumaticActuator.eState = E_PnuematicActuatorPositionState.INSERTED);
@@ -139,11 +142,10 @@ xMPS_OK := (stPneumaticActuator.eState = E_PnuematicActuatorPositionState.RETRAC
 // PMPS permission: yet to be implemented
 
 // Insert and retract requests cannot both be active
-fbCore.ExclusiveCommands(
-    bInsertCmd := stPneumaticActuator.bInsertCmd,
-    bRetractCmd := stPneumaticActuator.bRetractCmd,
-    bInsertCmdOut => stPneumaticActuator.bInsertCmd,
-    bRetractCmdOut => stPneumaticActuator.bRetractCmd);
+IF stPneumaticActuator.bInsertCmd AND stPneumaticActuator.bRetractCmd THEN
+    stPneumaticActuator.bInsertCmd := FALSE;
+    stPneumaticActuator.bRetractCmd := FALSE;
+END_IF
 
 // Redundant: clear the opposite output and request when one output is active
 IF stPneumaticActuator.bInsertOutput THEN
@@ -176,22 +178,14 @@ IF NOT ibSingleCntrl AND NOT ibCntrlHold THEN
     END_IF
 END_IF
 
-fbCore.CheckTimeouts(
-    bInsertOutput := stPneumaticActuator.bInsertOutput,
-    bRetractOutput := stPneumaticActuator.bRetractOutput,
-    bInLimitSwitch := stPneumaticActuator.bInLimitSwitch,
-    bOutLimitSwitch := stPneumaticActuator.bOutLimitSwitch,
-    tTimeout := tTimeOutDuration,
-    bInsertTimedOut => bInsertTimedOut,
-    bRetractTimedOut => bRetractTimedOut);
 tonInsertLimitSwitch(IN := stPneumaticActuator.bInLimitSwitch, PT := tLimitSwitchLatchDuration);
 tonRetractLimitSwitch(IN := stPneumaticActuator.bOutLimitSwitch, PT := tLimitSwitchLatchDuration);
 
 // Moving position timeout
-IF bInsertTimedOut THEN
+IF fbCore.bInsertTimedOut THEN
     stPneumaticActuator.bError := TRUE;
     stPneumaticActuator.sErrorMessage := 'Actuator insert timeout';
-ELSIF bRetractTimedOut THEN
+ELSIF fbCore.bRetractTimedOut THEN
     stPneumaticActuator.bError := TRUE;
     stPneumaticActuator.sErrorMessage := 'Actuator retract timeout';
 END_IF

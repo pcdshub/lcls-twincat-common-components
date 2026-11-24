@@ -58,8 +58,6 @@ VAR
 
     (* Timeouts*)
     tTimeOutDuration: TIME:= T#5S;
-    bInsertTimedOut: BOOL;
-    bRetractTimedOut: BOOL;
 
     (*IO*)
     i_xInsertedLS    AT%I*: BOOL;
@@ -83,7 +81,7 @@ END_IF
 (*Initialize*)
 fbFSInit( CLK := TRUE, Q => xFirstPass);
 (*IO Mapping*)
-ACT_IO();
+UpdateIO();
 
 IF xFirstPass THEN
     q_stAct.eState := E_PnuematicActuatorPositionState.INVALID;
@@ -93,9 +91,14 @@ END_IF
 
 
 (* Manage States*)
-q_stAct.eState := fbCore.State(
+// The output bits are those of the previous scan, so the timeout is reported one scan late
+fbCore(
     bInLimitSwitch := q_stAct.i_bInLS,
-    bOutLimitSwitch := q_stAct.i_bOutLS);
+    bOutLimitSwitch := q_stAct.i_bOutLS,
+    bInsertOutput := q_stAct.q_bInsert,
+    bRetractOutput := q_stAct.q_bRetract,
+    tTimeout := tTimeOutDuration,
+    eState => q_stAct.eState);
 
 (*Set the Done signal*)
 xDone := (q_stAct.bRetract_SW AND q_stAct.eState=E_PnuematicActuatorPositionState.RETRACTED) OR (q_stAct.eState=E_PnuematicActuatorPositionState.INSERTED AND q_stAct.bInsert_SW);
@@ -121,11 +124,10 @@ IF rtRemove.Q THEN
 END_IF
 
 (* Can't have bRetract_SW and  bInsert_SW both be true*)
-fbCore.ExclusiveCommands(
-    bInsertCmd := q_stAct.bInsert_SW,
-    bRetractCmd := q_stAct.bRetract_SW,
-    bInsertCmdOut => q_stAct.bInsert_SW,
-    bRetractCmdOut => q_stAct.bRetract_SW);
+IF q_stAct.bInsert_SW AND q_stAct.bRetract_SW THEN
+    q_stAct.bInsert_SW := FALSE;
+    q_stAct.bRetract_SW := FALSE;
+END_IF
 
 (* Make the state consistent if we can *)
 IF NOT (q_stAct.bRetract_SW OR q_stAct.bInsert_SW) THEN
@@ -154,18 +156,9 @@ END_IF;
 
 
 
-(*Timers*)
-fbCore.CheckTimeouts(
-    bInsertOutput := q_stAct.q_bInsert,
-    bRetractOutput := q_stAct.q_bRetract,
-    bInLimitSwitch := q_stAct.i_bInLS,
-    bOutLimitSwitch := q_stAct.i_bOutLS,
-    tTimeout := tTimeOutDuration,
-    bInsertTimedOut => bInsertTimedOut,
-    bRetractTimedOut => bRetractTimedOut);
 
 ///Check moving postion timout
-IF bInsertTimedOut OR bRetractTimedOut THEN
+IF fbCore.bInsertTimedOut OR fbCore.bRetractTimedOut THEN
     q_stAct.bErrorPresent := TRUE;
 END_IF
 
@@ -178,7 +171,7 @@ IF bEnableFF THEN
 END_IF
 
 (*Soft IO Mapping*)
-ACT_IO();]]></ST>
+UpdateIO();]]></ST>
     </Implementation>
     <Method Name="CallAfterInitMPA" Id="{1307ee02-c964-4b0d-b3e3-8107def010b9}">
       <Declaration><![CDATA[(* Rebinds the fast fault output and the name. Call from the CallAfterInit of an enclosing FB. *)
@@ -290,7 +283,11 @@ PROPERTY RetractCmd : BOOL]]></Declaration>
         </Implementation>
       </Set>
     </Property>
-    <Action Name="ACT_IO" Id="{57068de5-6c7f-4be2-94ad-5467e24dfe72}">
+    <Method Name="UpdateIO" Id="{57068de5-6c7f-4be2-94ad-5467e24dfe72}">
+      <Declaration><![CDATA[(* Soft IO mapping: copies the limit switch inputs into the status struct and the outputs into the
+   digital outputs. Runs at the start and end of every body scan. *)
+METHOD UpdateIO
+]]></Declaration>
       <Implementation>
         <ST><![CDATA[(*Inputs*)
 q_stAct.i_bInLS :=  i_xInsertedLS;
@@ -300,6 +297,6 @@ q_stAct.i_bOutLS := i_xRetractedLS;
 q_xInsert_DO:=q_stAct.q_bInsert;
 q_xRetract_DO:=q_stAct.q_bRetract;]]></ST>
       </Implementation>
-    </Action>
+    </Method>
   </POU>
 </TcPlcObject>
