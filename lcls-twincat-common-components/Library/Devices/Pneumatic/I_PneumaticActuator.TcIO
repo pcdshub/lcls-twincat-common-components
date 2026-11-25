@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_PneumaticActuator" Id="{a3f0aa9b-1939-4de3-ba56-c149a572d90a}">
+    <Declaration><![CDATA[(*
+    Command and status view of a pneumatic actuator. Insert() and Retract() raise
+    the same requests as the CMD:IN and CMD:OUT PVs. Both requests together cancel
+    each other.
+*)
+INTERFACE I_PneumaticActuator
+]]></Declaration>
+    <Method Name="Insert" Id="{629b967c-f1f3-4e00-ac8f-3a6e29974957}">
+      <Declaration><![CDATA[METHOD Insert
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="Retract" Id="{6ac4bc52-d297-4926-b458-b138f94e3b88}">
+      <Declaration><![CDATA[METHOD Retract
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="Busy" Id="{b5a7dc1a-8b3f-4753-baaa-de7326ca7b6f}">
+      <Declaration><![CDATA[PROPERTY Busy : BOOL]]></Declaration>
+      <Get Name="Get" Id="{4260e850-c541-415e-a638-c0d93ecc4bf6}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="Done" Id="{0adecd69-56be-46c0-aea1-10ef7fc17842}">
+      <Declaration><![CDATA[PROPERTY Done : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fdaa5543-3d3a-4379-9dc6-ee5513fbf77e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="Error" Id="{04f99924-35cd-4b63-b17d-191e9263ed83}">
+      <Declaration><![CDATA[PROPERTY Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e18ab759-bd4b-4b69-a635-99fd0eff6522}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="MpsOk" Id="{de9e9118-a3bc-4fa6-b14d-4c7b193413e2}">
+      <Declaration><![CDATA[PROPERTY MpsOk : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c645692a-4000-41f4-979b-f0b7a7a88447}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="State" Id="{c3e5c914-d8c8-4134-8136-5bdc5bbac04e}">
+      <Declaration><![CDATA[PROPERTY State : E_PnuematicActuatorPositionState]]></Declaration>
+      <Get Name="Get" Id="{3236e6cc-c340-4964-a321-379ad397b454}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <GVL Name="GVL_PRG" Id="{fa66b08c-13d5-435d-86c7-ce0178ee16f2}">
+    <Declaration><![CDATA[(* Shared infrastructure of the production-style programs that run in PRGTask:
+   the arbiter, the fast-fault output, the persistent data storage and the PMPS
+   DB reader. PRG_PMPS_PRE and PRG_PMPS_POST tick them. *)
+{attribute 'qualified_only'}
+VAR_GLOBAL
+    fbArbiter1          : FB_Arbiter(1);
+    fbFastFaultOutput1  : FB_HardwareFFOutput;
+    fbPDS               : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+    // Stand-in for the bBridgeOk output of FB_SubSysToArbiter_IO, which a real PLC runs.
+    bBridgeOK           : BOOL := TRUE;
+    // Stand-in for the bBridgeConfirmedBad output of FB_SubSysToArbiter_IO.
+    bBridgeConfirmedBad : BOOL := FALSE;
+    fbStandardPMPSDB    : FB_Standard_PMPSDB(
+        sPlcName   := 'plc-cc-motion',
+        sDirectory := 'C:\TwinCAT\pmpsdb\',
+        io_fbFFHWO := fbFastFaultOutput1
+    );
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

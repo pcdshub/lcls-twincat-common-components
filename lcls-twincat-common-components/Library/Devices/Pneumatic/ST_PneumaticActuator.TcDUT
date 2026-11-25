@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_PneumaticActuator" Id="{00563389-a8fd-4833-9d94-51c0e68a64e7}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+(*
+    EPICS and status interface of a pneumatic actuator (FB_PneumaticActuator).
+    The pytmc pv names are kept identical to the legacy ST_MotionPneumaticActuator
+    so existing IOC records do not change. The legacy swapped ONAM/ZNAM fields on
+    bRetractOutput, bInsertOutput, bBusy, bDone and bError are ported as they were.
+*)
+TYPE ST_PneumaticActuator :
+STRUCT
+    // Limit switch readback: TRUE when the IN limit is reached
+    {attribute 'pytmc' := '
+     pv: PLC:bInLimitSwitch
+     io: i
+     field: ZNAM FALSE
+     field: ONAM TRUE
+     field: DESC TRUE if IN limit is reached
+    '}
+    bInLimitSwitch : BOOL;
+    // Limit switch readback: TRUE when the OUT limit is reached
+    {attribute 'pytmc' := '
+     pv: PLC:bOutLimitSwitch
+     io: i
+     field: ZNAM FALSE
+     field: ONAM TRUE
+     field: DESC TRUE if OUT limit is reached
+    '}
+    bOutLimitSwitch : BOOL;
+    // Retract digital output state
+    {attribute 'pytmc' := '
+    pv: bRetractDigitalOutput;
+    io: i;
+    field: ONAM FALSE
+    field: ZNAM TRUE
+    field: DESC TRUE if Retract digital output is active
+    '}
+    bRetractOutput : BOOL;
+    // Insert digital output state
+    {attribute 'pytmc' := '
+    pv: bInsertDigitalOutput;
+    io: i;
+    field: ONAM FALSE
+    field: ZNAM TRUE
+    field: DESC TRUE if Insert digital output is active
+    '}
+    bInsertOutput : BOOL;
+    // Permission to move in either direction (not written by the FB)
+    {attribute 'pytmc' := '
+    pv: bInterlockOK;
+    io: i;
+    field: ZNAM FALSE
+    field: ONAM TRUE
+    field: DESC True if the actuator has permission to move in either direction
+    '}
+    bInterlockOK : BOOL;
+    // Permission to insert, copied from ibInsertOK
+    {attribute 'pytmc' := '
+    pv: bInsertEnable;
+    io: i;
+    field: ZNAM FALSE
+    field: ONAM TRUE
+    field: DESC True if the actuator had permission to be retracted
+    '}
+    bInsertOK : BOOL;
+    // Permission to retract, copied from ibRetractOK
+    {attribute 'pytmc' := '
+    pv: bRetractEnable;
+    io: i;
+    field: ZNAM FALSE
+    field: ONAM TRUE
+    field: DESC True if the actuator had permission to be inserted
+    '}
+    bRetractOK : BOOL;
+    // Insert request from EPICS or Insert()
+    {attribute 'pytmc' := '
+    pv: CMD:IN;
+    io: io;
+    field: DESC Used by EPICS and internally to request Insert motion
+    '}
+    bInsertCmd : BOOL;
+    // Retract request from EPICS or Retract()
+    {attribute 'pytmc' := '
+    pv: CMD:OUT;
+    io: io;
+    field: DESC Used by EPICS and internally to request retract motion
+    '}
+    bRetractCmd : BOOL;
+    // TRUE if in the middle of a command
+    {attribute 'pytmc' := '
+     pv: bBusy
+     io: i
+     field: ONAM FALSE
+     field: ZNAM TRUE
+     field: DESC TRUE if in the middle of a command
+    '}
+    bBusy : BOOL;
+    // TRUE if a command has finished
+    {attribute 'pytmc' := '
+     pv: bDone
+     io: i
+     field: ONAM FALSE
+     field: ZNAM TRUE
+     field: DESC TRUE if command finished successfully
+    '}
+    bDone : BOOL;
+    // Error reset request
+    {attribute 'pytmc' := '
+        pv: bReset
+        io: io
+        field: ZNAM FALSE
+        field: ONAM TRUE
+        field: DESC Used internally to reset errors
+    '}
+    bReset : BOOL;
+    // TRUE if in an error state
+    {attribute 'pytmc' := '
+     pv: PLC:bError
+     io: i
+     field: ONAM FALSE
+     field: ZNAM TRUE
+     field: DESC TRUE if we're in an error state
+    '}
+    bError : BOOL;
+    // Error code if nonzero (never written by the FB)
+    {attribute 'pytmc' := '
+     pv: PLC:nErrorId
+     io: i
+     field: DESC Error code if nonzero
+    '}
+    nErrorId : UDINT;
+    // Message to identify the error state
+    {attribute 'pytmc' := '
+     pv: PLC:sErrorMessage
+     io: i
+     field: DESC Message to identify the error state
+    '}
+    sErrorMessage : STRING;
+    // Position state derived from the two limit switches
+    {attribute 'pytmc' := '
+    pv: nPositionState ;
+    type: mbbi ;
+    field: ZRST RETRACTED ;
+    field: ONST INSERTED ;
+    field: TWST MOVING ;
+    field: THST INVALID ;
+    io: i
+    field: DESC Pneumatic actuator position
+    '}
+    eState : E_PnuematicActuatorPositionState := E_PnuematicActuatorPositionState.INVALID;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

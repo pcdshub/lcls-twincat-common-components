@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITSTHERMALHost" Id="{d4b64525-7794-47ad-9d1c-45765fae7ae8}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_SLITS_THERMAL, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_SLITS_THERMAL was
+   constructed from them, so the nested FB_SLITS_THERMAL first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbSlits.CallAfterInitTHERMAL. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SLITSTHERMALHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    {attribute 'no_copy'}
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
+    {attribute 'no_copy'}
+    bFileReaderBusy : REFERENCE TO BOOL;
+
+    fbSlits : FB_SLITS_THERMAL(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := sDeviceName,
+        bBridgeOK       := bBridgeOK,
+        sPmpsState      := sPmpsState,
+        bFileReaderBusy := bFileReaderBusy
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSlits(
+    bMoveOk := TRUE
+);
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{4248aff8-1f52-440b-995b-ec9bacc9ca08}">
+      <Declaration><![CDATA[(* The nested fbSlits ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.CallAfterInitTHERMAL(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName     := sDeviceName,
+    bBridgeOK       := bBridgeOK,
+    sPmpsState      := sPmpsState,
+    bFileReaderBusy := bFileReaderBusy
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{1fe57654-16dd-4332-84b7-609f40054957}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   := sDeviceName;
+THIS^.bBridgeOK     REF= bBridgeOK;
+THIS^.sPmpsState    := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetEncoderOffsets" Id="{bbf60c20-3dd9-48c9-88ad-6eeae9f2a477}">
+      <Declaration><![CDATA[(* Sets the per-blade encoder zero-offsets of the nested slit, which are inputs
+   of the slit that only this host can reach. *)
+METHOD SetEncoderOffsets
+VAR_INPUT
+    Top    : REAL;
+    Bottom : REAL;
+    North  : REAL;
+    South  : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.rEncoderOffsetTop    := Top;
+fbSlits.rEncoderOffsetBottom := Bottom;
+fbSlits.rEncoderOffsetNorth  := North;
+fbSlits.rEncoderOffsetSouth  := South;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAperture" Id="{b80634c1-687e-4874-8dcb-b587543f5e1d}">
+      <Declaration><![CDATA[(* Requests a gap and a centre from the nested slit, as an EPICS write would. *)
+METHOD SetAperture
+VAR_INPUT
+    SizeX   : REAL;
+    SizeY   : REAL;
+    CenterX : REAL;
+    CenterY : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.SetApertureRequest(
+    ApertureSizeX := SizeX,
+    ApertureSizeY := SizeY,
+    CenterX       := CenterX,
+    CenterY       := CenterY
+);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

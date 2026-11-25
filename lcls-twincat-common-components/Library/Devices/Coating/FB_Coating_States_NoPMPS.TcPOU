@@ -1,47 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_Coating_States_NoPMPS" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b05}" SpecialFunc="None">
-    <Declaration><![CDATA[(* Simple 2-state coating selector, no PMPS: thin ND-framework wrapper
-   around FB_PositionStateND, ported from a deprecated EXTENDS
-   FB_PositionStateBase device. Single motor, no beam-safety gating.
-
-   The integrator supplies sName/fPosition/fDelta/nEncoderCount for
-   every state via FB_CC_StateDefaultsConfig (Convention B, the same
-   split FB_SXR_SATT_Stage uses). This FB owns none of that config
-   itself. FB_KBO_Coating_States uses the other split (Convention A,
-   device owns sName/fDelta). Motor and state array are caller-owned,
-   injected via FB_Init. *)
+    <Declaration><![CDATA[(* Simple 2-state coating selector, no PMPS, with the state enum E_Coating_States:
+   FB_Coating_States_NoPMPS_Core plus the enum bridge. FB_Init repeats the core
+   inputs and binds the bridge. The integrator supplies sName, fPosition, fDelta
+   and nEncoderCount for every state via FB_CC_StateDefaultsConfig (Convention
+   B, the same split FB_SXR_SATT_Stage uses). FB_KBO_Coating_States uses the
+   other split (Convention A, device owns sName/fDelta). An FB that nests it
+   calls CallAfterInitCoating from its own CallAfterInit. *)
 {attribute 'call_after_init'}
-FUNCTION_BLOCK FB_Coating_States_NoPMPS
+FUNCTION_BLOCK FB_Coating_States_NoPMPS EXTENDS FB_Coating_States_NoPMPS_Core
 VAR
-    (* State-enum bridge bound to FB_PositionStateND's REFERENCE TO UINT
-       param via the shared UINT base. EPICS owns it through the pytmc
-       pragma; PLC code must go through the EnumSet property instead of
-       touching it directly. *)
     // Set this to a non-unknown value to request a new move.
     {attribute 'pytmc' := '
         pv: SET
         io: io
     '}
     eEnumSet : E_Coating_States;
-    {attribute 'no_copy'}
-    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
-    {attribute 'no_copy'}
-    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
-                                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-
-    bEnableMotion : BOOL := TRUE;
-
-    {attribute 'pytmc' := 'pv: MMS'}
-    fbStates : FB_PositionStateND(
-        aiMotionStage        := aiMotionStage,
-        astPositionState     := astPositionState,
-        nActiveMotorCount    := 1,
-        eEnumSet             := eEnumSet,
-        eEnumGet             := eEnumGet,
-        bEnableMotion        := bEnableMotion,
-        eMotionRequestPolicy := E_MotionRequestPolicy.INTERRUPT
-    );
 END_VAR
 VAR_OUTPUT
     // The current position state as an enum.
@@ -52,45 +27,42 @@ VAR_OUTPUT
     eEnumGet : E_Coating_States;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
-   OR NOT __ISVALIDREF(astPositionState) THEN
-    RETURN;
-END_IF
-
-fbStates();
-]]></ST>
+      <ST><![CDATA[SUPER^();]]></ST>
     </Implementation>
-    <Method Name="CallAfterInit" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b06}">
-      <Declaration><![CDATA[
+    <Method Name="CallAfterInit" Id="{8c0147f8-65f5-42c4-808e-117bf4fdeb34}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init, together with the base CallAfterInit. Binds the
+   state bridge to this FB's enum variables. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.fbStates.CallAfterInitStateMover(
-    aiMotionStage         := aiMotionStage,
-    astPositionState      := astPositionState,
-    nActiveMotorCount     := 1,
-    eEnumSet              := eEnumSet,
-    eEnumGet              := eEnumGet,
-    bEnableMotion         := bEnableMotion,
-    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
-);
+        <ST><![CDATA[SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
+SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="FB_Init" Id="{5e9b2f4d-8c6a-4b1e-93d7-1f4a2c6e9b07}">
-      <Declaration><![CDATA[
-METHOD FB_Init: BOOL
+    <Method Name="CallAfterInitCoating" Id="{ab2d767e-0edc-41ab-a6a3-4a07c9de30f2}">
+      <Declaration><![CDATA[(* Provides every FB_Coating_States_NoPMPS_Core input, binds the state bridge and
+   wires fbStates. FB_Init calls it with the PRG arguments. An FB that
+   instantiates this FB inside itself calls it again from its own
+   CallAfterInit: the nested FB's CallAfterInit runs before the host's, with nil
+   references, so this method redoes the whole wiring, base included. *)
+METHOD CallAfterInitCoating
 VAR_INPUT
-    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
-    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
     aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
     astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
-                                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
-END_VAR]]></Declaration>
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR
+]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
-THIS^.astPositionState REF= astPositionState;]]></ST>
+        <ST><![CDATA[SUPER^.aiMotionStage    REF= aiMotionStage;
+SUPER^.astPositionState REF= astPositionState;
+
+SUPER^.eEnumSetRef REF= THIS^.eEnumSet;
+SUPER^.eEnumGetRef REF= THIS^.eEnumGet;
+
+SUPER^.CallAfterInitCore();
+]]></ST>
       </Implementation>
     </Method>
     <Property Name="EnumGet" Id="{82900509-1fb4-4919-9e80-5962027d071a}">
@@ -126,5 +98,24 @@ END_VAR
         </Implementation>
       </Set>
     </Property>
+    <Method Name="FB_Init" Id="{56608830-5eb9-4667-998e-34612d34b65f}">
+      <Declaration><![CDATA[(* Repeats the core inputs, as a derived FB_Init must, and forwards them to
+   CallAfterInitCoating. Runs before any CallAfterInit. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains     : BOOL;
+    bInCopyCode      : BOOL;
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitCoating(
+    aiMotionStage    := aiMotionStage,
+    astPositionState := astPositionState
+);]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

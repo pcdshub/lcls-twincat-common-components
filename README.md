@@ -12,6 +12,7 @@ Including:
 * ATM (Arrival Time Monitor)
 * LIC (Laser Incoupling Mirrors)
 * PPM (Power and Profile Monitor)
+* Pneumatic actuators (`FB_PneumaticActuator` for new devices, `FB_MPA` as the legacy MPA block, both on `FB_PneumaticCore`)
 * REF (Reference Laser)
 * SLITS (Slits)
 * WFS (Wavefront Sensor)

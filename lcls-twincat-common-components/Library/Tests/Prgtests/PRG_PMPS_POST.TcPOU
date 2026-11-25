@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_PMPS_POST" Id="{e551530f-a4f5-4c97-b92a-b33af6830b31}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Runs after the device programs in PRGTask: the dummy arbiter I/O, the PMPS DB
+   file reader and the fast-fault output, as PRG_PMPS in the motion library. *)
+PROGRAM PRG_PMPS_POST
+VAR
+    fbSubSysIO : FB_DummyArbIO;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSubSysIO(
+    LA  := GVL_PRG.fbArbiter1,
+    FFO := GVL_PRG.fbFastFaultOutput1
+);
+
+GVL_PRG.fbFastFaultOutput1.Execute();
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

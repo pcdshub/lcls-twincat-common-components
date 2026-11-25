@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_WFSHost" Id="{0ed602b3-2243-45fc-9ec7-5214c0b34d8f}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_WFS, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_WFS was
+   constructed from them, so the nested FB_WFS first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbWFS.CallAfterInitWFS. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_WFSHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+    {attribute 'no_copy'}
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bFileReaderError      : REFERENCE TO BOOL;
+
+    fbWFS : FB_WFS(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbWFS();
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{6033b0ef-68e6-4629-bdd6-0d75b9a62d09}">
+      <Declaration><![CDATA[(* The nested fbWFS ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbWFS.CallAfterInitWFS(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{8eddb353-13a2-4d91-8f53-f12934f4f5a5}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage         REF= aiMotionStage;
+THIS^.astPositionState      REF= astPositionState;
+THIS^.fbFFHWO               REF= fbFFHWO;
+THIS^.fbArbiter             REF= fbArbiter;
+THIS^.sDeviceName           := sDeviceName;
+THIS^.sTransitionKey        := sTransitionKey;
+THIS^.bEnableBeamParams     := bEnableBeamParams;
+THIS^.bEnablePositionLimits := bEnablePositionLimits;
+THIS^.bReadDBNow            := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

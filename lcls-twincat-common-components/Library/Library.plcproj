@@ -15,7 +15,7 @@
     <Implicit_Jitter_Distribution>{4604432a-6eee-489d-ba4c-0a908a6f435f}</Implicit_Jitter_Distribution>
     <LibraryReferences>{78c19189-384c-4a07-a84d-94cfbb123508}</LibraryReferences>
     <CombineIds>false</CombineIds>
-    <Title>lcls-twincat-common-components</Title>
+    <Title>LCLS_Tc_CC</Title>
     <Released>false</Released>
     <ProjectVersion>0.0.0</ProjectVersion>
     <Company>SLAC</Company>
@@ -40,10 +40,14 @@
     <Folder Include="Devices\PPM" />
     <Folder Include="Devices\KBO" />
     <Folder Include="Devices\Coating" />
+    <Folder Include="Devices\Pneumatic" />
     <Folder Include="DUTs" />
     <Folder Include="Tests" />
     <Folder Include="POUs" />
+    <Folder Include="GVLs" />
     <Folder Include="Tests\Helpers" />
+    <Folder Include="Tests\Prgtests" />
+    <Folder Include="Tests\unittests" />
     <Folder Include="Version" />
   </ItemGroup>
   <ItemGroup>
@@ -53,13 +57,22 @@
     <Compile Include="Devices\ATM\FB_ATM.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\ATM\FB_ATM_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\LIC\E_LIC_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\LIC\FB_LIC_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\LIC\FB_LIC.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\E_PPM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\PPM\FB_PPM_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\PPM\FB_PPM.TcPOU">
@@ -74,16 +87,25 @@
     <Compile Include="Devices\KBO\E_KBO_CoatingStates.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\KBO\FB_KBO_Coating_States_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\KBO\FB_KBO_Coating_States.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\Coating\E_Coating_States.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\Coating\FB_Coating_States_NoPMPS_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\Coating\FB_Coating_States_NoPMPS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\E_REF_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\REF\FB_REF_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\REF\FB_REF.TcPOU">
@@ -101,10 +123,16 @@
     <Compile Include="Devices\SATT\FB_SATT_FilterConfig.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\SATT\FB_SXR_SATT_Stage_Core.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\SATT\FB_SXR_SATT_Stage.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\SATT\ST_SATT_Filter.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\SLITS\E_SlitsAxis.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\SLITS\E_SlitsBlade.TcDUT">
@@ -116,19 +144,55 @@
     <Compile Include="Devices\SLITS\FB_SLITS_POWER.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\SLITS\FB_SLITS_THERMAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\WFS\E_WFS_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\WFS\FB_WFS_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\WFS\FB_WFS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Devices\Pneumatic\E_PnuematicActuatorPositionState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\ST_PneumaticActuator.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\ST_MPA.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\I_PneumaticCore.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\I_PneumaticActuator.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_PneumaticCore.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_PneumaticActuator.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\Pneumatic\FB_MPA.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Devices\GBS\E_GBS_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\GBS\FB_GBS_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\GBS\FB_GBS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\IPM\E_IPM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\IPM\FB_IPM_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\IPM\FB_IPM.TcPOU">
@@ -138,6 +202,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\E_XPIM_States.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Devices\XPIM\FB_XPIM_Core.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Devices\XPIM\FB_XPIM.TcPOU">
@@ -176,44 +243,160 @@
     <Compile Include="POUs\FB_XTES_Flowswitch.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_ATMTest.TcPOU">
+    <Compile Include="PRGTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_CC_TempSensorTest.TcPOU">
+    <Compile Include="Tests\Helpers\U_TestRealBits.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_GBSTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_ATMHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_IPMTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_CoatingHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_KBOTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_GBSHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_Coating_States_NoPMPSTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_IPMHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_SATTTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_KBOHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_LICTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_LICHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_PPMTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_PPMHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_REFTest.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>false</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="Tests\FB_SLITS_POWERTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_REFHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_WFSTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_SATTHost.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\FB_XPIMTest.TcPOU">
+    <Compile Include="Tests\Prgtests\FB_SLITSHost.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\FB_SLITSPOWERHost.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\FB_SLITSTHERMALHost.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\FB_WFSHost.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\FB_XPIMHost.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_ATM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_Coating.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_GBS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_IPM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_KBO.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_LIC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_PMPS_POST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_PMPS_PRE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_PPM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_REF.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_SATT.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_SLITS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_SLITSPOWER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_SLITSTHERMAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_TEST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_WFS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\Prgtests\PRG_XPIM.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_ATMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_CC_TempSensorTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_Coating_States_NoPMPSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PneumaticCoreTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PneumaticActuatorTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_MPATest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_GBSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_IPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_KBOTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_LICTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_PPMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_REFTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SATTTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITS_POWERTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_SLITS_THERMALTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_WFSTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tests\unittests\FB_XPIMTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GVLs\GVL_PRG.TcGVL">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\Helpers\FB_PMPSJsonTestHelper.TcPOU">
@@ -221,9 +404,6 @@
       <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
     <Compile Include="Tests\Helpers\FB_CC_PMPSTestSetup.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Tests\PRG_TEST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Version\Global_Version.TcGVL">
@@ -261,6 +441,12 @@
     <PlaceholderReference Include="PMPS">
       <DefaultResolution>PMPS, * (SLAC - LCLS)</DefaultResolution>
       <Namespace>PMPS</Namespace>
+      <Parameters>
+        <Parameter ListName="PMPS_PARAM" xmlns="">
+          <Key>MAX_FAST_FAULTS</Key>
+          <Value>180</Value>
+        </Parameter>
+      </Parameters>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc2_MC2">
       <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
@@ -295,7 +481,7 @@
   </ItemGroup>
   <ItemGroup>
     <PlaceholderResolution Include="LCLS General">
-      <Resolution>LCLS General, * (SLAC)</Resolution>
+      <Resolution>LCLS General, 2.12.0 (SLAC)</Resolution>
     </PlaceholderResolution>
     <PlaceholderResolution Include="lcls-twincat-physics">
       <Resolution>lcls-twincat-physics, * (SLAC)</Resolution>

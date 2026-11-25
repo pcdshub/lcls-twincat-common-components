@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_Coating" Id="{63d396c6-c653-4eef-a0f9-ac6ce900409b}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style program with a FB_Coating_States_NoPMPS nested in FB_CoatingInitHost. It follows
+   PRG_ATMInit: the motor stages, the configurators where the device has them,
+   and the host. The arbiter, fast-fault output, persistent storage and DB
+   reader are shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. It has no PMPS DB. *)
+PROGRAM PRG_Coating
+VAR
+    {attribute 'TcNcAxis' := 'PRG_COATING_Y'}
+    axRef         : AXIS_REF;
+    fbMotor       : FB_MotionStageNC(
+        AxisRef                := axRef,
+        iPersistentDataStorage := GVL_PRG.fbPDS,
+        sName                  := 'COATINGINIT'
+    );
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotor];
+
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    stDefault : ST_PositionState := (
+        fDelta        := 0.2,
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+    afbStateDefaults : ARRAY[1..2] OF FB_CC_StateDefaultsConfig[
+        (stPositionState := astPositionState[1][E_Coating_States.Coating1], stDefault := stDefault, sName := 'Coating1', fPosition := 10.0),
+        (stPositionState := astPositionState[1][E_Coating_States.Coating2], stDefault := stDefault, sName := 'Coating2', fPosition := 20.0)
+    ];
+
+    fbHost : FB_CoatingHost(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState
+    );
+
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotor.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.NONE,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotor.SetVelocity(
+        Velocity := 15.5
+    );
+    fbMotor.RestoreMotionParams      := FALSE;
+    fbMotor.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+
+FOR i := 1 TO 2 DO
+    afbStateDefaults[i]();
+END_FOR
+
+fbHost();
+fbMotor();
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

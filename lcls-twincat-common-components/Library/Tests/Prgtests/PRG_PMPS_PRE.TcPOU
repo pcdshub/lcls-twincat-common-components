@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_PMPS_PRE" Id="{7d8dbbe3-34b4-49fe-a7a6-41c9df544dd3}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Runs before the device programs in PRGTask: ticks the persistent data storage
+   that every motor stage reads. *)
+PROGRAM PRG_PMPS_PRE
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GVL_PRG.fbPDS();
+
+GVL_PRG.fbStandardPMPSDB(
+    bEnable := TRUE
+);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

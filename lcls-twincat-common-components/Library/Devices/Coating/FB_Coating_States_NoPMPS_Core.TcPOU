@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_Coating_States_NoPMPS_Core" Id="{1f6b4ecd-6166-40b0-8054-1de4bacdf685}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Core of the simple 2-state coating selector without PMPS, an abstract base by
+   convention: thin ND-framework wrapper around FB_PositionStateND that holds
+   only references and fbStates. The state bridge is here as REFERENCE TO UINT
+   (eEnumSetRef and eEnumGetRef) and the body runs on it, but the enum variables
+   belong to the derived type (FB_Coating_States_NoPMPS), which passes them in.
+   The derived body calls SUPER^() to run this logic, so the FB cannot carry
+   no_explicit_call. Single motor, no beam-safety gating. The integrator
+   supplies sName, fPosition, fDelta and nEncoderCount of every state through
+   FB_CC_StateDefaultsConfig. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_Coating_States_NoPMPS_Core
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    bEnableMotion : BOOL := TRUE;
+
+    (* State bridge, bound by the derived type to its enum variables. *)
+    {attribute 'no_copy'}
+    eEnumSetRef : REFERENCE TO UINT;
+    {attribute 'no_copy'}
+    eEnumGetRef : REFERENCE TO UINT;
+
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStateND(
+        aiMotionStage        := aiMotionStage,
+        astPositionState     := astPositionState,
+        nActiveMotorCount    := nStateMotorCount,
+        eEnumSet             := eEnumSetRef,
+        eEnumGet             := eEnumGetRef,
+        bEnableMotion        := bEnableMotion,
+        eMotionRequestPolicy := E_MotionRequestPolicy.INTERRUPT
+    );
+END_VAR
+VAR CONSTANT
+    (* Number of motors the state mover drives.*)
+    nStateMotorCount : UINT := 1;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(eEnumSetRef)
+   OR NOT __ISVALIDREF(eEnumGetRef) THEN
+    RETURN;
+END_IF
+
+fbStates();
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{a1a524d0-ebc3-4a4f-8706-99d5b0614bb1}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. Wires fbStates through CallAfterInitCore. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitCore();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CallAfterInitCore" Id="{ebcdbb1a-118a-4b89-82a2-2f6a0218cd4f}">
+      <Declaration><![CDATA[(* Re-supplies the references this FB holds to fbStates through
+   CallAfterInitStateMover, because fbStates' inline-init ran first and
+   forwarded nil refs. Does nothing while a reference is still nil. A derived
+   type that was re-wired after its host FB's CallAfterInit calls it again
+   through SUPER^. *)
+METHOD PROTECTED CallAfterInitCore
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(eEnumSetRef)
+   OR NOT __ISVALIDREF(eEnumGetRef) THEN
+    RETURN;
+END_IF
+
+THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := nStateMotorCount,
+    eEnumSet              := eEnumSetRef,
+    eEnumGet              := eEnumGetRef,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{ac065b14-e153-48fc-b754-0927f752c9bb}">
+      <Declaration><![CDATA[(* Stores the injected references. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains     : BOOL;
+    bInCopyCode      : BOOL;
+    aiMotionStage    : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                          OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

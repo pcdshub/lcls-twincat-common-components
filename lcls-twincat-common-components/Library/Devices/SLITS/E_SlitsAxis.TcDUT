@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="E_SlitsAxis" Id="{428c551d-8e83-4a60-80d3-bca8dff6ef98}">
+    <Declaration><![CDATA[(* Gap axis selector for the FB_SLITS M_GapRequestAllowed hook: X is the
+   North/South gap, Y is the Top/Bottom gap. *)
+{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SlitsAxis :
+(
+    X := 1,
+    Y := 2
+) UDINT;
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

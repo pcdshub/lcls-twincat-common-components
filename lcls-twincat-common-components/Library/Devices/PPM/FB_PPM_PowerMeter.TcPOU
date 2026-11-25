@@ -10,30 +10,28 @@ VAR_INPUT
     // Used to know when to stop background auto-collection
     eEnumGet: E_PPM_States;
     stYAxisState: DWORD;
-
-    // Calibrated for each gentec, should be passed as input
-    // If not set, responsive energy will not be calculated
-    {attribute 'pytmc' := '
-        pv: RESP
-        io: i
-        field: EGU V/W
-    '}
-    fResponsivity: LREAL;
-
-    // Passed to FB_AnalogInput
-    // The initial values are correct for EL3062,
-    // but not for EL3602, which needs iTermBits:=31
-    // with fTermMax and fTermMin dependent on what
-    // range the terminal was configured to use
-    // (default -10000mV to +10000mV)
-    iTermBits : UINT := 15;
-    fTermMax : REAL := 10000;
-    fTermMin: REAL := 0;
 END_VAR
 VAR_IN_OUT
     fbFFHWO: FB_HardwareFFOutput;
 END_VAR
 VAR
+    (* Calibrated for each gentec; set through Configure. If zero, the
+       responsive energy is not calculated. *)
+    {attribute 'pytmc' := '
+        pv: RESP
+        io: i
+        field: EGU V/W
+    '}
+    fResponsivity : LREAL;
+
+    (* Passed to FB_AnalogInput; set through Configure. The initial values are
+       correct for EL3062, but not for EL3602, which needs iTermBits:=31
+       with fTermMax and fTermMin dependent on what range the terminal was
+       configured to use (default -10000mV to +10000mV). *)
+    iTermBits : UINT := 15;
+    fTermMax  : REAL := 10000;
+    fTermMin  : REAL := 0;
+
     iVoltageINT AT %I*: DINT;
 
     {attribute 'pytmc' := '
@@ -178,10 +176,7 @@ END_VAR]]></Declaration>
     io_fbFFHWO:=fbFFHWO,
 );
 
-// Convert the terminal's integer into a value in millivolts
-// If you get a compile-time error about converting type DINT
-// to type INT, update your lcls-general version to at least
-// v2.12.0
+// Terminal counts to mV (needs lcls-general 2.12.0 or later).
 fbGetPMVoltage(
     iRaw := iVoltageINT,
     iTermBits := iTermBits,
@@ -292,5 +287,24 @@ fbCalibMJBuffer(
     fInput := fCalibMJ,
     arrOutput => fCalibMJBuffer);]]></ST>
     </Implementation>
+    <Method Name="Configure" Id="{5ac2b577-5eb7-4a98-956b-4bc2c55b5621}">
+      <Declaration><![CDATA[(* Sets the calibration and the terminal range once. FB_PPM calls it from its
+   FB_Init and again when it is re-wired. *)
+METHOD Configure
+VAR_INPUT
+    Responsivity : LREAL;
+    TermBits     : UINT;
+    TermMax      : REAL;
+    TermMin      : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fResponsivity := Responsivity;
+iTermBits     := TermBits;
+fTermMax      := TermMax;
+fTermMin      := TermMin;
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SATTHost" Id="{8be1edb3-3d97-48c8-b586-4581014b05a1}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_SXR_SATT_Stage, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_SXR_SATT_Stage was
+   constructed from them, so the nested FB_SXR_SATT_Stage first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbSATT.CallAfterInitSATT. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SATTHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    bBridgeOK             : REFERENCE TO BOOL;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName           : STRING;
+    RTDPMPSState          : STRING;
+
+    fbSATT : FB_SXR_SATT_Stage(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        bFileReaderBusy       := bFileReaderBusy,
+        bBridgeOK             := bBridgeOK,
+        fbFFHWO               := fbFFHWO,
+        sDeviceName           := sDeviceName,
+        RTDPMPSState          := RTDPMPSState
+    );
+
+    // Per-filter material and thickness written into the stage's filter table.
+    afbFilterCfg : ARRAY[1..8] OF FB_SATT_FilterConfig[
+        (stFilter := fbSATT.arrFilters[1], sFilterMaterial := 'C',  fFilterThickness_um := 25),
+        (stFilter := fbSATT.arrFilters[2], sFilterMaterial := 'C',  fFilterThickness_um := 50),
+        (stFilter := fbSATT.arrFilters[3], sFilterMaterial := 'C',  fFilterThickness_um := 100),
+        (stFilter := fbSATT.arrFilters[4], sFilterMaterial := 'Si', fFilterThickness_um := 200),
+        (stFilter := fbSATT.arrFilters[5], sFilterMaterial := 'Si', fFilterThickness_um := 320),
+        (stFilter := fbSATT.arrFilters[6], sFilterMaterial := 'Si', fFilterThickness_um := 640),
+        (stFilter := fbSATT.arrFilters[7], sFilterMaterial := 'Si', fFilterThickness_um := 1280),
+        (stFilter := fbSATT.arrFilters[8], sFilterMaterial := 'Si', fFilterThickness_um := 2560)
+    ];
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSATT();
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{7481fcbc-d4b6-4e8b-a4cf-4482870f76e8}">
+      <Declaration><![CDATA[(* The nested fbSATT ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSATT.CallAfterInitSATT(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    bFileReaderBusy       := bFileReaderBusy,
+    bBridgeOK             := bBridgeOK,
+    fbFFHWO               := fbFFHWO,
+    sDeviceName           := sDeviceName,
+    RTDPMPSState          := RTDPMPSState
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{e1b99a2d-1289-4823-a8cc-1c0b3e388a4f}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bBridgeOK             : REFERENCE TO BOOL;
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName           : STRING;
+    RTDPMPSState          : STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.bFileReaderBusy  REF= bFileReaderBusy;
+THIS^.bBridgeOK        REF= bBridgeOK;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.RTDPMPSState     := RTDPMPSState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

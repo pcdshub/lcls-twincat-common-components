@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_SATT" Id="{ee426bc6-d318-4803-8454-6993306e29d0}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style program with a FB_SXR_SATT_Stage nested in FB_SATTInitHost. It follows
+   PRG_ATMInit: the motor stages, the configurators where the device has them,
+   and the host. The arbiter, fast-fault output, persistent storage and DB
+   reader are shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. The filter configurators are in the host, next to
+   the stage they fill. The RTD reactive temperature comes from
+   TST:SATT-RTD in plc-cc-motion.json. *)
+PROGRAM PRG_SATT
+VAR
+    {attribute 'TcNcAxis' := 'PRG_SATT_Y'}
+    axRef         : AXIS_REF;
+    fbMotor       : FB_MotionStageNC(
+        AxisRef                := axRef,
+        iPersistentDataStorage := GVL_PRG.fbPDS,
+        sName                  := 'SATTINIT'
+    );
+    aiMotionStage : ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage := [fbMotor];
+
+    astPositionState : ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                         OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbHost : FB_SATTHost(
+        aiMotionStage    := aiMotionStage,
+        astPositionState := astPositionState,
+        bFileReaderBusy  := MOTION_GVL.fbPmpsFileReader.bBusy,
+        bBridgeOK        := GVL_PRG.bBridgeOK,
+        fbFFHWO          := GVL_PRG.fbFastFaultOutput1,
+        sDeviceName      := 'TST:SATT',
+        RTDPMPSState     := 'TST:SATT-RTD'
+    );
+
+    stDefault : ST_PositionState := (
+        fDelta        := 0.2,
+        bMoveOk       := TRUE,
+        bValid        := TRUE,
+        bUseRawCounts := FALSE
+    );
+    afbStateDefaults : ARRAY[1..9] OF FB_CC_StateDefaultsConfig[
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.OUT],     stDefault := stDefault, sName := 'Out',     fPosition := 10),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER1], stDefault := stDefault, sName := 'Filter1', fPosition := 20),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER2], stDefault := stDefault, sName := 'Filter2', fPosition := 30),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER3], stDefault := stDefault, sName := 'Filter3', fPosition := 40),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER4], stDefault := stDefault, sName := 'Filter4', fPosition := 50),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER5], stDefault := stDefault, sName := 'Filter5', fPosition := 60),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER6], stDefault := stDefault, sName := 'Filter6', fPosition := 70),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER7], stDefault := stDefault, sName := 'Filter7', fPosition := 80),
+        (stPositionState := astPositionState[1][E_SXR_SATT_Position.FILTER8], stDefault := stDefault, sName := 'Filter8', fPosition := 90)
+    ];
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    fbMotor.SetModeEnableLimits(
+        LimBackward    := TRUE,
+        LimForward     := TRUE,
+        HomeEnable     := FALSE,
+        BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+        EnableMode     := E_StageEnableMode.DURING_MOTION,
+        HomeMode       := E_EpicsHomeCmd.NONE,
+        UserEnable     := TRUE,
+        HardwareEnable := TRUE
+    );
+    fbMotor.SetVelocity(
+        Velocity := 15.5
+    );
+    fbMotor.RestoreMotionParams      := FALSE;
+    fbMotor.DoNotRestoreNcParameters := TRUE;
+    bFirstScan := FALSE;
+END_IF
+
+FOR i := 1 TO 9 DO
+    afbStateDefaults[i]();
+END_FOR
+
+fbHost();
+fbMotor();
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,7 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_XPIM_FilterWheel" Id="{269d03b7-f105-4687-8d05-7c6607bee2e8}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_XPIM_FilterWheel
+    <Declaration><![CDATA[(* Filter wheel serial communication over an EL6 terminal. The terminal buffers
+   are mandatory: FB_Init binds them as references, and CallAfterInitFilterWheel
+   re-binds them when a host FB builds this FB before it holds its own
+   references. The body does nothing while they are unbound. *)
+FUNCTION_BLOCK FB_XPIM_FilterWheel
 VAR_INPUT
     bExecute: BOOL;
 
@@ -33,11 +37,13 @@ VAR_OUTPUT
     sLastError: STRING;
     sErrorTS: STRING;
 END_VAR
-VAR_IN_OUT
-    stIn_EL6: EL6inData22B;
-    stOut_EL6: EL6outData22B;
-END_VAR
 VAR
+    // EL6 terminal buffers, caller-owned and linked to the terminal IO.
+    {attribute 'no_copy'}
+    stIn_EL6: REFERENCE TO EL6inData22B;
+    {attribute 'no_copy'}
+    stOut_EL6: REFERENCE TO EL6outData22B;
+
     {attribute 'pytmc' := '
         pv: RAW
     '}
@@ -49,7 +55,12 @@ VAR
     bStopOnErr: BOOL;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbCom.sSendSuffix := '$R';
+      <ST><![CDATA[IF NOT __ISVALIDREF(stIn_EL6)
+   OR NOT __ISVALIDREF(stOut_EL6) THEN
+    RETURN;
+END_IF
+
+fbCom.sSendSuffix := '$R';
 fbCom.sRecvSuffix := '$R';
 
 IF bExecute AND nStep = 0 THEN
@@ -141,5 +152,39 @@ IF NOT bError AND
     nStep := 50;
 END_IF]]></ST>
     </Implementation>
+    <Method Name="CallAfterInitFilterWheel" Id="{9e174680-c13b-47c5-b756-0b51658b12b8}">
+      <Declaration><![CDATA[(* Binds the EL6 terminal buffers. FB_Init calls it with its arguments, and a
+   host FB calls it again from its own CallAfterInit, because a nested FB is
+   built before the host's references are bound. *)
+METHOD CallAfterInitFilterWheel
+VAR_INPUT
+    stIn_EL6  : REFERENCE TO EL6inData22B;
+    stOut_EL6 : REFERENCE TO EL6outData22B;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stIn_EL6  REF= stIn_EL6;
+THIS^.stOut_EL6 REF= stOut_EL6;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{2480f834-c740-4b61-a19c-bebec9ec78d1}">
+      <Declaration><![CDATA[(* Provides the EL6 terminal buffers and forwards them to
+   CallAfterInitFilterWheel. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    stIn_EL6     : REFERENCE TO EL6inData22B;
+    stOut_EL6    : REFERENCE TO EL6outData22B;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitFilterWheel(
+    stIn_EL6  := stIn_EL6,
+    stOut_EL6 := stOut_EL6
+);]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>

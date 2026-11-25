@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_XPIM_Core" Id="{265f7e55-fbcd-4922-b984-8435ff7f65b7}" SpecialFunc="None">
+    <Declaration><![CDATA[(* XTES Profile Imager (XPIM) core, an abstract base by convention: thin
+   ND-framework state-mover wrapper that holds only references, interfaces, the
+   flow switch and fbStates. The filter wheel, the Opal camera and the EL6
+   terminal buffers belong to FB_XPIM, so an imager without them, such as the
+   IM2K0 variant, derives this core directly. The state bridge is here as REFERENCE TO UINT
+   (eEnumSetRef and eEnumGetRef) and the body runs on it, but the enum
+   variables, the state storage and the state names belong to the derived type
+   (FB_XPIM), which passes them in. The derived body calls SUPER^() to run this
+   logic, so the FB cannot carry no_explicit_call. State 1 is OUT.
+
+   A derived type supplies everything that depends on the state list:
+     - eEnumSet and eEnumGet, the device enum (UINT base, OUT = 1, then the
+       targets) with the MMS:STATE:SET and MMS:STATE:GET pytmc pragmas, so the
+       EPICS state menu comes from that enum;
+     - afbStateDefaults, one FB_CC_InternalStateConfig per state, which writes
+       the per-state sName and fDelta;
+     - an FB_Init that repeats the inputs below and binds eEnumSetRef and
+       eEnumGetRef to the enum variables, and a CallAfterInit that calls the
+       configurators. The base CallAfterInit runs on its own through the
+       call_after_init attribute.
+   FB_XPIM is the library derived type (E_XPIM_States).
+
+   Caller-owned dependencies are injected through FB_Init as REFERENCE TO and
+   forwarded to fbStates in CallAfterInit. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_XPIM_Core
+VAR
+    {attribute 'pytmc' := 'pv: FSW'}
+    fbFlowSwitch : FB_XTES_Flowswitch;
+
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    {attribute 'no_copy'}
+    fbFFHWO               : REFERENCE TO FB_HardwareFFOutput;
+    {attribute 'no_copy'}
+    fbArbiter             : REFERENCE TO FB_Arbiter;
+    sDeviceName           : STRING;
+    sTransitionKey        : STRING;
+    bEnableMotion         : BOOL := TRUE;
+    bEnableBeamParams     : BOOL;
+    bEnablePositionLimits : BOOL;
+    bReadDBNow            : BOOL;
+    bFileReaderBusy       : REFERENCE TO BOOL;
+    bFileReaderError      : REFERENCE TO BOOL;
+
+    {attribute 'no_copy'}
+    eEnumSetRef           : REFERENCE TO UINT;
+    {attribute 'no_copy'}
+    eEnumGetRef           : REFERENCE TO UINT;
+
+    {attribute 'pytmc' := 'pv: MMS'}
+    fbStates : FB_PositionStatePMPSND(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState,
+        nActiveMotorCount     := nStateMotorCount,
+        eEnumSet              := eEnumSetRef,
+        eEnumGet              := eEnumGetRef,
+        bEnableMotion         := bEnableMotion,
+        eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+        bEnableBeamParams     := bEnableBeamParams,
+        bEnablePositionLimits := bEnablePositionLimits,
+        bReadDBNow            := bReadDBNow,
+        bFileReaderBusy       := bFileReaderBusy,
+        bFileReaderError      := bFileReaderError,
+        fbFFHWO               := fbFFHWO,
+        fbArbiter             := fbArbiter,
+        sDeviceName           := sDeviceName,
+        sTransitionKey        := sTransitionKey
+    );
+END_VAR
+VAR_OUTPUT
+    // The PMPS database lookup associated with the current position state.
+    stDbStateParams: ST_DbStateParams;
+END_VAR
+VAR CONSTANT
+    (* Number of motors the state mover drives. Every device here has one state
+       motor, in slot 1; the code around fbStates assumes it. *)
+    nStateMotorCount : UINT := 1;
+    (* XPIM-wide default tolerance for state in-position detection. Derived
+       types pass it to their afbStateDefaults. *)
+    FDELTA_DEFAULT : LREAL := 2;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(fbArbiter)
+   OR NOT __ISVALIDREF(eEnumSetRef)
+   OR NOT __ISVALIDREF(eEnumGetRef) THEN
+    RETURN;
+END_IF
+
+fbStates(
+    stDbStateParams => stDbStateParams
+);
+
+fbFlowSwitch();]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{2af9fe11-05cb-4e0a-bec3-8d08a2278eca}">
+      <Declaration><![CDATA[(* Auto-fired after FB_Init. Wires fbStates through CallAfterInitCore. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.CallAfterInitCore();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CallAfterInitCore" Id="{f0da11c4-8033-4e74-a04c-74d08f76de0f}">
+      <Declaration><![CDATA[(* Wires fbStates with the references this FB holds, through
+   CallAfterInitStateMover / CallAfterInitPMPS, because fbStates' inline-init
+   ran first and forwarded nil refs. Does nothing while the essential refs are
+   still nil. CallAfterInit calls it. A derived type that was re-wired after its
+   host FB's CallAfterInit calls it again through SUPER^. *)
+METHOD CallAfterInitCore
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(astPositionState)
+   OR NOT __ISVALIDREF(eEnumSetRef)
+   OR NOT __ISVALIDREF(eEnumGetRef) THEN
+    RETURN;
+END_IF
+
+THIS^.fbStates.CallAfterInitStateMover(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    nActiveMotorCount     := nStateMotorCount,
+    eEnumSet              := eEnumSetRef,
+    eEnumGet              := eEnumGetRef,
+    bEnableMotion         := bEnableMotion,
+    eMotionRequestPolicy  := E_MotionRequestPolicy.INTERRUPT,
+);
+
+THIS^.fbStates.CallAfterInitPMPS(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState,
+    bEnableBeamParams     := bEnableBeamParams,
+    bEnablePositionLimits := bEnablePositionLimits,
+    bReadDBNow            := bReadDBNow,
+    bFileReaderBusy       := bFileReaderBusy,
+    bFileReaderError      := bFileReaderError,
+    fbFFHWO               := fbFFHWO,
+    fbArbiter             := fbArbiter,
+    sDeviceName           := sDeviceName,
+    sTransitionKey        := sTransitionKey
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{c197af5d-9160-4a6d-9c7e-2d0366a89b9c}">
+      <Declaration><![CDATA[(* Stores FB_Init inputs into instance fields; every non-value input is
+   REFERENCE TO, REF= bound for the FB lifetime. fbStates inline-init
+   captured these params at construction, so this records the same refs
+   on THIS^ for body use and live caller writes. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains           : BOOL;
+    bInCopyCode            : BOOL;
+    aiMotionStage          : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState       : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+    fbFFHWO                : REFERENCE TO FB_HardwareFFOutput;
+    fbArbiter              : REFERENCE TO FB_Arbiter;
+    sDeviceName            : STRING;
+    sTransitionKey         : STRING;
+    bEnableBeamParams      : BOOL;
+    bEnablePositionLimits  : BOOL;
+    bReadDBNow             : BOOL;
+    bFileReaderBusy        : REFERENCE TO BOOL;
+    bFileReaderError       : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;
+THIS^.fbFFHWO          REF= fbFFHWO;
+THIS^.fbArbiter        REF= fbArbiter;
+THIS^.sDeviceName      := sDeviceName;
+THIS^.sTransitionKey   := sTransitionKey;
+THIS^.bEnableBeamParams     := bEnableBeamParams;
+THIS^.bEnablePositionLimits := bEnablePositionLimits;
+THIS^.bReadDBNow            := bReadDBNow;
+THIS^.bFileReaderBusy       REF= bFileReaderBusy;
+THIS^.bFileReaderError      REF= bFileReaderError;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ReferencesValid" Id="{83203ceb-ba83-475c-8df0-f23687227d76}">
+      <Declaration><![CDATA[(* TRUE once every reference the device needs is bound. A derived body checks it
+   after SUPER^() before it ticks sub-FBs of its own. *)
+METHOD PROTECTED ReferencesValid : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ReferencesValid := __ISVALIDREF(aiMotionStage)
+                AND __ISVALIDREF(astPositionState)
+                AND __ISVALIDREF(fbFFHWO)
+                AND __ISVALIDREF(fbArbiter)
+                AND __ISVALIDREF(eEnumSetRef)
+                AND __ISVALIDREF(eEnumGetRef);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

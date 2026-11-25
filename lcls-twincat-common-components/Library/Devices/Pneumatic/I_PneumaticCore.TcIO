@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <Itf Name="I_PneumaticCore" Id="{ffa8e96f-fadc-4004-a845-6738863ddf56}">
+    <Declaration><![CDATA[(*
+    What FB_PneumaticActuator and FB_MPA share: the position state from the two limit switches,
+    and the timeout of an output that does not reach its limit switch.
+*)
+INTERFACE I_PneumaticCore
+]]></Declaration>
+    <Property Name="State" Id="{05fc219d-f37b-4cfd-98a7-0424a2548a3d}">
+      <Declaration><![CDATA[PROPERTY State : E_PnuematicActuatorPositionState]]></Declaration>
+      <Get Name="Get" Id="{6e1f9b34-27a8-4d5c-b0e3-8a7c2d9f1b46}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="InsertTimedOut" Id="{c8e41a07-6d2b-4f93-a5b0-3e97d1f60c28}">
+      <Declaration><![CDATA[PROPERTY InsertTimedOut : BOOL]]></Declaration>
+      <Get Name="Get" Id="{51f0b9d3-7a84-4c6e-b2d5-0e8a3c971f46}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="RetractTimedOut" Id="{2f6d83b1-94e0-4a7c-8d15-b7c3e0a92f64}">
+      <Declaration><![CDATA[PROPERTY RetractTimedOut : BOOL]]></Declaration>
+      <Get Name="Get" Id="{9b04e7c5-1d38-4f2a-a6c9-84e1f5b03d72}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="InsertTimeoutElapsed" Id="{5941fd68-877e-4429-bc96-49fae16c8b15}">
+      <Declaration><![CDATA[PROPERTY InsertTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{82cadbff-b216-4255-a475-ece2e199a942}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="RetractTimeoutElapsed" Id="{a5ee096b-328a-4318-9ae0-00a4c6ca1216}">
+      <Declaration><![CDATA[PROPERTY RetractTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{94d624cb-6114-44e3-99ac-1ca3de2e759e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITSHost" Id="{9d78cd64-d5ce-4dd4-b4ea-df31686859e7}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_SLITS, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_SLITS was
+   constructed from them, so the nested FB_SLITS first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbSlits.CallAfterInitSLITS. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SLITSHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    {attribute 'no_copy'}
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+
+    fbSlits : FB_SLITS(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName   := sDeviceName,
+        bBridgeOK     := bBridgeOK
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSlits(
+    bMoveOk := TRUE
+);
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{3becbc67-0808-4aa5-902e-a1c04713a270}">
+      <Declaration><![CDATA[(* The nested fbSlits ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.CallAfterInitSLITS(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName   := sDeviceName,
+    bBridgeOK     := bBridgeOK
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{ceedf98b-0611-48c2-bc41-26bc9d29717e}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   := sDeviceName;
+THIS^.bBridgeOK     REF= bBridgeOK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetEncoderOffsets" Id="{0d2b2f34-e92f-4259-a79f-10397330308f}">
+      <Declaration><![CDATA[(* Sets the per-blade encoder zero-offsets of the nested slit, which are inputs
+   of the slit that only this host can reach. *)
+METHOD SetEncoderOffsets
+VAR_INPUT
+    Top    : REAL;
+    Bottom : REAL;
+    North  : REAL;
+    South  : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.rEncoderOffsetTop    := Top;
+fbSlits.rEncoderOffsetBottom := Bottom;
+fbSlits.rEncoderOffsetNorth  := North;
+fbSlits.rEncoderOffsetSouth  := South;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAperture" Id="{9176a948-f81a-4565-9216-c43b95970663}">
+      <Declaration><![CDATA[(* Requests a gap and a centre from the nested slit, as an EPICS write would. *)
+METHOD SetAperture
+VAR_INPUT
+    SizeX   : REAL;
+    SizeY   : REAL;
+    CenterX : REAL;
+    CenterY : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.SetApertureRequest(
+    ApertureSizeX := SizeX,
+    ApertureSizeY := SizeY,
+    CenterX       := CenterX,
+    CenterY       := CenterY
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckPMPS" Id="{d423d1e2-02f2-4037-9297-e490eed9053a}">
+      <Declaration><![CDATA[(* Runs the legacy PMPS aperture check of the nested slit, as a scatter-slit
+   program does each cycle. Index is the slit's slot in astApertures. *)
+METHOD CheckPMPS
+VAR_INPUT
+    Index : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.M_CheckPMPS(
+    index := Index
+);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

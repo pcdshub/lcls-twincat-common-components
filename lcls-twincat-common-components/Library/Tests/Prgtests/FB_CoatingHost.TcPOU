@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_CoatingHost" Id="{e30a49fd-c16e-4d35-bb10-fb19ecff98f4}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_Coating_States_NoPMPS, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_Coating_States_NoPMPS was
+   constructed from them, so the nested FB_Coating_States_NoPMPS first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbCoating.CallAfterInitCoating. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_CoatingHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    {attribute 'no_copy'}
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+
+    fbCoating : FB_Coating_States_NoPMPS(
+        aiMotionStage         := aiMotionStage,
+        astPositionState      := astPositionState
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbCoating();
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{1fa2eb3b-2715-4b50-9aca-18da0d5e4003}">
+      <Declaration><![CDATA[(* The nested fbCoating ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbCoating.CallAfterInitCoating(
+    aiMotionStage         := aiMotionStage,
+    astPositionState      := astPositionState
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{8ae5510e-12e6-46aa-9caa-e2c2bd7ce386}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    aiMotionStage         : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS] OF I_MotionStage;
+    astPositionState      : REFERENCE TO ARRAY[1..MotionConstants.MAX_STATE_MOTORS]
+                                            OF ARRAY[1..GeneralConstants.MAX_STATES] OF ST_PositionState;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage    REF= aiMotionStage;
+THIS^.astPositionState REF= astPositionState;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

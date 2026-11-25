@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITSPOWERHost" Id="{8c1b91a6-ca7f-4a02-bc9c-34a7fd009c26}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Test host that nests an FB_SLITS_POWER, the way a device FB would. Its references and
+   values are bound in its own FB_Init, which runs after the nested FB_SLITS_POWER was
+   constructed from them, so the nested FB_SLITS_POWER first sees nil references and
+   empty values. CallAfterInit re-supplies all of them through
+   fbSlits.CallAfterInitPOWER. *)
+{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_SLITSPOWERHost
+VAR
+    {attribute 'no_copy'}
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    {attribute 'no_copy'}
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
+    {attribute 'no_copy'}
+    bFileReaderBusy : REFERENCE TO BOOL;
+    fApertureMargin : REAL;
+    bBridgeConfirmedBad : REFERENCE TO BOOL;
+
+    fbSlits : FB_SLITS_POWER(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := sDeviceName,
+        bBridgeOK       := bBridgeOK,
+        sPmpsState      := sPmpsState,
+        bFileReaderBusy := bFileReaderBusy,
+        fApertureMargin := fApertureMargin,
+        bBridgeConfirmedBad := bBridgeConfirmedBad
+    );
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbSlits(
+    bMoveOk := TRUE
+);
+]]></ST>
+    </Implementation>
+    <Method Name="CallAfterInit" Id="{775acb7f-9335-40e0-87d6-c4b0615fc8dc}">
+      <Declaration><![CDATA[(* The nested fbSlits ran its own CallAfterInit before this one, with nil
+   references. Re-supplies them and redoes its wiring. *)
+{attribute 'call_after_init'}
+METHOD CallAfterInit
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.CallAfterInitPOWER(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName     := sDeviceName,
+    bBridgeOK       := bBridgeOK,
+    sPmpsState      := sPmpsState,
+    bFileReaderBusy := bFileReaderBusy,
+    fApertureMargin := fApertureMargin,
+    bBridgeConfirmedBad := bBridgeConfirmedBad
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_Init" Id="{d5efdb8b-7ef0-46ca-b164-f00bbe6ac779}">
+      <Declaration><![CDATA[(* Stores the injected references and values in this FB's fields. *)
+{attribute 'analysis' := '-33'}
+METHOD FB_Init : BOOL
+VAR_INPUT
+    bInitRetains : BOOL;
+    bInCopyCode  : BOOL;
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+    fApertureMargin : REAL;
+    bBridgeConfirmedBad : REFERENCE TO BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   := sDeviceName;
+THIS^.bBridgeOK     REF= bBridgeOK;
+THIS^.sPmpsState    := sPmpsState;
+THIS^.bFileReaderBusy REF= bFileReaderBusy;
+THIS^.fApertureMargin := fApertureMargin;
+THIS^.bBridgeConfirmedBad REF= bBridgeConfirmedBad;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetEncoderOffsets" Id="{a56e5279-5ec1-4a86-b991-4ef261d76613}">
+      <Declaration><![CDATA[(* Sets the per-blade encoder zero-offsets of the nested slit, which are inputs
+   of the slit that only this host can reach. *)
+METHOD SetEncoderOffsets
+VAR_INPUT
+    Top    : REAL;
+    Bottom : REAL;
+    North  : REAL;
+    South  : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.rEncoderOffsetTop    := Top;
+fbSlits.rEncoderOffsetBottom := Bottom;
+fbSlits.rEncoderOffsetNorth  := North;
+fbSlits.rEncoderOffsetSouth  := South;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAperture" Id="{e80bceeb-44da-43d5-a5fe-318e76c10592}">
+      <Declaration><![CDATA[(* Requests a gap and a centre from the nested slit, as an EPICS write would. *)
+METHOD SetAperture
+VAR_INPUT
+    SizeX   : REAL;
+    SizeY   : REAL;
+    CenterX : REAL;
+    CenterY : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.SetApertureRequest(
+    ApertureSizeX := SizeX,
+    ApertureSizeY := SizeY,
+    CenterX       := CenterX,
+    CenterY       := CenterY
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetTrustedAperture" Id="{cd585572-2ee4-43ac-908b-f7be0ffbdff3}">
+      <Declaration><![CDATA[(* Stands in for the PMPS aperture the arbiter would send: sets the request that
+   becomes the trusted limit, so a larger gap request is accepted. *)
+METHOD SetTrustedAperture
+VAR_INPUT
+    Width  : REAL;
+    Height : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.SetAptWidthHeight(
+    Width  := Width,
+    Height := Height
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="UpdatePMPS" Id="{fc8088b8-38f2-4646-9a55-60052e6f7a17}">
+      <Declaration><![CDATA[(* Runs the PMPS aperture reconciliation of the nested power slit, as a power-slit
+   program does each cycle. Index is the slit's slot in astApertures. *)
+METHOD UpdatePMPS
+VAR_INPUT
+    Index : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbSlits.M_UpdatePMPS(
+    index := Index
+);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

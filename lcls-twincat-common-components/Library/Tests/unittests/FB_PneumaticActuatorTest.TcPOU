@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PneumaticActuatorTest" Id="{0e7cee52-4287-4e66-9736-9f7e1e4b38f7}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+FUNCTION_BLOCK FB_PneumaticActuatorTest EXTENDS FB_TestSuite
+VAR
+    afbFFHWO : ARRAY[1..8] OF FB_HardwareFFOutput;
+    fbSutState : FB_PneumaticActuator(fbFFHWO := afbFFHWO[1]);
+    fbSutCommand : FB_PneumaticActuator(fbFFHWO := afbFFHWO[2]);
+    fbSutExclusion : FB_PneumaticActuator(fbFFHWO := afbFFHWO[3]);
+    fbSutMps : FB_PneumaticActuator(fbFFHWO := afbFFHWO[4]);
+    fbSutSingle : FB_PneumaticActuator(fbFFHWO := afbFFHWO[5]);
+    fbSutDouble : FB_PneumaticActuator(fbFFHWO := afbFFHWO[6]);
+    fbSutInsertTimeout : FB_PneumaticActuator(fbFFHWO := afbFFHWO[7]);
+    fbSutRetractTimeout : FB_PneumaticActuator(fbFFHWO := afbFFHWO[8]);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[GivenLimitSwitchCombinationsThenStateIsDerived();
+GivenInsertAndRetractCommandsThenOutputsFollowAndDoneBusyUpdate();
+GivenInsertAndRetractTogetherThenBothAreCancelled();
+GivenLimitSwitchStatesThenMpsOkAndFastFaultInputFollow();
+GivenInsertedAfterLatchThenSingleActingHoldsAndDoubleActingReleases();
+GivenNoLimitSwitchThenInsertAndRetractTimeoutSetError();]]></ST>
+    </Implementation>
+    <Method Name="GivenLimitSwitchCombinationsThenStateIsDerived" Id="{50014a9b-c8ab-4764-a40b-6583061f8e49}">
+      <Declaration><![CDATA[(*
+    All four combinations of the inserted and retracted limit switches.
+    Both active is INVALID, only retracted is RETRACTED, only inserted is
+    INSERTED, neither is MOVING.
+*)
+METHOD PRIVATE GivenLimitSwitchCombinationsThenStateIsDerived
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutState();
+
+fbSutState.InsertedLS := TRUE;
+fbSutState.RetractedLS := TRUE;
+fbSutState();
+AssertTrue(
+    Condition := fbSutState.State = E_PnuematicActuatorPositionState.INVALID,
+    Message := 'Both limit switches must give INVALID');
+
+fbSutState.InsertedLS := FALSE;
+fbSutState.RetractedLS := TRUE;
+fbSutState();
+AssertTrue(
+    Condition := fbSutState.State = E_PnuematicActuatorPositionState.RETRACTED,
+    Message := 'Retracted switch only must give RETRACTED');
+
+fbSutState.InsertedLS := TRUE;
+fbSutState.RetractedLS := FALSE;
+fbSutState();
+AssertTrue(
+    Condition := fbSutState.State = E_PnuematicActuatorPositionState.INSERTED,
+    Message := 'Inserted switch only must give INSERTED');
+
+fbSutState.InsertedLS := FALSE;
+fbSutState.RetractedLS := FALSE;
+fbSutState();
+AssertTrue(
+    Condition := fbSutState.State = E_PnuematicActuatorPositionState.MOVING,
+    Message := 'No limit switch must give MOVING');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertAndRetractCommandsThenOutputsFollowAndDoneBusyUpdate" Id="{574595a6-356d-4f9f-bff2-4fb121c807c0}">
+      <Declaration><![CDATA[(*
+    Insert drives only the insert output, Busy stays TRUE until the inserted
+    switch is reached and Done then goes TRUE. Retract mirrors it. A missing
+    permission keeps the output off.
+*)
+METHOD PRIVATE GivenInsertAndRetractCommandsThenOutputsFollowAndDoneBusyUpdate
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutCommand.ibInsertOK := TRUE;
+fbSutCommand.ibRetractOK := TRUE;
+fbSutCommand.ibSingleCntrl := TRUE;
+fbSutCommand.ibCntrlHold := TRUE;
+fbSutCommand.InsertedLS := FALSE;
+fbSutCommand.RetractedLS := TRUE;
+fbSutCommand();
+
+fbSutCommand.Insert();
+fbSutCommand();
+AssertTrue(Condition := fbSutCommand.InsertOutput, Message := 'Insert output must be on after Insert()');
+AssertFalse(Condition := fbSutCommand.RetractOutput, Message := 'Retract output must be off after Insert()');
+AssertTrue(Condition := fbSutCommand.Busy, Message := 'Busy must be TRUE while retracted and inserting');
+AssertFalse(Condition := fbSutCommand.Done, Message := 'Done must be FALSE before the inserted switch');
+
+fbSutCommand.RetractedLS := FALSE;
+fbSutCommand();
+AssertTrue(Condition := fbSutCommand.Busy, Message := 'Busy must be TRUE while moving');
+
+fbSutCommand.InsertedLS := TRUE;
+fbSutCommand();
+AssertTrue(Condition := fbSutCommand.Done, Message := 'Done must be TRUE once inserted');
+AssertFalse(Condition := fbSutCommand.Busy, Message := 'Busy must be FALSE once inserted');
+AssertTrue(Condition := fbSutCommand.InsertOutput, Message := 'Single acting hold keeps the insert output on');
+
+fbSutCommand.InsertCmd := FALSE;
+fbSutCommand();
+fbSutCommand.Retract();
+fbSutCommand();
+AssertTrue(Condition := fbSutCommand.RetractOutput, Message := 'Retract output must be on after Retract()');
+AssertFalse(Condition := fbSutCommand.InsertOutput, Message := 'Insert output must be off after Retract()');
+
+fbSutCommand.ibRetractOK := FALSE;
+fbSutCommand();
+AssertFalse(Condition := fbSutCommand.RetractOutput, Message := 'Retract output must be off without permission');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertAndRetractTogetherThenBothAreCancelled" Id="{36935ce6-0956-4598-aa70-99c82eb4eda8}">
+      <Declaration><![CDATA[(*
+    Requesting insert and retract at the same time clears both requests and
+    leaves both outputs off, including when one output is already on.
+*)
+METHOD PRIVATE GivenInsertAndRetractTogetherThenBothAreCancelled
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutExclusion.ibInsertOK := TRUE;
+fbSutExclusion.ibRetractOK := TRUE;
+fbSutExclusion.ibSingleCntrl := TRUE;
+fbSutExclusion.ibCntrlHold := TRUE;
+fbSutExclusion();
+
+fbSutExclusion.Insert();
+fbSutExclusion.Retract();
+fbSutExclusion();
+AssertFalse(Condition := fbSutExclusion.InsertOutput, Message := 'Insert output must be off with both requests');
+AssertFalse(Condition := fbSutExclusion.RetractOutput, Message := 'Retract output must be off with both requests');
+AssertFalse(Condition := fbSutExclusion.InsertCmd, Message := 'Insert request must be cleared');
+AssertFalse(Condition := fbSutExclusion.RetractCmd, Message := 'Retract request must be cleared');
+
+fbSutExclusion.Retract();
+fbSutExclusion();
+AssertTrue(Condition := fbSutExclusion.RetractOutput, Message := 'Retract output must be on alone');
+
+fbSutExclusion.Insert();
+fbSutExclusion();
+AssertFalse(Condition := fbSutExclusion.InsertOutput, Message := 'Insert output must stay off while retracting');
+AssertFalse(Condition := fbSutExclusion.RetractOutput, Message := 'Retract output must drop when insert is requested');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenLimitSwitchStatesThenMpsOkAndFastFaultInputFollow" Id="{a9f321df-1266-442f-bf57-9c0cdd604916}">
+      <Declaration><![CDATA[(*
+    MPS OK is TRUE only when RETRACTED or INSERTED. The same value drives the
+    fast fault OK input.
+*)
+METHOD PRIVATE GivenLimitSwitchStatesThenMpsOkAndFastFaultInputFollow
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+fbSutMps();
+
+fbSutMps.InsertedLS := FALSE;
+fbSutMps.RetractedLS := TRUE;
+fbSutMps();
+AssertTrue(Condition := fbSutMps.MpsOk, Message := 'MPS OK must be TRUE when retracted');
+AssertTrue(Condition := fbSutMps.fbFF.i_xOK, Message := 'Fast fault input must be OK when retracted');
+
+fbSutMps.InsertedLS := TRUE;
+fbSutMps.RetractedLS := FALSE;
+fbSutMps();
+AssertTrue(Condition := fbSutMps.xMPS_OK, Message := 'MPS OK must be TRUE when inserted');
+AssertTrue(Condition := fbSutMps.fbFF.i_xOK, Message := 'Fast fault input must be OK when inserted');
+
+fbSutMps.InsertedLS := FALSE;
+fbSutMps.RetractedLS := FALSE;
+fbSutMps();
+AssertFalse(Condition := fbSutMps.MpsOk, Message := 'MPS OK must be FALSE when moving');
+AssertFalse(Condition := fbSutMps.fbFF.i_xOK, Message := 'Fast fault input must fault when moving');
+
+fbSutMps.InsertedLS := TRUE;
+fbSutMps.RetractedLS := TRUE;
+fbSutMps();
+AssertFalse(Condition := fbSutMps.MpsOk, Message := 'MPS OK must be FALSE when invalid');
+AssertFalse(Condition := fbSutMps.fbFF.i_xOK, Message := 'Fast fault input must fault when invalid');
+
+TEST_FINISHED();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenInsertedAfterLatchThenSingleActingHoldsAndDoubleActingReleases" Id="{48751751-87bb-41bb-976c-d9fc33ccc009}">
+      <Declaration><![CDATA[(*
+    Both actuators are inserted. After the limit switch latch time the single
+    acting one (hold TRUE) keeps its insert output on and the double acting one
+    (single FALSE, hold FALSE) drops it.
+*)
+METHOD PRIVATE GivenInsertedAfterLatchThenSingleActingHoldsAndDoubleActingReleases
+VAR_INST
+    nStep : INT;
+    fbWait : TON;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+CASE nStep OF
+    0:
+        fbSutSingle.LimitSwitchLatchDuration := T#20MS;
+        fbSutSingle.ibInsertOK := TRUE;
+        fbSutSingle.ibRetractOK := TRUE;
+        fbSutSingle.ibSingleCntrl := TRUE;
+        fbSutSingle.ibCntrlHold := TRUE;
+        fbSutDouble.LimitSwitchLatchDuration := T#20MS;
+        fbSutDouble.ibInsertOK := TRUE;
+        fbSutDouble.ibRetractOK := TRUE;
+        fbSutDouble.ibSingleCntrl := FALSE;
+        fbSutDouble.ibCntrlHold := FALSE;
+        nStep := 1;
+
+    1:
+        fbSutSingle.Insert();
+        fbSutSingle.InsertedLS := TRUE;
+        fbSutDouble.Insert();
+        fbSutDouble.InsertedLS := TRUE;
+        nStep := 2;
+
+    2:
+        IF fbWait.Q THEN
+            AssertTrue(Condition := fbSutSingle.InsertOutput, Message := 'Single acting must hold the insert output');
+            AssertFalse(Condition := fbSutDouble.InsertOutput, Message := 'Double acting must release the insert output after the latch');
+            AssertTrue(Condition := fbSutSingle.Done, Message := 'Single acting must be done');
+            AssertTrue(Condition := fbSutDouble.Done, Message := 'Double acting must be done');
+            nStep := 3;
+        END_IF
+END_CASE
+
+fbSutSingle();
+fbSutDouble();
+fbWait(IN := nStep >= 2, PT := T#200MS);
+
+IF nStep = 3 THEN
+    TEST_FINISHED();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GivenNoLimitSwitchThenInsertAndRetractTimeoutSetError" Id="{04d84336-f356-4cd9-97d4-b020572edbc9}">
+      <Declaration><![CDATA[(*
+    An output that stays on without reaching its limit switch sets bError with
+    the insert or retract timeout message. bReset clears the error.
+*)
+METHOD PRIVATE GivenNoLimitSwitchThenInsertAndRetractTimeoutSetError
+VAR_INST
+    nStep : INT;
+    fbWait : TON;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST(__POUNAME());
+
+CASE nStep OF
+    0:
+        fbSutInsertTimeout.TimeoutDuration := T#20MS;
+        fbSutInsertTimeout.ibInsertOK := TRUE;
+        fbSutInsertTimeout.ibRetractOK := TRUE;
+        fbSutRetractTimeout.TimeoutDuration := T#20MS;
+        fbSutRetractTimeout.ibInsertOK := TRUE;
+        fbSutRetractTimeout.ibRetractOK := TRUE;
+        nStep := 1;
+
+    1:
+        fbSutInsertTimeout.Insert();
+        fbSutRetractTimeout.Retract();
+        nStep := 2;
+
+    2:
+        IF fbWait.Q THEN
+            AssertTrue(Condition := fbSutInsertTimeout.Error, Message := 'Insert timeout must set the error');
+            AssertEquals_STRING(
+                Expected := 'Actuator insert timeout',
+                Actual := fbSutInsertTimeout.ErrorMessage,
+                Message := 'Insert timeout message');
+            AssertTrue(Condition := fbSutRetractTimeout.Error, Message := 'Retract timeout must set the error');
+            AssertEquals_STRING(
+                Expected := 'Actuator retract timeout',
+                Actual := fbSutRetractTimeout.ErrorMessage,
+                Message := 'Retract timeout message');
+            fbSutInsertTimeout.ErrorReset := TRUE;
+            fbSutRetractTimeout.ErrorReset := TRUE;
+            nStep := 3;
+        END_IF
+
+    3:
+        AssertFalse(Condition := fbSutInsertTimeout.Error, Message := 'bReset must clear the insert error');
+        AssertFalse(Condition := fbSutRetractTimeout.Error, Message := 'bReset must clear the retract error');
+        nStep := 4;
+END_CASE
+
+fbSutInsertTimeout();
+fbSutRetractTimeout();
+fbWait(IN := nStep >= 2, PT := T#200MS);
+
+IF nStep = 4 THEN
+    TEST_FINISHED();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_SLITSTHERMAL" Id="{a316c4d5-3f14-436a-9c4c-2f3334c6d7a2}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Production-style program with a FB_SLITS_THERMAL nested in FB_SLITSTHERMALInitHost. It follows
+   PRG_ATMInit: the motor stages, the configurators where the device has them,
+   and the host. The arbiter, fast-fault output, persistent storage and DB
+   reader are shared in GVL_PRG and ticked by PRG_PMPS_PRE and PRG_PMPS_POST. The RTD limits come from TST:THERMAL in
+   plc-cc-motion.json. *)
+PROGRAM PRG_SLITSTHERMAL
+VAR
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Top'}
+    axTop : AXIS_REF;
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_Bottom'}
+    axBottom : AXIS_REF;
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_North'}
+    axNorth : AXIS_REF;
+    {attribute 'TcNcAxis' := 'PRG_SLITSTHERMAL_South'}
+    axSouth : AXIS_REF;
+
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axTop,    iPersistentDataStorage := GVL_PRG.fbPDS, sName := 'SLITSTHERMALTop'),
+        (AxisRef := axBottom, iPersistentDataStorage := GVL_PRG.fbPDS, sName := 'SLITSTHERMALBottom'),
+        (AxisRef := axNorth,  iPersistentDataStorage := GVL_PRG.fbPDS, sName := 'SLITSTHERMALNorth'),
+        (AxisRef := axSouth,  iPersistentDataStorage := GVL_PRG.fbPDS, sName := 'SLITSTHERMALSouth')
+    ];
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
+    ];
+
+    fbHost : FB_SLITSTHERMALHost(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := GVL_PRG.fbFastFaultOutput1,
+        sDeviceName     := 'TST:THERMAL',
+        bBridgeOK       := GVL_PRG.bBridgeOK,
+        sPmpsState      := 'TST:THERMAL-RTD',
+        bFileReaderBusy := MOTION_GVL.fbPmpsFileReader.bBusy
+    );
+
+    i          : UINT;
+    bFirstScan : BOOL := TRUE;
+    // TRUE once every blade stage is ready.
+    bAllReady  : BOOL;
+    // TRUE once the offsets and the request were sent.
+    bConfigured : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bFirstScan THEN
+    FOR i := 1 TO 4 DO
+        afbMotor[i].SetModeEnableLimits(
+            LimBackward    := TRUE,
+            LimForward     := TRUE,
+            HomeEnable     := FALSE,
+            BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+            EnableMode     := E_StageEnableMode.DURING_MOTION,
+            HomeMode       := E_EpicsHomeCmd.NONE,
+            UserEnable     := TRUE,
+            HardwareEnable := TRUE
+        );
+        afbMotor[i].SetVelocity(
+            Velocity := 15.5
+        );
+        afbMotor[i].RestoreMotionParams      := FALSE;
+        afbMotor[i].DoNotRestoreNcParameters := TRUE;
+    END_FOR
+    bFirstScan := FALSE;
+END_IF
+
+fbHost();
+
+FOR i := 1 TO 4 DO
+    afbMotor[i]();
+END_FOR
+
+// Send the request once every stage is ready; an earlier one is dropped.
+bAllReady := TRUE;
+FOR i := 1 TO 4 DO
+    bAllReady := bAllReady
+                 AND afbMotor[i].stMotionStatus.bStageReady
+                 AND NOT afbMotor[i].stMotionStatus.bError;
+END_FOR
+
+IF bAllReady AND NOT bConfigured THEN
+    fbHost.SetEncoderOffsets(
+        Top    := 16.1,
+        Bottom := -11.65,
+        North  := 12.45,
+        South  := -16.45
+    );
+    fbHost.SetAperture(
+        SizeX   := 4.0,
+        SizeY   := 6.0,
+        CenterX := 1.0,
+        CenterY := 2.0
+    );
+    bConfigured := TRUE;
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

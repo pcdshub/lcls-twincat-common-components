@@ -1,135 +1,64 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="FB_SLITS_POWER" Id="{f2a7b61c-c24f-40b8-8c2e-4d94fdfd3c86}" SpecialFunc="None">
-    <Declaration><![CDATA[(* PMPS-aware (power-class) variant of FB_SLITS. Adds 8 thermocouple RTDs,
-   a flow switch, a reactive-temp DB lookup (FB_JsonDocToSafeBP keyed by
-   sPmpsState) driving every RTD fault, an xPMPSMode toggle, and M_UpdatePMPS.
-   EXTENDS FB_SLITS; body calls SUPER^() for edge-trigger consumption then
-   drives M_CalculatePositions / M_Motion behind a REF nil-guard. *)
+    <Declaration><![CDATA[(* Power-class slit: FB_SLITS_THERMAL (motion, RTDs, flow switch, reactive
+   temperature fault) plus the PMPS arbiter aperture handshake. AptArrayReq
+   carries the arbiter aperture request in, AptArrayStatus reports the actual
+   geometry out. The request is sanitized into rTrustedAptWidth/Height
+   (bridge health, xOK, finite values) and gates operator gap requests through
+   the M_GapRequestAllowed override. M_PreCalculate refreshes that trusted
+   aperture at the start of every M_CalculatePositions. The integrator calls
+   M_UpdatePMPS each cycle for the status mirror, the fault and the snap-back.
+   FFO is shared with FB_SLITS.M_CheckPMPS, so call at most one of the two. *)
 {attribute 'analysis' := '-33'}
 {attribute 'call_after_init'}
-FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS
-
-VAR
+FUNCTION_BLOCK FB_SLITS_POWER EXTENDS FB_SLITS_THERMAL
+VAR_INPUT
     {attribute 'pytmc' := '
-    pv: MODE
-    field: ZNAM Local
-    field: ONAM PMPS
-    io: io
+        pv: MODE
+        field: ZNAM Local
+        field: ONAM PMPS
+        io: io
     '}
     xPMPSMode : BOOL := TRUE;
+END_VAR
+VAR
+    (* TRUE only once the bridge is confirmed bad, not while an unconfirmed
+       zero reading is still inside the debounce window. Gates the FFO trip. The
+       bBridgeConfirmedBad output of the FB_SubSysToArbiter_IO the caller runs, a
+       mandatory FB_Init input. *)
+    {attribute 'no_copy'}
+    bBridgeConfirmedBad : REFERENCE TO BOOL;
+    (* PMPS aperture IO (caller-mapped to terminals). *)
+    AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
+    AptArrayReq    AT %I* : ST_PMPS_Aperture_IO;
 
-    {attribute 'pytmc' := 'pv: FSW'}
-    fbFlowSwitch : FB_XTES_Flowswitch;
+    (* PMPS sanitizers for the raw AptArrayReq Width/Height. Each holds the last
+       trusted value while the bridge/xOK is untrusted or the reading is
+       NaN/Inf. Operator gap requests and the PMPS aperture limit use the
+       outputs below, so a stale or invalid request never loosens the limit. *)
+    fbTrustedAptWidth  : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    fbTrustedAptHeight : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    rTrustedAptWidth  : REAL;
+    rTrustedAptHeight : REAL;
+    // TRUE when bBridgeOK AND AptArrayReq.xOK.
+    bAptTrusted   : BOOL;
+    bOverAperture : BOOL;
+    rBadXOK       : R_TRIG;
 
-    {attribute 'pytmc' := 'pv: TOP:RTD:01'}
-    RTD_TOP_1 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: TOP:RTD:02'}
-    RTD_TOP_2 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: BOTTOM:RTD:01'}
-    RTD_Bottom_1 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: BOTTOM:RTD:02'}
-    RTD_Bottom_2 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: NORTH:RTD:01'}
-    RTD_North_1 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: NORTH:RTD:02'}
-    RTD_North_2 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: SOUTH:RTD:01'}
-    RTD_South_1 : FB_CC_TempSensor;
-    {attribute 'pytmc' := 'pv: SOUTH:RTD:02'}
-    RTD_South_2 : FB_CC_TempSensor;
-    (* PMPS reactive-DB key for the device's allowed temperature. *)
-    sPmpsState : STRING;
-    fbReadPMPSDB : FB_JsonDocToSafeBP;
-    astTempDB    : ARRAY[1..1] OF ST_DbStateParams;
-    (* fbReadPMPSDB.bExecute needs a rising edge; a real PMPS file read produces one as bBusy falls.
-       Taken as REFERENCE TO so a test can drive its own BOOL and simulate the edge
-       instead of reaching into MOTION_GVL.fbPmpsFileReader directly.
-    *)
-    bFileReaderBusy : REFERENCE TO BOOL;
     (* Margin (mm) subtracted from the authorized width/height when snapping
        the request into PMPS compliance. Set via FB_Init, defaults to 0.01. *)
     fApertureMargin : REAL := 0.01;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.aiMotionStage)
-   OR NOT __ISVALIDREF(THIS^.fbFFHWO) OR NOT __ISVALIDREF(bFileReaderBusy) THEN
-    RETURN;
-END_IF
-
-
-// Parent body: EPICS edge-trigger consumption only (no REF touch).
-SUPER^();
-
-
-// Inherited dispatch (parity with legacy FB_SLITS_POWER body
-// invoking ACT_CalculatePositions / ACT_Motion).
-M_CalculatePositions();
-M_Motion();
-
-// PMPS reactive temperature DB lookup. bExecute needs a rising edge,
-// produced as the caller-injected file-reader busy flag falls. Guard
-// the REF (single condition, no short-circuit hazard) so an unbound
-// instance stays inert rather than dereferencing a nil ref.
-astTempDB[1].sPmpsState := sPmpsState;
-fbReadPMPSDB(
-    bExecute    := NOT bFileReaderBusy,
-    jsonDoc     := PMPS_GVL.BP_jsonDoc,
-    sDeviceName := sDeviceName,
-    arrStates   := astTempDB,
-    io_fbFFHWO  := fbFFHWO
-);
-
-// All 8 RTDs share the same fault threshold (resolved from the DB).
-RTD_TOP_1(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_TOP_2(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_Bottom_1(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_Bottom_2(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_North_1(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_North_2(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_South_1(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-RTD_South_2(
-    fFaultThreshold := astTempDB[1].stReactiveParams.nTempSP,
-    sDevName        := sDeviceName,
-    io_fbFFHWO      := fbFFHWO
-);
-
-fbFlowSwitch();
+      <ST><![CDATA[SUPER^();
 ]]></ST>
     </Implementation>
-    <Method Name="FB_Init" Id="{374dff7e-a7f7-48ec-a96e-6c5ba3e1db5a}">
-      <Declaration><![CDATA[(* Records sPmpsState and REF-binds the caller-owned file-reader busy flag;
-   aiMotionStage (4 blades), fbFFHWO and sDeviceName are bound by base
-   FB_SLITS.FB_Init. Blade wiring runs from CallAfterInit. *)
+    <Method Name="FB_Init" Id="{44b9d57e-287b-4bfc-a956-ba6b8f11b210}">
+      <Declaration><![CDATA[(* Records fApertureMargin and names the trusted-aperture sanitizers;
+   aiMotionStage, fbFFHWO, sDeviceName, sPmpsState and bFileReaderBusy are
+   handled by the base FB_Init methods. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
@@ -138,19 +67,90 @@ VAR_INPUT
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName   : STRING;
-    sPmpsState 	  : STRING;
+    bBridgeOK       : REFERENCE TO BOOL;
+    sPmpsState    : STRING;
     bFileReaderBusy : REFERENCE TO BOOL;
     fApertureMargin : REAL;
+    bBridgeConfirmedBad : REFERENCE TO BOOL;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.sPmpsState := sPmpsState;
-THIS^.bFileReaderBusy REF= bFileReaderBusy;
-THIS^.fApertureMargin := fApertureMargin;
+        <ST><![CDATA[THIS^.CallAfterInitPOWER(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName     := sDeviceName,
+    bBridgeOK       := bBridgeOK,
+    sPmpsState      := sPmpsState,
+    bFileReaderBusy := bFileReaderBusy,
+    fApertureMargin := fApertureMargin,
+    bBridgeConfirmedBad := bBridgeConfirmedBad
+);
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_UpdatePMPS" Id="{d82078ab-8935-40b4-85a2-97a1fdb15da8}">
+    <Method Name="CallAfterInitPOWER" Id="{c487e3da-7571-4622-ae6d-7ad241316e77}">
+      <Declaration><![CDATA[(* Provides every FB_SLITS_POWER FB_Init input, through the FB_SLITS_THERMAL
+   re-wire. An FB that nests an FB_SLITS_POWER calls it from its own
+   CallAfterInit. *)
+METHOD CallAfterInitPOWER
+VAR_INPUT
+    aiMotionStage   : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO         : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName     : STRING;
+    bBridgeOK       : REFERENCE TO BOOL;
+    sPmpsState      : STRING;
+    bFileReaderBusy : REFERENCE TO BOOL;
+    fApertureMargin : REAL;
+    bBridgeConfirmedBad : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SUPER^.CallAfterInitTHERMAL(
+    aiMotionStage   := aiMotionStage,
+    fbFFHWO         := fbFFHWO,
+    sDeviceName     := sDeviceName,
+    bBridgeOK       := bBridgeOK,
+    sPmpsState      := sPmpsState,
+    bFileReaderBusy := bFileReaderBusy
+);
+
+THIS^.bBridgeConfirmedBad REF= bBridgeConfirmedBad;
+THIS^.fApertureMargin := fApertureMargin;
+fbTrustedAptWidth.sName  := CONCAT(sDeviceName, ' aperture width');
+fbTrustedAptHeight.sName := CONCAT(sDeviceName, ' aperture height');
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GapRequestAllowed" Id="{83c3aac7-96e2-4b13-bed6-5d2b94cd48dc}">
+      <Declaration><![CDATA[(* Accepts a changed gap request only when it does not exceed the trusted
+   PMPS aperture width (X) or height (Y). Reads rTrustedAptWidth/Height, which
+   M_PreCalculate refreshed earlier in the same cycle. *)
+METHOD PROTECTED M_GapRequestAllowed : BOOL
+VAR_INPUT
+    eAxis : E_SlitsAxis;
+    fSize : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF eAxis = E_SlitsAxis.X THEN
+    M_GapRequestAllowed := fSize <= rTrustedAptWidth;
+ELSE
+    M_GapRequestAllowed := fSize <= rTrustedAptHeight;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PreCalculate" Id="{c0b82c7a-873f-43b8-95de-98d6f4b70386}">
+      <Declaration><![CDATA[(* Refreshes the trusted PMPS aperture before M_CalculatePositions compares
+   any request against it. *)
+METHOD PROTECTED M_PreCalculate
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_UpdateAptTrust();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UpdatePMPS" Id="{ca5ec8cc-d21a-4bab-9ab7-cefd0c187d48}">
       <Declaration><![CDATA[(* Integrator-driven PMPS aperture-safety reconciliation, called each cycle
    with index = this device's slot in astApertures. Mirrors actual geometry
          into AptArrayStatus. The authorized envelope is the last aperture request
@@ -158,15 +158,25 @@ THIS^.fApertureMargin := fApertureMargin;
          (rTrustedAptWidth/Height). Faults FFO when the actual gap exceeds that
          envelope, on a confirmed bridge failure, or always in Local mode. In PMPS
          mode it also snaps the request into compliance. An untrusted request
-         (xOK FALSE) is logged and ignored. Caller must ensure index is valid
-         (no short-circuit). *)
+         (xOK FALSE) is logged and ignored. Reads the slit's PMPS aperture through M_ReadApertures, so an index outside
+         astApertures returns without writing anything and the width and height checked
+         below are sanitized. FFO is shared with FB_SLITS.M_CheckPMPS, so a device
+   calls at most one of the two methods. *)
 METHOD M_UpdatePMPS : BOOL
 VAR_INPUT
     index : INT;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[// Mirror current actual aperture geometry and any-blade error state.
+        <ST><![CDATA[IF NOT M_ReadApertures(index) THEN
+    RETURN;
+END_IF
+
+IF NOT __ISVALIDREF(bBridgeOK) OR NOT __ISVALIDREF(bBridgeConfirmedBad) THEN
+    RETURN;
+END_IF
+
+// Mirror current actual aperture geometry and any-blade error state.
 THIS^.AptArrayStatus.Height := THIS^.rActApertureSizeY;
 THIS^.AptArrayStatus.Width  := THIS^.rActApertureSizeX;
 THIS^.AptArrayStatus.xOK    :=
@@ -180,9 +190,9 @@ M_UpdateAptTrust();
 
 bOverAperture :=
     ( THIS^.rActApertureSizeX > (rTrustedAptWidth  - (2 * ABS(THIS^.rActCenterX)))
-      AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width  > 0 )
+      AND fbCheckAptWidth.fValue  > 0 )
  OR ( THIS^.rActApertureSizeY > (rTrustedAptHeight - (2 * ABS(THIS^.rActCenterY)))
-      AND PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height > 0 );
+      AND fbCheckAptHeight.fValue > 0 );
 
 rBadXOK(CLK := bBridgeOK AND NOT AptArrayReq.xOK AND NOT bBridgeConfirmedBad);
 
@@ -214,6 +224,52 @@ FFO(
     io_fbFFHWO   := fbFFHWO
 );
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UpdateAptTrust" Id="{c2a19fb7-5699-4cb0-a912-605d406f11b1}">
+      <Declaration><![CDATA[(* Refreshes bAptTrusted and sanitizes the PMPS aperture request into
+         rTrustedAptWidth/Height via FB_FallibleRealFromEtherCAT: the request is taken
+         only while the bridge is healthy, xOK is TRUE and the value is finite. A stale,
+         invalid or NaN/Inf request keeps the last good limit.
+         Idempotent, so both M_PreCalculate and M_UpdatePMPS call it. *)
+METHOD INTERNAL M_UpdateAptTrust
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bAptTrusted := bBridgeOK AND AptArrayReq.xOK;
+fbTrustedAptWidth(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Width);
+fbTrustedAptHeight(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Height);
+rTrustedAptWidth  := fbTrustedAptWidth.fValue;
+rTrustedAptHeight := fbTrustedAptHeight.fValue;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAptRequest" Id="{3b9d6e41-8c2f-4a75-b1d0-6e47a2c9f813}">
+      <Declaration><![CDATA[(* Drives the AT %I* aperture request, which cannot be written from outside
+   the FB. Used by simulation and tests. *)
+METHOD INTERNAL SetAptRequest
+VAR_INPUT
+    Width  : REAL;
+    Height : REAL;
+    xOK    : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width  := Width;
+THIS^.AptArrayReq.Height := Height;
+THIS^.AptArrayReq.xOK    := xOK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
+      <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
+VAR_INPUT
+    Width : REAL;
+    Height : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.AptArrayReq.Width := Width;
+THIS^.AptArrayReq.Height := Height;
+THIS^.AptArrayReq.xOK := TRUE;]]></ST>
       </Implementation>
     </Method>
   </POU>

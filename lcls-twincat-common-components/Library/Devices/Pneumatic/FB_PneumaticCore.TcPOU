@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_PneumaticCore" Id="{cbfe7c5c-3126-400b-af71-f63656e73d06}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+    Behaviour shared by the pneumatic actuator blocks FB_PneumaticActuator and FB_MPA. A block
+    calls it once per scan, at the top, and reads its outputs. It holds only what both do the same
+    way:
+        eState: the position state from the two limit switches (in AND out is INVALID, only out is
+            RETRACTED, only in is INSERTED, neither is MOVING).
+        bInsertTimedOut, bRetractTimedOut: an output that stays on without its limit switch being
+            reached for longer than tTimeout. The caller picks the time and decides what a timeout
+            means.
+    The output bits it receives are the ones the block set in the previous scan, so a timeout is
+    reported one scan after the timer elapses.
+    Each block owns everything else: command handling, including cancelling an insert and a retract
+    request that are set together, the outputs, the MPS rule, the fast fault and the error
+    reporting.
+*)
+FUNCTION_BLOCK FB_PneumaticCore IMPLEMENTS I_PneumaticCore
+VAR_INPUT
+    bInLimitSwitch : BOOL;
+    bOutLimitSwitch : BOOL;
+    bInsertOutput : BOOL;
+    bRetractOutput : BOOL;
+    tTimeout : TIME;
+END_VAR
+VAR_OUTPUT
+    eState : E_PnuematicActuatorPositionState;
+    bInsertTimedOut : BOOL;
+    bRetractTimedOut : BOOL;
+END_VAR
+VAR
+    tonInsertTimeout : TON;
+    tonRetractTimeout : TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInLimitSwitch AND bOutLimitSwitch THEN
+    eState := E_PnuematicActuatorPositionState.INVALID;
+ELSIF NOT bInLimitSwitch AND bOutLimitSwitch THEN
+    eState := E_PnuematicActuatorPositionState.RETRACTED;
+ELSIF bInLimitSwitch AND NOT bOutLimitSwitch THEN
+    eState := E_PnuematicActuatorPositionState.INSERTED;
+ELSE
+    eState := E_PnuematicActuatorPositionState.MOVING;
+END_IF
+
+tonInsertTimeout(
+    IN := bInsertOutput,
+    PT := tTimeout);
+tonRetractTimeout(
+    IN := bRetractOutput,
+    PT := tTimeout);
+
+bInsertTimedOut := NOT bInLimitSwitch AND tonInsertTimeout.Q;
+bRetractTimedOut := NOT bOutLimitSwitch AND tonRetractTimeout.Q;]]></ST>
+    </Implementation>
+    <Property Name="InsertTimedOut" Id="{b17c52e8-4d36-4a90-8e1f-2c6a9d03f7b1}">
+      <Declaration><![CDATA[(* The insert output is on, its limit switch is not reached and the timeout has elapsed. *)
+PROPERTY InsertTimedOut : BOOL]]></Declaration>
+      <Get Name="Get" Id="{0d94e6a2-58b3-4c17-9a6e-f13b7c8d2e45}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertTimedOut := bInsertTimedOut;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="RetractTimedOut" Id="{7a3e90d4-c2b1-4f58-b6a7-95d1e0c4f832}">
+      <Declaration><![CDATA[(* The retract output is on, its limit switch is not reached and the timeout has elapsed. *)
+PROPERTY RetractTimedOut : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e45c18b7-3a96-4d02-8f7b-6c1d9a0e53f4}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractTimedOut := bRetractTimedOut;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="InsertTimeoutElapsed" Id="{92a949e6-daa8-430b-b2ed-dddc969858d4}">
+      <Declaration><![CDATA[(* The insert timeout timer has elapsed, whatever the limit switch says. *)
+PROPERTY InsertTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{cd7156ed-5454-48be-8e6e-5d9c052b04b4}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InsertTimeoutElapsed := tonInsertTimeout.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="RetractTimeoutElapsed" Id="{5f0b629e-c3c1-4331-b9ab-ef3a3315134e}">
+      <Declaration><![CDATA[(* The retract timeout timer has elapsed, whatever the limit switch says. *)
+PROPERTY RetractTimeoutElapsed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{17796502-5a0a-4e60-83ef-f0f334544a93}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[RetractTimeoutElapsed := tonRetractTimeout.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="State" Id="{e5e6533a-6512-46a5-8b0b-09d6f22db816}">
+      <Declaration><![CDATA[(* Position state from the last body call. *)
+PROPERTY State : E_PnuematicActuatorPositionState]]></Declaration>
+      <Get Name="Get" Id="{3c0a7d52-91b4-4f0e-a6d8-5b2e8f1c4a73}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[State := eState;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

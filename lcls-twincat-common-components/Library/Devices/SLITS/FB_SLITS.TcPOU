@@ -7,51 +7,76 @@
    state mover. Caller-owned stages, PMPS FFO and device name injected via FB_Init
    REFERENCE TO; CallAfterInit wires blade interfaces. Motion parameters
    (velocity/accel/decel/jerk) belong to the caller-owned stage, set once at
-   commissioning and persisted; FB_SLITS does not apply them. *)
+   commissioning and persisted; FB_SLITS does not apply them.
+
+   FB_SLITS is the motion-only base of a three-level chain:
+   FB_SLITS, FB_SLITS_THERMAL (adds RTDs, flow switch and the reactive
+   temperature fault) and FB_SLITS_POWER (adds the PMPS arbiter aperture
+   handshake). The body runs the request handling, target calculation and blade
+   motion. A changed gap request is accepted without a limit here, as in the
+   legacy scatter slits. FB_SLITS_POWER limits it through the M_GapRequestAllowed
+   hook. The only PMPS check on the base is the legacy M_CheckPMPS, which a
+   device calls instead of FB_SLITS_POWER.M_UpdatePMPS, never both, since they
+   drive the same FFO. A device that calls neither runs without aperture
+   enforcement. *)
 {attribute 'analysis' := '-33'}
 {attribute 'call_after_init'}
 FUNCTION_BLOCK FB_SLITS
 VAR_INPUT
     {attribute 'pytmc' := '
-    pv: PMPS_OK
-    io: i
-    field: ZNAM False
-    field: ONAM True
+        pv: PMPS_OK
+        io: i
+        field: ZNAM False
+        field: ONAM True
     '}
     bMoveOk : BOOL;
 
-    (* Arbiter bridge (PMPS_PRE) health: connection up and inbound data valid.
-       AptArrayReq is untrustworthy while FALSE. Defaults to TRUE so an
-       integrator that has no bridge diagnostics keeps the xOK-only behaviour. *)
-    bBridgeOK : BOOL := TRUE;
-    (* TRUE only once the bridge is confirmed bad, not while an unconfirmed
-       zero reading is still inside the debounce window. Gates the FFO trip. *)
-    bBridgeConfirmedBad : BOOL;
-
     (* Per-blade encoder zero-offsets (EPICS-settable). *)
     {attribute 'pytmc' := '
-    pv: Offset_Top
-    io: io
+        pv: Offset_Top
+        io: io
     '}
     rEncoderOffsetTop : REAL;
 
     {attribute 'pytmc' := '
-    pv: ZeroOffset_Bottom
-    io: io
+        pv: ZeroOffset_Bottom
+        io: io
     '}
     rEncoderOffsetBottom : REAL;
 
     {attribute 'pytmc' := '
-    pv: ZeroOffset_North
-    io: io
+        pv: ZeroOffset_North
+        io: io
     '}
     rEncoderOffsetNorth : REAL;
 
     {attribute 'pytmc' := '
-    pv: ZeroOffset_South
-    io: io
+        pv: ZeroOffset_South
+        io: io
     '}
     rEncoderOffsetSouth : REAL;
+END_VAR
+VAR_OUTPUT
+    {attribute 'pytmc' := '
+        pv: ACTUAL_XWIDTH
+        io: io
+    '}
+    rActApertureSizeX : REAL;
+    {attribute 'pytmc' := '
+        pv: ACTUAL_YWIDTH
+        io: io
+    '}
+    rActApertureSizeY : REAL;
+    {attribute 'pytmc' := '
+        pv: ACTUAL_XCENTER
+        io: io
+    '}
+    rActCenterX : REAL;
+    {attribute 'pytmc' := '
+        pv: ACTUAL_YCENTER
+        io: io
+    '}
+    rActCenterY : REAL;
 END_VAR
 VAR CONSTANT
     (* Position-compare deltas for the blade ST_PositionState. *)
@@ -65,6 +90,11 @@ VAR CONSTANT
     // fJerk         : LREAL := 0.0;
 END_VAR
 VAR
+    // Set when an X or Y move was dispatched this cycle. Read and cleared
+    // through ExecuteMotionX and ExecuteMotionY.
+    bExecuteMotionX : BOOL;
+    bExecuteMotionY : BOOL;
+
     (* Per-blade scratch ST_PositionState. Static fields seeded here;
        fPosition and bMoveOk are refreshed each cycle in the body. *)
     stTop    : ST_PositionState := (sName := 'Top',    bValid := TRUE, bUseRawCounts := FALSE, fDelta := fSmallDelta);
@@ -103,70 +133,50 @@ VAR
 
     (* EPICS request / actual aperture geometry. *)
     {attribute 'pytmc' := '
-    pv: XWID_REQ
-    io: io
+        pv: XWID_REQ
+        io: io
     '}
     rReqApertureSizeX : REAL;
     {attribute 'pytmc' := '
-    pv: YWID_REQ
-    io: io
+        pv: YWID_REQ
+        io: io
     '}
     rReqApertureSizeY : REAL;
     {attribute 'pytmc' := '
-    pv: XCEN_REQ
-    io: io
+        pv: XCEN_REQ
+        io: io
     '}
     rReqCenterX : REAL;
     {attribute 'pytmc' := '
-    pv: YCEN_REQ
-    io: io
+        pv: YCEN_REQ
+        io: io
     '}
     rReqCenterY : REAL;
 
-    {attribute 'pytmc' := '
-    pv: ACTUAL_XWIDTH
-    io: io
-    '}
-    rActApertureSizeX : REAL;
-    {attribute 'pytmc' := '
-    pv: ACTUAL_YWIDTH
-    io: io
-    '}
-    rActApertureSizeY : REAL;
-    {attribute 'pytmc' := '
-    pv: ACTUAL_XCENTER
-    io: io
-    '}
-    rActCenterX : REAL;
-    {attribute 'pytmc' := '
-    pv: ACTUAL_YCENTER
-    io: io
-    '}
-    rActCenterY : REAL;
 
     (* Edge-trigger request flags. Cleared on the rising edge each
        cycle but no preset move is dispatched (stub: legacy parity). *)
     {attribute 'pytmc' := '
-    pv: OPEN
-    io: io
-    field: ZNAM False
-    field: ONAM True
+        pv: OPEN
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bOpen : BOOL;
 
     {attribute 'pytmc' := '
-    pv: CLOSE
-    io: io
-    field: ZNAM False
-    field: ONAM True
+        pv: CLOSE
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bClose : BOOL;
 
     {attribute 'pytmc' := '
-    pv: BLOCK
-    io: io
-    field: ZNAM False
-    field: ONAM True
+        pv: BLOCK
+        io: io
+        field: ZNAM False
+        field: ONAM True
     '}
     bBlock : BOOL;
 
@@ -180,72 +190,170 @@ VAR
     rOldReqCenterX       : REAL;
     rOldReqCenterY       : REAL;
 
-    bExecuteMotionX : BOOL;
-    bExecuteMotionY : BOOL;
 
     fbLogger : FB_LogMessage := (eSubsystem := E_SubSystem.MOTION);
 
-    (* PMPS aperture-safety fault (driven by FB_SLITS_POWER.M_UpdatePMPS). *)
+    (* PMPS aperture-safety fault, driven by M_CheckPMPS here or by
+       FB_SLITS_POWER.M_UpdatePMPS. A device calls at most one of them. *)
     FFO : FB_FastFault := (
         i_DevName  := sDeviceName,
         i_Desc     := 'Fault occurs when gaps and/or centers are not within safe margins, or PMPS mode is switched OFF',
         i_TypeCode := 16#FAA
     );
 
-    (* PMPS aperture IO (caller-mapped to terminals). *)
-    AptArrayStatus AT %Q* : ST_PMPS_Aperture_IO;
-    AptArrayReq    AT %I* : ST_PMPS_Aperture_IO;
-
-    (* PMPS sanitizers for the raw AptArrayReq Width/Height. Each holds the last
-       trusted value while the bridge/xOK is untrusted or the reading is
-       NaN/Inf. Operator gap requests and the PMPS aperture limit use the
-       outputs below, so a stale or invalid request never loosens the limit. *)
-    fbTrustedAptWidth  : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
-    fbTrustedAptHeight : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
-    rTrustedAptWidth  : REAL;
-    rTrustedAptHeight : REAL;
-    // TRUE when bBridgeOK AND AptArrayReq.xOK.
-    bAptTrusted   : BOOL;
-    bOverAperture : BOOL;
-    rBadXOK       : R_TRIG;
+    (* Sanitizers for the PMPS aperture read by M_CheckPMPS from
+       PMPS_GVL.stCurrentBeamParameters.astApertures. Gated on bBridgeOK only:
+       that data has no xOK flag. *)
+    fbCheckAptWidth  : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
+    fbCheckAptHeight : FB_FallibleRealFromEtherCAT(tHeartbeatExpirationTime := T#1S);
 
     (* REF backing fields, populated by FB_Init. *)
     {attribute 'no_copy'}
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
     {attribute 'no_copy'}
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+
+    (* Arbiter bridge (PMPS_PRE) health: connection up and inbound data valid,
+       the bBridgeOk output of the FB_SubSysToArbiter_IO the caller runs. The
+       astApertures data read by M_CheckPMPS (and AptArrayReq in FB_SLITS_POWER)
+       is untrustworthy while FALSE. A mandatory FB_Init input. *)
+    {attribute 'no_copy'}
+    bBridgeOK : REFERENCE TO BOOL;
     sDeviceName   :  STRING;
     nMotor : UINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Legacy parity: the base body consumes only the EPICS Open / Close /
-// Block edge-triggers. Blade init + motion dispatch lives on the
-// FB_SLITS_POWER subclass body.
+      <ST><![CDATA[IF NOT __ISVALIDREF(THIS^.aiMotionStage)
+   OR NOT __ISVALIDREF(THIS^.fbFFHWO)
+   OR NOT __ISVALIDREF(THIS^.bBridgeOK) THEN
+    RETURN;
+END_IF
+
 HandleRequests();
+M_CalculatePositions();
+M_Motion();
 ]]></ST>
     </Implementation>
     <Method Name="CallAfterInit" Id="{2bf5a8b9-6045-4972-b69a-4ac8a54c0162}">
-      <Declaration><![CDATA[(* Auto-fired once after FB_Init binds the REFs. The four FB_StatePTPMove
-   blade movers were inline-init'd with nil interface refs, so this re-supplies
-   each blade's now-valid interface and scratch ST_PositionState, and sets the
-   FFO device name. *)
+      <Declaration><![CDATA[(* Auto-fired once after FB_Init binds the REFs. Wires the four blade movers through
+   CallAfterInitCore. *)
 {attribute 'call_after_init'}
 METHOD CallAfterInit
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[fbTop.CallAfterInit(    stPositionState := stTop,    iMotionStage := aiMotionStage[E_SlitsBlade.TOP]);
-fbBottom.CallAfterInit( stPositionState := stBottom, iMotionStage := aiMotionStage[E_SlitsBlade.BOTTOM]);
-fbNorth.CallAfterInit(  stPositionState := stNorth,  iMotionStage := aiMotionStage[E_SlitsBlade.NORTH]);
-fbSouth.CallAfterInit(  stPositionState := stSouth,  iMotionStage := aiMotionStage[E_SlitsBlade.SOUTH]);
-
-FFO.i_DevName := sDeviceName;]]></ST>
+        <ST><![CDATA[THIS^.CallAfterInitCore();
+]]></ST>
       </Implementation>
     </Method>
+    <Method Name="CallAfterInitCore" Id="{5c344acd-53fe-4568-a37d-fdc6f668c333}">
+      <Declaration><![CDATA[(* The four FB_StatePTPMove blade movers were inline-init'd with nil interface refs,
+   so this re-supplies each blade's now-valid interface and scratch
+   ST_PositionState, and sets the FFO device name. Does nothing while the
+   motion stages or the fast-fault output are still nil, as when this FB is
+   nested and its own CallAfterInit runs before its host has supplied them. A
+   derived type calls it again through SUPER^ after a re-wire. *)
+METHOD PROTECTED CallAfterInitCore
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT __ISVALIDREF(aiMotionStage)
+   OR NOT __ISVALIDREF(fbFFHWO)
+   OR NOT __ISVALIDREF(bBridgeOK) THEN
+    RETURN;
+END_IF
+
+fbTop.CallAfterInit(
+    stPositionState := stTop,
+    iMotionStage    := aiMotionStage[E_SlitsBlade.TOP]
+);
+fbBottom.CallAfterInit(
+    stPositionState := stBottom,
+    iMotionStage    := aiMotionStage[E_SlitsBlade.BOTTOM]
+);
+fbNorth.CallAfterInit(
+    stPositionState := stNorth,
+    iMotionStage    := aiMotionStage[E_SlitsBlade.NORTH]
+);
+fbSouth.CallAfterInit(
+    stPositionState := stSouth,
+    iMotionStage    := aiMotionStage[E_SlitsBlade.SOUTH]
+);
+
+FFO.i_DevName := sDeviceName;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CallAfterInitSLITS" Id="{e50a065e-166b-42d0-b7e8-cdb420182ed3}">
+      <Declaration><![CDATA[(* Provides every FB_SLITS FB_Init input and wires the blade movers. FB_Init and
+   the derived re-wire methods call it. An FB that nests a slit calls the
+   re-wire method of its type from its own CallAfterInit: the nested slit's
+   CallAfterInit runs before the host's, with nil references, so the re-wire
+   redoes the whole wiring. *)
+METHOD CallAfterInitSLITS
+VAR_INPUT
+    aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
+    fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
+    sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
+THIS^.fbFFHWO       REF= fbFFHWO;
+THIS^.sDeviceName   := sDeviceName;
+THIS^.bBridgeOK     REF= bBridgeOK;
+fbCheckAptWidth.sName    := CONCAT(sDeviceName, ' PMPS check width');
+fbCheckAptHeight.sName   := CONCAT(sDeviceName, ' PMPS check height');
+
+THIS^.CallAfterInitCore();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="ExecuteMotionX" Id="{703122b2-8000-4680-898b-c49b95a6bafb}">
+      <Declaration><![CDATA[(* TRUE when a X move was dispatched and not yet consumed by M_Motion. *)
+PROPERTY ExecuteMotionX : BOOL]]></Declaration>
+      <Get Name="Get" Id="{ae6b853c-5f7c-4ab6-b72e-c8580982709e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ExecuteMotionX := bExecuteMotionX;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{28545f93-e59a-4cbf-bf00-29572024a6cd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bExecuteMotionX := ExecuteMotionX;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="ExecuteMotionY" Id="{deb16891-ef96-4536-a032-ca2c8403fa4d}">
+      <Declaration><![CDATA[(* TRUE when a Y move was dispatched and not yet consumed by M_Motion. *)
+PROPERTY ExecuteMotionY : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a90a8f10-3966-4fab-8ed2-1d372b85e0f5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ExecuteMotionY := bExecuteMotionY;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e231be8e-a045-47cc-9a72-5c6c3841a134}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bExecuteMotionY := ExecuteMotionY;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
     <Method Name="FB_Init" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc91097}">
       <Declaration><![CDATA[(* REF-binds caller-owned aiMotionStage (4 blades), fbFFHWO and sDeviceName
-   at instantiation. Blade interface wiring runs from CallAfterInit once these
-   REFs are bound. *)
+   at instantiation and names the M_CheckPMPS input sanitizers. Blade interface
+   wiring runs from CallAfterInit once these REFs are bound. Derived types
+   append their own parameters after these. *)
 {attribute 'analysis' := '-33'}
 METHOD FB_Init : BOOL
 VAR_INPUT
@@ -254,14 +362,16 @@ VAR_INPUT
     aiMotionStage : REFERENCE TO ARRAY[1..4] OF I_MotionStage;
     fbFFHWO       : REFERENCE TO FB_HardwareFFOutput;
     sDeviceName   : STRING;
+    bBridgeOK     : REFERENCE TO BOOL;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.aiMotionStage REF= aiMotionStage;
-THIS^.fbFFHWO       REF= fbFFHWO;
-THIS^.sDeviceName   := sDeviceName;
-fbTrustedAptWidth.sName  := CONCAT(sDeviceName, ' aperture width');
-fbTrustedAptHeight.sName := CONCAT(sDeviceName, ' aperture height');
+        <ST><![CDATA[THIS^.CallAfterInitSLITS(
+    aiMotionStage := aiMotionStage,
+    fbFFHWO       := fbFFHWO,
+    sDeviceName   := sDeviceName,
+    bBridgeOK     := bBridgeOK
+);
 ]]></ST>
       </Implementation>
     </Method>
@@ -290,17 +400,18 @@ END_IF
       </Implementation>
     </Method>
     <Method Name="M_CalculatePositions" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109a}">
-      <Declaration><![CDATA[(* Legacy ACT_CalculatePositions equivalent. Detects EPICS request changes
-         (rejecting aperture sizes beyond the last trusted PMPS envelope), recomputes
+      <Declaration><![CDATA[(* Legacy ACT_CalculatePositions equivalent. Runs M_PreCalculate, then detects
+   EPICS request changes (a changed gap is accepted only when
+   M_GapRequestAllowed returns TRUE, which the base always does), recomputes
    per-blade targets from requested gap + center + encoder offset, and refreshes
    actual aperture geometry feedback from caller-owned motor positions. *)
 METHOD M_CalculatePositions
 ]]></Declaration>
       <Implementation>
-              <ST><![CDATA[M_UpdateAptTrust();
+        <ST><![CDATA[M_PreCalculate();
 
-      IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
-          IF rReqApertureSizeX <= rTrustedAptWidth THEN
+IF rOldReqApertureSizeX <> rReqApertureSizeX THEN
+    IF M_GapRequestAllowed(eAxis := E_SlitsAxis.X, fSize := rReqApertureSizeX) THEN
         rOldReqApertureSizeX := rReqApertureSizeX;
         bExecuteMotionX      := TRUE;
         fbLogger(sMsg := 'Requested new X gap.', eSevr := TcEventSeverity.Verbose);
@@ -319,7 +430,7 @@ IF rOldReqCenterX <> rReqCenterX THEN
 END_IF
 
 IF rOldReqApertureSizeY <> rReqApertureSizeY THEN
-    IF rReqApertureSizeY <= rTrustedAptHeight THEN
+    IF M_GapRequestAllowed(eAxis := E_SlitsAxis.Y, fSize := rReqApertureSizeY) THEN
         rOldReqApertureSizeY := rReqApertureSizeY;
         bExecuteMotionY      := TRUE;
         fbLogger(sMsg := 'Requested new Y gap.', eSevr := TcEventSeverity.Verbose);
@@ -337,8 +448,7 @@ IF rOldReqCenterY <> rReqCenterY THEN
     fbLogger(sMsg := 'Requested new Y center.', eSevr := TcEventSeverity.Verbose);
 END_IF
 
-// Per-blade target positions from requested gap + center + per-blade
-// encoder offset.
+// Blade targets from gap, centre and encoder offset.
 fPosTopBlade    :=  (rReqApertureSizeY / 2) + (rReqCenterY + rEncoderOffsetTop);
 fPosBottomBlade := -(rReqApertureSizeY / 2) + (rReqCenterY + rEncoderOffsetBottom);
 fPosNorthBlade  :=  (rReqApertureSizeX / 2) + (rReqCenterX + rEncoderOffsetNorth);
@@ -364,20 +474,57 @@ rActCenterY := LREAL_TO_REAL(
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_UpdateAptTrust" Id="{c2a19fb7-5699-4cb0-a912-605d406f11b1}">
-      <Declaration><![CDATA[(* Refreshes bAptTrusted and sanitizes the PMPS aperture request into
-         rTrustedAptWidth/Height via FB_FallibleRealFromEtherCAT: the request is taken
-         only while the bridge is healthy, xOK is TRUE and the value is finite. A stale,
-         invalid or NaN/Inf request keeps the last good limit.
-         Idempotent, so both M_CalculatePositions and M_UpdatePMPS call it. *)
-METHOD INTERNAL M_UpdateAptTrust
+    <Method Name="M_CheckPMPS" Id="{2340e24c-17b3-4b83-9a88-189f8479d873}">
+      <Declaration><![CDATA[(* Legacy PMPS aperture check from the per-PLC FB_SLITS copies (SL1K3, SL1K4).
+         Faults the FFO from a comparison of the actual gaps with
+         PMPS_GVL.stCurrentBeamParameters.astApertures[index] plus 0.001. The
+         comparison is unchanged. The only addition is input protection: each
+         aperture value goes through FB_FallibleRealFromEtherCAT, which holds the
+         last good value while the arbiter bridge is down (bBridgeOK) or the
+         reading is NaN/Inf. With a healthy bridge and finite data it behaves as
+         deployed. It does not use a PMPS mode switch or an arbiter request, and does
+         not write AptArrayStatus. FFO is shared with
+         FB_SLITS_POWER.M_UpdatePMPS, so a device calls at most one of the two
+         methods. *)
+METHOD M_CheckPMPS : BOOL
+VAR_INPUT
+    index : INT;
+END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[bAptTrusted := bBridgeOK AND AptArrayReq.xOK;
-fbTrustedAptWidth(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Width);
-fbTrustedAptHeight(i_bBridgeOk := bAptTrusted, i_fValue := AptArrayReq.Height);
-rTrustedAptWidth  := fbTrustedAptWidth.fValue;
-rTrustedAptHeight := fbTrustedAptHeight.fValue;
+        <ST><![CDATA[IF NOT M_ReadApertures(index) THEN
+    RETURN;
+END_IF
+
+IF (rActApertureSizeX < (fbCheckAptWidth.fValue + 0.001))
+   OR (rActApertureSizeY < (fbCheckAptHeight.fValue + 0.001)) THEN
+    FFO.i_xOK := FALSE;
+ELSE
+    FFO.i_xOK := TRUE;
+END_IF
+
+FFO(
+    i_xAutoReset := TRUE,
+    io_fbFFHWO   := fbFFHWO
+);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GapRequestAllowed" Id="{2a05db71-9396-4967-bef6-5bfdb104a47f}">
+      <Declaration><![CDATA[(* Hook called by M_CalculatePositions when the requested gap of one axis
+   changed. Returns TRUE when the request may be accepted and dispatched, FALSE
+   to reject it (M_CalculatePositions then logs that the gap is larger than the
+   PMPS request and keeps the previous request). The base accepts every gap, as
+   the legacy scatter slits do. FB_SLITS_POWER overrides it to enforce the
+   trusted PMPS aperture. *)
+METHOD PROTECTED M_GapRequestAllowed : BOOL
+VAR_INPUT
+    eAxis : E_SlitsAxis;
+    fSize : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_GapRequestAllowed := TRUE;
 ]]></ST>
       </Implementation>
     </Method>
@@ -419,10 +566,40 @@ fbSouth(bMoveOk  := bMoveOk);
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_PreCalculate" Id="{a3e4e09f-d550-48c4-807f-8e0076a8a1e4}">
+      <Declaration><![CDATA[(* Hook called once at the start of every M_CalculatePositions, before any
+   request is compared. Empty in the base. FB_SLITS_POWER overrides it to
+   refresh the trusted PMPS aperture that M_GapRequestAllowed reads. *)
+METHOD PROTECTED M_PreCalculate
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetActualAperture" Id="{8c1932a8-5257-408a-9d5a-55fd95d3da8a}">
+      <Declaration><![CDATA[(* Test seam: overwrite the measured aperture (gap and center) that the body
+   normally derives from the blade positions. The values are outputs, so
+   tests that call M_CheckPMPS or M_UpdatePMPS directly set them here. *)
+METHOD INTERNAL SetActualAperture
+VAR_INPUT
+    ApertureSizeX : REAL;
+    ApertureSizeY : REAL;
+    CenterX       : REAL;
+    CenterY       : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rActApertureSizeX := ApertureSizeX;
+rActApertureSizeY := ApertureSizeY;
+rActCenterX       := CenterX;
+rActCenterY       := CenterY;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="SetApertureRequest" Id="{e16e0f37-b04b-4e2b-a3f3-e910fdc9109d}">
       <Declaration><![CDATA[(* Set the EPICS aperture request in one call: gap (width/height) and center
    on both axes. M_CalculatePositions picks the values up next cycle and, if a
-   field changed and the gap is within the PMPS envelope, dispatches the moves. *)
+   field changed and M_GapRequestAllowed accepts the gap, dispatches the moves. *)
 METHOD SetApertureRequest
 VAR_INPUT
     ApertureSizeX : REAL;
@@ -439,33 +616,38 @@ rReqCenterY       := CenterY;
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="SetAptRequest" Id="{3b9d6e41-8c2f-4a75-b1d0-6e47a2c9f813}">
-      <Declaration><![CDATA[(* Drives the AT %I* aperture request, which cannot be written from outside
-   the FB. Used by simulation and tests. *)
-METHOD INTERNAL SetAptRequest
+    <Method Name="M_ReadApertures" Id="{45d6134a-6758-49f2-8fc2-38eec061839d}">
+      <Declaration><![CDATA[(* The one place the PMPS aperture of this slit is read from
+   PMPS_GVL.stCurrentBeamParameters.astApertures. Each value goes through
+   FB_FallibleRealFromEtherCAT, which holds the last good value while the arbiter
+   bridge is down (bBridgeOK) or the reading is NaN or infinite, so no comparison
+   or division sees a raw bridge value. A comparison with NaN stops the PLC.
+   Returns FALSE and reads nothing when index is outside astApertures or the
+   bridge reference is still nil. M_CheckPMPS and
+   FB_SLITS_POWER.M_UpdatePMPS read the sanitized width and height through
+   fbCheckAptWidth.fValue and fbCheckAptHeight.fValue after calling it. *)
+METHOD PROTECTED M_ReadApertures : BOOL
 VAR_INPUT
-    Width  : REAL;
-    Height : REAL;
-    xOK    : BOOL;
+    index : INT;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.AptArrayReq.Width  := Width;
-THIS^.AptArrayReq.Height := Height;
-THIS^.AptArrayReq.xOK    := xOK;]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="SetAptWidthHeight" Id="{60fd3513-e7c9-401c-93aa-fb77211506a9}">
-      <Declaration><![CDATA[METHOD INTERNAL SetAptWidthHeight
-VAR_INPUT
-    Width : REAL;
-    Height : REAL;
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[THIS^.AptArrayReq.Width := Width;
-THIS^.AptArrayReq.Height := Height;
-THIS^.AptArrayReq.xOK := TRUE;]]></ST>
+        <ST><![CDATA[M_ReadApertures := index >= 1
+                  AND index <= UINT_TO_INT(PMPS_GVL.MAX_APERTURES)
+                  AND __ISVALIDREF(bBridgeOK);
+IF NOT M_ReadApertures THEN
+    RETURN;
+END_IF
+
+fbCheckAptWidth(
+    i_bBridgeOk := bBridgeOK,
+    i_fValue    := PMPS_GVL.stCurrentBeamParameters.astApertures[index].Width
+);
+fbCheckAptHeight(
+    i_bBridgeOk := bBridgeOK,
+    i_fValue    := PMPS_GVL.stCurrentBeamParameters.astApertures[index].Height
+);
+]]></ST>
       </Implementation>
     </Method>
   </POU>

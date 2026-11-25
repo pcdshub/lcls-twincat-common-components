@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="U_TestRealBits" Id="{1bd81f20-b0e4-4a17-8460-d9700e9d10d3}">
+    <Declaration><![CDATA[(* Test helper: sets the bit pattern of a REAL through dwBits, to build NaN and
+   infinity without pointers. *)
+TYPE U_TestRealBits :
+UNION
+    dwBits : DWORD;
+    rValue : REAL;
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

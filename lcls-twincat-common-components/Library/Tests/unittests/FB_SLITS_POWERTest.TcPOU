@@ -1,0 +1,326 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_SLITS_POWERTest" Id="{e999be49-2915-49c2-8ad1-4a5692f33436}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Tests for FB_SLITS_POWER: aperture-limited motion, the arbiter request
+   trust gating and M_UpdatePMPS. The thermal tests live in FB_SLITS_THERMALTest. *)
+FUNCTION_BLOCK FB_SLITS_POWERTest EXTENDS FB_TestSuite
+VAR
+    (* Caller-owned AxisRefs and persistent storage. In a real PRG the
+       AxisRefs come from MAIN.Mxx. Indexed by E_SlitsBlade (1..4). *)
+    axRef : ARRAY[1..4] OF AXIS_REF;
+
+    fbPDS : LCLS_Tc_DevAbs.FB_PersistentDataStorage;
+
+    (* Four blade motors, indexed by E_SlitsBlade. *)
+    afbMotor : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRef[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'Top'),
+        (AxisRef := axRef[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'Bottom'),
+        (AxisRef := axRef[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'North'),
+        (AxisRef := axRef[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'South')
+    ];
+
+    (* I_MotionStage array bound into FB_SLITS_POWER via
+       FB_Init. Order matches E_SlitsBlade (TOP / BOTTOM / NORTH /
+       SOUTH = 1..4). *)
+    aiMotionStage : ARRAY[1..4] OF I_MotionStage := [
+        afbMotor[E_SlitsBlade.TOP],
+        afbMotor[E_SlitsBlade.BOTTOM],
+        afbMotor[E_SlitsBlade.NORTH],
+        afbMotor[E_SlitsBlade.SOUTH]
+    ];
+
+    fbFFHWO     : FB_HardwareFFOutput;
+
+    // Arbiter bridge signals the motion instance reads.
+    bBridgeOK           : BOOL := TRUE;
+    bBridgeConfirmedBad : BOOL;
+
+    fbSlitsPower : FB_SLITS_POWER(
+        aiMotionStage   := aiMotionStage,
+        fbFFHWO         := fbFFHWO,
+        sDeviceName     := 'TST:POWER',
+        bBridgeOK       := bBridgeOK,
+        sPmpsState      := 'TST:POWER-RTD',
+        bFileReaderBusy := bSimFileReaderBusy,
+        fApertureMargin := 0.01, // -> must be provided here
+        bBridgeConfirmedBad := bBridgeConfirmedBad
+    );
+
+    (* The logic tests (bridge gating, non-finite requests, M_UpdatePMPS) get an
+       instance of their own, with its own unlinked motors and fast-fault
+       output. They change the request, the trust state and the FFO of the
+       device they run on, so sharing the motion test's instance would leave
+       it with a snapped request and a move already in flight. *)
+    axRefLogic : ARRAY[1..4] OF AXIS_REF;
+    afbMotorLogic : ARRAY[1..4] OF FB_MotionStageNC[
+        (AxisRef := axRefLogic[E_SlitsBlade.TOP],    iPersistentDataStorage := fbPDS, sName := 'TopLogic'),
+        (AxisRef := axRefLogic[E_SlitsBlade.BOTTOM], iPersistentDataStorage := fbPDS, sName := 'BottomLogic'),
+        (AxisRef := axRefLogic[E_SlitsBlade.NORTH],  iPersistentDataStorage := fbPDS, sName := 'NorthLogic'),
+        (AxisRef := axRefLogic[E_SlitsBlade.SOUTH],  iPersistentDataStorage := fbPDS, sName := 'SouthLogic')
+    ];
+    aiMotionStageLogic : ARRAY[1..4] OF I_MotionStage := [
+        afbMotorLogic[E_SlitsBlade.TOP],
+        afbMotorLogic[E_SlitsBlade.BOTTOM],
+        afbMotorLogic[E_SlitsBlade.NORTH],
+        afbMotorLogic[E_SlitsBlade.SOUTH]
+    ];
+    fbFFHWOLogic : FB_HardwareFFOutput;
+    bSimFileReaderBusyLogic : BOOL;
+    bBridgeOKLogic           : BOOL := TRUE;
+    bBridgeConfirmedBadLogic : BOOL;
+    fbSlitsLogic : FB_SLITS_POWER(
+        aiMotionStage   := aiMotionStageLogic,
+        fbFFHWO         := fbFFHWOLogic,
+        sDeviceName     := 'TST:POWER',
+        bBridgeOK       := bBridgeOKLogic,
+        sPmpsState      := 'TST:POWER-RTD',
+        bFileReaderBusy := bSimFileReaderBusyLogic,
+        fApertureMargin := 0.01,
+        bBridgeConfirmedBad := bBridgeConfirmedBadLogic
+    );
+
+    nBlade     : INT;
+    bFirstScan : BOOL := TRUE;
+    bStageReady : BOOL;
+    bSimFileReaderBusy : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TestApertureMotion();
+TestBridgeGating();
+TestAptNonFinite();
+TestUpdatePMPS();
+fbSlitsPower(bMoveOk := TRUE);
+]]></ST>
+    </Implementation>
+    <Method Name="TestApertureMotion" Id="{b3d8e4f5-2c7a-4b93-9d4b-6e8f9a0b1c2d}">
+      <Declaration><![CDATA[(*
+    End-to-end motion coverage against the linked NC simulation axes. An
+    EPICS aperture request must flow through M_CalculatePositions ->
+    M_Motion -> the blade FB_StatePTPMove movers, dispatch an absolute
+    move to each blade stage, and drive each NC axis to its target. The
+    test waits for every blade's actual NC position to settle on the
+    aperture-math target, so it confirms the request produced real
+    motion, not just a software command. Requires the four axRef entries
+    to be linked to their NC axes (Axis_Slit_Top / _Bottom / _North /
+    _South); without the link an axis latches bError and never moves.
+*)
+METHOD TestApertureMotion
+VAR_INST
+    tonTimer : TON;
+    nStep    : UINT := 0;
+END_VAR
+VAR CONSTANT
+    nLastStep : UINT := 1;
+    fDelta    : LREAL := 0.05;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Does an aperture request actually drive every blade NC axis to target?
+TEST('TestSlitsApertureMotion');
+
+tonTimer(IN := TRUE, PT := T#40S);
+
+CASE nStep OF
+    0:
+        IF bFirstScan THEN
+            FOR nBlade := 1 TO 4 DO
+                afbMotor[nBlade].SetModeEnableLimits(
+                    LimBackward    := TRUE,
+                    LimForward     := TRUE,
+                    HomeEnable     := FALSE,
+                    BrakeMode      := E_StageBrakeMode.NO_BRAKE,
+                    EnableMode     := E_StageEnableMode.DURING_MOTION,
+                    HomeMode       := E_EpicsHomeCmd.NONE,
+                    UserEnable     := TRUE,
+                    HardwareEnable := TRUE
+                );
+                afbMotor[nBlade].SetMotionParam(Velocity := 15.5, Acceleration := 100, Deceleration := 100, Jerk := 1000);
+                afbMotor[nBlade].RestoreMotionParams      := FALSE;
+                afbMotor[nBlade].DoNotRestoreNcParameters := TRUE;
+            END_FOR
+            bFirstScan := FALSE;
+            nStep := nStep + 1;
+        END_IF
+    1:
+        // Offsets and an in-envelope request, sent to the linked axes.
+
+
+        IF bStageReady THEN
+            fbSlitsPower.SetAptWidthHeight(Width:=100.0, Height:=100.0);
+            fbSlitsPower.rEncoderOffsetTop    := 16.1;
+            fbSlitsPower.rEncoderOffsetBottom := -11.65;
+            fbSlitsPower.rEncoderOffsetNorth  := 12.45;
+            fbSlitsPower.rEncoderOffsetSouth  := -16.45;
+            fbSlitsPower.SetApertureRequest(ApertureSizeX := 4, ApertureSizeY := 6, CenterX := 1, CenterY := 2);
+            nStep := nStep + 1;
+        END_IF
+
+    2:
+        // Targets: Top 21.1, Bottom -12.65, North 15.45, South -17.45.
+        IF ABS(afbMotor[E_SlitsBlade.TOP].MotionStatus.fActPosition    -   21.1) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.BOTTOM].MotionStatus.fActPosition - (-12.65)) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.NORTH].MotionStatus.fActPosition  -   15.45) < fDelta
+        AND ABS(afbMotor[E_SlitsBlade.SOUTH].MotionStatus.fActPosition  - (-17.45)) < fDelta THEN
+            AssertTrue(TRUE, 'All blades reached aperture target');
+            nStep := nStep + 1;
+        END_IF
+END_CASE
+
+
+fbPDS();
+FOR nBlade := 1 TO 4 DO
+    afbMotor[nBlade]();
+    bStageReady := afbMotor[nBlade].stMotionStatus.bStageReady;
+END_FOR
+
+
+IF tonTimer.Q OR nStep = 3 THEN
+    TEST_FINISHED();
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestAptNonFinite" Id="{6f0b2c3e-5d1a-4c8e-9b47-2a1e8d3c7f60}">
+      <Declaration><![CDATA[(*
+    Aperture request sanitization. A NaN/Inf width or height must never replace
+    the trusted limit, even with a healthy bridge and xOK TRUE; the next finite
+    request is accepted again.
+*)
+METHOD TestAptNonFinite
+VAR
+    uBits : U_TestRealBits;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsAptNonFinite');
+
+
+// Establish a trusted limit.
+bBridgeOKLogic := TRUE;
+fbSlitsLogic.SetAptWidthHeight(Width := 50.0, Height := 40.0);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(
+    fbSlitsLogic.rTrustedAptWidth = 50.0 AND fbSlitsLogic.rTrustedAptHeight = 40.0,
+    'trusted limit established before the non-finite readings'
+);
+
+// NaN width: trusted flags stay TRUE but the limit holds.
+uBits.dwBits := 16#7FC00000;
+fbSlitsLogic.SetAptRequest(Width := uBits.rValue, Height := 40.0, xOK := TRUE);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(fbSlitsLogic.rTrustedAptWidth = 50.0, 'NaN width keeps the last trusted width');
+AssertTrue(fbSlitsLogic.rTrustedAptHeight = 40.0, 'NaN width leaves the trusted height alone');
+
+// +Inf width.
+uBits.dwBits := 16#7F800000;
+fbSlitsLogic.SetAptRequest(Width := uBits.rValue, Height := 40.0, xOK := TRUE);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(fbSlitsLogic.rTrustedAptWidth = 50.0, '+Inf width keeps the last trusted width');
+
+// -Inf height.
+uBits.dwBits := 16#FF800000;
+fbSlitsLogic.SetAptRequest(Width := 50.0, Height := uBits.rValue, xOK := TRUE);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(fbSlitsLogic.rTrustedAptHeight = 40.0, '-Inf height keeps the last trusted height');
+
+// Finite values are accepted again.
+fbSlitsLogic.SetAptWidthHeight(Width := 60.0, Height := 45.0);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(
+    fbSlitsLogic.rTrustedAptWidth = 60.0 AND fbSlitsLogic.rTrustedAptHeight = 45.0,
+    'finite request is trusted again after the non-finite readings'
+);
+
+// Leave the shared instance in a healthy, wide-open state.
+fbSlitsLogic.SetAptWidthHeight(Width := 100.0, Height := 100.0);
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestBridgeGating" Id="{abd1e7b6-c60a-40ee-b98f-52bcbf96a2f7}">
+      <Declaration><![CDATA[(*
+    Aperture trust gating. A PMPS aperture request is latched as the limit
+    only while the arbiter bridge is healthy and the request xOK is TRUE.
+    An untrusted request must leave the last trusted limit in place.
+*)
+METHOD TestBridgeGating
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsBridgeGating');
+
+// Healthy bridge and xOK: the request becomes the trusted limit.
+bBridgeOKLogic := TRUE;
+fbSlitsLogic.SetAptWidthHeight(Width := 50.0, Height := 40.0);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertTrue(fbSlitsLogic.bAptTrusted, 'request trusted with bridge ok and xOK');
+AssertTrue(
+    fbSlitsLogic.rTrustedAptWidth = 50.0 AND fbSlitsLogic.rTrustedAptHeight = 40.0,
+    'trusted limit latched from the request'
+);
+
+// xOK drops while the width changes: the last trusted limit holds.
+fbSlitsLogic.SetAptRequest(Width := 10.0, Height := 40.0, xOK := FALSE);
+fbSlitsLogic.M_UpdateAptTrust();
+AssertFalse(fbSlitsLogic.bAptTrusted, 'request untrusted when xOK is FALSE');
+AssertTrue(fbSlitsLogic.rTrustedAptWidth = 50.0, 'untrusted xOK keeps the last trusted width');
+
+// Bridge down with xOK TRUE: still untrusted.
+fbSlitsLogic.SetAptRequest(Width := 10.0, Height := 40.0, xOK := TRUE);
+bBridgeOKLogic := FALSE;
+fbSlitsLogic.M_UpdateAptTrust();
+AssertFalse(fbSlitsLogic.bAptTrusted, 'request untrusted when the bridge is down');
+AssertTrue(fbSlitsLogic.rTrustedAptWidth = 50.0, 'bridge down keeps the last trusted width');
+
+// Leave the shared instance in a healthy, wide-open state.
+bBridgeOKLogic := TRUE;
+fbSlitsLogic.SetAptWidthHeight(Width := 100.0, Height := 100.0);
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="TestUpdatePMPS" Id="{001eb3f7-0188-4b8a-a279-0a8558e5d537}">
+      <Declaration><![CDATA[(* M_UpdatePMPS on FB_SLITS_POWER: status mirror, fault on an actual gap above
+   the trusted request, snap-back of the request, and the Local mode fault. *)
+METHOD TestUpdatePMPS
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('TestSlitsUpdatePMPS');
+
+PMPS_GVL.stCurrentBeamParameters.astApertures[1].Width  := 100.0;
+PMPS_GVL.stCurrentBeamParameters.astApertures[1].Height := 100.0;
+bBridgeOKLogic := TRUE;
+bBridgeConfirmedBadLogic := FALSE;
+fbSlitsLogic.xPMPSMode := TRUE;
+fbSlitsLogic.SetAptWidthHeight(Width := 50.0, Height := 40.0);
+
+// Inside the authorized envelope.
+fbSlitsLogic.SetActualAperture(ApertureSizeX := 20.0, ApertureSizeY := 10.0, CenterX := 0.0, CenterY := 0.0);
+fbSlitsLogic.M_UpdatePMPS(1);
+AssertTrue(fbSlitsLogic.FFO.i_xOK, 'gap inside the trusted request leaves the FFO ok');
+AssertTrue(
+    fbSlitsLogic.AptArrayStatus.Width = 20.0 AND fbSlitsLogic.AptArrayStatus.Height = 10.0,
+    'actual gap mirrored into AptArrayStatus'
+);
+
+// Actual X gap above the trusted width: fault and snap the request back.
+fbSlitsLogic.SetActualAperture(ApertureSizeX := 60.0, ApertureSizeY := 10.0, CenterX := 0.0, CenterY := 0.0);
+fbSlitsLogic.M_UpdatePMPS(1);
+AssertFalse(fbSlitsLogic.FFO.i_xOK, 'gap above the trusted request faults the FFO');
+AssertTrue(fbSlitsLogic.rReqApertureSizeX = 49.99, 'request snapped to the trusted width minus the margin');
+
+// Local mode always faults.
+fbSlitsLogic.SetActualAperture(ApertureSizeX := 20.0, ApertureSizeY := 10.0, CenterX := 0.0, CenterY := 0.0);
+fbSlitsLogic.xPMPSMode := FALSE;
+fbSlitsLogic.M_UpdatePMPS(1);
+AssertFalse(fbSlitsLogic.FFO.i_xOK, 'Local mode faults the FFO');
+
+// Leave the shared instance in PMPS mode, healthy and wide open.
+fbSlitsLogic.xPMPSMode := TRUE;
+fbSlitsLogic.SetAptWidthHeight(Width := 100.0, Height := 100.0);
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
