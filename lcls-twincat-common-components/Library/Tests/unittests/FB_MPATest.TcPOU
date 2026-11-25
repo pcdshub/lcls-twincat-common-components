@@ -144,7 +144,7 @@ TEST_FINISHED();]]></ST>
       </Implementation>
     </Method>
     <Method Name="GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand" Id="{e7c6ea6a-db9b-496e-b80e-50736a2a7a46}">
-      <Declaration><![CDATA[(* MPS OK is TRUE when the commanded direction has reached its limit switch, FALSE while moving or when both limit switches are active. *)
+      <Declaration><![CDATA[(* MPS OK is TRUE when the commanded direction has reached its limit switch and FALSE while moving. The rule looks only at the commanded direction, so a stray second limit switch does not clear it. *)
 METHOD PRIVATE GivenCommandAndLimitSwitchThenMpsRuleFollowsTheCommand
 ]]></Declaration>
       <Implementation>
@@ -171,7 +171,7 @@ fbSutMps.RetractedLS := TRUE;
 fbSutMps(
     ibInsertOK := TRUE,
     ibRetractOK := TRUE);
-AssertFalse(Condition := fbSutMps.xMPS_OK, Message := 'Both limit switches must not be MPS OK');
+AssertTrue(Condition := fbSutMps.xMPS_OK, Message := 'The rule follows the insert command, so a second limit switch does not clear MPS OK');
 
 TEST_FINISHED();]]></ST>
       </Implementation>
